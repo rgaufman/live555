@@ -1,0 +1,41 @@
+diff --git a/trunk/third_party/live555-2012-03-22/third_party/live555-2012-03-22/groupsock/GroupsockHelper.cpp b/trunk/third_party/live555-2012-03-22/third_party/live555-2012-03-22/groupsock/GroupsockHelper.cpp
+--- a/trunk/third_party/live555-2012-03-22/third_party/live555-2012-03-22/groupsock/GroupsockHelper.cpp	(revision 94715)
++++ b/trunk/third_party/live555-2012-03-22/third_party/live555-2012-03-22/groupsock/GroupsockHelper.cpp	(working copy)
+@@ -466,9 +466,15 @@
+   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
+ 
+   struct ip_mreq_source imr;
+-  imr.imr_multiaddr.s_addr = groupAddress;
+-  imr.imr_sourceaddr.s_addr = sourceFilterAddr;
+-  imr.imr_interface.s_addr = ReceivingInterfaceAddr;
++#ifdef ANDROID
++    imr.imr_multiaddr = groupAddress;
++    imr.imr_sourceaddr = sourceFilterAddr;
++    imr.imr_interface = ReceivingInterfaceAddr;
++#else
++    imr.imr_multiaddr.s_addr = groupAddress;
++    imr.imr_sourceaddr.s_addr = sourceFilterAddr;
++    imr.imr_interface.s_addr = ReceivingInterfaceAddr;
++#endif
+   if (setsockopt(socket, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP,
+ 		 (const char*)&imr, sizeof (struct ip_mreq_source)) < 0) {
+     socketErr(env, "setsockopt(IP_ADD_SOURCE_MEMBERSHIP) error: ");
+@@ -484,9 +490,15 @@
+   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
+ 
+   struct ip_mreq_source imr;
+-  imr.imr_multiaddr.s_addr = groupAddress;
+-  imr.imr_sourceaddr.s_addr = sourceFilterAddr;
+-  imr.imr_interface.s_addr = ReceivingInterfaceAddr;
++#ifdef ANDROID
++    imr.imr_multiaddr = groupAddress;
++    imr.imr_sourceaddr = sourceFilterAddr;
++    imr.imr_interface = ReceivingInterfaceAddr;
++#else
++    imr.imr_multiaddr.s_addr = groupAddress;
++    imr.imr_sourceaddr.s_addr = sourceFilterAddr;
++    imr.imr_interface.s_addr = ReceivingInterfaceAddr;
++#endif
+   if (setsockopt(socket, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP,
+ 		 (const char*)&imr, sizeof (struct ip_mreq_source)) < 0) {
+     return False;
