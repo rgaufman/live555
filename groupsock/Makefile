@@ -1,9 +1,25 @@
+INCLUDES = -Iinclude -I../UsageEnvironment/include
+##### Change the following for your environment: 
+COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
+C =			c
+C_COMPILER =		cc
+C_FLAGS =		$(COMPILE_OPTS)
+CPP =			cpp
+CPLUSPLUS_COMPILER =	c++
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1
+OBJ =			o
+LINK =			c++ -o
+LINK_OPTS =		-L.
+CONSOLE_LINK_OPTS =	$(LINK_OPTS)
+LIBRARY_LINK =		ar cr 
+LIBRARY_LINK_OPTS =	
+LIB_SUFFIX =			a
+LIBS_FOR_CONSOLE_APPLICATION =
+LIBS_FOR_GUI_APPLICATION =
+EXE =
 ##### End of variables to change
 
-NAME = libgroupsock
-PREFIX ?= /usr/local
-LIBDIR ?= $(PREFIX)/lib
-ALL = $(NAME).$(LIB_SUFFIX)
+ALL = libgroupsock.$(LIB_SUFFIX)
 all:	$(ALL)
 
 .$(C).$(OBJ):
@@ -35,14 +51,5 @@ libgroupsock.$(LIB_SUFFIX): $(GROUPSOCK_LIB_OBJS) \
 
 clean:
 	-rm -rf *.$(OBJ) $(ALL) core *.core *~ include/*~
-
-install: install1 $(INSTALL2)
-install1: libgroupsock.$(LIB_SUFFIX)
-	  install -d $(DESTDIR)$(PREFIX)/include/groupsock $(DESTDIR)$(LIBDIR)
-	  install -m 644 include/*.hh include/*.h $(DESTDIR)$(PREFIX)/include/groupsock
-	  install -m 644 libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)
-install_shared_libraries: libgroupsock.$(LIB_SUFFIX)
-	  ln -s libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/libgroupsock.$(SHORT_LIB_SUFFIX)
-	  ln -s libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/libgroupsock.so
 
 ##### Any additional, platform-specific rules come here:

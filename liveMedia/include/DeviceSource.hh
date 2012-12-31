@@ -52,6 +52,7 @@ protected:
 private:
   // redefined virtual functions:
   virtual void doGetNextFrame();
+  //virtual void doStopGettingFrames(); // optional
 
 private:
   static void deliverFrame0(void* clientData);

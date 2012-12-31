@@ -76,6 +76,7 @@ MatroskaFile::MatroskaFile(UsageEnvironment& env, char const* fileName, onCreati
   if (inputSource == NULL) {
     // The specified input file does not exist!
     fParserForInitialization = NULL;
+    handleEndOfTrackHeaderParsing(); // we have no file, and thus no tracks, but we still need to signal this
   } else {
     // Initialize ourselves by parsing the file's 'Track' headers:
     fParserForInitialization = new MatroskaFileParser(*this, inputSource, handleEndOfTrackHeaderParsing, this, NULL);

@@ -35,7 +35,7 @@ void usage() {
   *env << "Usage: " << progName
        << " [-v|-V]"
        << " [-t|-T <http-port>]"
-       << " [-p <rtsp-port>]"
+	<< " [-p <rtsp-port>]"
        << " [-u <username> <password>]"
        << " <rtsp-url-1> ... <rtsp-url-n>\n";
   exit(1);
@@ -85,27 +85,44 @@ int main(int argc, char** argv) {
 	  ++argv; --argc;
 	  break;
 	}
-      }
+	  }
 
       // If we get here, the option was specified incorrectly:
       usage();
       break;
-    }
-    
-    case 'p': {
-        // set port
-        if (argc > 3 && argv[2][0] != '-') {
-            // The next argument is the RTSP server port number:                                                                       
-            if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-                && rtspServerPortNum > 0) {
-                ++argv; --argc;
-                break;
-            }
-        }
-        // If we get here, the option was specified incorrectly:
-        usage();
-        break;
-    }
+	}
+
+	case 'p': {
+      // set port
+      if (argc > 3 && argv[2][0] != '-') {
+	// The next argument is the RTSP server port number:                                                                       
+	if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
+	    && rtspServerPortNum > 0) {
+	  ++argv; --argc;
+	  break;
+	}
+	  }
+
+      // If we get here, the option was specified incorrectly:
+      usage();
+      break;
+	}
+
+	case 'b': {
+      // set buffer size
+      if (argc > 3 && argv[2][0] != '-') {
+	// The next argument is the RTSP server port number:                                                                       
+	if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
+	    && rtspServerPortNum > 0) {
+	  ++argv; --argc;
+	  break;
+	}
+	  }
+
+      // If we get here, the option was specified incorrectly:
+      usage();
+      break;
+	}
 
     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
       if (argc < 4) usage(); // there's no argv[3] (for the "password")
@@ -152,7 +169,7 @@ int main(int argc, char** argv) {
   // and then with the alternative port number (8554):
   RTSPServer* rtspServer;
   rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
-  if (rtspServer == NULL && rtspServerPortNum != 554) {
+  if (rtspServer == NULL) {
     rtspServerPortNum = 8554;
     rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
   }
