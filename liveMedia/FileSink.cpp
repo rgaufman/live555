@@ -125,11 +125,9 @@ void FileSink::afterGettingFrame(unsigned frameSize,
   addData(fBuffer, frameSize, presentationTime);
 
   if (fOutFid == NULL || fflush(fOutFid) == EOF) {
-    // The output file has closed.  Handle this the same way as if the
-    // input source had closed:
+    // The output file has closed.  Handle this the same way as if the input source had closed:
+    if (fSource != NULL) fSource->stopGettingFrames();
     onSourceClosure(this);
-
-    stopPlaying();
     return;
   }
 

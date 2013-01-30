@@ -20,6 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "liveMedia.hh"
+#include "RTSPCommon.hh"
 #include "GroupsockHelper.hh" // for "our_random()"
 
 #ifndef MILLION
@@ -48,7 +49,6 @@ private:
   void subsessionByeHandler();
 
   int verbosityLevel() const { return ((ProxyServerMediaSession*)fParentSession)->fVerbosityLevel; }
-  void reset();
 
 private:
   friend class ProxyRTSPClient;
@@ -87,6 +87,14 @@ ProxyServerMediaSession::ProxyServerMediaSession(UsageEnvironment& env, RTSPServ
 }
 
 ProxyServerMediaSession::~ProxyServerMediaSession() {
+  if (fVerbosityLevel > 0) {
+    envir() << *this << "::~ProxyServerMediaSession()\n";
+  }
+
+  // Begin by sending a "TEARDOWN" command (without checking for a response):
+  if (fProxyRTSPClient != NULL) fProxyRTSPClient->sendTeardownCommand(*fClientMediaSession, NULL, fProxyRTSPClient->auth());
+
+  // Then delete our state:
   Medium::close(fClientMediaSession);
   Medium::close(fProxyRTSPClient);
   delete fPresentationTimeSessionNormalizer;
@@ -125,15 +133,15 @@ void ProxyServerMediaSession::continueAfterDESCRIBE(char const* sdpDescription) 
 }
 
 void ProxyServerMediaSession::resetDESCRIBEState() {
-  // Delete the client "MediaSession" object that we had set up after receiving the response to the previous "DESCRIBE":
-  Medium::close(fClientMediaSession); fClientMediaSession = NULL;
-
-  // Also delete all of our "ProxyServerMediaSubsession"s; they'll get set up again once we get a response to the new "DESCRIBE".
+  // Delete all of our "ProxyServerMediaSubsession"s; they'll get set up again once we get a response to the new "DESCRIBE".
   if (fOurRTSPServer != NULL) {
     // First, close any RTSP client connections that may have already been set up:
     fOurRTSPServer->closeAllClientSessionsForServerMediaSession(this);
   }
   deleteAllSubsessions();
+
+  // Finally, delete the client "MediaSession" object that we had set up after receiving the response to the previous "DESCRIBE":
+  Medium::close(fClientMediaSession); fClientMediaSession = NULL;
 }
 
 ///////// RTSP 'response handlers' //////////
@@ -160,7 +168,17 @@ static void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* res
 }
 
 static void continueAfterOPTIONS(RTSPClient* rtspClient, int resultCode, char* resultString) {
-  ((ProxyRTSPClient*)rtspClient)->continueAfterOPTIONS(resultCode);
+  Boolean serverSupportsGetParameter = False;
+  if (resultCode == 0) {
+    // Note whether the server told us that it supports the "GET_PARAMETER" command:
+    serverSupportsGetParameter = RTSPOptionIsSupported("GET_PARAMETER", resultString);
+  }
+  ((ProxyRTSPClient*)rtspClient)->continueAfterLivenessCommand(resultCode, serverSupportsGetParameter);
+  delete[] resultString;
+}
+
+static void continueAfterGET_PARAMETER(RTSPClient* rtspClient, int resultCode, char* resultString) {
+  ((ProxyRTSPClient*)rtspClient)->continueAfterLivenessCommand(resultCode, True);
   delete[] resultString;
 }
 
@@ -176,7 +194,8 @@ ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession,
   : RTSPClient(ourServerMediaSession.envir(), rtspURL, verbosityLevel, "ProxyRTSPClient",
 	       tunnelOverHTTPPortNum == (portNumBits)(~0) ? 0 : tunnelOverHTTPPortNum),
     fOurServerMediaSession(ourServerMediaSession), fOurURL(strDup(rtspURL)), fStreamRTPOverTCP(tunnelOverHTTPPortNum != 0),
-    fSetupQueueHead(NULL), fSetupQueueTail(NULL), fNumSetupsDone(0), fNextDESCRIBEDelay(1), fLastCommandWasPLAY(False),
+    fSetupQueueHead(NULL), fSetupQueueTail(NULL), fNumSetupsDone(0), fNextDESCRIBEDelay(1),
+    fServerSupportsGetParameter(False), fLastCommandWasPLAY(False),
     fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL) { 
   if (username != NULL && password != NULL) {
     fOurAuthenticator = new Authenticator(username, password);
@@ -211,9 +230,9 @@ void ProxyRTSPClient::continueAfterDESCRIBE(char const* sdpDescription) {
 
     // Unlike most RTSP streams, there might be a long delay between this "DESCRIBE" command (to the downstream server) and the
     // subsequent "SETUP"/"PLAY" - which doesn't occur until the first time that a client requests the stream.
-    // To prevent the proxied connection (between us and the downstream server) from timing out, we send periodic
-    // "OPTIONS" commands.  (The usual RTCP liveness mechanism wouldn't work here, because RTCP packets don't get sent
-    // until after the "PLAY" command.)
+    // To prevent the proxied connection (between us and the downstream server) from timing out, we send periodic 'liveness'
+    // ("OPTIONS" or "GET_PARAMETER") commands.  (The usual RTCP liveness mechanism wouldn't work here, because RTCP packets
+    // don't get sent until after the "PLAY" command.)
     scheduleLivenessCommand();
   } else {
     // The "DESCRIBE" command failed, most likely because the server or the stream is not yet running.
@@ -222,26 +241,34 @@ void ProxyRTSPClient::continueAfterDESCRIBE(char const* sdpDescription) {
   }
 }
 
-void ProxyRTSPClient::continueAfterOPTIONS(int resultCode) {
-  if (resultCode < 0) {
-    // The "OPTIONS" command failed without getting a response from the server (otherwise "resultCode" would have been >= 0).
-    // From this, we infer that the server (which had previously been running) has now failed - perhaps temporarily.
+void ProxyRTSPClient::continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter) {
+  if (resultCode != 0) {
+    // The periodic 'liveness' command failed, suggesting that the back-end stream is no longer alive.
     // We handle this by resetting our connection state with this server.  Any current clients will be closed, but
     // subsequent clients will cause new RTSP "SETUP"s and "PLAY"s to get done, restarting the stream.
-    if (fVerbosityLevel > 0) {
-      envir() << *this << ": lost connection to server ('errno': " << -resultCode << ").  Resetting...\n";
-    }
-    reset();
+    // Then continue by sending more "DESCRIBE" commands, to try to restore the stream.
 
+    fServerSupportsGetParameter = False; // until we learn otherwise, in response to a future "OPTIONS" command
+
+    if (resultCode < 0) {
+      // The 'liveness' command failed without getting a response from the server (otherwise "resultCode" would have been > 0).
+      // This suggests that the RTSP connection itself has failed.  Print this error code, in case it's useful for debugging:
+      if (fVerbosityLevel > 0) {
+	envir() << *this << ": lost connection to server ('errno': " << -resultCode << ").  Resetting...\n";
+      }
+    }
+
+    reset();
     fOurServerMediaSession.resetDESCRIBEState();
 
-    // In case the back-end server comes alive again, try to restore the back-end connection by sending more "DESCRIBE" commands.
     setBaseURL(fOurURL); // because we'll be sending an initial "DESCRIBE" all over again
     sendDESCRIBE(this);
     return;
   }
 
-  // Schedule the next RTSP "OPTIONS" command (to show client liveness):
+  fServerSupportsGetParameter = serverSupportsGetParameter;
+
+  // Schedule the next 'liveness' command (i.e., to tell the back-end server that we're still alive):
   scheduleLivenessCommand();
 }
 
@@ -290,14 +317,24 @@ void ProxyRTSPClient::continueAfterSETUP() {
 }
 
 void ProxyRTSPClient::scheduleLivenessCommand() {
-  // Delay a random time before sending "GET_PARAMETER":
-  unsigned secondsToDelay = 30 + (our_random()&0x1F); // [30..61] seconds
-  fLivenessCommandTask = envir().taskScheduler().scheduleDelayedTask(secondsToDelay*MILLION, sendLivenessCommand, this);
+  // Delay a random time before sending another 'liveness' command.
+  unsigned delayMax = sessionTimeoutParameter(); // if the server specified a maximum time between 'liveness' probes, then use that
+  if (delayMax == 0) delayMax = 60;
+
+  // Choose a random time from [delayMax/2,delayMax) seconds:
+  unsigned const dM5 = delayMax*500000;
+  unsigned uSecondsToDelay = dM5 + (dM5*our_random())%dM5;
+  fLivenessCommandTask = envir().taskScheduler().scheduleDelayedTask(uSecondsToDelay, sendLivenessCommand, this);
 }
 
 void ProxyRTSPClient::sendLivenessCommand(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
-  rtspClient->sendOptionsCommand(::continueAfterOPTIONS, rtspClient->auth());
+  MediaSession* sess = rtspClient->fOurServerMediaSession.fClientMediaSession;
+  if (rtspClient->fServerSupportsGetParameter && rtspClient->fNumSetupsDone > 0 && sess != NULL) {
+    rtspClient->sendGetParameterCommand(*sess, ::continueAfterGET_PARAMETER, "", rtspClient->auth());
+  } else {
+    rtspClient->sendOptionsCommand(::continueAfterOPTIONS, rtspClient->auth());
+  }
 }
 
 void ProxyRTSPClient::scheduleDESCRIBECommand() {
@@ -340,11 +377,14 @@ ProxyServerMediaSubsession::ProxyServerMediaSubsession(MediaSubsession& mediaSub
     fClientMediaSubsession(mediaSubsession), fNext(NULL), fHaveSetupStream(False) {
 }
 
-ProxyServerMediaSubsession::~ProxyServerMediaSubsession() {
-}
-
 UsageEnvironment& operator<<(UsageEnvironment& env, const ProxyServerMediaSubsession& psmss) { // used for debugging
   return env << "ProxyServerMediaSubsession[\"" << psmss.codecName() << "\"]";
+}
+
+ProxyServerMediaSubsession::~ProxyServerMediaSubsession() {
+  if (verbosityLevel() > 0) {
+    envir() << *this << "::~ProxyServerMediaSubsession()\n";
+  }
 }
 
 FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate) {
@@ -556,11 +596,9 @@ void ProxyServerMediaSubsession::subsessionByeHandler() {
 
   // This "BYE" signals that our input source has (effectively) closed, so handle this accordingly:
   FramedSource::handleClosure(fClientMediaSubsession.readSource());
-}
 
-void ProxyServerMediaSubsession::reset() {
-  fNext = NULL;
-  fHaveSetupStream = False;
+  // Then, close our input source for real:
+  fClientMediaSubsession.deInitiate();
 }
 
 

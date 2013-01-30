@@ -243,6 +243,38 @@ Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, 
   return parseRangeParam(fields, rangeStart, rangeEnd, absStartTime, absEndTime);
 }
 
+// Used to implement "RTSPOptionIsSupported()":
+static Boolean isSeparator(char c) { return c == ' ' || c == ',' || c == ';' || c == ':'; }
+
+Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString) {
+  do {
+    if (commandName == NULL || optionsResponseString == NULL) break;
+
+    unsigned const commandNameLen = strlen(commandName);
+    if (commandNameLen == 0) break;
+
+    // "optionsResponseString" is assumed to be a list of command names, separated by " " and/or ",", ";", or ":"
+    // Scan through these, looking for "commandName".
+    while (1) {
+      // Skip over separators:
+      while (*optionsResponseString != '\0' && isSeparator(*optionsResponseString)) ++optionsResponseString;
+      if (*optionsResponseString == '\0') break;
+
+      // At this point, "optionsResponseString" begins with a command name (with perhaps a separator afterwads).
+      if (strncmp(commandName, optionsResponseString, commandNameLen) == 0) {
+	// We have at least a partial match here.
+	optionsResponseString += commandNameLen;
+	if (*optionsResponseString == '\0' || isSeparator(*optionsResponseString)) return True;
+      }
+
+      // No match.  Skip over the rest of the command name:
+      while (*optionsResponseString != '\0' && !isSeparator(*optionsResponseString)) ++optionsResponseString;
+    }
+  } while (0);
+
+  return False;
+}
+
 char const* dateHeader() {
   static char buf[200];
 #if !defined(_WIN32_WCE)

@@ -54,6 +54,10 @@ Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
 Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime);
 Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime);
 
+Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
+    // Returns True iff the RTSP command "commandName" is mentioned as one of the commands supported in "optionsResponseString"
+    // (which should be the 'resultString' from a previous RTSP "OPTIONS" request).
+
 char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
 
 void ignoreSigPipeOnSocket(int socketNum);

@@ -2,14 +2,11 @@
 
 NAME = libliveMedia
 LIVEMEDIA_LIB = $(NAME).$(LIB_SUFFIX)
-PREFIX ?= /usr/local
-LIBDIR ?= $(PREFIX)/lib
 ALL = $(LIVEMEDIA_LIB)
 all:	$(ALL)
 
 .$(C).$(OBJ):
-	$(C_COMPILER) -c $(C_FLAGS) $<       
-
+	$(C_COMPILER) -c $(C_FLAGS) $<
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 
@@ -307,7 +304,7 @@ AC3AudioFileServerMediaSubsession.$(CPP):	include/AC3AudioFileServerMediaSubsess
 include/AC3AudioFileServerMediaSubsession.hh:	include/FileServerMediaSubsession.hh
 MPEG2TransportUDPServerMediaSubsession.$(CPP):	include/MPEG2TransportUDPServerMediaSubsession.hh include/BasicUDPSource.hh include/SimpleRTPSource.hh include/MPEG2TransportStreamFramer.hh include/SimpleRTPSink.hh
 include/MPEG2TransportUDPServerMediaSubsession.hh:	include/OnDemandServerMediaSubsession.hh
-ProxyServerMediaSession.$(CPP):		include/liveMedia.hh
+ProxyServerMediaSession.$(CPP):		include/liveMedia.hh include/RTSPCommon.hh
 QuickTimeFileSink.$(CPP):	include/QuickTimeFileSink.hh include/InputFile.hh include/OutputFile.hh include/QuickTimeGenericRTPSource.hh include/H263plusVideoRTPSource.hh include/MPEG4GenericRTPSource.hh include/MPEG4LATMAudioRTPSource.hh
 include/QuickTimeFileSink.hh:	include/MediaSession.hh
 QuickTimeGenericRTPSource.$(CPP):	include/QuickTimeGenericRTPSource.hh

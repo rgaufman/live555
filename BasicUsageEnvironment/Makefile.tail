@@ -2,8 +2,6 @@
 
 NAME = libBasicUsageEnvironment
 LIB = $(NAME).$(LIB_SUFFIX)
-PREFIX ?= /usr/local
-LIBDIR ?= $(PREFIX)/lib
 ALL = $(LIB)
 all:	$(ALL)
 

@@ -2,13 +2,12 @@
 
 MEDIA_SERVER = live555MediaServer$(EXE)
 
-PREFIX ?= /usr/local
+PREFIX = /usr/local
 ALL = $(MEDIA_SERVER)
 all: $(ALL)
 
 .$(C).$(OBJ):
-	$(C_COMPILER) -c $(C_FLAGS) $<       
-
+	$(C_COMPILER) -c $(C_FLAGS) $<
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 

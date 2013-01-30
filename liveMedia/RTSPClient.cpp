@@ -972,9 +972,12 @@ Boolean RTSPClient::parseRTPInfoParams(char const*& paramsStr, u_int16_t& seqNum
   // "paramsStr" now consists of a ';'-separated list of parameters, ending with ',' or '\0'.
   char* field = strDupSize(paramsStr);
 
+  Boolean sawSeq = False, sawRtptime = False;
   while (sscanf(paramsStr, "%[^;,]", field) == 1) {
-    if (sscanf(field, "seq=%hu", &seqNum) == 1 ||
-	sscanf(field, "rtptime=%u", &timestamp) == 1) {
+    if (sscanf(field, "seq=%hu", &seqNum) == 1) {
+      sawSeq = True;
+    } else if (sscanf(field, "rtptime=%u", &timestamp) == 1) {
+      sawRtptime = True;
     }
 
     paramsStr += strlen(field);
@@ -984,7 +987,8 @@ Boolean RTSPClient::parseRTPInfoParams(char const*& paramsStr, u_int16_t& seqNum
   }
 
   delete[] field;
-  return True;
+  // For the "RTP-Info:" parameters to be useful to us, we need to have seen both the "seq=" and "rtptime=" parameters:
+  return sawSeq && sawRtptime;
 }
 
 Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const* sessionParamsStr, char const* transportParamsStr,

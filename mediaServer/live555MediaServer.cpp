@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
   *env << "\t\".mpg\" => a MPEG-1 or 2 Program Stream (audio+video) file\n";
   *env << "\t\".ts\" => a MPEG Transport Stream file\n";
   *env << "\t\t(a \".tsx\" index file - if present - provides server 'trick play' support)\n";
+  *env << "\t\".vob\" => a VOB (MPEG-2 video with AC-3 audio) file\n";
   *env << "\t\".wav\" => a WAV Audio file\n";
   *env << "\t\".webm\" => a WebM audio(Vorbis)+video(VP8) file\n";
   *env << "See http://www.live555.com/mediaServer/ for additional documentation.\n";

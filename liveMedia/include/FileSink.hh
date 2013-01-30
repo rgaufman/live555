@@ -47,6 +47,9 @@ protected:
       // called only by createNew()
   virtual ~FileSink();
 
+protected: // redefined virtual functions:
+  virtual Boolean continuePlaying();
+
 protected:
   static void afterGettingFrame(void* clientData, unsigned frameSize,
 				unsigned numTruncatedBytes,
@@ -61,9 +64,6 @@ protected:
   unsigned fBufferSize;
   char* fPerFrameFileNamePrefix; // used if "oneFilePerFrame" is True
   char* fPerFrameFileNameBuffer; // used if "oneFilePerFrame" is True
-
-private: // redefined virtual functions:
-  virtual Boolean continuePlaying();
 };
 
 

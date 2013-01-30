@@ -99,6 +99,20 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
 	// Unexpected error - treat this as fatal:
 #if !defined(_WIN32_WCE)
 	perror("BasicTaskScheduler::SingleStep(): select() fails");
+	// Because this failure is often "Bad file descriptor" - which is caused by an invalid socket number (i.e., a socket number
+	// that had already been closed) being used in "select()" - we print out the sockets that were being used in "select()",
+	// to assist in debugging:
+	fprintf(stderr, "socket numbers used in the select() call:");
+	for (int i = 0; i < 100; ++i) {
+	  if (FD_ISSET(i, &fReadSet) || FD_ISSET(i, &fWriteSet) || FD_ISSET(i, &fExceptionSet)) {
+	    fprintf(stderr, " %d(", i);
+	    if (FD_ISSET(i, &fReadSet)) fprintf(stderr, "r");
+	    if (FD_ISSET(i, &fWriteSet)) fprintf(stderr, "w");
+	    if (FD_ISSET(i, &fExceptionSet)) fprintf(stderr, "e");
+	    fprintf(stderr, ")");
+	  }
+	}
+	fprintf(stderr, "\n");
 #endif
 	internalError();
       }

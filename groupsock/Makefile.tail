@@ -1,14 +1,11 @@
 ##### End of variables to change
 
 NAME = libgroupsock
-PREFIX ?= /usr/local
-LIBDIR ?= $(PREFIX)/lib
 ALL = $(NAME).$(LIB_SUFFIX)
 all:	$(ALL)
 
 .$(C).$(OBJ):
-	$(C_COMPILER) -c $(C_FLAGS) $<       
-
+	$(C_COMPILER) -c $(C_FLAGS) $<
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 

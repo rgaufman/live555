@@ -1,17 +1,17 @@
 INCLUDES = -Iinclude -I../UsageEnvironment/include
 ##### Change the following for your environment: 
-COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
+COMPILE_OPTS =		$(INCLUDES) -I. $(EXTRA_LDFLAGS) -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int
 C =			c
 C_COMPILER =		cc
 C_FLAGS =		$(COMPILE_OPTS)
 CPP =			cpp
 CPLUSPLUS_COMPILER =	c++
-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall
 OBJ =			o
-LINK =			c++ -o
+LINK =			c++ -o 
 LINK_OPTS =		-L.
 CONSOLE_LINK_OPTS =	$(LINK_OPTS)
-LIBRARY_LINK =		ar cr 
+LIBRARY_LINK =		libtool -s -o 
 LIBRARY_LINK_OPTS =	
 LIB_SUFFIX =			a
 LIBS_FOR_CONSOLE_APPLICATION =

@@ -11,15 +11,14 @@ UNICAST_APPS = $(UNICAST_STREAMER_APPS) $(UNICAST_RECEIVER_APPS)
 
 MISC_APPS = testMPEG1or2Splitter$(EXE) testMPEG1or2ProgramToTransportStream$(EXE) testH264VideoToTransportStream$(EXE) MPEG2TransportStreamIndexer$(EXE) testMPEG2TransportStreamTrickPlay$(EXE)
 
-PREFIX ?= /usr/local
+PREFIX = /usr/local
 ALL = $(MULTICAST_APPS) $(UNICAST_APPS) $(MISC_APPS)
 all: $(ALL)
 
 extra:	testGSMStreamer$(EXE)
 
 .$(C).$(OBJ):
-	$(C_COMPILER) -c $(C_FLAGS) $<       
-
+	$(C_COMPILER) -c $(C_FLAGS) $<
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 

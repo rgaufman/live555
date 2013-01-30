@@ -144,6 +144,13 @@ static ServerMediaSession* createNewSMS(UsageEnvironment& env,
       = MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
     sms->addSubsession(demux->newVideoServerMediaSubsession());
     sms->addSubsession(demux->newAudioServerMediaSubsession());
+  } else if (strcmp(extension, ".vob") == 0) {
+    // Assumed to be a VOB (MPEG-2 Program Stream, with AC-3 audio) file:
+    NEW_SMS("VOB (MPEG-2 video with AC-3 audio)");
+    MPEG1or2FileServerDemux* demux
+      = MPEG1or2FileServerDemux::createNew(env, fileName, reuseSource);
+    sms->addSubsession(demux->newVideoServerMediaSubsession());
+    sms->addSubsession(demux->newAC3AudioServerMediaSubsession());
   } else if (strcmp(extension, ".ts") == 0) {
     // Assumed to be a MPEG Transport Stream file:
     // Use an index file name that's the same as the TS file name, except with ".tsx":

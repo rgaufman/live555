@@ -133,11 +133,16 @@ protected:
   virtual ~RTSPServer();
 
   static int setUpOurSocket(UsageEnvironment& env, Port& ourPort);
+
   virtual Boolean specialClientAccessCheck(int clientSocket, struct sockaddr_in& clientAddr,
 					   char const* urlSuffix);
       // a hook that allows subclassed servers to do server-specific access checking
-      // on each client (e.g., based on client IP address), without using
-      // digest authentication.
+      // on each client (e.g., based on client IP address), without using digest authentication.
+  virtual Boolean specialClientUserAccessCheck(int clientSocket, struct sockaddr_in& clientAddr,
+					       char const* urlSuffix, char const *username);
+      // another hook that allows subclassed servers to do server-specific access checking
+      // - this time after normal digest authentication has already taken place (and would otherwise allow access).
+      // (This test can only be used to further restrict access, not to grant additional access.)
 
 private: // redefined virtual functions
   virtual Boolean isRTSPServer() const;

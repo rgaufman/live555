@@ -41,7 +41,7 @@ public:
   virtual ~ProxyRTSPClient();
 
   void continueAfterDESCRIBE(char const* sdpDescription);
-  void continueAfterOPTIONS(int resultCode);
+  void continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter);
   void continueAfterSETUP();
 
 private:
@@ -68,7 +68,7 @@ private:
   class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
   unsigned fNumSetupsDone;
   unsigned fNextDESCRIBEDelay; // in seconds
-  Boolean fLastCommandWasPLAY;
+  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY;
   TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask;
 };
 
