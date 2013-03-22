@@ -65,6 +65,7 @@ protected: // redefined virtual functions
                            unsigned& rtpTimestamp,
 			   ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
                            void* serverRequestAlternativeByteHandlerClientData);
+  virtual float getCurrentNPT(void* streamToken);
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
 protected:

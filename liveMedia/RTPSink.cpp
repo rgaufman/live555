@@ -57,6 +57,7 @@ RTPSink::RTPSink(UsageEnvironment& env,
     = strDup(rtpPayloadFormatName == NULL ? "???" : rtpPayloadFormatName);
   gettimeofday(&fCreationTime, NULL);
   fTotalOctetCountStartTime = fCreationTime;
+  resetPresentationTimes();
 
   fSeqNo = (u_int16_t)our_random();
   fSSRC = our_random32();
@@ -114,6 +115,11 @@ void RTPSink::getTotalBitrate(unsigned& outNumBytes, double& outElapsedTime) {
 
   fTotalOctetCount = 0;
   fTotalOctetCountStartTime = timeNow;
+}
+
+void RTPSink::resetPresentationTimes() {
+  fInitialPresentationTime.tv_sec = fMostRecentPresentationTime.tv_sec = 0;
+  fInitialPresentationTime.tv_usec = fMostRecentPresentationTime.tv_usec = 0;
 }
 
 char const* RTPSink::sdpMediaType() const {

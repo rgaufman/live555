@@ -67,6 +67,7 @@ protected: // redefined virtual functions
   virtual void seekStream(unsigned clientSessionId, void* streamToken, double& seekNPT, double streamDuration, u_int64_t& numBytes);
   virtual void seekStream(unsigned clientSessionId, void* streamToken, char*& absStart, char*& absEnd);
   virtual void setStreamScale(unsigned clientSessionId, void* streamToken, float scale);
+  virtual float getCurrentNPT(void* streamToken);
   virtual FramedSource* getStreamSource(void* streamToken);
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
@@ -163,6 +164,7 @@ public:
   float streamDuration() const { return fStreamDuration; }
 
   FramedSource* mediaSource() const { return fMediaSource; }
+  float& startNPT() { return fStartNPT; }
 
 private:
   OnDemandServerMediaSubsession& fMaster;
@@ -179,6 +181,7 @@ private:
   RTCPInstance* fRTCPInstance;
 
   FramedSource* fMediaSource;
+  float fStartNPT; // initial 'normal play time'; reset after each seek
 
   Groupsock* fRTPgs;
   Groupsock* fRTCPgs;

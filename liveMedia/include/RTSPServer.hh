@@ -274,7 +274,6 @@ protected:
     ServerMediaSession* next();
   private:
     HashTable::Iterator* fOurIterator;
-    ServerMediaSession* fNextPtr;
   };
 
 private:

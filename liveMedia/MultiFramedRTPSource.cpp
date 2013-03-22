@@ -105,6 +105,7 @@ Boolean MultiFramedRTPSource
 }
 
 void MultiFramedRTPSource::doStopGettingFrames() {
+  envir().taskScheduler().unscheduleDelayedTask(nextTask());
   fRTPInterface.stopNetworkReading();
   fReorderingBuffer->reset();
   reset();

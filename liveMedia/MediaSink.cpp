@@ -84,7 +84,6 @@ void MediaSink::stopPlaying() {
 
   // Cancel any pending tasks:
   envir().taskScheduler().unscheduleDelayedTask(nextTask());
-  nextTask() = NULL;
 
   fSource = NULL; // indicates that we can be played again
   fAfterFunc = NULL;

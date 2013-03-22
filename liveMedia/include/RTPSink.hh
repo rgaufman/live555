@@ -72,6 +72,16 @@ public:
   Boolean nextTimestampHasBeenPreset() const { return fNextTimestampHasBeenPreset; }
   Boolean& enableRTCPReports() { return fEnableRTCPReports; }
 
+  void getTotalBitrate(unsigned& outNumBytes, double& outElapsedTime);
+      // returns the number of bytes sent since the last time that we
+      // were called, and resets the counter.
+
+  struct timeval const& creationTime() const { return fCreationTime; }
+  struct timeval const& initialPresentationTime() const { return fInitialPresentationTime; }
+  struct timeval const& mostRecentPresentationTime() const { return fMostRecentPresentationTime; }
+  void resetPresentationTimes();
+
+  // Hacks to allow sending RTP over TCP (RFC 2236, section 10.12):
   void setStreamSocket(int sockNum, unsigned char streamChannelId) {
     fRTPInterface.setStreamSocket(sockNum, streamChannelId);
   }
@@ -84,11 +94,6 @@ public:
   void setServerRequestAlternativeByteHandler(int socketNum, ServerRequestAlternativeByteHandler* handler, void* clientData) {
     fRTPInterface.setServerRequestAlternativeByteHandler(socketNum, handler, clientData);
   }
-    // hacks to allow sending RTP over TCP (RFC 2236, section 10.12)
-
-  void getTotalBitrate(unsigned& outNumBytes, double& outElapsedTime);
-      // returns the number of bytes sent since the last time that we
-      // were called, and resets the counter.
 
 protected:
   RTPSink(UsageEnvironment& env,
@@ -103,7 +108,7 @@ protected:
   RTPInterface fRTPInterface;
   unsigned char fRTPPayloadType;
   unsigned fPacketCount, fOctetCount, fTotalOctetCount /*incl RTP hdr*/;
-  struct timeval fTotalOctetCountStartTime;
+  struct timeval fTotalOctetCountStartTime, fInitialPresentationTime, fMostRecentPresentationTime;
   u_int32_t fCurrentTimestamp;
   u_int16_t fSeqNo;
 

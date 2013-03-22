@@ -24,10 +24,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <UsageEnvironment.hh>
 #include <stdio.h>
 
-#if (defined(__WIN32__) || defined(_WIN32)) && !defined(_WIN32_WCE)
+#if (defined(__WIN32__) || defined(_WIN32) || defined(_WIN32_WCE))
+#ifndef _WIN32_WCE
 // Include header files that might be needed by Windows (in code that uses this header file):
 #include <io.h>
 #include <fcntl.h>
+#endif
+
 #define READ_FROM_FILES_SYNCHRONOUSLY 1
     // Because Windows is a silly toy operating system that doesn't (reliably) treat
     // open files as being readable sockets (which can be handled within the default
@@ -38,6 +41,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     // or else write your own Windows-specific event loop ("TaskScheduler" subclass)
     // that can handle readable data in Windows open files as an event.
 #endif
+
 #ifndef _WIN32_WCE
 #include <sys/stat.h>
 #endif

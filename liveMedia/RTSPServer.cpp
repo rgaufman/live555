@@ -1646,7 +1646,21 @@ void RTSPServer::RTSPClientSession
   // (Note that we do this after seeking, in case the seeking operation changed the range start time.)
   char* rangeHeader;
   if (!sawRangeHeader) {
-    buf[0] = '\0'; // Because we didn't see a Range: header, don't send one back
+    // There wasn't a "Range:" header in the request, so, in our response, begin the range with the current NPT (normal play time):
+    float curNPT = 0.0;
+    for (i = 0; i < fNumStreamStates; ++i) {
+      if (subsession == NULL /* means: aggregated operation */
+	  || subsession == fStreamStates[i].subsession) {
+	if (fStreamStates[i].subsession == NULL) continue;
+	float npt = fStreamStates[i].subsession->getCurrentNPT(fStreamStates[i].streamToken);
+	if (npt > curNPT) curNPT = npt;
+	// Note: If this is an aggregate "PLAY" on a multi-subsession stream, then it's conceivable that the NPTs of each subsession
+	// may differ (if there has been a previous seek on just one subsession).  In this (unusual) case, we just return the
+	// largest NPT; I hope that turns out OK...
+      }
+    }
+
+    sprintf(buf, "Range: npt=%.3f-\r\n", curNPT);
   } else if (absStart != NULL) {
     // We're seeking by 'absolute' time:
     if (absEnd == NULL) {

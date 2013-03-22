@@ -89,7 +89,6 @@ private:
 private:
   Boolean fAreEnqueueingADU;
   class SegmentQueue* fSegments;
-  Boolean fIncludeADUdescriptors;
 };
 
 // Definitions of external C functions that implement various MP3 operations:

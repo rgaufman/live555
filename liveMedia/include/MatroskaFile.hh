@@ -57,7 +57,6 @@ public:
       virtual ~Iterator();
       MatroskaTrack* next();
     private:
-      TrackTable& fOurTable;
       HashTable::Iterator* fIter;
     };
 
@@ -146,10 +145,6 @@ public:
   u_int8_t* headerStrippedBytes;
   unsigned subframeSizeSize; // 0 means: frames do not have subframes (the default behavior)
   Boolean haveSubframes() const { return subframeSizeSize > 0; }
-
-  // The following are used when delivering frames from this track (if there's no "default duration"):
-  struct timeval prevPresentationTime;
-  int durationImbalance; // the difference between the presentation times that we've delivered, and frame durations (in useconds)
 };
 
 class MatroskaDemux: public Medium {

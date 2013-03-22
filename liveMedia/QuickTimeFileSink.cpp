@@ -42,7 +42,6 @@ public:
   ChunkDescriptor(int64_t offsetInFile, unsigned size,
 		  unsigned frameSize, unsigned frameDuration,
 		  struct timeval presentationTime);
-  virtual ~ChunkDescriptor();
 
   ChunkDescriptor* extendChunk(int64_t newOffsetInFile, unsigned newSize,
 			       unsigned newFrameSize,
@@ -89,7 +88,6 @@ private:
 class SyncFrame {
 public:
   SyncFrame(unsigned frameNum);
-  virtual ~SyncFrame();
 
 public:
   class SyncFrame *nextSyncFrame;
@@ -549,7 +547,22 @@ SubsessionIOState::SubsessionIOState(QuickTimeFileSink& sink,
 
 SubsessionIOState::~SubsessionIOState() {
   delete fBuffer; delete fPrevBuffer;
-  delete fHeadChunk; delete fHeadSyncFrame;
+
+  // Delete the list of chunk descriptors:
+  ChunkDescriptor* chunk = fHeadChunk;
+  while (chunk != NULL) {
+    ChunkDescriptor* next = chunk->fNextChunk;
+    delete chunk;
+    chunk = next;
+  }
+
+  // Delete the list of sync frames:
+  SyncFrame* syncFrame = fHeadSyncFrame;
+  while (syncFrame != NULL) {
+    SyncFrame* next = syncFrame->nextSyncFrame;
+    delete syncFrame;
+    syncFrame = next;
+  }
 }
 
 Boolean SubsessionIOState::setQTstate() {
@@ -1125,10 +1138,6 @@ SyncFrame::SyncFrame(unsigned frameNum)
   : nextSyncFrame(NULL), sfFrameNum(frameNum) {
 }  
 
-SyncFrame::~SyncFrame() {
-  delete nextSyncFrame;
-}
-
 void Count64::operator+=(unsigned arg) {
   unsigned newLo = lo + arg;
   if (newLo < lo) { // lo has overflowed
@@ -1145,10 +1154,6 @@ ChunkDescriptor
     fNumFrames(size/frameSize),
     fFrameSize(frameSize), fFrameDuration(frameDuration),
     fPresentationTime(presentationTime) {
-}
-
-ChunkDescriptor::~ChunkDescriptor() {
-  delete fNextChunk;
 }
 
 ChunkDescriptor* ChunkDescriptor

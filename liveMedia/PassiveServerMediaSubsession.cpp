@@ -182,6 +182,16 @@ void PassiveServerMediaSubsession::startStream(unsigned clientSessionId,
   }
 }
 
+float PassiveServerMediaSubsession::getCurrentNPT(void* streamToken) {
+  // Return the elapsed time between our "RTPSink"s creation time, and the current time:
+  struct timeval const& creationTime  = fRTPSink.creationTime(); // alias
+
+  struct timeval timeNow;
+  gettimeofday(&timeNow, NULL);
+
+  return timeNow.tv_sec - creationTime.tv_sec + (timeNow.tv_usec - creationTime.tv_usec)/1000000.0;
+}
+
 void PassiveServerMediaSubsession::deleteStream(unsigned clientSessionId, void*& /*streamToken*/) {
   // Lookup and remove the 'RTCPSourceRecord' for this client.  Also turn off RTCP "RR" handling:
   RTCPSourceRecord* source = (RTCPSourceRecord*)(fClientRTCPSourceRecords->Lookup((char const*)clientSessionId));

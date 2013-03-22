@@ -236,6 +236,11 @@ void MultiFramedRTPSink
     gettimeofday(&fNextSendTime, NULL);
   }
 
+  fMostRecentPresentationTime = presentationTime;
+  if (fInitialPresentationTime.tv_sec == 0 && fInitialPresentationTime.tv_usec == 0) {
+    fInitialPresentationTime = presentationTime;
+  }    
+
   if (numTruncatedBytes > 0) {
     unsigned const bufferSize = fOutBuf->totalBytesAvailable();
     envir() << "MultiFramedRTPSink::afterGettingFrame1(): The input frame data was too large for our buffer size ("

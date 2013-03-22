@@ -194,6 +194,7 @@ void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultS
 
     if (resultCode != 0) {
       env << *rtspClient << "Failed to get a SDP description: " << resultString << "\n";
+      delete[] resultString;
       break;
     }
 
@@ -258,7 +259,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
     StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
 
     if (resultCode != 0) {
-      env << *rtspClient << "Failed to set up the \"" << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
+      env << *rtspClient << "Failed to set up the \"" << *scs.subsession << "\" subsession: " << resultString << "\n";
       break;
     }
 
@@ -286,12 +287,15 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
       scs.subsession->rtcpInstance()->setByeHandler(subsessionByeHandler, scs.subsession);
     }
   } while (0);
+  delete[] resultString;
 
   // Set up the next subsession, if any:
   setupNextSubsession(rtspClient);
 }
 
 void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultString) {
+  Boolean success = False;
+
   do {
     UsageEnvironment& env = rtspClient->envir(); // alias
     StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
@@ -318,11 +322,14 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
     }
     env << "...\n";
 
-    return;
+    success = True;
   } while (0);
+  delete[] resultString;
 
-  // An unrecoverable error occurred with this stream.
-  shutdownStream(rtspClient);
+  if (!success) {
+    // An unrecoverable error occurred with this stream.
+    shutdownStream(rtspClient);
+  }
 }
 
 

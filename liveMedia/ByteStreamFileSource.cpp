@@ -108,6 +108,7 @@ void ByteStreamFileSource::doGetNextFrame() {
 }
 
 void ByteStreamFileSource::doStopGettingFrames() {
+  envir().taskScheduler().unscheduleDelayedTask(nextTask());
 #ifndef READ_FROM_FILES_SYNCHRONOUSLY
   envir().taskScheduler().turnOffBackgroundReadHandling(fileno(fFid));
   fHaveStartedReading = False;

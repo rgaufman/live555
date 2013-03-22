@@ -72,7 +72,7 @@ DarwinInjector::DarwinInjector(UsageEnvironment& env,
   : Medium(env),
     fApplicationName(strDup(applicationName)), fVerbosityLevel(verbosityLevel),
     fRTSPClient(NULL), fSubstreamSDPSizes(0),
-    fHeadSubstream(NULL), fTailSubstream(NULL), fSession(NULL), fLastTrackId(0) {
+    fHeadSubstream(NULL), fTailSubstream(NULL), fSession(NULL), fLastTrackId(0), fResultString(NULL) {
 }
 
 DarwinInjector::~DarwinInjector() {

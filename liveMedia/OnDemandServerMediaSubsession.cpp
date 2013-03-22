@@ -199,9 +199,11 @@ void OnDemandServerMediaSubsession::startStream(unsigned clientSessionId,
     streamState->startPlaying(destinations,
 			      rtcpRRHandler, rtcpRRHandlerClientData,
 			      serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
-    if (streamState->rtpSink() != NULL) {
-      rtpSeqNum = streamState->rtpSink()->currentSeqNo();
-      rtpTimestamp = streamState->rtpSink()->presetNextTimestamp();
+    RTPSink* rtpSink = streamState->rtpSink(); // alias
+    if (rtpSink != NULL) {
+      rtpSink->resetPresentationTimes();
+      rtpSeqNum = rtpSink->currentSeqNo();
+      rtpTimestamp = rtpSink->presetNextTimestamp();
     }
   }
 }
@@ -226,6 +228,7 @@ void OnDemandServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
   StreamState* streamState = (StreamState*)streamToken;
   if (streamState != NULL && streamState->mediaSource() != NULL) {
     seekStreamSource(streamState->mediaSource(), seekNPT, streamDuration, numBytes);
+    streamState->startNPT() = seekNPT;
   }
 }
 
@@ -250,6 +253,22 @@ void OnDemandServerMediaSubsession::setStreamScale(unsigned /*clientSessionId*/,
   if (streamState != NULL && streamState->mediaSource() != NULL) {
     setStreamSourceScale(streamState->mediaSource(), scale);
   }
+}
+
+float OnDemandServerMediaSubsession::getCurrentNPT(void* streamToken) {
+  do {
+    if (streamToken == NULL) break;
+
+    StreamState* streamState = (StreamState*)streamToken;
+    RTPSink* rtpSink = streamState->rtpSink();
+    if (rtpSink == NULL) break;
+
+    return streamState->startNPT()
+      + (rtpSink->mostRecentPresentationTime().tv_sec - rtpSink->initialPresentationTime().tv_sec)
+      + (rtpSink->mostRecentPresentationTime().tv_sec - rtpSink->initialPresentationTime().tv_sec)/1000000.0;
+  } while (0);
+
+  return 0.0;
 }
 
 FramedSource* OnDemandServerMediaSubsession::getStreamSource(void* streamToken) {
@@ -384,7 +403,7 @@ StreamState::StreamState(OnDemandServerMediaSubsession& master,
     fServerRTPPort(serverRTPPort), fServerRTCPPort(serverRTCPPort),
     fRTPSink(rtpSink), fUDPSink(udpSink), fStreamDuration(master.duration()),
     fTotalBW(totalBW), fRTCPInstance(NULL) /* created later */,
-    fMediaSource(mediaSource), fRTPgs(rtpGS), fRTCPgs(rtcpGS) {
+    fMediaSource(mediaSource), fStartNPT(0.0), fRTPgs(rtpGS), fRTCPgs(rtcpGS) {
 }
 
 StreamState::~StreamState() {

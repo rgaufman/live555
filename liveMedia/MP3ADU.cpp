@@ -277,8 +277,7 @@ MP3FromADUSource::MP3FromADUSource(UsageEnvironment& env,
   : FramedFilter(env, inputSource),
     fAreEnqueueingADU(False),
     fSegments(new SegmentQueue(False /* because we're ADU->MP3 */,
-			       includeADUdescriptors)),
-    fIncludeADUdescriptors(includeADUdescriptors) {
+			       includeADUdescriptors)) {
 }
 
 MP3FromADUSource::~MP3FromADUSource() {

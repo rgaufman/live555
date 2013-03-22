@@ -367,6 +367,10 @@ void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
   delete[] absStart; absStart = NULL;
   delete[] absEnd; absEnd = NULL;
 }
+float ServerMediaSubsession::getCurrentNPT(void* /*streamToken*/) {
+  // default implementation: return 0.0
+  return 0.0;
+}
 FramedSource* ServerMediaSubsession::getStreamSource(void* /*streamToken*/) {
   // default implementation: return NULL
   return NULL;

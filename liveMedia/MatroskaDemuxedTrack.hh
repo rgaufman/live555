@@ -50,9 +50,14 @@ private: // We are accessed only by MatroskaDemux and by MatroskaFileParser (a f
   struct timeval& presentationTime() { return fPresentationTime; }
   unsigned& durationInMicroseconds() { return fDurationInMicroseconds; }
 
+  struct timeval& prevPresentationTime() { return fPrevPresentationTime; }
+  int& durationImbalance() { return fDurationImbalance; }
+
 private:
   unsigned fOurTrackNumber;
   MatroskaDemux& fOurSourceDemux;
+  struct timeval fPrevPresentationTime;
+  int fDurationImbalance;
 };
 
 #endif

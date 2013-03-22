@@ -102,7 +102,6 @@ public:
   AVIIndexRecord(unsigned chunkId, unsigned flags, unsigned offset, unsigned size)
     : fNext(NULL), fChunkId(chunkId), fFlags(flags), fOffset(offset), fSize(size) {
   }
-  virtual ~AVIIndexRecord() { delete fNext; }
 
   AVIIndexRecord*& next() { return fNext; }
   unsigned chunkId() const { return fChunkId; }
@@ -187,7 +186,12 @@ AVIFileSink::~AVIFileSink() {
   }
 
   // Then, delete the index records:
-  delete fIndexRecordsHead;
+  AVIIndexRecord* cur = fIndexRecordsHead;
+  while (cur != NULL) {
+    AVIIndexRecord* next = cur->next();
+    delete cur;
+    cur = next;
+  }
 
   // Finally, close our output file:
   CloseOutputFile(fOutFid);

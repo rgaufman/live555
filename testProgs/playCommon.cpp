@@ -546,6 +546,7 @@ void continueAfterOPTIONS(RTSPClient*, int resultCode, char* resultString) {
 void continueAfterDESCRIBE(RTSPClient*, int resultCode, char* resultString) {
   if (resultCode != 0) {
     *env << "Failed to get a SDP description for the URL \"" << streamURL << "\": " << resultString << "\n";
+    delete[] resultString;
     shutdown();
   }
 
@@ -657,8 +658,9 @@ void continueAfterSETUP(RTSPClient*, int resultCode, char* resultString) {
   } else {
     *env << "Failed to setup \"" << subsession->mediumName()
 	 << "/" << subsession->codecName()
-	 << "\" subsession: " << env->getResultMsg() << "\n";
+	 << "\" subsession: " << resultString << "\n";
   }
+  delete[] resultString;
 
   // Set up the next subsession, if any:
   setupStreams();
@@ -821,10 +823,12 @@ void setupStreams() {
 void continueAfterPLAY(RTSPClient*, int resultCode, char* resultString) {
   if (resultCode != 0) {
     *env << "Failed to start playing session: " << resultString << "\n";
+    delete[] resultString;
     shutdown();
   } else {
     *env << "Started playing session\n";
   }
+  delete[] resultString;
 
   if (qosMeasurementIntervalMS > 0) {
     // Begin periodic QOS measurements:
@@ -1173,7 +1177,9 @@ void shutdown(int exitCode) {
   }
 }
 
-void continueAfterTEARDOWN(RTSPClient*, int /*resultCode*/, char* /*resultString*/) {
+void continueAfterTEARDOWN(RTSPClient*, int /*resultCode*/, char* resultString) {
+  delete[] resultString;
+
   // Now that we've stopped any more incoming data from arriving, close our output files:
   closeMediaSinks();
   Medium::close(session);

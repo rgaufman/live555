@@ -74,7 +74,6 @@ H264VideoStreamFramer* H264VideoStreamFramer
 H264VideoStreamFramer
 ::H264VideoStreamFramer(UsageEnvironment& env, FramedSource* inputSource, Boolean createParser, Boolean includeStartCodeInOutput)
   : MPEGVideoStreamFramer(env, inputSource),
-    fIncludeStartCodeInOutput(includeStartCodeInOutput),
     fLastSeenSPS(NULL), fLastSeenSPSSize(0), fLastSeenPPS(NULL), fLastSeenPPSSize(0) {
   fParser = createParser
     ? new H264VideoStreamParser(this, inputSource, includeStartCodeInOutput)

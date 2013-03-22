@@ -47,5 +47,6 @@ void FramedFilter::getAttributes() const {
 }
 
 void FramedFilter::doStopGettingFrames() {
+  FramedSource::doStopGettingFrames();
   if (fInputSource != NULL) fInputSource->stopGettingFrames();
 }

@@ -79,13 +79,12 @@ int main(int argc, char** argv) {
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 3 && argv[2][0] != '-') {
-	// The next argument is the HTTP server port number:                                                                       
-	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
-	    && tunnelOverHTTPPortNum > 0) {
-	  ++argv; --argc;
-	  break;
-	}
+      // The next argument is the HTTP server port number:
+      if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1 && tunnelOverHTTPPortNum > 0) {
+        ++argv; --argc;
+        break;
       }
+    }
 
       // If we get here, the option was specified incorrectly:
       usage();
@@ -95,12 +94,11 @@ int main(int argc, char** argv) {
     case 'p': {
       // set port
       if (argc > 3 && argv[2][0] != '-') {
-	// The next argument is the RTSP server port number:                                                                       
-	if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-	    && rtspServerPortNum > 0) {
-	  ++argv; --argc;
-	  break;
-	}
+        // The next argument is the RTSP server port number:
+        if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1 && rtspServerPortNum > 0) {
+          ++argv; --argc;
+          break;
+        }
       }
 
       // If we get here, the option was specified incorrectly:
@@ -124,7 +122,7 @@ int main(int argc, char** argv) {
 
     ++argv; --argc;
   }
-  if (argc < 2) usage(); // there must be at least one "rtsp://" URL at the end 
+  if (argc < 2) usage(); // there must be at least one "rtsp://" URL at the end
   // Make sure that the remaining arguments appear to be "rtsp://" URLs:
   int i;
   for (i = 1; i < argc; ++i) {

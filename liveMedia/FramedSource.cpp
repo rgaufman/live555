@@ -108,9 +108,9 @@ void FramedSource::stopGettingFrames() {
 }
 
 void FramedSource::doStopGettingFrames() {
-  // Default implementation: Do nothing
-  // Subclasses may wish to specialize this so as to ensure that a
-  // subsequent reader can pick up where this one left off.
+  // Default implementation: Do nothing except cancel any pending 'delivery' task:
+  envir().taskScheduler().unscheduleDelayedTask(nextTask());
+  // Subclasses may wish to redefine this function.
 }
 
 unsigned FramedSource::maxFrameSize() const {

@@ -62,7 +62,6 @@ private:
   void setPresentationTime() { fPresentationTime = fNextPresentationTime; }
 
 private:
-  Boolean fIncludeStartCodeInOutput;
   u_int8_t* fLastSeenSPS;
   unsigned fLastSeenSPSSize;
   u_int8_t* fLastSeenPPS;

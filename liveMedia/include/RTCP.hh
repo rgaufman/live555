@@ -68,6 +68,7 @@ public:
       // called if some other multicast receiver happens to exit.
       // If "handleActiveParticipantsOnly" is False, then the handler is called
       // for any incoming RTCP "BYE".
+      // (To remove an existing "BYE" handler, call "setByeHandler()" again, with a "handlerTask" of NULL.)
   void setSRHandler(TaskFunc* handlerTask, void* clientData);
   void setRRHandler(TaskFunc* handlerTask, void* clientData);
       // Assigns a handler routine to be called if a "SR" or "RR"

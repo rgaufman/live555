@@ -1,5 +1,5 @@
 # Change the following version number, if necessary, before running "genMakefiles iphoneos"
-IOS_VERSION =		6.0
+IOS_VERSION =		6.1
 
 DEVELOPER_PATH =	/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer
 TOOL_PATH =		$(DEVELOPER_PATH)/usr/bin
