@@ -192,6 +192,8 @@ public: // should be protected, but some old compilers complain otherwise
     // Shortcuts for setting up a RTSP response (prior to sending it):
     void setRTSPResponse(char const* responseStr);
     void setRTSPResponse(char const* responseStr, u_int32_t sessionId);
+    void setRTSPResponse(char const* responseStr, char const* contentStr);
+    void setRTSPResponse(char const* responseStr, u_int32_t sessionId, char const* contentStr);
   protected:
     RTSPServer& fOurServer;
     Boolean fIsActive;

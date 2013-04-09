@@ -136,7 +136,7 @@ public:
 private:
   friend class PresentationTimeSessionNormalizer;
   PresentationTimeSubsessionNormalizer(PresentationTimeSessionNormalizer& parent, FramedSource* inputSource, RTPSource* rtpSource,
-				       PresentationTimeSubsessionNormalizer* next);
+				       char const* codecName, PresentationTimeSubsessionNormalizer* next);
       // called only from within "PresentationTimeSessionNormalizer"
   virtual ~PresentationTimeSubsessionNormalizer();
 
@@ -156,6 +156,7 @@ private:
   PresentationTimeSessionNormalizer& fParent;
   RTPSource* fRTPSource;
   RTPSink* fRTPSink;
+  char const* fCodecName;
   PresentationTimeSubsessionNormalizer* fNext;
 };
 
@@ -165,7 +166,7 @@ public:
   virtual ~PresentationTimeSessionNormalizer();
 
   PresentationTimeSubsessionNormalizer*
-  createNewPresentationTimeSubsessionNormalizer(FramedSource* inputSource, RTPSource* rtpSource);
+  createNewPresentationTimeSubsessionNormalizer(FramedSource* inputSource, RTPSource* rtpSource, char const* codecName);
 
 private: // called only from within "~PresentationTimeSubsessionNormalizer":
   friend class PresentationTimeSubsessionNormalizer;

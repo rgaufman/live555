@@ -15,7 +15,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
-// A source object for AMR audio files (as defined in RFC 3267, section 5)
+// A source object for AMR audio files (as defined in RFC 4867, section 5)
 // C++ header
 
 #ifndef _AMR_AUDIO_FILE_SOURCE_HH

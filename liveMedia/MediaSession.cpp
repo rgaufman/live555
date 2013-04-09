@@ -591,7 +591,8 @@ MediaSubsession::MediaSubsession(MediaSession& parent)
     fPlayStartTime(0.0), fPlayEndTime(0.0), fAbsStartTime(NULL), fAbsEndTime(NULL),
     fVideoWidth(0), fVideoHeight(0), fVideoFPS(0), fNumChannels(1), fScale(1.0f), fNPT_PTS_Offset(0.0f),
     fRTPSocket(NULL), fRTCPSocket(NULL),
-    fRTPSource(NULL), fRTCPInstance(NULL), fReadSource(NULL), fReceiveRawMP3ADUs(False),
+    fRTPSource(NULL), fRTCPInstance(NULL), fReadSource(NULL),
+    fReceiveRawMP3ADUs(False), fReceiveRawJPEGFrames(False),
     fSessionId(NULL) {
   rtpInfo.seqNum = 0; rtpInfo.timestamp = 0; rtpInfo.infoIsNew = False;
 }
@@ -1289,12 +1290,21 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
 					fRTPPayloadFormat,
 					fRTPTimestampFrequency);
       } else if (strcmp(fCodecName, "JPEG") == 0) { // motion JPEG
-	fReadSource = fRTPSource
-	  = JPEGVideoRTPSource::createNew(env(), fRTPSocket,
-					  fRTPPayloadFormat,
-					  fRTPTimestampFrequency,
-					  videoWidth(),
-					  videoHeight());
+	if (fReceiveRawJPEGFrames) {
+	  // Special case (used when proxying JPEG/RTP streams): Receive each JPEG/RTP packet, including the special RTP headers:
+	  fReadSource = fRTPSource
+	    = SimpleRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat,
+					 fRTPTimestampFrequency, "video/JPEG",
+					 0/*special offset*/, False/*doNormalMBitRule => ignore the 'M' bit*/);
+	} else {
+	  // Normal case: Receive each JPEG frame as a complete, displayable JPEG image:
+	  fReadSource = fRTPSource
+	    = JPEGVideoRTPSource::createNew(env(), fRTPSocket,
+					    fRTPPayloadFormat,
+					    fRTPTimestampFrequency,
+					    videoWidth(),
+					    videoHeight());
+	}
       } else if (strcmp(fCodecName, "X-QT") == 0
 		 || strcmp(fCodecName, "X-QUICKTIME") == 0) {
 	// Generic QuickTime streams, as defined in

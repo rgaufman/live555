@@ -42,6 +42,10 @@ void usage() {
 }
 
 int main(int argc, char** argv) {
+  // Increase the maximum size of video frames that we can 'proxy' without truncation.
+  // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
+  OutPacketBuffer::maxSize = 500000; // bytes
+
   // Begin by setting up our usage environment:
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
@@ -79,12 +83,13 @@ int main(int argc, char** argv) {
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 3 && argv[2][0] != '-') {
-      // The next argument is the HTTP server port number:
-      if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1 && tunnelOverHTTPPortNum > 0) {
-        ++argv; --argc;
-        break;
+        // The next argument is the HTTP server port number:
+        if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
+          && tunnelOverHTTPPortNum > 0) {
+          ++argv; --argc;
+          break;
+        }
       }
-    }
 
       // If we get here, the option was specified incorrectly:
       usage();
@@ -95,12 +100,12 @@ int main(int argc, char** argv) {
       // set port
       if (argc > 3 && argv[2][0] != '-') {
         // The next argument is the RTSP server port number:
-        if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1 && rtspServerPortNum > 0) {
+        if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
+          && rtspServerPortNum > 0) {
           ++argv; --argc;
           break;
         }
       }
-
       // If we get here, the option was specified incorrectly:
       usage();
       break;
@@ -147,14 +152,9 @@ int main(int argc, char** argv) {
   // access to the server.
 #endif
 
-  // Create the RTSP server.  Try first with the default port number (554) or the one set by the caller,
-  // and then with the alternative port number (8554):
+  // Create the RTSP server with rtspServerPortNum
   RTSPServer* rtspServer;
   rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
-  if (rtspServer == NULL && rtspServerPortNum == 554) {
-    rtspServerPortNum = 8554;
-    rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
-  }
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);

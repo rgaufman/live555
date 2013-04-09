@@ -319,7 +319,9 @@ void ProxyRTSPClient::continueAfterSETUP() {
 void ProxyRTSPClient::scheduleLivenessCommand() {
   // Delay a random time before sending another 'liveness' command.
   unsigned delayMax = sessionTimeoutParameter(); // if the server specified a maximum time between 'liveness' probes, then use that
-  if (delayMax == 0) delayMax = 60;
+  if (delayMax == 0) {
+    delayMax = 60;
+  }
 
   // Choose a random time from [delayMax/2,delayMax) seconds:
   unsigned const dM5 = delayMax*500000;
@@ -330,11 +332,19 @@ void ProxyRTSPClient::scheduleLivenessCommand() {
 void ProxyRTSPClient::sendLivenessCommand(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
   MediaSession* sess = rtspClient->fOurServerMediaSession.fClientMediaSession;
+
+  // Note.  By default, we do not send "GET_PARAMETER" as our 'liveness notification' command, even if the server previously
+  // indicated (in its response to our earlier "OPTIONS" command) that it supported "GET_PARAMETER".  This is because
+  // "GET_PARAMETER" crashes some camera servers (even though they claimed to support "GET_PARAMETER").
+#ifdef SEND_GET_PARAMETER_IF_SUPPORTED
   if (rtspClient->fServerSupportsGetParameter && rtspClient->fNumSetupsDone > 0 && sess != NULL) {
     rtspClient->sendGetParameterCommand(*sess, ::continueAfterGET_PARAMETER, "", rtspClient->auth());
   } else {
+#endif
     rtspClient->sendOptionsCommand(::continueAfterOPTIONS, rtspClient->auth());
+#ifdef SEND_GET_PARAMETER_IF_SUPPORTED
   }
+#endif
 }
 
 void ProxyRTSPClient::scheduleDESCRIBECommand() {
@@ -397,6 +407,7 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
   // If we haven't yet created a data source from our 'media subsession' object, initiate() it to do so:
   if (fClientMediaSubsession.readSource() == NULL) {
     fClientMediaSubsession.receiveRawMP3ADUs(); // hack for MPA-ROBUST streams
+    fClientMediaSubsession.receiveRawJPEGFrames(); // hack for proxying JPEG/RTP streams. (Don't do this if we're transcoding.)
     fClientMediaSubsession.initiate();
     if (verbosityLevel() > 0) {
       envir() << "\tInitiated: " << *this << "\n";
@@ -405,12 +416,13 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
     if (fClientMediaSubsession.readSource() != NULL) {
       // Add to the front of all data sources a filter that will 'normalize' their frames' presentation times,
       // before the frames get re-transmitted by our server:
+      char const* const codecName = fClientMediaSubsession.codecName();
       FramedFilter* normalizerFilter = sms->fPresentationTimeSessionNormalizer
-	->createNewPresentationTimeSubsessionNormalizer(fClientMediaSubsession.readSource(), fClientMediaSubsession.rtpSource());
+	->createNewPresentationTimeSubsessionNormalizer(fClientMediaSubsession.readSource(), fClientMediaSubsession.rtpSource(),
+							codecName);
       fClientMediaSubsession.addFilter(normalizerFilter);
 
       // Some data sources require a 'framer' object to be added, before they can be fed into a "RTPSink".  Adjust for this now:
-      char const* const codecName = fClientMediaSubsession.codecName();
       if (strcmp(codecName, "H264") == 0) {
 	fClientMediaSubsession.addFilter(H264VideoStreamDiscreteFramer::createNew(envir(), fClientMediaSubsession.readSource()));
       } else if (strcmp(codecName, "MP4V-ES") == 0) {
@@ -500,10 +512,12 @@ RTPSink* ProxyServerMediaSubsession
   if (strcmp(codecName, "AC3") == 0 || strcmp(codecName, "EAC3") == 0) {
     newSink = AC3AudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					 fClientMediaSubsession.rtpTimestampFrequency()); 
+#if 0 // This code does not work; do *not* enable it:
   } else if (strcmp(codecName, "AMR") == 0 || strcmp(codecName, "AMR-WB") == 0) {
     Boolean isWideband = strcmp(codecName, "AMR-WB") == 0;
     newSink = AMRAudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					 isWideband, fClientMediaSubsession.numChannels());
+#endif
   } else if (strcmp(codecName, "DV") == 0) {
     newSink = DVVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
   } else if (strcmp(codecName, "GSM") == 0) {
@@ -514,6 +528,9 @@ RTPSink* ProxyServerMediaSubsession
   } else if (strcmp(codecName, "H264") == 0) {
     newSink = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					  fClientMediaSubsession.fmtp_spropparametersets());
+  } else if (strcmp(codecName, "JPEG") == 0) {
+    newSink = SimpleRTPSink::createNew(envir(), rtpGroupsock, 26, 90000, "video", "JPEG",
+				       1/*numChannels*/, False/*allowMultipleFramesPerPacket*/, False/*doNormalMBitRule*/);
   } else if (strcmp(codecName, "MP4A-LATM") == 0) {
     newSink = MPEG4LATMAudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					       fClientMediaSubsession.rtpTimestampFrequency(),
@@ -542,6 +559,14 @@ RTPSink* ProxyServerMediaSubsession
 					    fClientMediaSubsession.fmtp_config()); 
   } else if (strcmp(codecName, "VP8") == 0) {
     newSink = VP8VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+  } else if (strcmp(codecName, "AMR") == 0 || strcmp(codecName, "AMR-WB") == 0) {
+    // Proxying of these codecs is currently *not* supported, because the data received by the "RTPSource" object is not in a
+    // form that can be fed directly into a corresponding "RTPSink" object.
+    if (verbosityLevel() > 0) {
+      envir() << "\treturns NULL (because we currently don't support the proxying of \""
+	      << fClientMediaSubsession.mediumName() << "/" << codecName << "\" streams)\n";
+    }
+    return NULL;
   } else if (strcmp(codecName, "QCELP") == 0 ||
 	     strcmp(codecName, "H261") == 0 ||
 	     strcmp(codecName, "H263-1998") == 0 || strcmp(codecName, "H263-2000") == 0 ||
@@ -618,8 +643,10 @@ PresentationTimeSessionNormalizer::~PresentationTimeSessionNormalizer() {
 }
 
 PresentationTimeSubsessionNormalizer*
-PresentationTimeSessionNormalizer::createNewPresentationTimeSubsessionNormalizer(FramedSource* inputSource, RTPSource* rtpSource) {
-  fSubsessionNormalizers = new PresentationTimeSubsessionNormalizer(*this, inputSource, rtpSource, fSubsessionNormalizers);
+PresentationTimeSessionNormalizer::createNewPresentationTimeSubsessionNormalizer(FramedSource* inputSource, RTPSource* rtpSource,
+										 char const* codecName) {
+  fSubsessionNormalizers
+    = new PresentationTimeSubsessionNormalizer(*this, inputSource, rtpSource, codecName, fSubsessionNormalizers);
   return fSubsessionNormalizers;
 }
 
@@ -676,9 +703,9 @@ void PresentationTimeSessionNormalizer
 
 PresentationTimeSubsessionNormalizer
 ::PresentationTimeSubsessionNormalizer(PresentationTimeSessionNormalizer& parent, FramedSource* inputSource, RTPSource* rtpSource,
-				       PresentationTimeSubsessionNormalizer* next)
+				       char const* codecName, PresentationTimeSubsessionNormalizer* next)
   : FramedFilter(parent.envir(), inputSource),
-    fParent(parent), fRTPSource(rtpSource), fRTPSink(NULL), fNext(next) {
+    fParent(parent), fRTPSource(rtpSource), fRTPSink(NULL), fCodecName(codecName), fNext(next) {
 }
 
 PresentationTimeSubsessionNormalizer::~PresentationTimeSubsessionNormalizer() {
@@ -703,6 +730,10 @@ void PresentationTimeSubsessionNormalizer::afterGettingFrame(unsigned frameSize,
   fDurationInMicroseconds = durationInMicroseconds;
 
   fParent.normalizePresentationTime(this, fPresentationTime, presentationTime);
+
+  // Hack for JPEG/RTP proxying.  Because we're proxying JPEG by just copying the raw JPEG/RTP payloads, without interpreting them,
+  // we need to also 'copy' the RTP 'M' (marker) bit from the "RTPSource" to the "RTPSink":
+  if (fRTPSource->curPacketMarkerBit() && strcmp(fCodecName, "JPEG") == 0) ((SimpleRTPSink*)fRTPSink)->setMBitOnNextPacket();
 
   // Complete delivery:
   FramedSource::afterGetting(this);

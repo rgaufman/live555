@@ -32,7 +32,7 @@ SimpleRTPSink::SimpleRTPSink(UsageEnvironment& env, Groupsock* RTPgs,
   : MultiFramedRTPSink(env, RTPgs, rtpPayloadFormat,
 		       rtpTimestampFrequency, rtpPayloadFormatName,
 		       numChannels),
-    fAllowMultipleFramesPerPacket(allowMultipleFramesPerPacket) {
+    fAllowMultipleFramesPerPacket(allowMultipleFramesPerPacket), fSetMBitOnNextPacket(False) {
   fSDPMediaTypeString
     = strDup(sdpMediaTypeString == NULL ? "unknown" : sdpMediaTypeString);
   fSetMBitOnLastFrames = doNormalMBitRule && strcmp(fSDPMediaTypeString, "audio") != 0;
@@ -68,6 +68,11 @@ void SimpleRTPSink::doSpecialFrameHandling(unsigned fragmentationOffset,
     // This packet contains the last (or only) fragment of the frame.
     // Set the RTP 'M' ('marker') bit, if appropriate:
     if (fSetMBitOnLastFrames) setMarkerBit();
+  }
+  if (fSetMBitOnNextPacket) {
+    // An external object has asked for the 'M' bit to be set on the next packet:
+    setMarkerBit();
+    fSetMBitOnNextPacket = False;
   }
 
   // Important: Also call our base class's doSpecialFrameHandling(),

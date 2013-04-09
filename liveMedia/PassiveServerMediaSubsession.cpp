@@ -172,8 +172,12 @@ void PassiveServerMediaSubsession::startStream(unsigned clientSessionId,
   if (rtpBufSize < 50 * 1024) rtpBufSize = 50 * 1024;
   increaseSendBufferTo(envir(), fRTPSink.groupsockBeingUsed().socketNum(), rtpBufSize);
 
-  // Set up the handler for incoming RTCP "RR" packets from this client:
   if (fRTCPInstance != NULL) {
+    // Hack: Send a RTCP "SR" packet now, so that receivers will (likely) be able to
+    // get RTCP-synchronized presentation times immediately:
+    fRTCPInstance->sendReport();
+
+    // Set up the handler for incoming RTCP "RR" packets from this client:
     RTCPSourceRecord* source = (RTCPSourceRecord*)(fClientRTCPSourceRecords->Lookup((char const*)clientSessionId));
     if (source != NULL) {
       fRTCPInstance->setSpecificRRHandler(source->addr, source->port,
@@ -189,7 +193,7 @@ float PassiveServerMediaSubsession::getCurrentNPT(void* streamToken) {
   struct timeval timeNow;
   gettimeofday(&timeNow, NULL);
 
-  return timeNow.tv_sec - creationTime.tv_sec + (timeNow.tv_usec - creationTime.tv_usec)/1000000.0;
+  return (float)(timeNow.tv_sec - creationTime.tv_sec + (timeNow.tv_usec - creationTime.tv_usec)/1000000.0);
 }
 
 void PassiveServerMediaSubsession::deleteStream(unsigned clientSessionId, void*& /*streamToken*/) {

@@ -354,10 +354,10 @@ void RTSPServer::RTSPClientConnection::handleCmd_OPTIONS() {
 
 void RTSPServer::RTSPClientConnection
 ::handleCmd_GET_PARAMETER(char const* /*fullRequestStr*/) {
-  // By default, we implement "GET_PARAMETER" (on the entire server) just as a 'no op', and send back an empty response.
+  // By default, we implement "GET_PARAMETER" (on the entire server) just as a 'no op', and send back a dummy response.
   // (If you want to handle this type of "GET_PARAMETER" differently, you can do so by defining a subclass of "RTSPServer"
   // and "RTSPServer::RTSPClientConnection", and then reimplement this virtual function in your subclass.)
-  setRTSPResponse("200 OK");
+  setRTSPResponse("200 OK", LIVEMEDIA_LIBRARY_VERSION_STRING);
 }
 
 void RTSPServer::RTSPClientConnection
@@ -1035,6 +1035,44 @@ void RTSPServer::RTSPClientConnection
 }
 
 void RTSPServer::RTSPClientConnection
+::setRTSPResponse(char const* responseStr, char const* contentStr) {
+  if (contentStr == NULL) contentStr = "";
+  unsigned const contentLen = strlen(contentStr);
+
+  snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
+	   "RTSP/1.0 %s\r\n"
+	   "CSeq: %s\r\n"
+	   "%s"
+	   "Content-Length: %d\r\n\r\n"
+	   "%s",
+	   responseStr,
+	   fCurrentCSeq,
+	   dateHeader(),
+	   contentLen,
+	   contentStr);
+}
+
+void RTSPServer::RTSPClientConnection
+::setRTSPResponse(char const* responseStr, u_int32_t sessionId, char const* contentStr) {
+  if (contentStr == NULL) contentStr = "";
+  unsigned const contentLen = strlen(contentStr);
+
+  snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
+	   "RTSP/1.0 %s\r\n"
+	   "CSeq: %s\r\n"
+	   "%s"
+	   "Session: %08X\r\n"
+	   "Content-Length: %d\r\n\r\n"
+	   "%s",
+	   responseStr,
+	   fCurrentCSeq,
+	   dateHeader(),
+	   sessionId,
+	   contentLen,
+	   contentStr);
+}
+
+void RTSPServer::RTSPClientConnection
 ::changeClientInputSocket(int newSocketNum, unsigned char const* extraData, unsigned extraDataSize) {
   envir().taskScheduler().disableBackgroundHandling(fClientInputSocket);
   fClientInputSocket = newSocketNum;
@@ -1638,6 +1676,11 @@ void RTSPServer::RTSPClientSession
 						    rangeStart, streamDuration, numBytes);
 	  }
 	}
+      } else {
+	// No "Range:" header was specified in the "PLAY", so we do a 'null' seek (i.e., we don't seek at all):
+	if (fStreamStates[i].subsession != NULL) {
+	  fStreamStates[i].subsession->nullSeekStream(fOurSessionId, fStreamStates[i].streamToken);
+	}
       }
     }
   }
@@ -1757,10 +1800,10 @@ void RTSPServer::RTSPClientSession
 void RTSPServer::RTSPClientSession
 ::handleCmd_GET_PARAMETER(RTSPServer::RTSPClientConnection* ourClientConnection,
 			  ServerMediaSubsession* /*subsession*/, char const* /*fullRequestStr*/) {
-  // By default, we implement "GET_PARAMETER" just as a 'keep alive', and send back an empty response.
+  // By default, we implement "GET_PARAMETER" just as a 'keep alive', and send back a dummy response.
   // (If you want to handle "GET_PARAMETER" properly, you can do so by defining a subclass of "RTSPServer"
   // and "RTSPServer::RTSPClientSession", and then reimplement this virtual function in your subclass.)
-  ourClientConnection->setRTSPResponse("200 OK", fOurSessionId);
+  ourClientConnection->setRTSPResponse("200 OK", fOurSessionId, LIVEMEDIA_LIBRARY_VERSION_STRING);
 }
 
 void RTSPServer::RTSPClientSession

@@ -200,6 +200,8 @@ void RTPReceptionStats::init(u_int32_t SSRC) {
   fSSRC = SSRC;
   fTotNumPacketsReceived = 0;
   fTotBytesReceived_hi = fTotBytesReceived_lo = 0;
+  fBaseExtSeqNumReceived = 0;
+  fHighestExtSeqNumReceived = 0;
   fHaveSeenInitialSequenceNumber = False;
   fLastTransit = ~0;
   fPreviousPacketRTPTimestamp = 0;

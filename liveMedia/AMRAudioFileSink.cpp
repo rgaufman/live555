@@ -70,7 +70,7 @@ void AMRAudioFileSink::afterGettingFrame(unsigned frameSize,
 
   if (!fHaveWrittenHeader && fPerFrameFileNameBuffer == NULL) {
     // Output the appropriate AMR header to the start of the file.
-    // This header is defined in RFC 3267, section 5.
+    // This header is defined in RFC 4867, section 5.
     // (However, we don't do this if we're creating one file per frame.)
     char headerBuffer[100];
     sprintf(headerBuffer, "#!AMR%s%s\n",

@@ -31,7 +31,7 @@ public:
   unsigned numChannels() const { return fNumChannels; }
 
   u_int8_t lastFrameHeader() const { return fLastFrameHeader; }
-  // The frame header for the most recently read frame (RFC 3267, sec. 5.3)
+  // The frame header for the most recently read frame (RFC 4867, sec. 5.3)
 
 protected:
   AMRAudioSource(UsageEnvironment& env, Boolean isWideband, unsigned numChannels);

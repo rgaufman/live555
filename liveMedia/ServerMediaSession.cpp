@@ -367,6 +367,13 @@ void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
   delete[] absStart; absStart = NULL;
   delete[] absEnd; absEnd = NULL;
 }
+void ServerMediaSubsession::nullSeekStream(unsigned /*clientSessionId*/, void* /*streamToken*/) {
+  // default implementation: do nothing
+}
+void ServerMediaSubsession::setStreamScale(unsigned /*clientSessionId*/,
+					   void* /*streamToken*/, float /*scale*/) {
+  // default implementation: do nothing
+}
 float ServerMediaSubsession::getCurrentNPT(void* /*streamToken*/) {
   // default implementation: return 0.0
   return 0.0;
@@ -374,10 +381,6 @@ float ServerMediaSubsession::getCurrentNPT(void* /*streamToken*/) {
 FramedSource* ServerMediaSubsession::getStreamSource(void* /*streamToken*/) {
   // default implementation: return NULL
   return NULL;
-}
-void ServerMediaSubsession::setStreamScale(unsigned /*clientSessionId*/,
-					   void* /*streamToken*/, float /*scale*/) {
-  // default implementation: do nothing
 }
 void ServerMediaSubsession::deleteStream(unsigned /*clientSessionId*/,
 					 void*& /*streamToken*/) {

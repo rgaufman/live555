@@ -15,7 +15,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
-// AMR Audio RTP Sources (RFC 3267)
+// AMR Audio RTP Sources (RFC 4867)
 // C++ header
 
 #ifndef _AMR_AUDIO_RTP_SOURCE_HH

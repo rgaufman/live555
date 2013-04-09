@@ -1043,15 +1043,15 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
       subsession.setDestinations(destAddress);
 
       // Hack: To increase the likelihood of UDP packets from the server reaching us, if we're behind a NAT, send a few 'dummy'
-      // UDP packets to the server now.  (We do this only for RTP, not RTCP, because for RTCP our regular RTCP "RR" packets will
-      // have the same effect.)                                                                                                     
-      if (subsession.rtpSource() != NULL) {
-        Groupsock* gs = subsession.rtpSource()->RTPgs();
-        if (gs != NULL) {
-          u_int32_t dummy = 0xFEEDFACE;
-          unsigned const numDummyPackets = 2;
-          for (unsigned i = 0; i < numDummyPackets; ++i) gs->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
-	}
+      // UDP packets to the server now.  (We do this on both our RTP port and our RTCP port.)
+      Groupsock* gs1 = NULL; Groupsock* gs2 = NULL;
+      if (subsession.rtpSource() != NULL) gs1 = subsession.rtpSource()->RTPgs();
+      if (subsession.rtcpInstance() != NULL) gs2 = subsession.rtcpInstance()->RTCPgs();
+      u_int32_t const dummy = 0xFEEDFACE;
+      unsigned const numDummyPackets = 2;
+      for (unsigned i = 0; i < numDummyPackets; ++i) {
+	if (gs1 != NULL) gs1->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
+	if (gs2 != NULL) gs2->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
       }
     }
 
@@ -1127,21 +1127,18 @@ Boolean RTSPClient::handleTEARDOWNResponse(MediaSession& /*session*/, MediaSubse
 
 Boolean RTSPClient::handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString) {
   do {
-    // If "parameterName" is non-empty, it should be (possibly followed by ':' and whitespace) at the start of the result string:
+    // If "parameterName" is non-empty, it may be (possibly followed by ':' and whitespace) at the start of the result string:
     if (parameterName != NULL && parameterName[0] != '\0') {
       if (parameterName[1] == '\0') break; // sanity check; there should have been \r\n at the end of "parameterName"
 
       unsigned parameterNameLen = strlen(parameterName);
       // ASSERT: parameterNameLen >= 2;
       parameterNameLen -= 2; // because of the trailing \r\n
-      if (_strncasecmp(resultValueString, parameterName, parameterNameLen) != 0) {
-	// The parameter name wasn't in the output, so just return an empty string:
-	resultValueString[0] = '\0';
-	return True;
+      if (_strncasecmp(resultValueString, parameterName, parameterNameLen) == 0) {
+	resultValueString += parameterNameLen;
+	if (resultValueString[0] == ':') ++resultValueString;
+	while (resultValueString[0] == ' ' || resultValueString[0] == '\t') ++resultValueString;
       }
-      resultValueString += parameterNameLen;
-      if (resultValueString[0] == ':') ++resultValueString;
-      while (resultValueString[0] == ' ' || resultValueString[0] == '\t') ++resultValueString;
     }
 
     // The rest of "resultValueStr" should be our desired result, but first trim off any \r and/or \n characters at the end:

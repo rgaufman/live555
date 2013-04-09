@@ -15,7 +15,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
-// RTP sink for AMR audio (RFC 3267)
+// RTP sink for AMR audio (RFC 4867)
 // Implementation
 
 // NOTE: At present, this is just a limited implementation, supporting:
