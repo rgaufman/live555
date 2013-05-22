@@ -63,66 +63,67 @@ int main(int argc, char** argv) {
     if (opt[0] != '-') break; // the remaining parameters are assumed to be "rtsp://" URLs
 
     switch (opt[1]) {
-    case 'v': { // verbose output
-      verbosityLevel = 1;
-      break;
-    }
-
-    case 'V': { // more verbose output
-      verbosityLevel = 2;
-      break;
-    }
-
-    case 't': {
-      // Stream RTP and RTCP over the TCP 'control' connection.
-      // (This is for the 'back end' (i.e., proxied) stream only.)
-      streamRTPOverTCP = True;
-      break;
-    }
-
-    case 'T': {
-      // stream RTP and RTCP over a HTTP connection
-      if (argc > 3 && argv[2][0] != '-') {
-        // The next argument is the HTTP server port number:
-        if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
-          && tunnelOverHTTPPortNum > 0) {
-          ++argv; --argc;
-          break;
-        }
+      case 'v': { // verbose output
+        verbosityLevel = 1;
+        break;
       }
 
-      // If we get here, the option was specified incorrectly:
-      usage();
-      break;
-    }
-
-    case 'p': {
-      // set port
-      if (argc > 3 && argv[2][0] != '-') {
-        // The next argument is the RTSP server port number:
-        if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-          && rtspServerPortNum > 0) {
-          ++argv; --argc;
-          break;
-        }
+      case 'V': { // more verbose output
+        verbosityLevel = 2;
+        break;
       }
-      // If we get here, the option was specified incorrectly:
-      usage();
-      break;
-    }
 
-    case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
-      if (argc < 4) usage(); // there's no argv[3] (for the "password")
-      username = argv[2];
-      password = argv[3];
-      argv += 2; argc -= 2;
-      break;
-    }
+      case 't': {
+        // Stream RTP and RTCP over the TCP 'control' connection.
+        // (This is for the 'back end' (i.e., proxied) stream only.)
+        streamRTPOverTCP = True;
+        break;
+      }
 
-    default: {
-      usage();
-      break;
-    }
+      case 'T': {
+        // stream RTP and RTCP over a HTTP connection
+        if (argc > 3 && argv[2][0] != '-') {
+          // The next argument is the HTTP server port number:
+          if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
+            && tunnelOverHTTPPortNum > 0) {
+            ++argv; --argc;
+            break;
+          }
+        }
+
+        // If we get here, the option was specified incorrectly:
+        usage();
+        break;
+      }
+
+      case 'p': {
+        // set port
+        if (argc > 3 && argv[2][0] != '-') {
+          // The next argument is the RTSP server port number:
+          if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
+            && rtspServerPortNum > 0) {
+              ++argv; --argc;
+              break;
+          }
+        }
+
+        // If we get here, the option was specified incorrectly:
+        usage();
+        break;
+      }
+
+      case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
+        if (argc < 4) usage(); // there's no argv[3] (for the "password")
+        username = argv[2];
+        password = argv[3];
+        argv += 2; argc -= 2;
+        break;
+      }
+
+      default: {
+        usage();
+        break;
+      }
     }
 
     ++argv; --argc;
@@ -152,7 +153,8 @@ int main(int argc, char** argv) {
   // access to the server.
 #endif
 
-  // Create the RTSP server with rtspServerPortNum
+  // Create the RTSP server.  Try first with the default port number (554),
+  // and then with the alternative port number (8554):
   RTSPServer* rtspServer;
   rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
   if (rtspServer == NULL) {

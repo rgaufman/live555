@@ -110,7 +110,7 @@ private:
   virtual Boolean isRTCPInstance() const;
 
 private:
-  void addReport();
+  Boolean addReport(Boolean alwaysAdd = False);
     void addSR();
     void addRR();
       void enqueueCommonReportPrefix(unsigned char packetType, u_int32_t SSRC,

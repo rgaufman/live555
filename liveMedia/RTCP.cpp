@@ -624,7 +624,7 @@ void RTCPInstance::sendReport() {
   fprintf(stderr, "sending REPORT\n");
 #endif
   // Begin by including a SR and/or RR report:
-  addReport();
+  if (!addReport()) return;
 
   // Then, include a SDES:
   addSDES();
@@ -645,7 +645,7 @@ void RTCPInstance::sendBYE() {
   fprintf(stderr, "sending BYE\n");
 #endif
   // The packet must begin with a SR and/or RR report:
-  addReport();
+  (void)addReport(True);
 
   addBYE();
   sendBuiltPacket();
@@ -695,20 +695,24 @@ void RTCPInstance::onExpire(RTCPInstance* instance) {
 
 // Member functions to build specific kinds of report:
 
-void RTCPInstance::addReport() {
+Boolean RTCPInstance::addReport(Boolean alwaysAdd) {
   // Include a SR or a RR, depending on whether we have an associated sink or source:
   if (fSink != NULL) {
-    if (!fSink->enableRTCPReports()) return;
+    if (!alwaysAdd) {
+      if (!fSink->enableRTCPReports()) return False;
 
-    // Hack: Don't send a SR during those (brief) times when the timestamp of the
-    // next outgoing RTP packet has been preset, to ensure that that timestamp gets
-    // used for that outgoing packet. (David Bertrand, 2006.07.18)
-    if (fSink->nextTimestampHasBeenPreset()) return;
+      // Hack: Don't send a SR during those (brief) times when the timestamp of the
+      // next outgoing RTP packet has been preset, to ensure that that timestamp gets
+      // used for that outgoing packet. (David Bertrand, 2006.07.18)
+      if (fSink->nextTimestampHasBeenPreset()) return False;
+    }
 
     addSR();
   } else if (fSource != NULL) {
     addRR();
   }
+
+  return True;
 }
 
 void RTCPInstance::addSR() {

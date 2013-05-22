@@ -224,10 +224,6 @@ void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultS
   shutdownStream(rtspClient);
 }
 
-// By default, we request that the server stream its data using RTP/UDP.
-// If, instead, you want to request that the server stream via RTP-over-TCP, change the following to True:
-#define REQUEST_STREAMING_OVER_TCP False
-
 void setupNextSubsession(RTSPClient* rtspClient) {
   UsageEnvironment& env = rtspClient->envir(); // alias
   StreamClientState& scs = ((ourRTSPClient*)rtspClient)->scs; // alias
@@ -242,7 +238,7 @@ void setupNextSubsession(RTSPClient* rtspClient) {
 	  << "\" subsession (client ports " << scs.subsession->clientPortNum() << "-" << scs.subsession->clientPortNum()+1 << ")\n";
 
       // Continue setting up this subsession, by sending a RTSP "SETUP" command:
-      rtspClient->sendSetupCommand(*scs.subsession, continueAfterSETUP, False, REQUEST_STREAMING_OVER_TCP);
+      rtspClient->sendSetupCommand(*scs.subsession, continueAfterSETUP);
     }
     return;
   }

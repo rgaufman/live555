@@ -484,6 +484,12 @@ void StreamState::pause() {
 }
 
 void StreamState::endPlaying(Destinations* dests) {
+  if (fRTCPInstance != NULL) {
+    // Hack: Explicitly send a RTCP "BYE" packet now, because the code below will prevent that from happening later,
+    // when "fRTCPInstance" gets deleted:
+    fRTCPInstance->sendBYE();
+  }
+
   if (dests->isTCP) {
     if (fRTPSink != NULL) {
       fRTPSink->removeStreamSocket(dests->tcpSocketNum, dests->rtpChannelId);

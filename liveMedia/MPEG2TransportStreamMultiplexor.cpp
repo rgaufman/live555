@@ -80,7 +80,13 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
 
   // NEED TO SET fPresentationTime, durationInMicroseconds #####
   // Complete the delivery to the client:
-  afterGetting(this);
+  if ((fOutgoingPacketCounter%10) == 0) {
+    // To avoid excessive recursion (and stack overflow) caused by excessively large input frames,
+    // occasionally return to the event loop to do this:
+    envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
+  } else {
+    afterGetting(this);
+  }
 }
 
 void MPEG2TransportStreamMultiplexor

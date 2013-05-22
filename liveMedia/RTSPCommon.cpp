@@ -22,6 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Locale.hh"
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h> // for "isxdigit()
 #include <time.h> // for "strftime()" and "gmtime()"
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
@@ -40,8 +41,8 @@ static void decodeURL(char* url) {
       // We saw a % followed by 2 hex digits, so we copy the literal hex value into the URL, then advance the cursor past it:
       char hex[3];
       hex[0] = cursor[1];
-      hex[2] = cursor[2];
-      hex[3] = '\0';
+      hex[1] = cursor[2];
+      hex[2] = '\0';
       *url++ = (char)strtol(hex, NULL, 16);
       cursor += 3;
     } else {

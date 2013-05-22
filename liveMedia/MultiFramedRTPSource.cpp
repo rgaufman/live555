@@ -237,6 +237,7 @@ void MultiFramedRTPSource::networkReadHandler1() {
       if (bPacket->bytesAvailable() == 0) {
 	envir() << "MultiFramedRTPSource error: Hit limit when reading incoming packet over TCP. Increase \"MAX_PACKET_SIZE\"\n";
       }
+      fPacketReadInProgress = NULL;
       break;
     }
     if (packetReadWasIncomplete) {

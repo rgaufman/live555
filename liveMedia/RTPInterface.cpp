@@ -62,7 +62,7 @@ public:
 
 private:
   static void tcpReadHandler(SocketDescriptor*, int mask);
-  void tcpReadHandler1(int mask);
+  Boolean tcpReadHandler1(int mask);
 
 private:
   UsageEnvironment& fEnv;
@@ -71,7 +71,7 @@ private:
   ServerRequestAlternativeByteHandler* fServerRequestAlternativeByteHandler;
   void* fServerRequestAlternativeByteHandlerClientData;
   u_int8_t fStreamChannelId, fSizeByte1;
-  Boolean fReadErrorOccurred;
+  Boolean fReadErrorOccurred, fDeleteMyselfNext;
   enum { AWAITING_DOLLAR, AWAITING_STREAM_CHANNEL_ID, AWAITING_SIZE1, AWAITING_SIZE2, AWAITING_PACKET_DATA } fTCPReadingState;
 };
 
@@ -81,9 +81,17 @@ static SocketDescriptor* lookupSocketDescriptor(UsageEnvironment& env, int sockN
 
   char const* key = (char const*)(long)sockNum;
   SocketDescriptor* socketDescriptor = (SocketDescriptor*)(table->Lookup(key));
-  if (socketDescriptor == NULL && createIfNotFound) {
-    socketDescriptor = new SocketDescriptor(env, sockNum);
-    table->Add((char const*)(long)(sockNum), socketDescriptor);
+  if (socketDescriptor == NULL) {
+    if (createIfNotFound) {
+      socketDescriptor = new SocketDescriptor(env, sockNum);
+      table->Add((char const*)(long)(sockNum), socketDescriptor);
+    } else if (table->IsEmpty()) {
+      // We can also delete the table (to reclaim space):
+      _Tables* ourTables = _Tables::getOurTables(env);
+      delete table;
+      ourTables->socketTable = NULL;
+      ourTables->reclaimIfPossible();
+    }
   }
 
   return socketDescriptor;
@@ -334,8 +342,8 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsig
 SocketDescriptor::SocketDescriptor(UsageEnvironment& env, int socketNum)
   :fEnv(env), fOurSocketNum(socketNum),
     fSubChannelHashTable(HashTable::create(ONE_WORD_HASH_KEYS)),
-   fServerRequestAlternativeByteHandler(NULL), fServerRequestAlternativeByteHandlerClientData(NULL), fReadErrorOccurred(False),
-   fTCPReadingState(AWAITING_DOLLAR) {
+   fServerRequestAlternativeByteHandler(NULL), fServerRequestAlternativeByteHandlerClientData(NULL),
+   fReadErrorOccurred(False), fDeleteMyselfNext(False), fTCPReadingState(AWAITING_DOLLAR) {
 }
 
 SocketDescriptor::~SocketDescriptor() {
@@ -388,15 +396,18 @@ void SocketDescriptor
 
   if (fSubChannelHashTable->IsEmpty()) {
     // No more interfaces are using us, so it's curtains for us now:
-    delete this;
+    fDeleteMyselfNext = True; // hack to cause ourself to be deleted from "tcpReadHandler()" below
   }
 }
 
 void SocketDescriptor::tcpReadHandler(SocketDescriptor* socketDescriptor, int mask) {
-  socketDescriptor->tcpReadHandler1(mask);
+  // Call the read handler until it returns false, with a limit to avoid starving other sockets
+  unsigned count = 2000;
+  while (!socketDescriptor->fDeleteMyselfNext && socketDescriptor->tcpReadHandler1(mask) && --count > 0) {}
+  if (socketDescriptor->fDeleteMyselfNext) delete socketDescriptor;
 }
 
-void SocketDescriptor::tcpReadHandler1(int mask) {
+Boolean SocketDescriptor::tcpReadHandler1(int mask) {
   // We expect the following data over the TCP channel:
   //   optional RTSP command or response bytes (before the first '$' character)
   //   a '$' character
@@ -409,16 +420,19 @@ void SocketDescriptor::tcpReadHandler1(int mask) {
   struct sockaddr_in fromAddress;
   if (fTCPReadingState != AWAITING_PACKET_DATA) {
     int result = readSocket(fEnv, fOurSocketNum, &c, 1, fromAddress);
-    if (result != 1) { // error reading TCP socket, so we will no longer handle it
+    if (result == 0) { // There was no more data to read
+      return False;
+    } else if (result != 1) { // error reading TCP socket, so we will no longer handle it
 #ifdef DEBUG_RECEIVE
       fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): readSocket(1 byte) returned %d (error)\n", fOurSocketNum, result);
 #endif
       fReadErrorOccurred = True;
-      delete this;
-      return;
+      fDeleteMyselfNext = True;
+      return False;
     }
   }
-  
+
+  Boolean callAgain = True;
   switch (fTCPReadingState) {
     case AWAITING_DOLLAR: {
       if (c == '$') {
@@ -470,6 +484,7 @@ void SocketDescriptor::tcpReadHandler1(int mask) {
       break;
     }
     case AWAITING_PACKET_DATA: {
+      callAgain = False;
       fTCPReadingState = AWAITING_DOLLAR; // the next state, unless we end up having to read more data in the current state
       // Call the appropriate read handler to get the packet data from the TCP stream:
       RTPInterface* rtpInterface = lookupRTPInterface(fStreamChannelId);
@@ -489,24 +504,29 @@ void SocketDescriptor::tcpReadHandler1(int mask) {
 	  fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): No handler proc for \"rtpInterface\" for channel %d; need to skip %d remaining bytes\n", fOurSocketNum, fStreamChannelId, rtpInterface->fNextTCPReadSize);
 #endif
 	  int result = readSocket(fEnv, fOurSocketNum, &c, 1, fromAddress);
-	  if (result != 1) { // error reading TCP socket, so we will no longer handle it
+	  if (result < 0) { // error reading TCP socket, so we will no longer handle it
 #ifdef DEBUG_RECEIVE
 	    fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): readSocket(1 byte) returned %d (error)\n", fOurSocketNum, result);
 #endif
 	    fReadErrorOccurred = True;
-	    delete this;
-	    return;
+	    fDeleteMyselfNext = True;
+	    return False;
+	  } else {
+	    fTCPReadingState = AWAITING_PACKET_DATA;
+	    if (result == 1) {
+	      --rtpInterface->fNextTCPReadSize;
+	      callAgain = True;
+	    }
 	  }
-	  --rtpInterface->fNextTCPReadSize;
-	  fTCPReadingState = AWAITING_PACKET_DATA;
 	}
       }
 #ifdef DEBUG_RECEIVE
       else fprintf(stderr, "SocketDescriptor(socket %d)::tcpReadHandler(): No \"rtpInterface\" for channel %d\n", fOurSocketNum, fStreamChannelId);
 #endif
-      return;
     }
   }
+
+  return callAgain;
 }
 
 

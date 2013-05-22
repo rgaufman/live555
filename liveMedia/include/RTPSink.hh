@@ -35,13 +35,6 @@ public:
   static Boolean lookupByName(UsageEnvironment& env, char const* sinkName,
 			      RTPSink*& resultSink);
 
-  // used by RTCP:
-  u_int32_t SSRC() const {return fSSRC;}
-     // later need a means of changing the SSRC if there's a collision #####
-  u_int32_t convertToRTPTimestamp(struct timeval tv);
-  unsigned packetCount() const {return fPacketCount;}
-  unsigned octetCount() const {return fOctetCount;}
-
   // used by RTSP servers:
   Groupsock const& groupsockBeingUsed() const { return *(fRTPInterface.gs()); }
   Groupsock& groupsockBeingUsed() { return *(fRTPInterface.gs()); }
@@ -105,6 +98,16 @@ protected:
 
   virtual ~RTPSink();
 
+  // used by RTCP:
+  friend class RTCPInstance;
+  friend class RTPTransmissionStats;
+  u_int32_t SSRC() const {return fSSRC;}
+     // later need a means of changing the SSRC if there's a collision #####
+  u_int32_t convertToRTPTimestamp(struct timeval tv);
+  unsigned packetCount() const {return fPacketCount;}
+  unsigned octetCount() const {return fOctetCount;}
+
+protected:
   RTPInterface fRTPInterface;
   unsigned char fRTPPayloadType;
   unsigned fPacketCount, fOctetCount, fTotalOctetCount /*incl RTP hdr*/;

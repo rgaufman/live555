@@ -177,10 +177,12 @@ static void continueAfterOPTIONS(RTSPClient* rtspClient, int resultCode, char* r
   delete[] resultString;
 }
 
+#ifdef SEND_GET_PARAMETER_IF_SUPPORTED
 static void continueAfterGET_PARAMETER(RTSPClient* rtspClient, int resultCode, char* resultString) {
   ((ProxyRTSPClient*)rtspClient)->continueAfterLivenessCommand(resultCode, True);
   delete[] resultString;
 }
+#endif
 
 
 ////////// "ProxyRTSPClient" implementation /////////
@@ -331,12 +333,13 @@ void ProxyRTSPClient::scheduleLivenessCommand() {
 
 void ProxyRTSPClient::sendLivenessCommand(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
-  MediaSession* sess = rtspClient->fOurServerMediaSession.fClientMediaSession;
 
   // Note.  By default, we do not send "GET_PARAMETER" as our 'liveness notification' command, even if the server previously
   // indicated (in its response to our earlier "OPTIONS" command) that it supported "GET_PARAMETER".  This is because
   // "GET_PARAMETER" crashes some camera servers (even though they claimed to support "GET_PARAMETER").
 #ifdef SEND_GET_PARAMETER_IF_SUPPORTED
+  MediaSession* sess = rtspClient->fOurServerMediaSession.fClientMediaSession;
+
   if (rtspClient->fServerSupportsGetParameter && rtspClient->fNumSetupsDone > 0 && sess != NULL) {
     rtspClient->sendGetParameterCommand(*sess, ::continueAfterGET_PARAMETER, "", rtspClient->auth());
   } else {
@@ -577,7 +580,7 @@ RTPSink* ProxyServerMediaSubsession
     }
     return NULL;
   } else {
-    // This codec is assumed to have a simple RTP paylaod format that can be implemented just with a "SimpleRTPSink":
+    // This codec is assumed to have a simple RTP payload format that can be implemented just with a "SimpleRTPSink":
     Boolean allowMultipleFramesPerPacket = True; // by default
     Boolean doNormalMBitRule = True; // by default
     // Some codecs change the above default parameters:

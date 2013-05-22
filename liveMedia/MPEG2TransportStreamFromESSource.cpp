@@ -21,7 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "MPEG2TransportStreamFromESSource.hh"
 
-#define MAX_INPUT_ES_FRAME_SIZE 50000
+#define MAX_INPUT_ES_FRAME_SIZE 100000
 #define SIMPLE_PES_HEADER_SIZE 14
 #define LOW_WATER_MARK 1000 // <= MAX_INPUT_ES_FRAME_SIZE
 #define INPUT_BUFFER_SIZE (SIMPLE_PES_HEADER_SIZE + 2*MAX_INPUT_ES_FRAME_SIZE)
