@@ -51,6 +51,10 @@ Medium* createClient(UsageEnvironment& env, char const* /*url*/, int verbosityLe
   return ourSIPClient = SIPClient::createNew(env, desiredAudioRTPPayloadFormat, mimeSubtype, verbosityLevel, applicationName);
 }
 
+// The followign function is implemented, but is not used for "playSIP":
+void assignClient(Medium* /*client*/) {
+}
+
 void getOptions(RTSPClient::responseHandler* afterFunc) { 
   ourSIPClient->envir().setResultMsg("NOT SUPPORTED IN CLIENT");
   afterFunc(NULL, -1, strDup(ourSIPClient->envir().getResultMsg()));

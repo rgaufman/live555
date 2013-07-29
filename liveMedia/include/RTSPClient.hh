@@ -30,16 +30,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _DIGEST_AUTHENTICATION_HH
 #include "DigestAuthentication.hh"
 #endif
+#ifndef _RTSP_SERVER_HH
+#include "RTSPServer.hh" // For the optional "HandlerForREGISTERCommand" mini-server
+#endif
 
 class RTSPClient: public Medium {
 public:
   static RTSPClient* createNew(UsageEnvironment& env, char const* rtspURL,
 			       int verbosityLevel = 0,
 			       char const* applicationName = NULL,
-			       portNumBits tunnelOverHTTPPortNum = 0);
+			       portNumBits tunnelOverHTTPPortNum = 0,
+			       int socketNumToServer = -1);
   // If "tunnelOverHTTPPortNum" is non-zero, we tunnel RTSP (and RTP)
-  // over a HTTP connection with the given port number, using the technique
-  // described in Apple's document <http://developer.apple.com/documentation/QuickTime/QTSS/Concepts/chapter_2_section_14.html>
+  //     over a HTTP connection with the given port number, using the technique
+  //     described in Apple's document <http://developer.apple.com/documentation/QuickTime/QTSS/Concepts/chapter_2_section_14.html>
+  // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
+  //     (In this case, "rtspURL" must point to the socket's endpoint, so that it can be accessed via the socket.)
 
   typedef void (responseHandler)(RTSPClient* rtspClient,
 				 int resultCode, char* resultString);
@@ -208,7 +214,7 @@ public: // Some compilers complain if this is "private:"
 
 protected:
   RTSPClient(UsageEnvironment& env, char const* rtspURL,
-	     int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum);
+	     int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum, int socketNumToServer);
       // called only by createNew();
   virtual ~RTSPClient();
 
@@ -305,67 +311,43 @@ private:
   char fSessionCookie[33];
   unsigned fSessionCookieCounter;
   Boolean fHTTPTunnelingConnectionIsPending;
+};
 
-#ifdef RTSPCLIENT_SYNCHRONOUS_INTERFACE
-  // Old "RTSPClient" interface, which performs synchronous (blocking) operations.
-  // This will eventually go away, so new applications should not use it.
+
+////////// HandlerServerForREGISTERCommand /////////
+
+// A simple server that creates a new "RTSPClient" object whenever a "REGISTER" request arrives (specifying the "rtsp://" URL
+// of a stream).  The new "RTSPClient" object will be created with the specified URL, and passed to the provided handler function.
+
+typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient);
+
+class HandlerServerForREGISTERCommand: public RTSPServer {
 public:
-  static RTSPClient* createNew(UsageEnvironment& env,
-                               int verbosityLevel = 0,
-                               char const* applicationName = NULL,
-                               portNumBits tunnelOverHTTPPortNum = 0);
-  char* describeURL(char const* url, Authenticator* authenticator = NULL,
-                    Boolean allowKasennaProtocol = False, int timeout = -1);
-  char* describeWithPassword(char const* url,
-			     char const* username, char const* password,
-			     Boolean allowKasennaProtocol = False, 
-			     int timeout = -1);
-  char* sendOptionsCmd(char const* url,
-		       char* username = NULL, char* password = NULL,
-		       Authenticator* authenticator = NULL,
-		       int timeout = -1);
-  Boolean announceSDPDescription(char const* url,
-				 char const* sdpDescription,
-				 Authenticator* authenticator = NULL,
-				 int timeout = -1);
-  Boolean announceWithPassword(char const* url, char const* sdpDescription,
-			       char const* username, char const* password, int timeout = -1);
-  Boolean setupMediaSubsession(MediaSubsession& subsession,
-			       Boolean streamOutgoing = False,
-			       Boolean streamUsingTCP = False,
-			       Boolean forceMulticastOnUnspecified = False);
-  Boolean playMediaSession(MediaSession& session,
-			   double start = 0.0f, double end = -1.0f,
-			   float scale = 1.0f);
-  Boolean playMediaSubsession(MediaSubsession& subsession,
-			      double start = 0.0f, double end = -1.0f,
-			      float scale = 1.0f,
-			      Boolean hackForDSS = False);
-  Boolean pauseMediaSession(MediaSession& session);
-  Boolean pauseMediaSubsession(MediaSubsession& subsession);
-  Boolean recordMediaSubsession(MediaSubsession& subsession);
-  Boolean setMediaSessionParameter(MediaSession& session,
-				   char const* parameterName,
-				   char const* parameterValue);
-  Boolean getMediaSessionParameter(MediaSession& session,
-				   char const* parameterName,
-				   char*& parameterValue);
-  Boolean teardownMediaSession(MediaSession& session);
-  Boolean teardownMediaSubsession(MediaSubsession& subsession);
+  static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
+						    Port ourPort = 0, int verbosityLevel = 0, char const* applicationName = NULL);
+      // If ourPort.num() == 0, we'll choose the port number ourself.  (Use the following function to get it.)
+  portNumBits serverPortNum() const { return ntohs(fRTSPServerPort.num()); }
 
-  static Boolean parseRTSPURLUsernamePassword(char const* url,
-					      char*& username, char*& password);
-private: // used to implement the old interface:
-  static void responseHandlerForSyncInterface(RTSPClient* rtspClient,
-					      int responseCode, char* responseString);
-  void responseHandlerForSyncInterface1(int responseCode, char* responseString);
-  static void timeoutHandlerForSyncInterface(void* rtspClient);
-  void timeoutHandlerForSyncInterface1();
-  TaskToken fTimeoutTask;
-  char fWatchVariableForSyncInterface;
-  char* fResultString;
-  int fResultCode;
-#endif
+protected:
+  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
+				  int verbosityLevel, char const* applicationName);
+      // called only by createNew();
+  virtual ~HandlerServerForREGISTERCommand();
+
+  virtual RTSPClient* createNewRTSPClient(char const* rtspURL, int verbosityLevel, char const* applicationName,
+					  int socketNumToServer);
+      // This function - by default - creates a (base) "RTSPClient" object.  If you want to create a subclass
+      // of "RTSPClient" instead, then subclass this class, and redefine this virtual function.
+
+protected: // redefined virtual functions
+  virtual char const* allowedCommandNames(); // we support "OPTIONS" and "REGISTER" only
+  virtual Boolean weImplementREGISTER(); // redefined to return True
+  virtual void implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer);
+
+private:
+  onRTSPClientCreationFunc* fCreationFunc;
+  int fVerbosityLevel;
+  char* fApplicationName;
 };
 
 #endif

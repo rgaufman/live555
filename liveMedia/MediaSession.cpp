@@ -106,9 +106,7 @@ Boolean MediaSession::initializeWithSDP(char const* sdpDescription) {
   char const* nextSDPLine;
   while (1) {
     if (!parseSDPLine(sdpLine, nextSDPLine)) return False;
-    //##### We should really check for:
-    // - "a=control:" attributes (to set the URL for aggregate control)
-    // - the correct SDP version (v=0)
+    //##### We should really check for the correct SDP version (v=0)
     if (sdpLine[0] == 'm') break;
     sdpLine = nextSDPLine;
     if (sdpLine == NULL) break; // there are no m= lines at all
@@ -1081,6 +1079,12 @@ Boolean MediaSubsession::parseSDPAttribute_fmtp(char const* sdpLine) {
       } else if (sscanf(sdpLine, " channel-order = %[^; \t\r\n]", valueStr) == 1) {
 	// Note: We used "sdpLine" here, because the value is case-sensitive.
 	delete[] fChannelOrder; fChannelOrder = strDup(valueStr);
+      } else if (sscanf(line, " width = %u", &u) == 1) {
+	// A non-standard parameter, but one that's often used:
+	fVideoWidth = u;
+      } else if (sscanf(line, " height = %u", &u) == 1) {
+	// A non-standard parameter, but one that's often used:
+	fVideoHeight = u;
       } else {
 	// Some of the above parameters are Boolean.  Check whether the parameter
 	// names appear alone, without a "= 1" at the end:

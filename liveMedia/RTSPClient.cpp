@@ -30,9 +30,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 RTSPClient* RTSPClient::createNew(UsageEnvironment& env, char const* rtspURL,
 				  int verbosityLevel,
 				  char const* applicationName,
-				  portNumBits tunnelOverHTTPPortNum) {
+				  portNumBits tunnelOverHTTPPortNum,
+				  int socketNumToServer) {
   return new RTSPClient(env, rtspURL,
-			verbosityLevel, applicationName, tunnelOverHTTPPortNum);
+			verbosityLevel, applicationName, tunnelOverHTTPPortNum, socketNumToServer);
 }
 
 unsigned RTSPClient::sendDescribeCommand(responseHandler* responseHandler, Authenticator* authenticator) {
@@ -295,7 +296,7 @@ unsigned RTSPClient::responseBufferSize = 20000; // default value; you can reass
 
 RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 		       int verbosityLevel, char const* applicationName,
-		       portNumBits tunnelOverHTTPPortNum)
+		       portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
   : Medium(env),
     fVerbosityLevel(verbosityLevel), fCSeq(1),
     fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum), fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0),
@@ -305,6 +306,14 @@ RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 
   fResponseBuffer = new char[responseBufferSize+1];
   resetResponseBuffer();
+
+  if (socketNumToServer >= 0) {
+    // This socket number is (assumed to be) already connected to the server.
+    // Use it, and arrange to handle responses to requests sent on it:
+    fInputSocketNum = fOutputSocketNum = socketNumToServer;
+    envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE|SOCKET_EXCEPTION,
+						  (TaskScheduler::BackgroundHandlerProc*)&incomingDataHandler, this);
+  }
 
   // Set the "User-Agent:" header to use in each request:
   char const* const libName = "LIVE555 Streaming Media v";
@@ -388,7 +397,7 @@ int RTSPClient::openConnection() {
     // We don't yet have a TCP socket (or we used to have one, but it got closed).  Set it up now.
     fInputSocketNum = fOutputSocketNum = setupStreamSocket(envir(), 0);
     if (fInputSocketNum < 0) break;
-    ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that killed don't also kill us
+    ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that get killed don't also kill us
       
     // Connect to the remote endpoint:
     fServerAddress = *(netAddressBits*)(destAddress.data());
@@ -538,7 +547,7 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
       else if (connectResult == 0) {
 	// A connection is pending
         connectionIsPending = True;
-      } // else the connection succeeded.  Continue sending the command.u
+      } // else the connection succeeded.  Continue sending the command.
     }
     if (connectionIsPending) {
       fRequestsAwaitingConnection.enqueue(request);
@@ -1031,6 +1040,7 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
       if (subsession.rtpSource() != NULL) {
 	subsession.rtpSource()->setStreamSocket(fInputSocketNum, subsession.rtpChannelId);
 	subsession.rtpSource()->setServerRequestAlternativeByteHandler(fInputSocketNum, handleAlternativeRequestByte, this);
+	  // So that we continue to receive & handle RTSP commands and responses from the server
 	subsession.rtpSource()->enableRTCPReports() = False;
 	  // To avoid confusing the server (which won't start handling RTP/RTCP-over-TCP until "PLAY"), don't send RTCP "RR"s yet
       }
@@ -1270,6 +1280,7 @@ void RTSPClient::responseHandlerForHTTP_GET(RTSPClient* rtspClient, int response
 void RTSPClient::responseHandlerForHTTP_GET1(int responseCode, char* responseString) {
   RequestRecord* request;
   do {
+    delete[] responseString; // we don't need it (but are responsible for deleting it)
     if (responseCode != 0) break; // The HTTP "GET" failed.
 
     // Having successfully set up (using the HTTP "GET" command) the server->client link, set up a second TCP connection
@@ -1758,325 +1769,45 @@ RTSPClient::RequestRecord* RTSPClient::RequestQueue::findByCSeq(unsigned cseq) {
 }
 
 
-#ifdef RTSPCLIENT_SYNCHRONOUS_INTERFACE
-// Implementation of the old (synchronous) "RTSPClient" interface, using the new (asynchronous) interface:
-RTSPClient* RTSPClient::createNew(UsageEnvironment& env,
-				  int verbosityLevel,
-				  char const* applicationName,
-				  portNumBits tunnelOverHTTPPortNum) {
-  return new RTSPClient(env, NULL,
-			verbosityLevel, applicationName, tunnelOverHTTPPortNum);
+////////// HandlerServerForREGISTERCommand implementation /////////
+
+HandlerServerForREGISTERCommand* HandlerServerForREGISTERCommand
+::createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, Port ourPort,
+	    int verbosityLevel, char const* applicationName) {
+  int ourSocket = setUpOurSocket(env, ourPort);
+  if (ourSocket == -1) return NULL;
+
+  return new HandlerServerForREGISTERCommand(env, creationFunc, ourSocket, ourPort, verbosityLevel, applicationName);
 }
 
-char* RTSPClient::describeURL(char const* url, Authenticator* authenticator,
-			      Boolean allowKasennaProtocol, int timeout) {
-  // Sorry 'Kasenna', but the party's over.  You've had 6 years to make your servers compliant with the standard RTSP protocol.
-  // We're not going to support your non-standard hacked version of the protocol any more.  Starting now, the "allowKasennaProtocol"
-  // parameter is a noop (and eventually, when the synchronous interface goes away completely, then so will this parameter).
-
-  // First, check whether "url" contains a username:password to be used.  If so, handle this using "describeWithPassword()" instead:
-  char* username; char* password;
-  if (authenticator == NULL
-      && parseRTSPURLUsernamePassword(url, username, password)) {
-    char* result = describeWithPassword(url, username, password, allowKasennaProtocol, timeout);
-    delete[] username; delete[] password; // they were dynamically allocated
-    return result;
-  }
-
-  setBaseURL(url);
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;  // by default, unless:
-  if (timeout > 0) {
-    // Schedule a task to be called when the specified timeout interval expires.
-    // Note that we do this *before* attempting to send the RTSP command, in case this attempt fails immediately, calling the
-    // command response handler - because we want the response handler to unschedule any pending timeout handler.
-    fTimeoutTask = envir().taskScheduler().scheduleDelayedTask(timeout*1000000, timeoutHandlerForSyncInterface, this);
-  }
-  (void)sendDescribeCommand(responseHandlerForSyncInterface, authenticator);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  if (fResultCode == 0) return fResultString; // success
-  delete[] fResultString;
-  return NULL;
+HandlerServerForREGISTERCommand
+::HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
+                                  int verbosityLevel, char const* applicationName)
+  : RTSPServer(env, ourSocket, ourPort, NULL, 30/*small reclamationTestSeconds*/),
+    fCreationFunc(creationFunc), fVerbosityLevel(verbosityLevel), fApplicationName(strDup(applicationName)) {
 }
 
-char* RTSPClient::describeWithPassword(char const* url,
-				       char const* username, char const* password,
-				       Boolean allowKasennaProtocol, int timeout) {
-  Authenticator authenticator(username, password);
-  return describeURL(url, &authenticator, allowKasennaProtocol, timeout);
+HandlerServerForREGISTERCommand::~HandlerServerForREGISTERCommand() {
+  delete[] fApplicationName;
 }
 
-char* RTSPClient::sendOptionsCmd(char const* url,
-				 char* username, char* password,
-				 Authenticator* authenticator,
-				 int timeout) {
-  char* result = NULL;
-  Boolean haveAllocatedAuthenticator = False;
-  if (authenticator == NULL) {
-    // First, check whether "url" contains a username:password to be used
-    // (and no username,password pair was supplied separately):
-    if (username == NULL && password == NULL
-	&& parseRTSPURLUsernamePassword(url, username, password)) {
-      Authenticator newAuthenticator(username,password);
-      result = sendOptionsCmd(url, username, password, &newAuthenticator, timeout);
-      delete[] username; delete[] password; // they were dynamically allocated
-      return result;
-    } else if (username != NULL && password != NULL) {
-      // Use the separately supplied username and password:
-      authenticator = new Authenticator(username,password);
-      haveAllocatedAuthenticator = True;
-      
-      result = sendOptionsCmd(url, username, password, authenticator, timeout);
-      if (result != NULL) { // We are already authorized
-	delete authenticator;
-	return result;
-      }
-
-      // The "realm" field should have been filled in:
-      if (authenticator->realm() == NULL) {
-	// We haven't been given enough information to try again, so fail:
-	delete authenticator;
-	return NULL;
-      }
-    }
-  }
-
-  setBaseURL(url);
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;  // by default, unless:
-  if (timeout > 0) {
-    // Schedule a task to be called when the specified timeout interval expires.
-    // Note that we do this *before* attempting to send the RTSP command, in case this attempt fails immediately, calling the
-    // command response handler - because we want the response handler to unschedule any pending timeout handler.
-    fTimeoutTask = envir().taskScheduler().scheduleDelayedTask(timeout*1000000, timeoutHandlerForSyncInterface, this);
-  }
-  (void)sendOptionsCommand(responseHandlerForSyncInterface, authenticator);
-  if (haveAllocatedAuthenticator) delete authenticator;
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  if (fResultCode == 0) return fResultString; // success
-  delete[] fResultString;
-  return NULL;
+RTSPClient* HandlerServerForREGISTERCommand
+::createNewRTSPClient(char const* rtspURL, int verbosityLevel, char const* applicationName, int socketNumToServer) {
+  // Default implementation: create a basic "RTSPClient":
+  return RTSPClient::createNew(envir(), rtspURL, verbosityLevel, applicationName, 0, socketNumToServer);
 }
 
-Boolean RTSPClient::announceSDPDescription(char const* url,
-					   char const* sdpDescription,
-					   Authenticator* authenticator,
-					   int timeout) {
-  setBaseURL(url);
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;  // by default, unless:
-  if (timeout > 0) {
-    // Schedule a task to be called when the specified timeout interval expires.
-    // Note that we do this *before* attempting to send the RTSP command, in case this attempt fails immediately, calling the
-    // command response handler - because we want the response handler to unschedule any pending timeout handler.
-    fTimeoutTask = envir().taskScheduler().scheduleDelayedTask(timeout*1000000, timeoutHandlerForSyncInterface, this);
-  }
-  (void)sendAnnounceCommand(sdpDescription, responseHandlerForSyncInterface, authenticator);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
+char const* HandlerServerForREGISTERCommand::allowedCommandNames() {
+  return "OPTIONS, REGISTER";
 }
 
-Boolean RTSPClient
-::announceWithPassword(char const* url, char const* sdpDescription,
-		       char const* username, char const* password, int timeout) {
-  Authenticator authenticator(username,password);
-  return announceSDPDescription(url, sdpDescription, &authenticator, timeout);
+Boolean HandlerServerForREGISTERCommand::weImplementREGISTER() {
+  return True;
 }
 
-Boolean RTSPClient::setupMediaSubsession(MediaSubsession& subsession,
-					 Boolean streamOutgoing,
-					 Boolean streamUsingTCP,
-					 Boolean forceMulticastOnUnspecified) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendSetupCommand(subsession, responseHandlerForSyncInterface, streamOutgoing, streamUsingTCP, forceMulticastOnUnspecified);
+void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer) {
+  // Create a new "RTSPClient" object, and call our 'creation function' with it:
+  RTSPClient* newRTSPClient = createNewRTSPClient(url, fVerbosityLevel, fApplicationName, socketToRemoteServer);
 
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
+  if (fCreationFunc != NULL) (*fCreationFunc)(newRTSPClient);
 }
-
-Boolean RTSPClient::playMediaSession(MediaSession& session,
-				     double start, double end, float scale) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendPlayCommand(session, responseHandlerForSyncInterface, start, end, scale);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::playMediaSubsession(MediaSubsession& subsession,
-					double start, double end, float scale,
-					Boolean /*hackForDSS*/) {
-  // NOTE: The "hackForDSS" flag is no longer supported.  (However, we will consider resupporting it
-  // if we get reports that it is still needed.)
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendPlayCommand(subsession, responseHandlerForSyncInterface, start, end, scale);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::pauseMediaSession(MediaSession& session) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendPauseCommand(session, responseHandlerForSyncInterface);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::pauseMediaSubsession(MediaSubsession& subsession) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendPauseCommand(subsession, responseHandlerForSyncInterface);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::recordMediaSubsession(MediaSubsession& subsession) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendRecordCommand(subsession, responseHandlerForSyncInterface);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::setMediaSessionParameter(MediaSession& session,
-					     char const* parameterName,
-					     char const* parameterValue) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendSetParameterCommand(session, responseHandlerForSyncInterface, parameterName, parameterValue);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  delete[] fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::getMediaSessionParameter(MediaSession& session,
-					     char const* parameterName,
-					     char*& parameterValue) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendGetParameterCommand(session, responseHandlerForSyncInterface, parameterName);
-
-  // Now block (but handling events) until we get a response (or a timeout):
-  envir().taskScheduler().doEventLoop(&fWatchVariableForSyncInterface);
-  parameterValue = fResultString;
-  return fResultCode == 0;
-}
-
-Boolean RTSPClient::teardownMediaSession(MediaSession& session) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendTeardownCommand(session, NULL);
-  return True; // we don't wait for a response to the "TEARDOWN"
-}
-
-Boolean RTSPClient::teardownMediaSubsession(MediaSubsession& subsession) {
-  fWatchVariableForSyncInterface = 0;
-  fTimeoutTask = NULL;
-  (void)sendTeardownCommand(subsession, NULL);
-  return True; // we don't wait for a response to the "TEARDOWN"
-}
-
-Boolean RTSPClient::parseRTSPURLUsernamePassword(char const* url,
-						 char*& username,
-						 char*& password) {
-  username = password = NULL; // by default
-  do {
-    // Parse the URL as "rtsp://<username>[:<password>]@<whatever>"
-    char const* prefix = "rtsp://";
-    unsigned const prefixLength = 7;
-    if (_strncasecmp(url, prefix, prefixLength) != 0) break;
-
-    // Look for the ':' and '@':
-    unsigned usernameIndex = prefixLength;
-    unsigned colonIndex = 0, atIndex = 0;
-    for (unsigned i = usernameIndex; url[i] != '\0' && url[i] != '/'; ++i) {
-      if (url[i] == ':' && colonIndex == 0) {
-	colonIndex = i;
-      } else if (url[i] == '@') {
-	atIndex = i;
-	break; // we're done
-      }
-    }
-    if (atIndex == 0) break; // no '@' found
-
-    char* urlCopy = strDup(url);
-    urlCopy[atIndex] = '\0';
-    if (colonIndex > 0) {
-      urlCopy[colonIndex] = '\0';
-      password = strDup(&urlCopy[colonIndex+1]);
-    } else {
-      password = strDup("");
-    }
-    username = strDup(&urlCopy[usernameIndex]);
-    delete[] urlCopy;
-
-    return True;
-  } while (0);
-
-  return False;
-}
-
-void RTSPClient::responseHandlerForSyncInterface(RTSPClient* rtspClient, int responseCode, char* responseString) {
-  if (rtspClient != NULL) rtspClient->responseHandlerForSyncInterface1(responseCode, responseString);
-}
-
-void RTSPClient::responseHandlerForSyncInterface1(int responseCode, char* responseString) {
-  // If we have a 'timeout task' pending, then unschedule it:
-  if (fTimeoutTask != NULL) envir().taskScheduler().unscheduleDelayedTask(fTimeoutTask);
-
-  // Set result values:
-  fResultCode = responseCode;
-  fResultString = responseString;
-
-  // Signal a break from the event loop (thereby returning from the blocking command):
-  fWatchVariableForSyncInterface = ~0;
-}
-
-void RTSPClient::timeoutHandlerForSyncInterface(void* rtspClient) {
-  if (rtspClient != NULL) ((RTSPClient*)rtspClient)->timeoutHandlerForSyncInterface1();
-}
-
-void RTSPClient::timeoutHandlerForSyncInterface1() {
-  // A RTSP command has timed out, so we should have a queued request record.  Disable it by setting its response handler to NULL.
-  // (Because this is a synchronous interface, there should be exactly one pending response handler - for "fCSeq".)
-  // all of them.)
-  changeResponseHandler(fCSeq, NULL);
-  fTimeoutTask = NULL;
-
-  // Fill in 'negative' return values:
-  fResultCode = ~0;
-  fResultString = NULL;
-
-  // Signal a break from the event loop (thereby returning from the blocking command):
-  fWatchVariableForSyncInterface = ~0;
-}
-
-#endif

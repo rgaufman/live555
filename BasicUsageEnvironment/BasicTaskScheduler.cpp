@@ -103,7 +103,7 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
 	// that had already been closed) being used in "select()" - we print out the sockets that were being used in "select()",
 	// to assist in debugging:
 	fprintf(stderr, "socket numbers used in the select() call:");
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 10000; ++i) {
 	  if (FD_ISSET(i, &fReadSet) || FD_ISSET(i, &fWriteSet) || FD_ISSET(i, &fExceptionSet)) {
 	    fprintf(stderr, " %d(", i);
 	    if (FD_ISSET(i, &fReadSet)) fprintf(stderr, "r");

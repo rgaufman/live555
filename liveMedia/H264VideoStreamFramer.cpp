@@ -139,8 +139,8 @@ H264VideoStreamParser::~H264VideoStreamParser() {
 void H264VideoStreamParser::removeEmulationBytes(u_int8_t* nalUnitCopy, unsigned maxSize, unsigned& nalUnitCopySize) {
   u_int8_t* nalUnitOrig = fStartOfFrame + fOutputStartCodeSize;
   unsigned const NumBytesInNALunit = fTo - nalUnitOrig;
-  if (NumBytesInNALunit > maxSize) return;
   nalUnitCopySize = 0;
+  if (NumBytesInNALunit > maxSize) return;
   for (unsigned i = 0; i < NumBytesInNALunit; ++i) {
     if (i+2 < NumBytesInNALunit && nalUnitOrig[i] == 0 && nalUnitOrig[i+1] == 0 && nalUnitOrig[i+2] == 3) {
       nalUnitCopy[nalUnitCopySize++] = nalUnitOrig[i++];

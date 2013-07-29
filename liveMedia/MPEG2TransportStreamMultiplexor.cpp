@@ -23,8 +23,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define TRANSPORT_PACKET_SIZE 188
 
-#define PAT_FREQUENCY 100 // # of packets between Program Association Tables
-#define PMT_FREQUENCY 500 // # of packets between Program Map Tables
+#define PAT_PERIOD 100 // # of packets between Program Association Tables
+#define PMT_PERIOD 500 // # of packets between Program Map Tables
 
 #define PID_TABLE_SIZE 256
 
@@ -56,7 +56,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
 
   do {
     // Periodically return a Program Association Table packet instead:
-    if (fOutgoingPacketCounter++ % PAT_FREQUENCY == 0) {
+    if (fOutgoingPacketCounter++ % PAT_PERIOD == 0) {
       deliverPATPacket();
       break;
     }
@@ -64,7 +64,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
     // Periodically (or when we see a new PID) return a Program Map Table instead:
     Boolean programMapHasChanged = fPIDState[fCurrentPID].counter == 0
       || fCurrentInputProgramMapVersion != fPreviousInputProgramMapVersion;
-    if (fOutgoingPacketCounter % PMT_FREQUENCY == 0 || programMapHasChanged) {
+    if (fOutgoingPacketCounter % PMT_PERIOD == 0 || programMapHasChanged) {
       if (programMapHasChanged) { // reset values for next time:
 	fPIDState[fCurrentPID].counter = 1;
 	fPreviousInputProgramMapVersion = fCurrentInputProgramMapVersion;

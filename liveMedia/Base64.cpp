@@ -39,16 +39,23 @@ static void initBase64DecodeTable() {
 
 unsigned char* base64Decode(char const* in, unsigned& resultSize,
 			    Boolean trimTrailingZeros) {
-  static Boolean haveInitedBase64DecodeTable = False;
-  if (!haveInitedBase64DecodeTable) {
+  if (in == NULL) return NULL; // sanity check
+  return base64Decode(in, strlen(in), resultSize, trimTrailingZeros);
+}
+
+unsigned char* base64Decode(char const* in, unsigned inSize,
+			    unsigned& resultSize,
+			    Boolean trimTrailingZeros) {
+  static Boolean haveInitializedBase64DecodeTable = False;
+  if (!haveInitializedBase64DecodeTable) {
     initBase64DecodeTable();
-    haveInitedBase64DecodeTable = True;
+    haveInitializedBase64DecodeTable = True;
   }
 
   unsigned char* out = (unsigned char*)strDupSize(in); // ensures we have enough space
   int k = 0;
-  int const jMax = strlen(in) - 3;
-     // in case "in" is not a multiple of 4 bytes (although it should be)
+  int const jMax = inSize - 3;
+     // in case "inSize" is not a multiple of 4 (although it should be)
   for (int j = 0; j < jMax; j += 4) {
     char inTmp[4], outTmp[4];
     for (int i = 0; i < 4; ++i) {

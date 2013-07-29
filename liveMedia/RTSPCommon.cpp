@@ -268,6 +268,30 @@ Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, 
   return parseRangeParam(fields, rangeStart, rangeEnd, absStartTime, absEndTime);
 }
 
+Boolean parseScaleHeader(char const* buf, float& scale) {
+  // Initialize the result parameter to a default value:
+  scale = 1.0;
+
+  // First, find "Scale:"
+  while (1) {
+    if (*buf == '\0') return False; // not found
+    if (_strncasecmp(buf, "Scale:", 6) == 0) break;
+    ++buf;
+  }
+
+  // Then, run through each of the fields, looking for ones we handle:
+  char const* fields = buf + 6;
+  while (*fields == ' ') ++fields;
+  float sc;
+  if (sscanf(fields, "%f", &sc) == 1) {
+    scale = sc;
+  } else {
+    return False; // The header is malformed
+  }
+
+  return True;
+}
+
 // Used to implement "RTSPOptionIsSupported()":
 static Boolean isSeparator(char c) { return c == ' ' || c == ',' || c == ';' || c == ':'; }
 

@@ -54,6 +54,8 @@ Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
 Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime);
 Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime);
 
+Boolean parseScaleHeader(char const* buf, float& scale);
+
 Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
     // Returns True iff the RTSP command "commandName" is mentioned as one of the commands supported in "optionsResponseString"
     // (which should be the 'resultString' from a previous RTSP "OPTIONS" request).

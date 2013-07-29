@@ -431,7 +431,7 @@ ourRTSPClient* ourRTSPClient::createNew(UsageEnvironment& env, char const* rtspU
 
 ourRTSPClient::ourRTSPClient(UsageEnvironment& env, char const* rtspURL,
 			     int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum)
-  : RTSPClient(env,rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum) {
+  : RTSPClient(env,rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum, -1) {
 }
 
 ourRTSPClient::~ourRTSPClient() {

@@ -28,6 +28,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _MEDIA_SESSION_HH
 #include "MediaSession.hh"
 #endif
+#ifndef _RTSP_CLIENT_HH
+#include "RTSPClient.hh"
+#endif
 
 // A subclass of "RTSPClient", used to refer to the particular "ProxyServerMediaSession" object being used.
 // It is used only within the implementation of "ProxyServerMediaSession", but is defined here, in case developers wish to
@@ -37,7 +40,7 @@ class ProxyRTSPClient: public RTSPClient {
 public:
   ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
                   char const* username, char const* password,
-                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel);
+                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
   virtual ~ProxyRTSPClient();
 
   void continueAfterDESCRIBE(char const* sdpDescription);
@@ -82,9 +85,13 @@ public:
 					    char const* username = NULL, char const* password = NULL,
 					    portNumBits tunnelOverHTTPPortNum = 0,
 					        // for streaming the *proxied* (i.e., back-end) stream
-					    int verbosityLevel = 0);
+					    int verbosityLevel = 0,
+					    int socketNumToServer = -1);
       // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
       // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
+      // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
+      //      (In this case, "inputStreamURL" must point to the socket's endpoint, so that it can be accessed via the socket.)
+
   virtual ~ProxyServerMediaSession();
 
   char const* url() const;
@@ -98,12 +105,13 @@ public:
 protected:
   ProxyServerMediaSession(UsageEnvironment& env, RTSPServer* ourRTSPServer,
 			  char const* inputStreamURL, char const* streamName,
-			  char const* username, char const* password, portNumBits tunnelOverHTTPPortNum, int verbosityLevel);
+			  char const* username, char const* password,
+			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
 
   // If you subclass "ProxyRTSPClient", then you should also subclass "ProxyServerMediaSession" and redefine this virtual function
   // in order to create new objects of your "ProxyRTSPClient" subclass:
   virtual ProxyRTSPClient* createNewProxyRTSPClient(char const* rtspURL, char const* username, char const* password,
-						    portNumBits tunnelOverHTTPPortNum, int verbosityLevel);
+						    portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
 
 protected:
   RTSPServer* fOurRTSPServer;

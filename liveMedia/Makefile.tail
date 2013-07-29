@@ -119,7 +119,7 @@ MPEG4VideoStreamFramer.$(CPP):	include/MPEG4VideoStreamFramer.hh MPEGVideoStream
 include/MPEG4VideoStreamFramer.hh:	include/MPEGVideoStreamFramer.hh
 MPEG4VideoStreamDiscreteFramer.$(CPP):	include/MPEG4VideoStreamDiscreteFramer.hh
 include/MPEG4VideoStreamDiscreteFramer.hh:	include/MPEG4VideoStreamFramer.hh
-H264VideoStreamFramer.$(CPP):	include/H264VideoStreamFramer.hh MPEGVideoStreamParser.hh BitVector.hh include/H264VideoRTPSource.hh
+H264VideoStreamFramer.$(CPP):	include/H264VideoStreamFramer.hh MPEGVideoStreamParser.hh include/BitVector.hh include/H264VideoRTPSource.hh
 include/H264VideoStreamFramer.hh:	include/MPEGVideoStreamFramer.hh
 H264VideoStreamDiscreteFramer.$(CPP):	include/H264VideoStreamDiscreteFramer.hh
 include/H264VideoStreamDiscreteFramer.hh:	include/H264VideoStreamFramer.hh
@@ -132,12 +132,12 @@ MPEG4LATMAudioRTPSource.$(CPP):	include/MPEG4LATMAudioRTPSource.hh
 include/MPEG4LATMAudioRTPSource.hh:	include/MultiFramedRTPSource.hh
 MPEG4ESVideoRTPSource.$(CPP):	include/MPEG4ESVideoRTPSource.hh
 include/MPEG4ESVideoRTPSource.hh:	include/MultiFramedRTPSource.hh
-MPEG4GenericRTPSource.$(CPP):	include/MPEG4GenericRTPSource.hh BitVector.hh include/MPEG4LATMAudioRTPSource.hh
+MPEG4GenericRTPSource.$(CPP):	include/MPEG4GenericRTPSource.hh include/BitVector.hh include/MPEG4LATMAudioRTPSource.hh
 include/MPEG4GenericRTPSource.hh:	include/MultiFramedRTPSource.hh
 MP3FileSource.$(CPP):	include/MP3FileSource.hh MP3StreamState.hh include/InputFile.hh
 include/MP3FileSource.hh:	include/FramedFileSource.hh
 MP3StreamState.hh:	MP3Internals.hh
-MP3Internals.hh:	BitVector.hh
+MP3Internals.hh:	include/BitVector.hh
 MP3Transcoder.$(CPP):	include/MP3ADU.hh include/MP3Transcoder.hh
 include/MP3ADU.hh:		include/FramedFilter.hh
 include/MP3Transcoder.hh:	include/MP3ADU.hh include/MP3ADUTranscoder.hh
@@ -305,6 +305,7 @@ include/AC3AudioFileServerMediaSubsession.hh:	include/FileServerMediaSubsession.
 MPEG2TransportUDPServerMediaSubsession.$(CPP):	include/MPEG2TransportUDPServerMediaSubsession.hh include/BasicUDPSource.hh include/SimpleRTPSource.hh include/MPEG2TransportStreamFramer.hh include/SimpleRTPSink.hh
 include/MPEG2TransportUDPServerMediaSubsession.hh:	include/OnDemandServerMediaSubsession.hh
 ProxyServerMediaSession.$(CPP):		include/liveMedia.hh include/RTSPCommon.hh
+include/ProxyServerMediaSession.hh:	include/ServerMediaSession.hh include/MediaSession.hh include/RTSPClient.hh
 QuickTimeFileSink.$(CPP):	include/QuickTimeFileSink.hh include/InputFile.hh include/OutputFile.hh include/QuickTimeGenericRTPSource.hh include/H263plusVideoRTPSource.hh include/MPEG4GenericRTPSource.hh include/MPEG4LATMAudioRTPSource.hh
 include/QuickTimeFileSink.hh:	include/MediaSession.hh
 QuickTimeGenericRTPSource.$(CPP):	include/QuickTimeGenericRTPSource.hh
@@ -336,7 +337,7 @@ MatroskaFileServerDemux.$(CPP): include/MatroskaFileServerDemux.hh H264VideoMatr
 include/MatroskaFileServerDemux.hh: include/ServerMediaSession.hh include/MatroskaFile.hh
 DarwinInjector.$(CPP):	include/DarwinInjector.hh
 include/DarwinInjector.hh:	include/RTSPClient.hh include/RTCP.hh
-BitVector.$(CPP):	BitVector.hh
+BitVector.$(CPP):	include/BitVector.hh
 StreamParser.$(CPP):	StreamParser.hh
 DigestAuthentication.$(CPP):	include/DigestAuthentication.hh our_md5.h
 our_md5.$(C):		our_md5.h

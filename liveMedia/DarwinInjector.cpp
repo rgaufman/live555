@@ -105,7 +105,7 @@ class RTSPClientForDarwinInjector: public RTSPClient {
 public:
   RTSPClientForDarwinInjector(UsageEnvironment& env, char const* rtspURL, int verbosityLevel, char const* applicationName,
 			      DarwinInjector* ourDarwinInjector)
-    : RTSPClient(env, rtspURL, verbosityLevel, applicationName, 0),
+    : RTSPClient(env, rtspURL, verbosityLevel, applicationName, 0, -1),
       fOurDarwinInjector(ourDarwinInjector) {}
   virtual ~RTSPClientForDarwinInjector() {}
   DarwinInjector* fOurDarwinInjector;

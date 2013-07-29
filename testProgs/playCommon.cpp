@@ -33,6 +33,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // Forward function definitions:
+void continueAfterClientCreation0(RTSPClient* client);
+void continueAfterClientCreation1();
 void continueAfterOPTIONS(RTSPClient* client, int resultCode, char* resultString);
 void continueAfterDESCRIBE(RTSPClient* client, int resultCode, char* resultString);
 void continueAfterSETUP(RTSPClient* client, int resultCode, char* resultString);
@@ -107,6 +109,9 @@ Boolean packetLossCompensate = False;
 Boolean syncStreams = False;
 Boolean generateHintTracks = False;
 unsigned qosMeasurementIntervalMS = 0; // 0 means: Don't output QOS data
+Boolean createHandlerServerForREGISTERCommand = False;
+portNumBits handlerServerForREGISTERCommandPortNum = 0;
+HandlerServerForREGISTERCommand* handlerServerForREGISTERCommand;
 
 struct timeval startTime;
 
@@ -118,7 +123,7 @@ void usage() {
 	   << (allowProxyServers ? " [<proxy-server> [<proxy-server-port>]]" : "")
        << "]" << (supportCodecSelection ? " [-A <audio-codec-rtp-payload-format-code>|-M <mime-subtype-name>]" : "")
        << " [-s <initial-seek-time>]|[-U <absolute-seek-time>] [-z <scale>]"
-       << " [-w <width> -h <height>] [-f <frames-per-second>] [-y] [-H] [-Q [<measurement-interval>]] [-F <filename-prefix>] [-b <file-sink-buffer-size>] [-B <input-socket-buffer-size>] [-I <input-interface-ip-address>] [-m] <url> (or " << progName << " -o [-V] <url>)\n";
+       << " [-w <width> -h <height>] [-f <frames-per-second>] [-y] [-H] [-Q [<measurement-interval>]] [-F <filename-prefix>] [-b <file-sink-buffer-size>] [-B <input-socket-buffer-size>] [-I <input-interface-ip-address>] [-m] [<url>|-R [<port-num>]] (or " << progName << " -o [-V] <url>)\n";
   shutdown();
 }
 
@@ -138,11 +143,14 @@ int main(int argc, char** argv) {
 #endif
 
   // unfortunately we can't use getopt() here, as Windoze doesn't have it
-  while (argc > 2) {
+  while (argc > 1) {
     char* const opt = argv[1];
-    if (opt[0] != '-') usage();
-    switch (opt[1]) {
+    if (opt[0] != '-') {
+      if (argc == 2) break; // only the URL is left
+      usage();
+    }
 
+    switch (opt[1]) {
     case 'p': { // specify start port number
       int portArg;
       if (sscanf(argv[2], "%d", &portArg) != 1) {
@@ -445,7 +453,21 @@ int main(int argc, char** argv) {
       break;
     }
 
+    case 'R': {
+      // set up a handler server for incoming "REGISTER" commands
+      createHandlerServerForREGISTERCommand = True;
+      if (argc > 2 && argv[2][0] != '-') {
+	// The next argument is the REGISTER handler server port number:
+	if (sscanf(argv[2], "%hu", &handlerServerForREGISTERCommandPortNum) == 1 && handlerServerForREGISTERCommandPortNum > 0) {
+	  ++argv; --argc;
+	  break;
+	}
+      }
+      break;
+    }
+
     default: {
+      *env << "Invalid option: " << opt << "\n";
       usage();
       break;
     }
@@ -453,7 +475,9 @@ int main(int argc, char** argv) {
 
     ++argv; --argc;
   }
-  if (argc != 2) usage(); // there must be exactly one "rtsp://" URL at the end
+
+  // There must be exactly one "rtsp://" URL at the end (unless '-R' was used, in which case there's no URL)
+  if (!( (argc == 2 && !createHandlerServerForREGISTERCommand) || (argc == 1 && createHandlerServerForREGISTERCommand) )) usage();
   if (outputQuickTimeFile && outputAVIFile) {
     *env << "The -i and -q (or -4) options cannot both be used!\n";
     usage();
@@ -507,25 +531,50 @@ int main(int argc, char** argv) {
 
   streamURL = argv[1];
 
-  // Create our client object:
-  ourClient = createClient(*env, streamURL, verbosityLevel, progName);
-  if (ourClient == NULL) {
-    *env << "Failed to create " << clientProtocolName
-		<< " client: " << env->getResultMsg() << "\n";
-    shutdown();
-  }
-
-  if (sendOptionsRequest) {
-    // Begin by sending an "OPTIONS" command:
-    getOptions(continueAfterOPTIONS);
+  // Create (or arrange to create) our client object:
+  if (createHandlerServerForREGISTERCommand) {
+    handlerServerForREGISTERCommand
+      = HandlerServerForREGISTERCommand::createNew(*env, continueAfterClientCreation0,
+						   handlerServerForREGISTERCommandPortNum, verbosityLevel, progName);
+    if (handlerServerForREGISTERCommand == NULL) {
+      *env << "Failed to create a server for handling incoming \"REGISTER\" commands: " << env->getResultMsg() << "\n";
+    } else {
+      *env << "Awaiting an incoming \"REGISTER\" command on port " << handlerServerForREGISTERCommand->serverPortNum() << "\n";
+    }
   } else {
-    continueAfterOPTIONS(NULL, 0, NULL);
+    ourClient = createClient(*env, streamURL, verbosityLevel, progName);
+    if (ourClient == NULL) {
+      *env << "Failed to create " << clientProtocolName << " client: " << env->getResultMsg() << "\n";
+      shutdown();
+    }
+    continueAfterClientCreation1();
   }
 
   // All subsequent activity takes place within the event loop:
   env->taskScheduler().doEventLoop(); // does not return
 
   return 0; // only to prevent compiler warning
+}
+
+void continueAfterClientCreation0(RTSPClient* newRTSPClient) {
+  if (newRTSPClient == 0) return;
+
+  assignClient(ourClient = newRTSPClient);
+  streamURL = newRTSPClient->url();
+
+  // Having handled one "REGISTER" command (giving us a "rtsp://" URL to stream from), we don't handle any more:
+  Medium::close(handlerServerForREGISTERCommand); handlerServerForREGISTERCommand = NULL;
+
+  continueAfterClientCreation1();
+}
+
+void continueAfterClientCreation1() {
+  if (sendOptionsRequest) {
+    // Begin by sending an "OPTIONS" command:
+    getOptions(continueAfterOPTIONS);
+  } else {
+    continueAfterOPTIONS(NULL, 0, NULL);
+  }
 }
 
 void continueAfterOPTIONS(RTSPClient*, int resultCode, char* resultString) {
