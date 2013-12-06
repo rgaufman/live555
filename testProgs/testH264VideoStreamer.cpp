@@ -19,7 +19,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // main program
 //
 // NOTE: For this application to work, the H.264 Elementary Stream video file *must* contain SPS and PPS NAL units,
-// ideally at or near the start of the file.  THese SPS and PPS NAL units are used to specify 'configuration' information
+// ideally at or near the start of the file.  These SPS and PPS NAL units are used to specify 'configuration' information
 // that is set in the output stream's SDP description (by the RTSP server that is built in to this application).
 // Note also that - unlike some other "*Streamer" demo applications - the resulting stream can be received only using a
 // RTSP client (such as "openRTSP")

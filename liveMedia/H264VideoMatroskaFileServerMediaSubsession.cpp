@@ -36,13 +36,11 @@ H264VideoMatroskaFileServerMediaSubsession
   : H264VideoFileServerMediaSubsession(demux.envir(), demux.fileName(), False),
     fOurDemux(demux), fTrackNumber(trackNumber),
     fSPSSize(0), fSPS(NULL), fPPSSize(0), fPPS(NULL) {
-  // Use our track's 'Codec Private' data: Byte 4 contains the size of NAL unit lengths,
-  // and bytes 5 and beyond contain SPS and PPSs:
-  MatroskaTrack* track = fOurDemux.lookup(fTrackNumber);
-  if (track->codecPrivateSize >= 5) track->subframeSizeSize = (track->codecPrivate[4])&0x3 + 1;
-
+  // Use our track's 'Codec Private' data: Bytes 5 and beyond contain SPS and PPSs:
   unsigned numSPSandPPSBytes;
   u_int8_t* SPSandPPSBytes;
+  MatroskaTrack* track = fOurDemux.lookup(fTrackNumber);
+
   if (track->codecPrivateSize >= 6) {
     numSPSandPPSBytes = track->codecPrivateSize - 5;
     track->codecPrivate[5] &=~ 0xE0; // mask out the top 3 (reserved) bits from the 'numSPSs' byte

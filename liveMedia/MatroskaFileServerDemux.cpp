@@ -28,26 +28,37 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "T140TextMatroskaFileServerMediaSubsession.hh"
 
 void MatroskaFileServerDemux
-::createNew(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData) {
-  (void)new MatroskaFileServerDemux(env, fileName, onCreation, onCreationClientData);
+::createNew(UsageEnvironment& env, char const* fileName,
+	    onCreationFunc* onCreation, void* onCreationClientData,
+	    char const* preferredLanguage) {
+  (void)new MatroskaFileServerDemux(env, fileName,
+				    onCreation, onCreationClientData,
+				    preferredLanguage);
 }
 
 ServerMediaSubsession* MatroskaFileServerDemux::newServerMediaSubsession() {
+  unsigned dummyResultTrackNumber;
+  return newServerMediaSubsession(dummyResultTrackNumber);
+}
+
+ServerMediaSubsession* MatroskaFileServerDemux
+::newServerMediaSubsession(unsigned& resultTrackNumber) {
   ServerMediaSubsession* result;
+  resultTrackNumber = 0;
 
   for (result = NULL; result == NULL && fNextTrackTypeToCheck != MATROSKA_TRACK_TYPE_OTHER; fNextTrackTypeToCheck <<= 1) {
-    unsigned trackNumber = 0;
-    if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_VIDEO) trackNumber = fOurMatroskaFile->chosenVideoTrackNumber();
-    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_AUDIO) trackNumber = fOurMatroskaFile->chosenAudioTrackNumber();
-    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_SUBTITLE) trackNumber = fOurMatroskaFile->chosenSubtitleTrackNumber();
+    if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_VIDEO) resultTrackNumber = fOurMatroskaFile->chosenVideoTrackNumber();
+    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_AUDIO) resultTrackNumber = fOurMatroskaFile->chosenAudioTrackNumber();
+    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_SUBTITLE) resultTrackNumber = fOurMatroskaFile->chosenSubtitleTrackNumber();
 
-    result = newServerMediaSubsession(trackNumber);
+    result = newServerMediaSubsessionByTrackNumber(resultTrackNumber);
   }
 
   return result;
 }
 
-ServerMediaSubsession* MatroskaFileServerDemux::newServerMediaSubsession(unsigned trackNumber) {
+ServerMediaSubsession* MatroskaFileServerDemux
+::newServerMediaSubsessionByTrackNumber(unsigned trackNumber) {
   MatroskaTrack* track = fOurMatroskaFile->lookup(trackNumber);
   if (track == NULL) return NULL;
 
@@ -103,15 +114,17 @@ FramedSource* MatroskaFileServerDemux::newDemuxedTrack(unsigned clientSessionId,
   fLastClientSessionId = clientSessionId;
   fLastCreatedDemux = demuxToUse;
 
-  return demuxToUse->newDemuxedTrack(trackNumber);
+  return demuxToUse->newDemuxedTrackByTrackNumber(trackNumber);
 }
 
 MatroskaFileServerDemux
-::MatroskaFileServerDemux(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData)
+::MatroskaFileServerDemux(UsageEnvironment& env, char const* fileName,
+			  onCreationFunc* onCreation, void* onCreationClientData,
+			  char const* preferredLanguage)
   : Medium(env),
     fFileName(fileName), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData),
     fNextTrackTypeToCheck(0x1), fLastClientSessionId(0), fLastCreatedDemux(NULL) {
-  MatroskaFile::createNew(env, fileName, onMatroskaFileCreation, this);
+  MatroskaFile::createNew(env, fileName, onMatroskaFileCreation, this, preferredLanguage);
 }
 
 MatroskaFileServerDemux::~MatroskaFileServerDemux() {

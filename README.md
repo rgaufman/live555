@@ -17,13 +17,15 @@ You will find various executables:
 
 # Changes to Master
 
-## Buffer sizes
+See modifications.patch to see exactly what was changed compared to vanilla.
+
+### Buffer sizes
 
 increaseReceiveBufferTo is increased to 2,000,000 bytes (same as VLC default) and
 OutPacketBuffer::maxSize is increased 5 fold to 500000 in the ProxyServer. These
 2 changes make live555 work a hell of a lot better out of box.
 
-## -p option for proxyServer - allows specifying a listening port on the command line
+### -p option for proxyServer - allows specifying a listening port on the command line
  
 This was rejected from the mailing list, but often RTSPProxy fails to run on
 more than a few cameras with bad corruption, frames seeking back and forth and

@@ -220,7 +220,13 @@ protected:
 
   void reset();
   void setBaseURL(char const* url);
+  int grabSocket(); // allows a subclass to reuse our input socket, so that it won't get closed when we're deleted
   virtual unsigned sendRequest(RequestRecord* request);
+  virtual Boolean setRequestFields(RequestRecord* request,
+				   char*& cmdURL, Boolean& cmdURLWasAllocated,
+				   char const*& protocolStr,
+				   char*& extraHeaders, Boolean& extraHeadersWereAllocated);
+      // used to implement "sendRequest()"; subclasses may reimplement this (e.g., when implementing a new command name)
 
 private: // redefined virtual functions
   virtual Boolean isRTSPClient() const;
@@ -292,13 +298,13 @@ protected:
   int fVerbosityLevel;
   unsigned fCSeq; // sequence number, used in consecutive requests
   Authenticator fCurrentAuthenticator;
+  netAddressBits fServerAddress;
 
 private:
   portNumBits fTunnelOverHTTPPortNum;
   char* fUserAgentHeaderStr;
   unsigned fUserAgentHeaderStrLen;
   int fInputSocketNum, fOutputSocketNum;
-  netAddressBits fServerAddress;
   char* fBaseURL;
   unsigned char fTCPStreamIdCount; // used for (optional) RTP/TCP
   char* fLastSessionId;
@@ -319,18 +325,19 @@ private:
 // A simple server that creates a new "RTSPClient" object whenever a "REGISTER" request arrives (specifying the "rtsp://" URL
 // of a stream).  The new "RTSPClient" object will be created with the specified URL, and passed to the provided handler function.
 
-typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient);
+typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP);
 
 class HandlerServerForREGISTERCommand: public RTSPServer {
 public:
   static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
-						    Port ourPort = 0, int verbosityLevel = 0, char const* applicationName = NULL);
+						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,
+						    int verbosityLevel = 0, char const* applicationName = NULL);
       // If ourPort.num() == 0, we'll choose the port number ourself.  (Use the following function to get it.)
   portNumBits serverPortNum() const { return ntohs(fRTSPServerPort.num()); }
 
 protected:
   HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
-				  int verbosityLevel, char const* applicationName);
+				  UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName);
       // called only by createNew();
   virtual ~HandlerServerForREGISTERCommand();
 
@@ -341,8 +348,9 @@ protected:
 
 protected: // redefined virtual functions
   virtual char const* allowedCommandNames(); // we support "OPTIONS" and "REGISTER" only
-  virtual Boolean weImplementREGISTER(); // redefined to return True
-  virtual void implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer);
+  virtual Boolean weImplementREGISTER(char const* proxyURLSuffix, char*& responseStr); // redefined to return True
+  virtual void implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer,
+				     Boolean deliverViaTCP, char const* proxyURLSuffix);
 
 private:
   onRTSPClientCreationFunc* fCreationFunc;

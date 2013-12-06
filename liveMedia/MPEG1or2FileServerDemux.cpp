@@ -240,7 +240,7 @@ void MFSD_DummySink::afterGettingFrame1() {
   if (fReturnFirstSeenCode && fOurDemux.lastSeenSCR().isValid) {
     // We were asked to return the first SCR that we saw, and we've seen one,
     // so we're done.  (Handle this as if the input source had closed.)
-    onSourceClosure(this);
+    onSourceClosure();
     return;
   }
 

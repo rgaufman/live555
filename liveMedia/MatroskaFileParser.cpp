@@ -31,7 +31,7 @@ MatroskaFileParser::MatroskaFileParser(MatroskaFile& ourFile, FramedSource* inpu
     fOnEndFunc(onEndFunc), fOnEndClientData(onEndClientData),
     fOurDemux(ourDemux),
     fCurOffsetInFile(0), fSavedCurOffsetInFile(0), fLimitOffsetInFile(0),
-    fClusterTimecode(0), fBlockTimecode(0),
+    fNumHeaderBytesToSkip(0), fClusterTimecode(0), fBlockTimecode(0),
     fFrameSizesWithinBlock(NULL),
     fPresentationTimeOffset(0.0) {
   if (ourDemux == NULL) {
@@ -108,6 +108,7 @@ Boolean MatroskaFileParser::parse() {
   Boolean areDone = False;
 
   try {
+    skipRemainingHeaderBytes(True); // if any
     do {
       switch (fCurrentParseState) {
         case PARSING_START_OF_FILE: {
@@ -185,12 +186,16 @@ Boolean MatroskaFileParser::parseStartOfFile() {
 
   // The file must begin with the standard EBML header (which we skip):
   if (!parseEBMLIdAndSize(id, size) || id != MATROSKA_ID_EBML) {
-    fOurFile.envir() << "ERROR: FIle does not begin with an EBML header\n";
+    fOurFile.envir() << "ERROR: File does not begin with an EBML header\n";
     return True; // We're done with the file, because it's not valid
   }
-  skipHeader(size);
+#ifdef DEBUG
+    fprintf(stderr, "MatroskaFileParser::parseStartOfFile(): Parsed id 0x%s (%s), size: %lld\n", id.hexString(), id.stringName(), size.val());
+#endif
 
   fCurrentParseState = LOOKING_FOR_TRACKS;
+  skipHeader(size);
+
   return False; // because we have more parsing to do - inside the 'Track' header
 }
 
@@ -251,7 +256,8 @@ void MatroskaFileParser::lookForNextTrack() {
 	if (parseEBMLVal_unsigned(size, timecodeScale) && timecodeScale > 0) {
 	  fOurFile.fTimecodeScale = timecodeScale;
 #ifdef DEBUG
-	  fprintf(stderr, "\tTimecode Scale %u ns (=> Segment Duration == %f seconds)\n", fOurFile.timecodeScale(), fOurFile.fileDuration());
+	  fprintf(stderr, "\tTimecode Scale %u ns (=> Segment Duration == %f seconds)\n",
+		  fOurFile.timecodeScale(), fOurFile.segmentDuration()*(fOurFile.fTimecodeScale/1000000000.0f));
 #endif
 	}
 	break;
@@ -259,11 +265,24 @@ void MatroskaFileParser::lookForNextTrack() {
       case MATROSKA_ID_DURATION: { // 'Segment Duration' header: get this value
 	if (parseEBMLVal_float(size, fOurFile.fSegmentDuration)) {
 #ifdef DEBUG
-	  fprintf(stderr, "\tSegment Duration %f (== %f seconds)\n", fOurFile.segmentDuration(), fOurFile.fileDuration());
+	  fprintf(stderr, "\tSegment Duration %f (== %f seconds)\n",
+		  fOurFile.segmentDuration(), fOurFile.segmentDuration()*(fOurFile.fTimecodeScale/1000000000.0f));
 #endif
 	}
 	break;
       }
+#ifdef DEBUG
+      case MATROSKA_ID_TITLE: { // 'Segment Title': display this value
+	char* title;
+	if (parseEBMLVal_string(size, title)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tTitle: %s\n", title);
+#endif
+	  delete[] title;
+	}
+	break;
+      }
+#endif
       case MATROSKA_ID_TRACKS: { // enter this, and move on to parsing 'Tracks'
 	fLimitOffsetInFile = fCurOffsetInFile + size.val(); // Make sure we don't read past the end of this header
 	fCurrentParseState = PARSING_TRACK;
@@ -271,9 +290,6 @@ void MatroskaFileParser::lookForNextTrack() {
       }
       default: { // skip over this header
 	skipHeader(size);
-#ifdef DEBUG
-	fprintf(stderr, "\tskipped %lld bytes\n", size.val());
-#endif
 	break;
       }
     }
@@ -310,7 +326,7 @@ Boolean MatroskaFileParser::parseTrack() {
 #endif
 	  if (track != NULL && trackNumber != 0) {
 	    track->trackNumber = trackNumber;
-	    fOurFile.fTracks.add(track, trackNumber);
+	    fOurFile.addTrack(track, trackNumber);
 	  }
 	}
 	break;
@@ -436,6 +452,13 @@ Boolean MatroskaFileParser::parseTrack() {
 	  if (track != NULL) {
 	    delete[] track->codecPrivate; track->codecPrivate = codecPrivate;
 	    track->codecPrivateSize = codecPrivateSize;
+
+	    // Hack for H.264: Byte 4 of the 'codec private' data contains
+	    // the size of NAL unit lengths:
+	    if (track->codecID != NULL && strcmp(track->codecID, "V_MPEG4/ISO/AVC") == 0
+		&& codecPrivateSize >= 5) {
+	      track->subframeSizeSize = (codecPrivate[4])&0x3 + 1;
+	    }
 	  } else {
 	    delete[] codecPrivate;
 	  }
@@ -481,6 +504,15 @@ Boolean MatroskaFileParser::parseTrack() {
 	}
 	break;
       }
+      case MATROSKA_ID_DISPLAY_UNIT: {
+	unsigned displayUnit;
+	if (parseEBMLVal_unsigned(size, displayUnit)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tDisplay Unit %d\n", displayUnit);
+#endif
+	}
+	break;
+      }
       case MATROSKA_ID_AUDIO: { // 'Audio settings' header: enter this
 	break;
       }
@@ -512,6 +544,15 @@ Boolean MatroskaFileParser::parseTrack() {
 	  fprintf(stderr, "\tChannels %d\n", numChannels);
 #endif
 	  if (track != NULL) track->numChannels = numChannels;
+	}
+	break;
+      }
+      case MATROSKA_ID_BIT_DEPTH: {
+	unsigned bitDepth;
+	if (parseEBMLVal_unsigned(size, bitDepth)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tBit Depth %d\n", bitDepth);
+#endif
 	}
 	break;
       }
@@ -563,9 +604,6 @@ Boolean MatroskaFileParser::parseTrack() {
       }
       default: { // We don't process this header, so just skip over it:
 	skipHeader(size);
-#ifdef DEBUG
-	fprintf(stderr, "\tskipped %lld bytes\n", size.val());
-#endif
 	break;
       }
     }
@@ -624,11 +662,56 @@ void MatroskaFileParser::lookForNextBlock() {
 	}
 	break;
       }
+      // Attachments are parsed only if we're in DEBUG mode (otherwise we just skip over them):
+#ifdef DEBUG
+      case MATROSKA_ID_ATTACHMENTS: { // 'Attachments': enter this
+	break;
+      }
+      case MATROSKA_ID_ATTACHED_FILE: { // 'Attached File': enter this
+	break;
+      }
+      case MATROSKA_ID_FILE_DESCRIPTION: { // 'File Description': get this value
+	char* fileDescription;
+	if (parseEBMLVal_string(size, fileDescription)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tFile Description: %s\n", fileDescription);
+#endif
+	  delete[] fileDescription;
+	}
+	break;
+      }
+      case MATROSKA_ID_FILE_NAME: { // 'File Name': get this value
+	char* fileName;
+	if (parseEBMLVal_string(size, fileName)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tFile Name: %s\n", fileName);
+#endif
+	  delete[] fileName;
+	}
+	break;
+      }
+      case MATROSKA_ID_FILE_MIME_TYPE: { // 'File MIME Type': get this value
+	char* fileMIMEType;
+	if (parseEBMLVal_string(size, fileMIMEType)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tFile MIME Type: %s\n", fileMIMEType);
+#endif
+	  delete[] fileMIMEType;
+	}
+	break;
+      }
+      case MATROSKA_ID_FILE_UID: { // 'File UID': get this value
+	unsigned fileUID;
+	if (parseEBMLVal_unsigned(size, fileUID)) {
+#ifdef DEBUG
+	  fprintf(stderr, "\tFile UID: 0x%x\n", fileUID);
+#endif
+	}
+	break;
+      }
+#endif
       default: { // skip over this header
 	skipHeader(size);
-#ifdef DEBUG
-	fprintf(stderr, "\tskipped %lld bytes\n", size.val());
-#endif
 	break;
       }
     }
@@ -707,9 +790,6 @@ Boolean MatroskaFileParser::parseCues() {
       }
       default: { // We don't process this header, so just skip over it:
 	skipHeader(size);
-#ifdef DEBUG_CUES
-	fprintf(stderr, "\tskipped %lld bytes\n", size.val());
-#endif
 	break;
       }
     }
@@ -1130,12 +1210,29 @@ Boolean MatroskaFileParser::parseEBMLVal_unsigned(EBMLDataSize& size, unsigned& 
 }
 
 Boolean MatroskaFileParser::parseEBMLVal_float(EBMLDataSize& size, float& result) {
-  unsigned resultAsUnsigned;
-  if (!parseEBMLVal_unsigned(size, resultAsUnsigned)) return False;
+  if (size.val() == 4) {
+    // Normal case.  Read the value as if it were a 4-byte integer, then copy it to the 'float' result:
+    unsigned resultAsUnsigned;
+    if (!parseEBMLVal_unsigned(size, resultAsUnsigned)) return False;
 
-  if (sizeof result != sizeof resultAsUnsigned) return False;
-  memcpy(&result, &resultAsUnsigned, sizeof result);
-  return True;
+    if (sizeof result != sizeof resultAsUnsigned) return False;
+    memcpy(&result, &resultAsUnsigned, sizeof result);
+    return True;
+  } else if (size.val() == 8) {
+    // Read the value as if it were an 8-byte integer, then copy it to a 'double', the convert that to the 'float' result:
+    u_int64_t resultAsUnsigned64;
+    if (!parseEBMLVal_unsigned64(size, resultAsUnsigned64)) return False;
+
+    double resultDouble;
+    if (sizeof resultDouble != sizeof resultAsUnsigned64) return False;
+    memcpy(&resultDouble, &resultAsUnsigned64, sizeof resultDouble);
+
+    result = (float)resultDouble;
+    return True;
+  } else {
+    // Unworkable size
+    return False;
+  }
 }
 
 Boolean MatroskaFileParser::parseEBMLVal_string(EBMLDataSize& size, char*& result) {
@@ -1188,17 +1285,37 @@ Boolean MatroskaFileParser::parseEBMLVal_binary(EBMLDataSize& size, u_int8_t*& r
 }
 
 void MatroskaFileParser::skipHeader(EBMLDataSize const& size) {
-  unsigned sv = (unsigned)size.val();
+  u_int64_t sv = (unsigned)size.val();
+#ifdef DEBUG
+  fprintf(stderr, "\tskipping %llu bytes\n", sv);
+#endif
 
-  // Hack: To avoid tripping into a parser 'internal error' if we try to skip an excessively large distance.
-  // (Such large distances are likely caused by erroneous data.  We might not be able to recover from this, but at least we won't
-  //  generate a parser 'internal error'.)
-  if (sv > bankSize()-12) sv = bankSize()-12;
-  
-  skipBytes(sv);
-  fCurOffsetInFile += sv;
+  fNumHeaderBytesToSkip = sv;
+  skipRemainingHeaderBytes(False);
 }
 
+void MatroskaFileParser::skipRemainingHeaderBytes(Boolean isContinuation) {
+  if (fNumHeaderBytesToSkip == 0) return; // common case
+
+  // Hack: To avoid tripping into a parser 'internal error' if we try to skip an excessively large
+  // distance, break up the skipping into manageable chunks, to ensure forward progress:
+  unsigned const maxBytesToSkip = bankSize();
+  while (fNumHeaderBytesToSkip > 0) {
+    unsigned numBytesToSkipNow
+      = fNumHeaderBytesToSkip < maxBytesToSkip ? (unsigned)fNumHeaderBytesToSkip : maxBytesToSkip;
+    setParseState();
+    skipBytes(numBytesToSkipNow);
+#ifdef DEBUG
+    if (isContinuation || numBytesToSkipNow < fNumHeaderBytesToSkip) {
+      fprintf(stderr, "\t\t(skipped %u bytes; %llu bytes remaining)\n",
+	      numBytesToSkipNow, fNumHeaderBytesToSkip - numBytesToSkipNow);
+    }
+#endif
+    fCurOffsetInFile += numBytesToSkipNow;
+    fNumHeaderBytesToSkip -= numBytesToSkipNow;
+  }
+}
+      
 void MatroskaFileParser::setParseState() {
   fSavedCurOffsetInFile = fCurOffsetInFile;
   fSavedCurOffsetWithinFrame = fCurOffsetWithinFrame;

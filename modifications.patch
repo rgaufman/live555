@@ -1,6 +1,43 @@
-diff -rupN --exclude=.git live555-orig/liveMedia/MultiFramedRTPSource.cpp live555/liveMedia/MultiFramedRTPSource.cpp
---- live555-orig/liveMedia/MultiFramedRTPSource.cpp	2013-07-29 20:12:22.000000000 +0100
-+++ live555/liveMedia/MultiFramedRTPSource.cpp	2013-07-29 20:09:32.000000000 +0100
+diff -rupN original/README.md new/README.md
+--- original/README.md	1970-01-01 01:00:00.000000000 +0100
++++ new/README.md	2013-12-06 16:30:21.000000000 +0000
+@@ -0,0 +1,33 @@
++# Build Instructions
++
++For example:
++
++```bash
++./genMakefiles linux
++make -j4
++```
++
++Replace "linux" with your platform, e.g. avr32-linux, cygwin, freebsd, iphoneos, linux, linux-64bit, macosx, openbsd, solaris-64bit, etc (see config.PLATFORM files)
++
++You will find various executables:
++
++ * ./testProgs - contain various programs such as testRTSPClient to receive an RTSP stream
++ * ./proxyServer/live555ProxyServer - a great RTSP proxy server
++ * ./mediaServer/live555MediaServer - an RTSP media server for serving static files over RTSP
++
++# Changes to Master
++
++See modifications.patch to see exactly what was changed compared to vanilla.
++
++### Buffer sizes
++
++increaseReceiveBufferTo is increased to 2,000,000 bytes (same as VLC default) and
++OutPacketBuffer::maxSize is increased 5 fold to 500000 in the ProxyServer. These
++2 changes make live555 work a hell of a lot better out of box.
++
++### -p option for proxyServer - allows specifying a listening port on the command line
++ 
++This was rejected from the mailing list, but often RTSPProxy fails to run on
++more than a few cameras with bad corruption, frames seeking back and forth and
++many other adverse side effects. Being able to run multiple instances listening
++on different ports is crucial.
+diff -rupN original/liveMedia/MultiFramedRTPSource.cpp new/liveMedia/MultiFramedRTPSource.cpp
+--- original/liveMedia/MultiFramedRTPSource.cpp	2013-12-05 22:35:43.000000000 +0000
++++ new/liveMedia/MultiFramedRTPSource.cpp	2013-12-06 16:31:27.000000000 +0000
 @@ -72,7 +72,7 @@ MultiFramedRTPSource
    fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
  
@@ -10,26 +47,10 @@ diff -rupN --exclude=.git live555-orig/liveMedia/MultiFramedRTPSource.cpp live55
  }
  
  void MultiFramedRTPSource::reset() {
-diff -rupN --exclude=.git live555-orig/modifications.patch live555/modifications.patch
---- live555-orig/modifications.patch	1970-01-01 01:00:00.000000000 +0100
-+++ live555/modifications.patch	2013-07-29 20:19:15.000000000 +0100
-@@ -0,0 +1,12 @@
-+diff -rupN --exclude=.git live555-orig/liveMedia/MultiFramedRTPSource.cpp live555/liveMedia/MultiFramedRTPSource.cpp
-+--- live555-orig/liveMedia/MultiFramedRTPSource.cpp	2013-07-29 20:12:22.000000000 +0100
-++++ live555/liveMedia/MultiFramedRTPSource.cpp	2013-07-29 20:09:32.000000000 +0100
-+@@ -72,7 +72,7 @@ MultiFramedRTPSource
-+   fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
-+ 
-+   // Try to use a big receive buffer for RTP:
-+-  increaseReceiveBufferTo(env, RTPgs->socketNum(), 50*1024);
-++  increaseReceiveBufferTo(env, RTPgs->socketNum(), 2000000);
-+ }
-+ 
-+ void MultiFramedRTPSource::reset() {
-diff -rupN --exclude=.git live555-orig/proxyServer/live555ProxyServer.cpp live555/proxyServer/live555ProxyServer.cpp
---- live555-orig/proxyServer/live555ProxyServer.cpp	2013-07-29 20:12:22.000000000 +0100
-+++ live555/proxyServer/live555ProxyServer.cpp	2013-07-29 20:15:44.000000000 +0100
-@@ -28,6 +28,7 @@ UserAuthenticationDatabase* authDB;
+diff -rupN original/proxyServer/live555ProxyServer.cpp new/proxyServer/live555ProxyServer.cpp
+--- original/proxyServer/live555ProxyServer.cpp	2013-12-05 22:35:42.000000000 +0000
++++ new/proxyServer/live555ProxyServer.cpp	2013-12-06 16:37:06.000000000 +0000
+@@ -29,6 +29,7 @@ UserAuthenticationDatabase* authDBForREG
  int verbosityLevel = 0;
  Boolean streamRTPOverTCP = False;
  portNumBits tunnelOverHTTPPortNum = 0;
@@ -37,15 +58,15 @@ diff -rupN --exclude=.git live555-orig/proxyServer/live555ProxyServer.cpp live55
  char* username = NULL;
  char* password = NULL;
  Boolean proxyREGISTERRequests = False;
-@@ -44,6 +45,7 @@ void usage() {
+@@ -47,6 +48,7 @@ void usage() {
    *env << "Usage: " << progName
         << " [-v|-V]"
         << " [-t|-T <http-port>]"
 +       << " [-p <rtsp-port>]"
         << " [-u <username> <password>]"
-        << " [-R]"
+        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
         << " <rtsp-url-1> ... <rtsp-url-n>\n";
-@@ -53,7 +55,7 @@ void usage() {
+@@ -56,7 +58,7 @@ void usage() {
  int main(int argc, char** argv) {
    // Increase the maximum size of video frames that we can 'proxy' without truncation.
    // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
@@ -54,29 +75,10 @@ diff -rupN --exclude=.git live555-orig/proxyServer/live555ProxyServer.cpp live55
  
    // Begin by setting up our usage environment:
    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-@@ -92,12 +94,28 @@ int main(int argc, char** argv) {
-     case 'T': {
-       // stream RTP and RTCP over a HTTP connection
-       if (argc > 3 && argv[2][0] != '-') {
--	// The next argument is the HTTP server port number:                                                                       
--	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
--	    && tunnelOverHTTPPortNum > 0) {
--	  ++argv; --argc;
--	  break;
--	}
-+  // The next argument is the HTTP server port number:                                                                       
-+  if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
-+      && tunnelOverHTTPPortNum > 0) {
-+    ++argv; --argc;
-+    break;
-+  }
-+      }
-+
-+      // If we get here, the option was specified incorrectly:
-+      usage();
-+      break;
-+    }
-+
+@@ -108,6 +110,23 @@ int main(int argc, char** argv) {
+       break;
+     }
+ 
 +    case 'p': {
 +      // set port
 +      if (argc > 3 && argv[2][0] != '-') {
@@ -86,10 +88,18 @@ diff -rupN --exclude=.git live555-orig/proxyServer/live555ProxyServer.cpp live55
 +            ++argv; --argc;
 +            break;
 +        }
-       }
- 
-       // If we get here, the option was specified incorrectly:
-@@ -157,10 +175,6 @@ int main(int argc, char** argv) {
++      }
++
++      // If we get here, the option was specified incorrectly:
++      usage();
++      break;
++    }
++
++
+     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
+       if (argc < 4) usage(); // there's no argv[3] (for the "password")
+       username = argv[2];
+@@ -173,10 +192,6 @@ int main(int argc, char** argv) {
    portNumBits rtspServerPortNum = 554;
    rtspServer = createRTSPServer(rtspServerPortNum);
    if (rtspServer == NULL) {
@@ -100,14 +110,3 @@ diff -rupN --exclude=.git live555-orig/proxyServer/live555ProxyServer.cpp live55
      *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
      exit(1);
    }
-@@ -176,8 +190,8 @@ int main(int argc, char** argv) {
-     }
-     ServerMediaSession* sms
-       = ProxyServerMediaSession::createNew(*env, rtspServer,
--					   proxiedStreamURL, streamName,
--					   username, password, tunnelOverHTTPPortNum, verbosityLevel);
-+             proxiedStreamURL, streamName,
-+             username, password, tunnelOverHTTPPortNum, verbosityLevel);
-     rtspServer->addServerMediaSession(sms);
- 
-     char* proxyStreamURL = rtspServer->rtspURL(sms);

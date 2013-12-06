@@ -481,7 +481,7 @@ unsigned MediaSession::guessRTPTimestampFrequency(char const* mediumName,
   if (strcmp(codecName, "L16") == 0) return 44100;
   if (strcmp(codecName, "MPA") == 0
       || strcmp(codecName, "MPA-ROBUST") == 0
-      || strcmp(codecName, "X-MP3-DRAFT-00")) return 90000;
+      || strcmp(codecName, "X-MP3-DRAFT-00") == 0) return 90000;
 
   // Now, guess default values:
   if (strcmp(mediumName, "video") == 0) return 90000;

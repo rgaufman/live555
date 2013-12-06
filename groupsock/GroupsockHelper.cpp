@@ -401,6 +401,17 @@ unsigned increaseReceiveBufferTo(UsageEnvironment& env,
   return increaseBufferTo(env, SO_RCVBUF, socket, requestedSize);
 }
 
+static void clearMulticastAllSocketOption(int socket) {
+#ifdef IP_MULTICAST_ALL
+  // This option is defined in modern versions of Linux to overcome a bug in the Linux kernel's default behavior.
+  // When set to 0, it ensures that we receive only packets that were sent to the specified IP multicast address,
+  // even if some other process on the same system has joined a different multicast group with the same port number.
+  int multicastAll = 0;
+  (void)setsockopt(socket, IPPROTO_IP, IP_MULTICAST_ALL, (void*)&multicastAll, sizeof multicastAll);
+  // Ignore the call's result.  Should it fail, we'll still receive packets (just perhaps more than intended)
+#endif
+}
+
 Boolean socketJoinGroup(UsageEnvironment& env, int socket,
 			netAddressBits groupAddress){
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
@@ -421,6 +432,8 @@ Boolean socketJoinGroup(UsageEnvironment& env, int socket,
     }
 #endif
   }
+
+  clearMulticastAllSocketOption(socket);
 
   return True;
 }
@@ -483,6 +496,8 @@ Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
     socketErr(env, "setsockopt(IP_ADD_SOURCE_MEMBERSHIP) error: ");
     return False;
   }
+
+  clearMulticastAllSocketOption(socket);
 
   return True;
 }

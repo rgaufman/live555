@@ -85,7 +85,6 @@ void MultiFramedRTPSource::reset() {
 }
 
 MultiFramedRTPSource::~MultiFramedRTPSource() {
-  fRTPInterface.stopNetworkReading();
   delete fReorderingBuffer;
 }
 

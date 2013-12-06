@@ -22,7 +22,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 char const* progName;
 UsageEnvironment* env;
-UserAuthenticationDatabase* authDB;
+UserAuthenticationDatabase* authDB = NULL;
+UserAuthenticationDatabase* authDBForREGISTER = NULL;
 
 // Default values of command-line parameters:
 int verbosityLevel = 0;
@@ -32,10 +33,12 @@ portNumBits rtspServerPortNum = 554;
 char* username = NULL;
 char* password = NULL;
 Boolean proxyREGISTERRequests = False;
+char* usernameForREGISTER = NULL;
+char* passwordForREGISTER = NULL;
 
 static RTSPServer* createRTSPServer(Port port) {
   if (proxyREGISTERRequests) {
-    return RTSPServerWithREGISTERProxying::createNew(*env, port, authDB);
+    return RTSPServerWithREGISTERProxying::createNew(*env, port, authDB, authDBForREGISTER, 65, streamRTPOverTCP, verbosityLevel);
   } else {
     return RTSPServer::createNew(*env, port, authDB);
   }
@@ -47,7 +50,7 @@ void usage() {
        << " [-t|-T <http-port>]"
        << " [-p <rtsp-port>]"
        << " [-u <username> <password>]"
-       << " [-R]"
+       << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
        << " <rtsp-url-1> ... <rtsp-url-n>\n";
   exit(1);
 }
@@ -94,12 +97,12 @@ int main(int argc, char** argv) {
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 3 && argv[2][0] != '-') {
-  // The next argument is the HTTP server port number:                                                                       
-  if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
-      && tunnelOverHTTPPortNum > 0) {
-    ++argv; --argc;
-    break;
-  }
+	// The next argument is the HTTP server port number:                                                                       
+	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
+	    && tunnelOverHTTPPortNum > 0) {
+	  ++argv; --argc;
+	  break;
+	}
       }
 
       // If we get here, the option was specified incorrectly:
@@ -123,10 +126,22 @@ int main(int argc, char** argv) {
       break;
     }
 
+
     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
       if (argc < 4) usage(); // there's no argv[3] (for the "password")
       username = argv[2];
       password = argv[3];
+      argv += 2; argc -= 2;
+      break;
+    }
+
+    case 'U': { // specify a username and password to use to authenticate incoming "REGISTER" commands
+      if (argc < 4) usage(); // there's no argv[3] (for the "password")
+      usernameForREGISTER = argv[2];
+      passwordForREGISTER = argv[3];
+
+      if (authDBForREGISTER == NULL) authDBForREGISTER = new UserAuthenticationDatabase;
+      authDBForREGISTER->addUserRecord(usernameForREGISTER, passwordForREGISTER);
       argv += 2; argc -= 2;
       break;
     }
@@ -151,6 +166,10 @@ int main(int argc, char** argv) {
     if (strncmp(argv[i], "rtsp://", 7) != 0) usage();
   }
   // Do some additional checking for invalid command-line argument combinations:
+  if (authDBForREGISTER != NULL && !proxyREGISTERRequests) {
+    *env << "The '-U <username> <password>' option can be used only with -R\n";
+    usage();
+  }
   if (streamRTPOverTCP) {
     if (tunnelOverHTTPPortNum > 0) {
       *env << "The -t and -T options cannot both be used!\n";
@@ -160,18 +179,17 @@ int main(int argc, char** argv) {
     }
   }
 
-  authDB = NULL;
 #ifdef ACCESS_CONTROL
   // To implement client access control to the RTSP server, do the following:
   authDB = new UserAuthenticationDatabase;
   authDB->addUserRecord("username1", "password1"); // replace these with real strings
-  // Repeat the above with each <username>, <password> that you wish to allow
-  // access to the server.
+      // Repeat this line with each <username>, <password> that you wish to allow access to the server.
 #endif
 
   // Create the RTSP server.  Try first with the default port number (554),
   // and then with the alternative port number (8554):
   RTSPServer* rtspServer;
+  portNumBits rtspServerPortNum = 554;
   rtspServer = createRTSPServer(rtspServerPortNum);
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
@@ -189,8 +207,8 @@ int main(int argc, char** argv) {
     }
     ServerMediaSession* sms
       = ProxyServerMediaSession::createNew(*env, rtspServer,
-             proxiedStreamURL, streamName,
-             username, password, tunnelOverHTTPPortNum, verbosityLevel);
+					   proxiedStreamURL, streamName,
+					   username, password, tunnelOverHTTPPortNum, verbosityLevel);
     rtspServer->addServerMediaSession(sms);
 
     char* proxyStreamURL = rtspServer->rtspURL(sms);

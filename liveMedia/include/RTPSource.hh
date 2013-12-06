@@ -60,13 +60,11 @@ public:
   // Note: This is the SSRC in the most recently received RTP packet; not *our* SSRC
 
   Boolean& enableRTCPReports() { return fEnableRTCPReports; }
+  Boolean const& enableRTCPReports() const { return fEnableRTCPReports; }
 
   void setStreamSocket(int sockNum, unsigned char streamChannelId) {
     // hack to allow sending RTP over TCP (RFC 2236, section 10.12)
     fRTPInterface.setStreamSocket(sockNum, streamChannelId);
-  }
-  void setServerRequestAlternativeByteHandler(int socketNum, ServerRequestAlternativeByteHandler* handler, void* clientData) {
-    fRTPInterface.setServerRequestAlternativeByteHandler(socketNum, handler, clientData);
   }
 
   void setAuxilliaryReadHandler(AuxHandlerFunc* handlerFunc,

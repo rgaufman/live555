@@ -33,7 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // Forward function definitions:
-void continueAfterClientCreation0(RTSPClient* client);
+void continueAfterClientCreation0(RTSPClient* client, Boolean requestStreamingOverTCP);
 void continueAfterClientCreation1();
 void continueAfterOPTIONS(RTSPClient* client, int resultCode, char* resultString);
 void continueAfterDESCRIBE(RTSPClient* client, int resultCode, char* resultString);
@@ -88,6 +88,7 @@ Boolean sendOptionsRequestOnly = False;
 Boolean oneFilePerFrame = False;
 Boolean notifyOnPacketArrival = False;
 Boolean streamUsingTCP = False;
+Boolean forceMulticastOnUnspecified = False;
 unsigned short desiredPortNum = 0;
 portNumBits tunnelOverHTTPPortNum = 0;
 char* username = NULL;
@@ -108,10 +109,15 @@ unsigned socketInputBufferSize = 0;
 Boolean packetLossCompensate = False;
 Boolean syncStreams = False;
 Boolean generateHintTracks = False;
+Boolean waitForResponseToTEARDOWN = True;
 unsigned qosMeasurementIntervalMS = 0; // 0 means: Don't output QOS data
+char* userAgent = NULL;
 Boolean createHandlerServerForREGISTERCommand = False;
 portNumBits handlerServerForREGISTERCommandPortNum = 0;
 HandlerServerForREGISTERCommand* handlerServerForREGISTERCommand;
+char* usernameForREGISTER = NULL;
+char* passwordForREGISTER = NULL;
+UserAuthenticationDatabase* authDBForREGISTER = NULL;
 
 struct timeval startTime;
 
@@ -122,7 +128,8 @@ void usage() {
        << " [-u <username> <password>"
 	   << (allowProxyServers ? " [<proxy-server> [<proxy-server-port>]]" : "")
        << "]" << (supportCodecSelection ? " [-A <audio-codec-rtp-payload-format-code>|-M <mime-subtype-name>]" : "")
-       << " [-s <initial-seek-time>]|[-U <absolute-seek-time>] [-z <scale>]"
+       << " [-s <initial-seek-time>]|[-U <absolute-seek-time>] [-z <scale>] [-g user-agent]"
+       << " [-k <username-for-REGISTER> <password-for-REGISTER>]"
        << " [-w <width> -h <height>] [-f <frames-per-second>] [-y] [-H] [-Q [<measurement-interval>]] [-F <filename-prefix>] [-b <file-sink-buffer-size>] [-B <input-socket-buffer-size>] [-I <input-interface-ip-address>] [-m] [<url>|-R [<port-num>]] (or " << progName << " -o [-V] <url>)\n";
   shutdown();
 }
@@ -328,6 +335,17 @@ int main(int argc, char** argv) {
       break;
     }
 
+    case 'k': { // specify a username and password to be used to authentication an incoming "REGISTER" command (for use with -R)
+      if (argc < 4) usage(); // there's no argv[3] (for the "password")
+      usernameForREGISTER = argv[2];
+      passwordForREGISTER = argv[3];
+      argv+=2; argc-=2;
+
+      if (authDBForREGISTER == NULL) authDBForREGISTER = new UserAuthenticationDatabase;
+      authDBForREGISTER->addUserRecord(usernameForREGISTER, passwordForREGISTER);
+      break;
+    }
+
     case 'A': { // specify a desired audio RTP payload format
       unsigned formatArg;
       if (sscanf(argv[2], "%u", &formatArg) != 1
@@ -375,6 +393,12 @@ int main(int argc, char** argv) {
 
     case 'F': { // specify a prefix for the audio and video output files
       fileNamePrefix = argv[2];
+      ++argv; --argc;
+      break;
+    }
+
+    case 'g': { // specify a user agent name to use in outgoing requests
+      userAgent = argv[2];
       ++argv; --argc;
       break;
     }
@@ -437,7 +461,7 @@ int main(int argc, char** argv) {
     }
 
     case 'U': {
-      // specify initial absolute seek time (trick play), using a string of the form "YYYYMMDDTHHMMSSZ" or "YYYYMMDDTHHMMSS.<frac>Z
+      // specify initial absolute seek time (trick play), using a string of the form "YYYYMMDDTHHMMSSZ" or "YYYYMMDDTHHMMSS.<frac>Z"
       initialAbsoluteSeekTime = argv[2];
       ++argv; --argc;
       break;
@@ -463,6 +487,11 @@ int main(int argc, char** argv) {
 	  break;
 	}
       }
+      break;
+    }
+
+    case 'C': {
+      forceMulticastOnUnspecified = True;
       break;
     }
 
@@ -511,6 +540,10 @@ int main(int argc, char** argv) {
     *env << "The -s and -U options cannot both be used!\n";
     usage();
   }
+  if (authDBForREGISTER != NULL && !createHandlerServerForREGISTERCommand) {
+    *env << "If \"-k <username> <password>\" is used, then -R (or \"-R <port-num>\") must also be used!\n";
+    usage();
+  }
   if (tunnelOverHTTPPortNum > 0) {
     if (streamUsingTCP) {
       *env << "The -t and -T options cannot both be used!\n";
@@ -535,7 +568,8 @@ int main(int argc, char** argv) {
   if (createHandlerServerForREGISTERCommand) {
     handlerServerForREGISTERCommand
       = HandlerServerForREGISTERCommand::createNew(*env, continueAfterClientCreation0,
-						   handlerServerForREGISTERCommandPortNum, verbosityLevel, progName);
+						   handlerServerForREGISTERCommandPortNum, authDBForREGISTER,
+						   verbosityLevel, progName);
     if (handlerServerForREGISTERCommand == NULL) {
       *env << "Failed to create a server for handling incoming \"REGISTER\" commands: " << env->getResultMsg() << "\n";
     } else {
@@ -556,8 +590,10 @@ int main(int argc, char** argv) {
   return 0; // only to prevent compiler warning
 }
 
-void continueAfterClientCreation0(RTSPClient* newRTSPClient) {
-  if (newRTSPClient == 0) return;
+void continueAfterClientCreation0(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP) {
+  if (newRTSPClient == NULL) return;
+
+  streamUsingTCP = requestStreamingOverTCP;
 
   assignClient(ourClient = newRTSPClient);
   streamURL = newRTSPClient->url();
@@ -569,6 +605,8 @@ void continueAfterClientCreation0(RTSPClient* newRTSPClient) {
 }
 
 void continueAfterClientCreation1() {
+  setUserAgentString(userAgent);
+
   if (sendOptionsRequest) {
     // Begin by sending an "OPTIONS" command:
     getOptions(continueAfterOPTIONS);
@@ -722,7 +760,7 @@ void setupStreams() {
     // We have another subsession left to set up:
     if (subsession->clientPortNum() == 0) continue; // port # was not set
 
-    setupSubsession(subsession, streamUsingTCP, continueAfterSETUP);
+    setupSubsession(subsession, streamUsingTCP, forceMulticastOnUnspecified, continueAfterSETUP);
     return;
   }
 
@@ -1039,8 +1077,7 @@ static void scheduleNextQOSMeasurement() {
   struct timeval timeNow;
   gettimeofday(&timeNow, NULL);
   unsigned timeNowUSecs = timeNow.tv_sec*1000000 + timeNow.tv_usec;
-  unsigned usecsToDelay = nextQOSMeasurementUSecs - timeNowUSecs;
-     // Note: This works even when nextQOSMeasurementUSecs wraps around
+  int usecsToDelay = nextQOSMeasurementUSecs - timeNowUSecs;
 
   qosMeasurementTimerTask = env->taskScheduler().scheduleDelayedTask(
      usecsToDelay, (TaskFunc*)periodicQOSMeasurement, (void*)NULL);
@@ -1219,11 +1256,17 @@ void shutdown(int exitCode) {
   }
 
   // Teardown, then shutdown, any outstanding RTP/RTCP subsessions
+  Boolean shutdownImmediately = True; // by default
   if (session != NULL) {
-    tearDownSession(session, continueAfterTEARDOWN);
-  } else {
-    continueAfterTEARDOWN(NULL, 0, NULL);
+    RTSPClient::responseHandler* responseHandlerForTEARDOWN = NULL; // unless:
+    if (waitForResponseToTEARDOWN) {
+      shutdownImmediately = False;
+      responseHandlerForTEARDOWN = continueAfterTEARDOWN;
+    }
+    tearDownSession(session, responseHandlerForTEARDOWN);
   }
+
+  if (shutdownImmediately) continueAfterTEARDOWN(NULL, 0, NULL);
 }
 
 void continueAfterTEARDOWN(RTSPClient*, int /*resultCode*/, char* resultString) {
@@ -1235,6 +1278,7 @@ void continueAfterTEARDOWN(RTSPClient*, int /*resultCode*/, char* resultString) 
 
   // Finally, shut down our client:
   delete ourAuthenticator;
+  delete authDBForREGISTER;
   Medium::close(ourClient);
 
   // Adios...
@@ -1243,6 +1287,7 @@ void continueAfterTEARDOWN(RTSPClient*, int /*resultCode*/, char* resultString) 
 
 void signalHandlerShutdown(int /*sig*/) {
   *env << "Got shutdown signal\n";
+  waitForResponseToTEARDOWN = False; // to ensure that we end, even if the server does not respond to our TEARDOWN
   shutdown(0);
 }
 

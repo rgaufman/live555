@@ -23,6 +23,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 ////////// FramedFilter //////////
 #include <string.h>
 
+void FramedFilter::detachInputSource() {
+  if (fInputSource != NULL) {
+    fInputSource->stopGettingFrames();
+    reassignInputSource(NULL);
+  }
+}
+
 FramedFilter::FramedFilter(UsageEnvironment& env,
 			   FramedSource* inputSource)
   : FramedSource(env),

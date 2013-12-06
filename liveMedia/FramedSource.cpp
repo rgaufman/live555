@@ -102,6 +102,8 @@ void FramedSource::handleClosure(void* clientData) {
 
 void FramedSource::stopGettingFrames() {
   fIsCurrentlyAwaitingData = False; // indicates that we can be read again
+  fAfterGettingFunc = NULL;
+  fOnCloseFunc = NULL;
 
   // Perform any specialized action now:
   doStopGettingFrames();

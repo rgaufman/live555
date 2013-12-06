@@ -51,7 +51,9 @@ void TCPStreamSink::processBuffer() {
     if (numBytesWritten < (int)numUnwrittenBytes()) {
       // The output socket is no longer writable.  Set a handler to be called when it becomes writable again.
       fOutputSocketIsWritable = False;
-      envir().taskScheduler().setBackgroundHandling(fOutputSocketNum, SOCKET_WRITABLE, socketWritableHandler, this);
+      if (envir().getErrno() != EPIPE) { // on this error, the socket might still be writable, but no longer usable
+	envir().taskScheduler().setBackgroundHandling(fOutputSocketNum, SOCKET_WRITABLE, socketWritableHandler, this);
+      }
     }
     if (numBytesWritten > 0) {
       // We wrote at least some of our data.  Update our buffer pointers:
@@ -70,7 +72,7 @@ void TCPStreamSink::processBuffer() {
 
   if (!fInputSourceIsOpen && numUnwrittenBytes() == 0) {
     // We're now done:
-    onSourceClosure(this);
+    onSourceClosure();
   }
 }
 

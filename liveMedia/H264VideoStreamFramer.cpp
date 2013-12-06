@@ -48,9 +48,6 @@ private:
   void analyze_hrd_parameters(BitVector& bv);
 #endif
   void analyze_sei_data();
-  void analyze_slice_header(u_int8_t* start, u_int8_t* end, u_int8_t nal_unit_type,
-			    unsigned &frame_num, unsigned &pic_parameter_set_id, unsigned& idr_pic_id,
-			    Boolean& field_pic_flag, Boolean& bottom_field_flag);
 
 private:
   unsigned fOutputStartCodeSize;
@@ -512,47 +509,6 @@ void H264VideoStreamParser::analyze_sei_data() {
   }
 }
 
-void H264VideoStreamParser
-::analyze_slice_header(u_int8_t* start, u_int8_t* end, u_int8_t nal_unit_type,
-		       unsigned &frame_num, unsigned &pic_parameter_set_id, unsigned& idr_pic_id,
-		       Boolean& field_pic_flag, Boolean& bottom_field_flag) {
-  BitVector bv(start, 0, 8*(end-start));
-
-  // Some of the result parameters might not be present in the header; set them to default values:
-  field_pic_flag = bottom_field_flag = 0;
-
-  // Note: We assume that there aren't any 'emulation prevention' bytes here to worry about...
-  bv.skipBits(8); // forbidden_zero_bit; nal_ref_idc; nal_unit_type
-  unsigned first_mb_in_slice = bv.get_expGolomb();
-  DEBUG_PRINT(first_mb_in_slice);
-  unsigned slice_type = bv.get_expGolomb();
-  DEBUG_PRINT(slice_type);
-  pic_parameter_set_id = bv.get_expGolomb();
-  DEBUG_PRINT(pic_parameter_set_id);
-  if (separate_colour_plane_flag) {
-    bv.skipBits(2); // colour_plane_id
-  }
-  frame_num = bv.getBits(log2_max_frame_num);
-  DEBUG_PRINT(frame_num);
-  if (!frame_mbs_only_flag) {
-    DEBUG_TAB;
-    field_pic_flag = bv.get1BitBoolean();
-    DEBUG_PRINT(field_pic_flag);
-    if (field_pic_flag) {
-      DEBUG_TAB;
-      bottom_field_flag = bv.get1BitBoolean();
-      DEBUG_PRINT(bottom_field_flag);
-    }
-  }
-  Boolean IdrPicFlag = nal_unit_type == 5;
-  if (IdrPicFlag) {
-    DEBUG_TAB;
-    idr_pic_id = bv.get_expGolomb();
-    DEBUG_PRINT(idr_pic_id);
-  }
-  // We don't parse any more of the "slice_header", because we don't need the remaining fields (for our purpose)
-}
-
 void H264VideoStreamParser::flushInput() {
   fHaveSeenFirstStartCode = False;
   fHaveSeenFirstByteOfNALUnit = False;
@@ -639,7 +595,9 @@ unsigned H264VideoStreamParser::parse() {
       }
     }
 
+#ifdef DEBUG
     u_int8_t nal_ref_idc = (fFirstByteOfNALUnit&0x60)>>5;
+#endif
     u_int8_t nal_unit_type = fFirstByteOfNALUnit&0x1F;
     fHaveSeenFirstByteOfNALUnit = False; // for the next NAL unit that we parse
 #ifdef DEBUG
@@ -688,99 +646,32 @@ unsigned H264VideoStreamParser::parse() {
     fprintf(stderr, "\tPresentation time: %lu.%06u\n", secs, uSecs);
 #endif
 
-    // If this NAL unit is a VCL NAL unit, we also scan the start of the next NAL unit, to determine whether this NAL unit
-    // ends the current 'access unit'.  We need this information to figure out when to increment "fPresentationTime".
-    // (RTP streamers also need to know this in order to figure out whether or not to set the "M" bit.)
-    Boolean thisNALUnitEndsAccessUnit = False; // until we learn otherwise 
-    if (haveSeenEOF()) {
+    // We check whether this NAL unit ends an 'access unit'.
+    // (RTP streamers need to know this in order to figure out whether or not to set the "M" bit.)
+    Boolean thisNALUnitEndsAccessUnit;
+    if (haveSeenEOF() || nal_unit_type == 11/*End of stream*/) {
       // There is no next NAL unit, so we assume that this one ends the current 'access unit':
       thisNALUnitEndsAccessUnit = True;
+    } else if ((nal_unit_type >= 6 && nal_unit_type <= 9) || (nal_unit_type >= 14 && nal_unit_type <= 18)) {
+      // These NAL units usually *begin* an access unit, so we assume that they don't end one here:
+      thisNALUnitEndsAccessUnit = False;
     } else {
-      Boolean const isVCL = nal_unit_type <= 5 && nal_unit_type > 0; // Would need to include type 20 for SVC and MVC #####
-      if (isVCL) {
-	u_int8_t firstByteOfNextNALUnit;
-	testBytes(&firstByteOfNextNALUnit, 1);
-	u_int8_t next_nal_ref_idc = (firstByteOfNextNALUnit&0x60)>>5;
-	u_int8_t next_nal_unit_type = firstByteOfNextNALUnit&0x1F;
-	if (next_nal_unit_type >= 6) {
-	  // The next NAL unit is not a VCL; therefore, we assume that this NAL unit ends the current 'access unit':
-#ifdef DEBUG
-	  fprintf(stderr, "\t(The next NAL unit is not a VCL)\n");
-#endif
-	  thisNALUnitEndsAccessUnit = True;
-	} else {
-	  // The next NAL unit is also a VCL.  We need to examine it a little to figure out if it's a different 'access unit'.
-	  // (We use many of the criteria described in section 7.4.1.2.4 of the H.264 specification.)
-	  Boolean IdrPicFlag = nal_unit_type == 5;
-	  Boolean next_IdrPicFlag = next_nal_unit_type == 5;
-	  if (next_IdrPicFlag != IdrPicFlag) {
-	    // IdrPicFlag differs in value
-#ifdef DEBUG
-	    fprintf(stderr, "\t(IdrPicFlag differs in value)\n");
-#endif
-	    thisNALUnitEndsAccessUnit = True;
-	  } else if (next_nal_ref_idc != nal_ref_idc && next_nal_ref_idc*nal_ref_idc == 0) {
-	    // nal_ref_idc differs in value with one of the nal_ref_idc values being equal to 0
-#ifdef DEBUG
-	    fprintf(stderr, "\t(nal_ref_idc differs in value with one of the nal_ref_idc values being equal to 0)\n");
-#endif
-	    thisNALUnitEndsAccessUnit = True;
-	  } else if ((nal_unit_type == 1 || nal_unit_type == 2 || nal_unit_type == 5)
-		     && (next_nal_unit_type == 1 || next_nal_unit_type == 2 || next_nal_unit_type == 5)) {
-	    // Both this and the next NAL units begin with a "slice_header".
-	    // Parse this (for each), to get parameters that we can compare:
-	    
-	    // Current NAL unit's "slice_header":
-	    unsigned frame_num, pic_parameter_set_id, idr_pic_id;
-	    Boolean field_pic_flag, bottom_field_flag;
-	    analyze_slice_header(fStartOfFrame + fOutputStartCodeSize, fTo, nal_unit_type,
-				 frame_num, pic_parameter_set_id, idr_pic_id, field_pic_flag, bottom_field_flag);
-	    
-	    // Next NAL unit's "slice_header":
-#ifdef DEBUG
-	    fprintf(stderr, "    Next NAL unit's slice_header:\n");
-#endif
-	    u_int8_t next_slice_header[NUM_NEXT_SLICE_HEADER_BYTES_TO_ANALYZE];
-	    testBytes(next_slice_header, sizeof next_slice_header);
-	    unsigned next_frame_num, next_pic_parameter_set_id, next_idr_pic_id;
-	    Boolean next_field_pic_flag, next_bottom_field_flag;
-	    analyze_slice_header(next_slice_header, &next_slice_header[sizeof next_slice_header], next_nal_unit_type,
-				 next_frame_num, next_pic_parameter_set_id, next_idr_pic_id, next_field_pic_flag, next_bottom_field_flag);
-	    
-	    if (next_frame_num != frame_num) {
-	      // frame_num differs in value
-#ifdef DEBUG
-	      fprintf(stderr, "\t(frame_num differs in value)\n");
-#endif
-	      thisNALUnitEndsAccessUnit = True;
-	    } else if (next_pic_parameter_set_id != pic_parameter_set_id) {
-	      // pic_parameter_set_id differs in value
-#ifdef DEBUG
-	      fprintf(stderr, "\t(pic_parameter_set_id differs in value)\n");
-#endif
-	      thisNALUnitEndsAccessUnit = True;
-	    } else if (next_field_pic_flag != field_pic_flag) {
-	      // field_pic_flag differs in value
-#ifdef DEBUG
-	      fprintf(stderr, "\t(field_pic_flag differs in value)\n");
-#endif
-	      thisNALUnitEndsAccessUnit = True;
-	    } else if (next_bottom_field_flag != bottom_field_flag) {
-	      // bottom_field_flag differs in value
-#ifdef DEBUG
-	      fprintf(stderr, "\t(bottom_field_flag differs in value)\n");
-#endif
-	      thisNALUnitEndsAccessUnit = True;
-	    } else if (next_IdrPicFlag == 1 && next_idr_pic_id != idr_pic_id) {
-	      // IdrPicFlag is equal to 1 for both and idr_pic_id differs in value
-	      // Note: We already know that IdrPicFlag is the same for both.
-#ifdef DEBUG
-	      fprintf(stderr, "\t(IdrPicFlag is equal to 1 for both and idr_pic_id differs in value)\n");
-#endif
-	      thisNALUnitEndsAccessUnit = True;
-	    }
-	  }
-	}
+      // We need to check the *next* NAL unit to figure out whether the current NAL unit ends an 'access unit':
+      u_int8_t firstBytesOfNextNALUnit[2];
+      testBytes(firstBytesOfNextNALUnit, 2);
+
+      u_int8_t const& next_nal_unit_type = firstBytesOfNextNALUnit[0]&0x1F;
+      Boolean const nextNALUnitIsVCL = next_nal_unit_type <= 5 && nal_unit_type > 0;
+      if (nextNALUnitIsVCL) {
+	// The high-order bit of the 2nd byte tells us whether this is the start of a new 'access unit':
+	thisNALUnitEndsAccessUnit = (firstBytesOfNextNALUnit[1]&0x80) != 0;
+      } else if ((next_nal_unit_type >= 6 && next_nal_unit_type <= 9) || (next_nal_unit_type >= 14 && next_nal_unit_type <= 18)) {
+	// The next NAL unit's type is one that usually appears at the start of an 'access unit',
+	// so we assume that the current NAL unit ends an 'access unit':
+	thisNALUnitEndsAccessUnit = True;
+      } else {
+	// The next NAL unit definitely doesn't start a new 'access unit', which means that the current NAL unit doesn't end one:
+	thisNALUnitEndsAccessUnit = False;
       }
     }
 	

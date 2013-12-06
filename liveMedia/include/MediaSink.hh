@@ -50,7 +50,8 @@ protected:
   virtual Boolean continuePlaying() = 0;
       // called by startPlaying()
 
-  static void onSourceClosure(void* clientData);
+  static void onSourceClosure(void* clientData); // can be used in "getNextFrame()" calls
+  void onSourceClosure();
       // should be called (on ourselves) by continuePlaying() when it
       // discovers that the source we're playing from has closed.
 

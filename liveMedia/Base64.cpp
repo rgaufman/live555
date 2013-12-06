@@ -54,14 +54,16 @@ unsigned char* base64Decode(char const* in, unsigned inSize,
 
   unsigned char* out = (unsigned char*)strDupSize(in); // ensures we have enough space
   int k = 0;
+  int paddingCount = 0;
   int const jMax = inSize - 3;
      // in case "inSize" is not a multiple of 4 (although it should be)
   for (int j = 0; j < jMax; j += 4) {
     char inTmp[4], outTmp[4];
     for (int i = 0; i < 4; ++i) {
       inTmp[i] = in[i+j];
+      if (inTmp[i] == '=') ++paddingCount;
       outTmp[i] = base64DecodeTable[(unsigned char)inTmp[i]];
-      if ((outTmp[i]&0x80) != 0) outTmp[i] = 0; // pretend the input was 'A'
+      if ((outTmp[i]&0x80) != 0) outTmp[i] = 0; // this happens only if there was an invalid character; pretend that it was 'A'
     }
 
     out[k++] = (outTmp[0]<<2) | (outTmp[1]>>4);
@@ -70,7 +72,7 @@ unsigned char* base64Decode(char const* in, unsigned inSize,
   }
 
   if (trimTrailingZeros) {
-    while (k > 0 && out[k-1] == '\0') --k;
+    while (paddingCount > 0 && k > 0 && out[k-1] == '\0') { --k; --paddingCount; }
   }
   resultSize = k;
   unsigned char* result = new unsigned char[resultSize];

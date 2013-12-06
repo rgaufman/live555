@@ -91,9 +91,16 @@ void MediaSink::stopPlaying() {
 
 void MediaSink::onSourceClosure(void* clientData) {
   MediaSink* sink = (MediaSink*)clientData;
-  sink->fSource = NULL; // indicates that we can be played again
-  if (sink->fAfterFunc != NULL) {
-    (*(sink->fAfterFunc))(sink->fAfterClientData);
+  sink->onSourceClosure();
+}
+
+void MediaSink::onSourceClosure() {
+  // Cancel any pending tasks:
+  envir().taskScheduler().unscheduleDelayedTask(nextTask());
+
+  fSource = NULL; // indicates that we can be played again
+  if (fAfterFunc != NULL) {
+    (*fAfterFunc)(fAfterClientData);
   }
 }
 

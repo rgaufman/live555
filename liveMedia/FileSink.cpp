@@ -127,7 +127,7 @@ void FileSink::afterGettingFrame(unsigned frameSize,
   if (fOutFid == NULL || fflush(fOutFid) == EOF) {
     // The output file has closed.  Handle this the same way as if the input source had closed:
     if (fSource != NULL) fSource->stopGettingFrames();
-    onSourceClosure(this);
+    onSourceClosure();
     return;
   }
 

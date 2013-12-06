@@ -62,7 +62,9 @@ public:
   void setStreamSocket(int sockNum, unsigned char streamChannelId);
   void addStreamSocket(int sockNum, unsigned char streamChannelId);
   void removeStreamSocket(int sockNum, unsigned char streamChannelId);
-  void setServerRequestAlternativeByteHandler(int socketNum, ServerRequestAlternativeByteHandler* handler, void* clientData);
+  static void setServerRequestAlternativeByteHandler(UsageEnvironment& env, int socketNum,
+						     ServerRequestAlternativeByteHandler* handler, void* clientData);
+  static void clearServerRequestAlternativeByteHandler(UsageEnvironment& env, int socketNum);
 
   Boolean sendPacket(unsigned char* packet, unsigned packetSize);
   void startNetworkReading(TaskScheduler::BackgroundHandlerProc*

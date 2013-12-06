@@ -32,7 +32,7 @@ public:
   void reassignInputSource(FramedSource* newInputSource) { fInputSource = newInputSource; }
 
   // Call before destruction if you want to prevent the destructor from closing the input source
-  void detachInputSource() { reassignInputSource(NULL); }
+  void detachInputSource();
 
 protected:
   FramedFilter(UsageEnvironment& env, FramedSource* inputSource);

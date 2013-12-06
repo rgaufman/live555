@@ -177,9 +177,6 @@ RTCPInstance::~RTCPInstance() {
 #ifdef DEBUG
   fprintf(stderr, "RTCPInstance[%p]::~RTCPInstance()\n", this);
 #endif
-  // Turn off background read handling:
-  fRTCPInterface.stopNetworkReading();
-
   // Begin by sending a BYE.  We have to do this immediately, without
   // 'reconsideration', because "this" is going away.
   fTypeOfEvent = EVENT_BYE; // not used, but...
@@ -266,7 +263,9 @@ void RTCPInstance
   if (fSpecificRRHandlerTable == NULL) {
     fSpecificRRHandlerTable = new AddressPortLookupTable;
   }
-  fSpecificRRHandlerTable->Add(fromAddress, (~0), fromPort, rrHandler);
+  RRHandlerRecord* existingRecord = (RRHandlerRecord*)fSpecificRRHandlerTable->Add(fromAddress, (~0), fromPort, rrHandler);
+  delete existingRecord; // if any
+
 }
 
 void RTCPInstance
@@ -709,6 +708,10 @@ Boolean RTCPInstance::addReport(Boolean alwaysAdd) {
 
     addSR();
   } else if (fSource != NULL) {
+    if (!alwaysAdd) {
+      if (!fSource->enableRTCPReports()) return False;
+    }
+
     addRR();
   }
 

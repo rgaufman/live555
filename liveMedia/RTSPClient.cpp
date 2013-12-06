@@ -298,9 +298,9 @@ RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 		       int verbosityLevel, char const* applicationName,
 		       portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
   : Medium(env),
-    fVerbosityLevel(verbosityLevel), fCSeq(1),
+    fVerbosityLevel(verbosityLevel), fCSeq(1), fServerAddress(0),
     fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum), fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0),
-    fInputSocketNum(-1), fOutputSocketNum(-1), fServerAddress(0), fBaseURL(NULL), fTCPStreamIdCount(0),
+    fInputSocketNum(-1), fOutputSocketNum(-1), fBaseURL(NULL), fTCPStreamIdCount(0),
     fLastSessionId(NULL), fSessionTimeoutParameter(0), fSessionCookieCounter(0), fHTTPTunnelingConnectionIsPending(False) {
   setBaseURL(rtspURL);
 
@@ -334,14 +334,11 @@ RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 }
 
 RTSPClient::~RTSPClient() {
+  RTPInterface::clearServerRequestAlternativeByteHandler(envir(), fInputSocketNum); // in case we were receiving RTP-over-TCP
   reset();
 
   delete[] fResponseBuffer;
   delete[] fUserAgentHeaderStr;
-}
-
-Boolean RTSPClient::isRTSPClient() const {
-  return True;
 }
 
 void RTSPClient::reset() {
@@ -356,182 +353,15 @@ void RTSPClient::reset() {
   delete[] fLastSessionId; fLastSessionId = NULL;
 }
 
-void RTSPClient::resetTCPSockets() {
-  if (fInputSocketNum >= 0) {
-    envir().taskScheduler().disableBackgroundHandling(fInputSocketNum);
-    ::closeSocket(fInputSocketNum);
-    if (fOutputSocketNum != fInputSocketNum) {
-      envir().taskScheduler().disableBackgroundHandling(fOutputSocketNum);
-      ::closeSocket(fOutputSocketNum);
-    }
-  }
-  fInputSocketNum = fOutputSocketNum = -1;
-}
-
-void RTSPClient::resetResponseBuffer() {
-  fResponseBytesAlreadySeen = 0;
-  fResponseBufferBytesLeft = responseBufferSize;
-}
-
 void RTSPClient::setBaseURL(char const* url) {
   delete[] fBaseURL; fBaseURL = strDup(url);
 }
 
-int RTSPClient::openConnection() {
-  do {
-    // Set up a connection to the server.  Begin by parsing the URL:
+int RTSPClient::grabSocket() {
+  int inputSocket = fInputSocketNum;
+  fInputSocketNum = -1;
 
-    char* username;
-    char* password;
-    NetAddress destAddress;
-    portNumBits urlPortNum;
-    char const* urlSuffix;
-    if (!parseRTSPURL(envir(), fBaseURL, username, password, destAddress, urlPortNum, &urlSuffix)) break;
-    portNumBits destPortNum = fTunnelOverHTTPPortNum == 0 ? urlPortNum : fTunnelOverHTTPPortNum;
-    if (username != NULL || password != NULL) {
-      fCurrentAuthenticator.setUsernameAndPassword(username, password);
-      delete[] username;
-      delete[] password;
-    }
-
-    // We don't yet have a TCP socket (or we used to have one, but it got closed).  Set it up now.
-    fInputSocketNum = fOutputSocketNum = setupStreamSocket(envir(), 0);
-    if (fInputSocketNum < 0) break;
-    ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that get killed don't also kill us
-      
-    // Connect to the remote endpoint:
-    fServerAddress = *(netAddressBits*)(destAddress.data());
-    int connectResult = connectToServer(fInputSocketNum, destPortNum);
-    if (connectResult < 0) break;
-    else if (connectResult > 0) {
-      // The connection succeeded.  Arrange to handle responses to requests sent on it:
-      envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE|SOCKET_EXCEPTION,
-						    (TaskScheduler::BackgroundHandlerProc*)&incomingDataHandler, this);
-    }
-    return connectResult;
-  } while (0);
-  
-  resetTCPSockets();
-  return -1;
-}
-
-int RTSPClient::connectToServer(int socketNum, portNumBits remotePortNum) {
-  MAKE_SOCKADDR_IN(remoteName, fServerAddress, htons(remotePortNum));
-  if (fVerbosityLevel >= 1) {
-    envir() << "Opening connection to " << AddressString(remoteName).val() << ", port " << remotePortNum << "...\n";
-  }
-  if (connect(socketNum, (struct sockaddr*) &remoteName, sizeof remoteName) != 0) {
-    int const err = envir().getErrno();
-    if (err == EINPROGRESS || err == EWOULDBLOCK) {
-      // The connection is pending; we'll need to handle it later.  Wait for our socket to be 'writable', or have an exception.
-      envir().taskScheduler().setBackgroundHandling(socketNum, SOCKET_WRITABLE|SOCKET_EXCEPTION,
-						    (TaskScheduler::BackgroundHandlerProc*)&connectionHandler, this);
-      return 0;
-    }
-    envir().setResultErrMsg("connect() failed: ");
-    if (fVerbosityLevel >= 1) envir() << "..." << envir().getResultMsg() << "\n";
-    return -1;
-  }
-  if (fVerbosityLevel >= 1) envir() << "...local connection opened\n";
-
-  return 1;
-}
-
-char*
-RTSPClient::createAuthenticatorString(char const* cmd, char const* url) {
-  Authenticator& auth = fCurrentAuthenticator; // alias, for brevity
-  if (auth.realm() != NULL && auth.username() != NULL && auth.password() != NULL) {
-    // We have a filled-in authenticator, so use it:
-    char* authenticatorStr;
-    if (auth.nonce() != NULL) { // Digest authentication
-      char const* const authFmt =
-	"Authorization: Digest username=\"%s\", realm=\"%s\", "
-	"nonce=\"%s\", uri=\"%s\", response=\"%s\"\r\n";
-      char const* response = auth.computeDigestResponse(cmd, url);
-      unsigned authBufSize = strlen(authFmt)
-	+ strlen(auth.username()) + strlen(auth.realm())
-	+ strlen(auth.nonce()) + strlen(url) + strlen(response);
-      authenticatorStr = new char[authBufSize];
-      sprintf(authenticatorStr, authFmt,
-	      auth.username(), auth.realm(),
-	      auth.nonce(), url, response);
-      auth.reclaimDigestResponse(response);
-    } else { // Basic authentication
-      char const* const authFmt = "Authorization: Basic %s\r\n";
-
-      unsigned usernamePasswordLength = strlen(auth.username()) + 1 + strlen(auth.password());
-      char* usernamePassword = new char[usernamePasswordLength+1];
-      sprintf(usernamePassword, "%s:%s", auth.username(), auth.password());
-
-      char* response = base64Encode(usernamePassword, usernamePasswordLength);
-      unsigned const authBufSize = strlen(authFmt) + strlen(response) + 1;
-      authenticatorStr = new char[authBufSize];
-      sprintf(authenticatorStr, authFmt, response);
-      delete[] response; delete[] usernamePassword;
-    }
-
-    return authenticatorStr;
-  }
-
-  // We don't have a (filled-in) authenticator.
-  return strDup("");
-}
-
-static char* createSessionString(char const* sessionId) {
-  char* sessionStr;
-  if (sessionId != NULL) {
-    sessionStr = new char[20+strlen(sessionId)];
-    sprintf(sessionStr, "Session: %s\r\n", sessionId);
-  } else {
-    sessionStr = strDup("");
-  }
-  return sessionStr;
-}
-
-static char* createScaleString(float scale, float currentScale) {
-  char buf[100];
-  if (scale == 1.0f && currentScale == 1.0f) {
-    // This is the default value; we don't need a "Scale:" header:
-    buf[0] = '\0';
-  } else {
-    Locale l("C", Numeric);
-    sprintf(buf, "Scale: %f\r\n", scale);
-  }
-
-  return strDup(buf);
-}
-
-static char* createRangeString(double start, double end, char const* absStartTime, char const* absEndTime) {
-  char buf[100];
-
-  if (absStartTime != NULL) {
-    // Create a "Range:" header that specifies 'absolute' time values:
-
-    if (absEndTime == NULL) {
-      // There's no end time:
-      snprintf(buf, sizeof buf, "Range: clock=%s-\r\n", absStartTime);
-    } else {
-      // There's both a start and an end time; include them both in the "Range:" hdr
-      snprintf(buf, sizeof buf, "Range: clock=%s-%s\r\n", absStartTime, absEndTime);
-    }
-  } else {
-    // Create a "Range:" header that specifies relative (i.e., NPT) time values:
-
-    if (start < 0) {
-      // We're resuming from a PAUSE; there's no "Range:" header at all
-      buf[0] = '\0';
-    } else if (end < 0) {
-      // There's no end time:
-      Locale l("C", Numeric);
-      sprintf(buf, "Range: npt=%.3f-\r\n", start);
-    } else {
-      // There's both a start and an end time; include them both in the "Range:" hdr
-      Locale l("C", Numeric);
-      sprintf(buf, "Range: npt=%.3f-%.3f\r\n", start, end);
-    }
-  }
-
-  return strDup(buf);
+  return inputSocket;
 }
 
 unsigned RTSPClient::sendRequest(RequestRecord* request) {
@@ -576,6 +406,13 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
     char* contentLengthHeader = (char*)""; // by default
     Boolean contentLengthHeaderWasAllocated = False;
 
+    if (!setRequestFields(request,
+			  cmdURL, cmdURLWasAllocated,
+			  protocolStr,
+			  extraHeaders, extraHeadersWereAllocated)) {
+      break;
+    }
+
     char const* contentStr = request->contentStr(); // by default
     if (contentStr == NULL) contentStr = "";
     unsigned contentStrLen = strlen(contentStr);
@@ -587,166 +424,6 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
       contentLengthHeader = new char[contentLengthHeaderSize];
       sprintf(contentLengthHeader, contentLengthHeaderFmt, contentStrLen);
       contentLengthHeaderWasAllocated = True;
-    }
-
-    if (strcmp(request->commandName(), "DESCRIBE") == 0) {
-      extraHeaders = (char*)"Accept: application/sdp\r\n";
-    } else if (strcmp(request->commandName(), "OPTIONS") == 0) {
-    } else if (strcmp(request->commandName(), "ANNOUNCE") == 0) {
-      extraHeaders = (char*)"Content-Type: application/sdp\r\n";
-    } else if (strcmp(request->commandName(), "SETUP") == 0) {
-      MediaSubsession& subsession = *request->subsession();
-      Boolean streamUsingTCP = (request->booleanFlags()&0x1) != 0;
-      Boolean streamOutgoing = (request->booleanFlags()&0x2) != 0;
-      Boolean forceMulticastOnUnspecified = (request->booleanFlags()&0x4) != 0;
-
-      char const *prefix, *separator, *suffix;
-      constructSubsessionURL(subsession, prefix, separator, suffix);
-
-      char const* transportFmt;
-      if (strcmp(subsession.protocolName(), "UDP") == 0) {
-	suffix = "";
-	transportFmt = "Transport: RAW/RAW/UDP%s%s%s=%d-%d\r\n";
-      } else {
-	transportFmt = "Transport: RTP/AVP%s%s%s=%d-%d\r\n";
-      }
-
-      cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
-      cmdURLWasAllocated = True;
-      sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
-
-      // Construct a "Transport:" header.
-      char const* transportTypeStr;
-      char const* modeStr = streamOutgoing ? ";mode=receive" : "";
-          // Note: I think the above is nonstandard, but DSS wants it this way
-      char const* portTypeStr;
-      portNumBits rtpNumber, rtcpNumber;
-      if (streamUsingTCP) { // streaming over the RTSP connection
-	transportTypeStr = "/TCP;unicast";
-	portTypeStr = ";interleaved";
-	rtpNumber = fTCPStreamIdCount++;
-	rtcpNumber = fTCPStreamIdCount++;
-      } else { // normal RTP streaming
-	unsigned connectionAddress = subsession.connectionEndpointAddress();
-        Boolean requestMulticastStreaming
-	  = IsMulticastAddress(connectionAddress) || (connectionAddress == 0 && forceMulticastOnUnspecified);
-	transportTypeStr = requestMulticastStreaming ? ";multicast" : ";unicast";
-	portTypeStr = ";client_port";
-	rtpNumber = subsession.clientPortNum();
-	if (rtpNumber == 0) {
-	  envir().setResultMsg("Client port number unknown\n");
-	  delete[] cmdURL;
-	  break;
-	}
-	rtcpNumber = rtpNumber + 1;
-      }
-      unsigned transportSize = strlen(transportFmt)
-	+ strlen(transportTypeStr) + strlen(modeStr) + strlen(portTypeStr) + 2*5 /* max port len */;
-      char* transportStr = new char[transportSize];
-      sprintf(transportStr, transportFmt,
-	      transportTypeStr, modeStr, portTypeStr, rtpNumber, rtcpNumber);
-
-      // When sending more than one "SETUP" request, include a "Session:" header in the 2nd and later commands:
-      char* sessionStr = createSessionString(fLastSessionId);
-
-      // The "Transport:" and "Session:" (if present) headers make up the 'extra headers':
-      extraHeaders = new char[transportSize + strlen(sessionStr)];
-      extraHeadersWereAllocated = True;
-      sprintf(extraHeaders, "%s%s", transportStr, sessionStr);
-      delete[] transportStr; delete[] sessionStr;
-    } else if (strcmp(request->commandName(), "GET") == 0 || strcmp(request->commandName(), "POST") == 0) {
-      // We will be sending a HTTP (not a RTSP) request.
-      // Begin by re-parsing our RTSP URL, just to get the stream name, which we'll use as our 'cmdURL' in the subsequent request:
-      char* username;
-      char* password;
-      NetAddress destAddress;
-      portNumBits urlPortNum;
-      if (!parseRTSPURL(envir(), fBaseURL, username, password, destAddress, urlPortNum, (char const**)&cmdURL)) break;
-      if (cmdURL[0] == '\0') cmdURL = (char*)"/";
-      delete[] username;
-      delete[] password;
-
-      protocolStr = "HTTP/1.0";
-
-      if (strcmp(request->commandName(), "GET") == 0) {
-	// Create a 'session cookie' string, using MD5:
-	struct {
-	  struct timeval timestamp;
-	  unsigned counter;
-	} seedData;
-	gettimeofday(&seedData.timestamp, NULL);
-	seedData.counter = ++fSessionCookieCounter;
-	our_MD5Data((unsigned char*)(&seedData), sizeof seedData, fSessionCookie);
-	// DSS seems to require that the 'session cookie' string be 22 bytes long:
-	fSessionCookie[23] = '\0';
-	
-	char const* const extraHeadersFmt =
-	  "x-sessioncookie: %s\r\n"
-	  "Accept: application/x-rtsp-tunnelled\r\n"
-	  "Pragma: no-cache\r\n"
-	  "Cache-Control: no-cache\r\n";
-	unsigned extraHeadersSize = strlen(extraHeadersFmt)
-	  + strlen(fSessionCookie);
-	extraHeaders = new char[extraHeadersSize];
-	extraHeadersWereAllocated = True;
-	sprintf(extraHeaders, extraHeadersFmt,
-	fSessionCookie);
-      } else { // "POST"
-	char const* const extraHeadersFmt =
-	  "x-sessioncookie: %s\r\n"
-	  "Content-Type: application/x-rtsp-tunnelled\r\n"
-	  "Pragma: no-cache\r\n"
-	  "Cache-Control: no-cache\r\n"
-	  "Content-Length: 32767\r\n"
-	  "Expires: Sun, 9 Jan 1972 00:00:00 GMT\r\n";
-	unsigned extraHeadersSize = strlen(extraHeadersFmt)
-	  + strlen(fSessionCookie);
-	extraHeaders = new char[extraHeadersSize];
-	extraHeadersWereAllocated = True;
-	sprintf(extraHeaders, extraHeadersFmt,
-		fSessionCookie);
-      }
-    } else { // "PLAY", "PAUSE", "TEARDOWN", "RECORD", "SET_PARAMETER", "GET_PARAMETER"
-      // First, make sure that we have a RTSP session in progress
-      if (fLastSessionId == NULL) {
-	envir().setResultMsg("No RTSP session is currently in progress\n");
-	break;
-      }
-
-      char const* sessionId;
-      float originalScale;
-      if (request->session() != NULL) {
-	// Session-level operation
-	cmdURL = (char*)sessionURL(*request->session());
-
-	sessionId = fLastSessionId;
-	originalScale = request->session()->scale();
-      } else {
-	// Media-level operation
-	char const *prefix, *separator, *suffix;
-	constructSubsessionURL(*request->subsession(), prefix, separator, suffix);
-	cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
-	cmdURLWasAllocated = True;
-	sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
-	
-	sessionId = request->subsession()->sessionId();
-	originalScale = request->subsession()->scale();
-      }
-
-      if (strcmp(request->commandName(), "PLAY") == 0) {
-	// Create "Session:", "Scale:", and "Range:" headers; these make up the 'extra headers':
-	char* sessionStr = createSessionString(sessionId);
-	char* scaleStr = createScaleString(request->scale(), originalScale);
-	char* rangeStr = createRangeString(request->start(), request->end(), request->absStartTime(), request->absEndTime());
-	extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(rangeStr) + 1];
-	extraHeadersWereAllocated = True;
-	sprintf(extraHeaders, "%s%s%s", sessionStr, scaleStr, rangeStr);
-	delete[] sessionStr; delete[] scaleStr; delete[] rangeStr;
-      } else {
-	// Create a "Session:" header; this makes up our 'extra headers':
-	extraHeaders = createSessionString(sessionId);
-	extraHeadersWereAllocated = True;
-      }
     }
 
     char* authenticatorStr = createAuthenticatorString(request->commandName(), fBaseURL);
@@ -824,6 +501,357 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
   return 0;
 }
 
+static char* createSessionString(char const* sessionId) {
+  char* sessionStr;
+  if (sessionId != NULL) {
+    sessionStr = new char[20+strlen(sessionId)];
+    sprintf(sessionStr, "Session: %s\r\n", sessionId);
+  } else {
+    sessionStr = strDup("");
+  }
+  return sessionStr;
+}
+
+static char* createScaleString(float scale, float currentScale) {
+  char buf[100];
+  if (scale == 1.0f && currentScale == 1.0f) {
+    // This is the default value; we don't need a "Scale:" header:
+    buf[0] = '\0';
+  } else {
+    Locale l("C", Numeric);
+    sprintf(buf, "Scale: %f\r\n", scale);
+  }
+
+  return strDup(buf);
+}
+
+static char* createRangeString(double start, double end, char const* absStartTime, char const* absEndTime) {
+  char buf[100];
+
+  if (absStartTime != NULL) {
+    // Create a "Range:" header that specifies 'absolute' time values:
+
+    if (absEndTime == NULL) {
+      // There's no end time:
+      snprintf(buf, sizeof buf, "Range: clock=%s-\r\n", absStartTime);
+    } else {
+      // There's both a start and an end time; include them both in the "Range:" hdr
+      snprintf(buf, sizeof buf, "Range: clock=%s-%s\r\n", absStartTime, absEndTime);
+    }
+  } else {
+    // Create a "Range:" header that specifies relative (i.e., NPT) time values:
+
+    if (start < 0) {
+      // We're resuming from a PAUSE; there's no "Range:" header at all
+      buf[0] = '\0';
+    } else if (end < 0) {
+      // There's no end time:
+      Locale l("C", Numeric);
+      sprintf(buf, "Range: npt=%.3f-\r\n", start);
+    } else {
+      // There's both a start and an end time; include them both in the "Range:" hdr
+      Locale l("C", Numeric);
+      sprintf(buf, "Range: npt=%.3f-%.3f\r\n", start, end);
+    }
+  }
+
+  return strDup(buf);
+}
+
+Boolean RTSPClient::setRequestFields(RequestRecord* request,
+				     char*& cmdURL, Boolean& cmdURLWasAllocated,
+				     char const*& protocolStr,
+				     char*& extraHeaders, Boolean& extraHeadersWereAllocated
+				     ) {
+  // Set various fields that will appear in our outgoing request, depending upon the particular command that we are sending.
+
+  if (strcmp(request->commandName(), "DESCRIBE") == 0) {
+    extraHeaders = (char*)"Accept: application/sdp\r\n";
+  } else if (strcmp(request->commandName(), "OPTIONS") == 0) {
+    // If we're currently part of a session, create a "Session:" header (in case the server wants this to indicate
+    // client 'liveness); this makes up our 'extra headers':
+    extraHeaders = createSessionString(fLastSessionId);
+    extraHeadersWereAllocated = True;
+  } else if (strcmp(request->commandName(), "ANNOUNCE") == 0) {
+    extraHeaders = (char*)"Content-Type: application/sdp\r\n";
+  } else if (strcmp(request->commandName(), "SETUP") == 0) {
+    MediaSubsession& subsession = *request->subsession();
+    Boolean streamUsingTCP = (request->booleanFlags()&0x1) != 0;
+    Boolean streamOutgoing = (request->booleanFlags()&0x2) != 0;
+    Boolean forceMulticastOnUnspecified = (request->booleanFlags()&0x4) != 0;
+    
+    char const *prefix, *separator, *suffix;
+    constructSubsessionURL(subsession, prefix, separator, suffix);
+    
+    char const* transportFmt;
+    if (strcmp(subsession.protocolName(), "UDP") == 0) {
+      suffix = "";
+      transportFmt = "Transport: RAW/RAW/UDP%s%s%s=%d-%d\r\n";
+    } else {
+      transportFmt = "Transport: RTP/AVP%s%s%s=%d-%d\r\n";
+    }
+    
+    cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
+    cmdURLWasAllocated = True;
+    sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
+    
+    // Construct a "Transport:" header.
+    char const* transportTypeStr;
+    char const* modeStr = streamOutgoing ? ";mode=receive" : "";
+    // Note: I think the above is nonstandard, but DSS wants it this way
+    char const* portTypeStr;
+    portNumBits rtpNumber, rtcpNumber;
+    if (streamUsingTCP) { // streaming over the RTSP connection
+      transportTypeStr = "/TCP;unicast";
+      portTypeStr = ";interleaved";
+      rtpNumber = fTCPStreamIdCount++;
+      rtcpNumber = fTCPStreamIdCount++;
+    } else { // normal RTP streaming
+      unsigned connectionAddress = subsession.connectionEndpointAddress();
+      Boolean requestMulticastStreaming
+	= IsMulticastAddress(connectionAddress) || (connectionAddress == 0 && forceMulticastOnUnspecified);
+      transportTypeStr = requestMulticastStreaming ? ";multicast" : ";unicast";
+      portTypeStr = ";client_port";
+      rtpNumber = subsession.clientPortNum();
+      if (rtpNumber == 0) {
+	envir().setResultMsg("Client port number unknown\n");
+	delete[] cmdURL;
+	return False;
+      }
+      rtcpNumber = rtpNumber + 1;
+    }
+    unsigned transportSize = strlen(transportFmt)
+      + strlen(transportTypeStr) + strlen(modeStr) + strlen(portTypeStr) + 2*5 /* max port len */;
+    char* transportStr = new char[transportSize];
+    sprintf(transportStr, transportFmt,
+	    transportTypeStr, modeStr, portTypeStr, rtpNumber, rtcpNumber);
+    
+    // When sending more than one "SETUP" request, include a "Session:" header in the 2nd and later commands:
+    char* sessionStr = createSessionString(fLastSessionId);
+    
+    // The "Transport:" and "Session:" (if present) headers make up the 'extra headers':
+    extraHeaders = new char[transportSize + strlen(sessionStr)];
+    extraHeadersWereAllocated = True;
+    sprintf(extraHeaders, "%s%s", transportStr, sessionStr);
+    delete[] transportStr; delete[] sessionStr;
+  } else if (strcmp(request->commandName(), "GET") == 0 || strcmp(request->commandName(), "POST") == 0) {
+    // We will be sending a HTTP (not a RTSP) request.
+    // Begin by re-parsing our RTSP URL, just to get the stream name, which we'll use as our 'cmdURL' in the subsequent request:
+    char* username;
+    char* password;
+    NetAddress destAddress;
+    portNumBits urlPortNum;
+    if (!parseRTSPURL(envir(), fBaseURL, username, password, destAddress, urlPortNum, (char const**)&cmdURL)) return False;
+    if (cmdURL[0] == '\0') cmdURL = (char*)"/";
+    delete[] username;
+    delete[] password;
+    
+    protocolStr = "HTTP/1.1";
+    
+    if (strcmp(request->commandName(), "GET") == 0) {
+      // Create a 'session cookie' string, using MD5:
+      struct {
+	struct timeval timestamp;
+	unsigned counter;
+      } seedData;
+      gettimeofday(&seedData.timestamp, NULL);
+      seedData.counter = ++fSessionCookieCounter;
+      our_MD5Data((unsigned char*)(&seedData), sizeof seedData, fSessionCookie);
+      // DSS seems to require that the 'session cookie' string be 22 bytes long:
+      fSessionCookie[23] = '\0';
+      
+      char const* const extraHeadersFmt =
+	"x-sessioncookie: %s\r\n"
+	"Accept: application/x-rtsp-tunnelled\r\n"
+	"Pragma: no-cache\r\n"
+	"Cache-Control: no-cache\r\n";
+      unsigned extraHeadersSize = strlen(extraHeadersFmt)
+	+ strlen(fSessionCookie);
+      extraHeaders = new char[extraHeadersSize];
+      extraHeadersWereAllocated = True;
+      sprintf(extraHeaders, extraHeadersFmt,
+	      fSessionCookie);
+    } else { // "POST"
+      char const* const extraHeadersFmt =
+	"x-sessioncookie: %s\r\n"
+	"Content-Type: application/x-rtsp-tunnelled\r\n"
+	"Pragma: no-cache\r\n"
+	"Cache-Control: no-cache\r\n"
+	"Content-Length: 32767\r\n"
+	"Expires: Sun, 9 Jan 1972 00:00:00 GMT\r\n";
+      unsigned extraHeadersSize = strlen(extraHeadersFmt)
+	+ strlen(fSessionCookie);
+      extraHeaders = new char[extraHeadersSize];
+      extraHeadersWereAllocated = True;
+      sprintf(extraHeaders, extraHeadersFmt,
+	      fSessionCookie);
+    }
+  } else { // "PLAY", "PAUSE", "TEARDOWN", "RECORD", "SET_PARAMETER", "GET_PARAMETER"
+    // First, make sure that we have a RTSP session in progress
+    if (fLastSessionId == NULL) {
+      envir().setResultMsg("No RTSP session is currently in progress\n");
+      return False;
+    }
+    
+    char const* sessionId;
+    float originalScale;
+    if (request->session() != NULL) {
+      // Session-level operation
+      cmdURL = (char*)sessionURL(*request->session());
+      
+      sessionId = fLastSessionId;
+      originalScale = request->session()->scale();
+    } else {
+      // Media-level operation
+      char const *prefix, *separator, *suffix;
+      constructSubsessionURL(*request->subsession(), prefix, separator, suffix);
+      cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
+      cmdURLWasAllocated = True;
+      sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
+      
+      sessionId = request->subsession()->sessionId();
+      originalScale = request->subsession()->scale();
+    }
+    
+    if (strcmp(request->commandName(), "PLAY") == 0) {
+      // Create "Session:", "Scale:", and "Range:" headers; these make up the 'extra headers':
+      char* sessionStr = createSessionString(sessionId);
+      char* scaleStr = createScaleString(request->scale(), originalScale);
+      char* rangeStr = createRangeString(request->start(), request->end(), request->absStartTime(), request->absEndTime());
+      extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(rangeStr) + 1];
+      extraHeadersWereAllocated = True;
+      sprintf(extraHeaders, "%s%s%s", sessionStr, scaleStr, rangeStr);
+      delete[] sessionStr; delete[] scaleStr; delete[] rangeStr;
+    } else {
+      // Create a "Session:" header; this makes up our 'extra headers':
+      extraHeaders = createSessionString(sessionId);
+      extraHeadersWereAllocated = True;
+    }
+  }
+
+  return True;
+}
+
+Boolean RTSPClient::isRTSPClient() const {
+  return True;
+}
+
+void RTSPClient::resetTCPSockets() {
+  if (fInputSocketNum >= 0) {
+    envir().taskScheduler().disableBackgroundHandling(fInputSocketNum);
+    ::closeSocket(fInputSocketNum);
+    if (fOutputSocketNum != fInputSocketNum) {
+      envir().taskScheduler().disableBackgroundHandling(fOutputSocketNum);
+      ::closeSocket(fOutputSocketNum);
+    }
+  }
+  fInputSocketNum = fOutputSocketNum = -1;
+}
+
+void RTSPClient::resetResponseBuffer() {
+  fResponseBytesAlreadySeen = 0;
+  fResponseBufferBytesLeft = responseBufferSize;
+}
+
+int RTSPClient::openConnection() {
+  do {
+    // Set up a connection to the server.  Begin by parsing the URL:
+    
+    char* username;
+    char* password;
+    NetAddress destAddress;
+    portNumBits urlPortNum;
+    char const* urlSuffix;
+    if (!parseRTSPURL(envir(), fBaseURL, username, password, destAddress, urlPortNum, &urlSuffix)) break;
+    portNumBits destPortNum = fTunnelOverHTTPPortNum == 0 ? urlPortNum : fTunnelOverHTTPPortNum;
+    if (username != NULL || password != NULL) {
+      fCurrentAuthenticator.setUsernameAndPassword(username, password);
+      delete[] username;
+      delete[] password;
+    }
+    
+    // We don't yet have a TCP socket (or we used to have one, but it got closed).  Set it up now.
+    fInputSocketNum = fOutputSocketNum = setupStreamSocket(envir(), 0);
+    if (fInputSocketNum < 0) break;
+    ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that get killed don't also kill us
+      
+    // Connect to the remote endpoint:
+    fServerAddress = *(netAddressBits*)(destAddress.data());
+    int connectResult = connectToServer(fInputSocketNum, destPortNum);
+    if (connectResult < 0) break;
+    else if (connectResult > 0) {
+      // The connection succeeded.  Arrange to handle responses to requests sent on it:
+      envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE|SOCKET_EXCEPTION,
+						    (TaskScheduler::BackgroundHandlerProc*)&incomingDataHandler, this);
+    }
+    return connectResult;
+  } while (0);
+  
+  resetTCPSockets();
+  return -1;
+}
+
+int RTSPClient::connectToServer(int socketNum, portNumBits remotePortNum) {
+  MAKE_SOCKADDR_IN(remoteName, fServerAddress, htons(remotePortNum));
+  if (fVerbosityLevel >= 1) {
+    envir() << "Opening connection to " << AddressString(remoteName).val() << ", port " << remotePortNum << "...\n";
+  }
+  if (connect(socketNum, (struct sockaddr*) &remoteName, sizeof remoteName) != 0) {
+    int const err = envir().getErrno();
+    if (err == EINPROGRESS || err == EWOULDBLOCK) {
+      // The connection is pending; we'll need to handle it later.  Wait for our socket to be 'writable', or have an exception.
+      envir().taskScheduler().setBackgroundHandling(socketNum, SOCKET_WRITABLE|SOCKET_EXCEPTION,
+						    (TaskScheduler::BackgroundHandlerProc*)&connectionHandler, this);
+      return 0;
+    }
+    envir().setResultErrMsg("connect() failed: ");
+    if (fVerbosityLevel >= 1) envir() << "..." << envir().getResultMsg() << "\n";
+    return -1;
+  }
+  if (fVerbosityLevel >= 1) envir() << "...local connection opened\n";
+
+  return 1;
+}
+
+char* RTSPClient::createAuthenticatorString(char const* cmd, char const* url) {
+  Authenticator& auth = fCurrentAuthenticator; // alias, for brevity
+  if (auth.realm() != NULL && auth.username() != NULL && auth.password() != NULL) {
+    // We have a filled-in authenticator, so use it:
+    char* authenticatorStr;
+    if (auth.nonce() != NULL) { // Digest authentication
+      char const* const authFmt =
+	"Authorization: Digest username=\"%s\", realm=\"%s\", "
+	"nonce=\"%s\", uri=\"%s\", response=\"%s\"\r\n";
+      char const* response = auth.computeDigestResponse(cmd, url);
+      unsigned authBufSize = strlen(authFmt)
+	+ strlen(auth.username()) + strlen(auth.realm())
+	+ strlen(auth.nonce()) + strlen(url) + strlen(response);
+      authenticatorStr = new char[authBufSize];
+      sprintf(authenticatorStr, authFmt,
+	      auth.username(), auth.realm(),
+	      auth.nonce(), url, response);
+      auth.reclaimDigestResponse(response);
+    } else { // Basic authentication
+      char const* const authFmt = "Authorization: Basic %s\r\n";
+
+      unsigned usernamePasswordLength = strlen(auth.username()) + 1 + strlen(auth.password());
+      char* usernamePassword = new char[usernamePasswordLength+1];
+      sprintf(usernamePassword, "%s:%s", auth.username(), auth.password());
+
+      char* response = base64Encode(usernamePassword, usernamePasswordLength);
+      unsigned const authBufSize = strlen(authFmt) + strlen(response) + 1;
+      authenticatorStr = new char[authBufSize];
+      sprintf(authenticatorStr, authFmt, response);
+      delete[] response; delete[] usernamePassword;
+    }
+
+    return authenticatorStr;
+  }
+
+  // We don't have a (filled-in) authenticator.
+  return strDup("");
+}
+
 void RTSPClient::handleRequestError(RequestRecord* request) {
   int resultCode = -envir().getErrno();
   if (resultCode == 0) {
@@ -885,7 +913,7 @@ Boolean RTSPClient::checkForHeader(char const* line, char const* headerName, uns
   // The line begins with the desired header name.  Trim off any whitespace, and return the header parameters:
   unsigned paramIndex = headerNameLength;
   while (line[paramIndex] != '\0' && (line[paramIndex] == ' ' || line[paramIndex] == '\t')) ++paramIndex;
-  if (&line[paramIndex] == '\0') return False; // the header is assumed to be bad if it has no parameters
+  if (line[paramIndex] == '\0') return False; // the header is assumed to be bad if it has no parameters
 
   headerParams = &line[paramIndex];
   return True;
@@ -1039,12 +1067,12 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
       // Tell the subsession to receive RTP (and send/receive RTCP) over the RTSP stream:
       if (subsession.rtpSource() != NULL) {
 	subsession.rtpSource()->setStreamSocket(fInputSocketNum, subsession.rtpChannelId);
-	subsession.rtpSource()->setServerRequestAlternativeByteHandler(fInputSocketNum, handleAlternativeRequestByte, this);
 	  // So that we continue to receive & handle RTSP commands and responses from the server
 	subsession.rtpSource()->enableRTCPReports() = False;
 	  // To avoid confusing the server (which won't start handling RTP/RTCP-over-TCP until "PLAY"), don't send RTCP "RR"s yet
       }
       if (subsession.rtcpInstance() != NULL) subsession.rtcpInstance()->setStreamSocket(fInputSocketNum, subsession.rtcpChannelId);
+      RTPInterface::setServerRequestAlternativeByteHandler(envir(), fInputSocketNum, handleAlternativeRequestByte, this);
     } else {
       // Normal case.
       // Set the RTP and RTCP sockets' destination address and port from the information in the SETUP response (if present):
@@ -1773,17 +1801,17 @@ RTSPClient::RequestRecord* RTSPClient::RequestQueue::findByCSeq(unsigned cseq) {
 
 HandlerServerForREGISTERCommand* HandlerServerForREGISTERCommand
 ::createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, Port ourPort,
-	    int verbosityLevel, char const* applicationName) {
+	    UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName) {
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
 
-  return new HandlerServerForREGISTERCommand(env, creationFunc, ourSocket, ourPort, verbosityLevel, applicationName);
+  return new HandlerServerForREGISTERCommand(env, creationFunc, ourSocket, ourPort, authDatabase, verbosityLevel, applicationName);
 }
 
 HandlerServerForREGISTERCommand
 ::HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
-                                  int verbosityLevel, char const* applicationName)
-  : RTSPServer(env, ourSocket, ourPort, NULL, 30/*small reclamationTestSeconds*/),
+                                  UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName)
+  : RTSPServer(env, ourSocket, ourPort, authDatabase, 30/*small reclamationTestSeconds*/),
     fCreationFunc(creationFunc), fVerbosityLevel(verbosityLevel), fApplicationName(strDup(applicationName)) {
 }
 
@@ -1801,13 +1829,15 @@ char const* HandlerServerForREGISTERCommand::allowedCommandNames() {
   return "OPTIONS, REGISTER";
 }
 
-Boolean HandlerServerForREGISTERCommand::weImplementREGISTER() {
+Boolean HandlerServerForREGISTERCommand::weImplementREGISTER(char const* proxyURLSuffix, char*& responseStr) {
+  responseStr = NULL;
   return True;
 }
 
-void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer) {
+void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer,
+							    Boolean deliverViaTCP, char const* /*proxyURLSuffix*/) {
   // Create a new "RTSPClient" object, and call our 'creation function' with it:
   RTSPClient* newRTSPClient = createNewRTSPClient(url, fVerbosityLevel, fApplicationName, socketToRemoteServer);
 
-  if (fCreationFunc != NULL) (*fCreationFunc)(newRTSPClient);
+  if (fCreationFunc != NULL) (*fCreationFunc)(newRTSPClient, deliverViaTCP);
 }

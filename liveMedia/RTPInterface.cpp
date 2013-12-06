@@ -129,12 +129,15 @@ RTPInterface::RTPInterface(Medium* owner, Groupsock* gs)
 }
 
 RTPInterface::~RTPInterface() {
+  stopNetworkReading();
   delete fTCPStreams;
 }
 
 void RTPInterface::setStreamSocket(int sockNum,
 				   unsigned char streamChannelId) {
   fGS->removeAllDestinations();
+  envir().taskScheduler().disableBackgroundHandling(fGS->socketNum()); // turn off any reading on our datagram socket
+  fGS->reset(); // and close our datagram socket, because we won't be using it anymore
   addStreamSocket(sockNum, streamChannelId);
 }
 
@@ -184,13 +187,16 @@ void RTPInterface::removeStreamSocket(int sockNum,
   }
 }
 
-void RTPInterface
-::setServerRequestAlternativeByteHandler(int socketNum, ServerRequestAlternativeByteHandler* handler, void* clientData) {
-  SocketDescriptor* socketDescriptor = lookupSocketDescriptor(envir(), socketNum);
+void RTPInterface::setServerRequestAlternativeByteHandler(UsageEnvironment& env, int socketNum,
+							  ServerRequestAlternativeByteHandler* handler, void* clientData) {
+  SocketDescriptor* socketDescriptor = lookupSocketDescriptor(env, socketNum, False);
 
   if (socketDescriptor != NULL) socketDescriptor->setServerRequestAlternativeByteHandler(handler, clientData);
 }
 
+void RTPInterface::clearServerRequestAlternativeByteHandler(UsageEnvironment& env, int socketNum) {
+  setServerRequestAlternativeByteHandler(env, socketNum, NULL, NULL);
+}
 
 Boolean RTPInterface::sendPacket(unsigned char* packet, unsigned packetSize) {
   Boolean success = True; // we'll return False instead if any of the sends fail
@@ -277,8 +283,7 @@ void RTPInterface::stopNetworkReading() {
   envir().taskScheduler().turnOffBackgroundReadHandling(fGS->socketNum());
 
   // Also turn off read handling on each of our TCP connections:
-  for (tcpStreamRecord* streams = fTCPStreams; streams != NULL;
-       streams = streams->fNext) {
+  for (tcpStreamRecord* streams = fTCPStreams; streams != NULL; streams = streams->fNext) {
     deregisterSocket(envir(), streams->fStreamSocketNum, streams->fStreamChannelId);
   }
 }
@@ -294,8 +299,9 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
 #endif
   // Send a RTP/RTCP packet over TCP, using the encoding defined in RFC 2326, section 10.12:
   //     $<streamChannelId><packetSize><packet>
-  // (If the initial "send()" of '$<streamChannelId><packetSize>' succeeds, then we force the subsequent "send()" for
-  //  the <packet> data to succeed, even if we have to do so with a blocking "send()".)
+  // (If the initial "send()" of '$<streamChannelId><packetSize>' succeeds, then we force
+  // the subsequent "send()" for the <packet> data to succeed, even if we have to do so with
+  // a blocking "send()".)
   do {
     u_int8_t framingHeader[4];
     framingHeader[0] = '$';
@@ -319,19 +325,23 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
 }
 
 Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed) {
-  if (send(socketNum, (char const*)data, dataSize, 0/*flags*/) != (int)dataSize) {
-    // The TCP send() failed.
+  int sendResult = send(socketNum, (char const*)data, dataSize, 0/*flags*/);
+  if (sendResult < (int)dataSize) {
+    // The TCP send() failed - at least partially.
 
-    if (forceSendToSucceed && envir().getErrno() == EAGAIN) {
-      // The OS's TCP send buffer has filled up (because the stream's bitrate has exceeded the capacity of the TCP connection!).
+    unsigned numBytesSentSoFar = sendResult < 0 ? 0 : (unsigned)sendResult;
+    if (numBytesSentSoFar > 0 || (forceSendToSucceed && envir().getErrno() == EAGAIN)) {
+      // The OS's TCP send buffer has filled up (because the stream's bitrate has exceeded
+      // the capacity of the TCP connection!).
       // Force this data write to succeed, by blocking if necessary until it does:
+      unsigned numBytesRemainingToSend = dataSize - numBytesSentSoFar;
 #ifdef DEBUG_SEND
-      fprintf(stderr, "sendDataOverTCP: resending %d-byte send (blocking)\n", dataSize); fflush(stderr);
+      fprintf(stderr, "sendDataOverTCP: resending %d-byte send (blocking)\n", numBytesRemainingToSend); fflush(stderr);
 #endif
       makeSocketBlocking(socketNum);
-      Boolean sendSuccess = send(socketNum, (char const*)data, dataSize, 0/*flags*/) == (int)dataSize;
+      sendResult = send(socketNum, (char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend, 0/*flags*/);
       makeSocketNonBlocking(socketNum);
-      return sendSuccess;
+      return sendResult == (int)numBytesRemainingToSend;
     }
     return False;
   }
@@ -348,13 +358,6 @@ SocketDescriptor::SocketDescriptor(UsageEnvironment& env, int socketNum)
 
 SocketDescriptor::~SocketDescriptor() {
   fEnv.taskScheduler().turnOffBackgroundReadHandling(fOurSocketNum);
-  if (fServerRequestAlternativeByteHandler != NULL) {
-    // Hack: Pass a special character to our alternative byte handler, to tell it that either
-    // - an error occurred when reading the TCP socket, or
-    // - no error occurred, but it needs to take over control of the TCP socket once again.
-    u_int8_t specialChar = fReadErrorOccurred ? 0xFF : 0xFE;
-    (*fServerRequestAlternativeByteHandler)(fServerRequestAlternativeByteHandlerClientData, specialChar);
-  }
   removeSocketDescription(fEnv, fOurSocketNum);
 
   if (fSubChannelHashTable != NULL) {
@@ -364,7 +367,7 @@ SocketDescriptor::~SocketDescriptor() {
     char const* key;
 
     while ((rtpInterface = (RTPInterface*)(iter->next(key))) != NULL) {
-      long streamChannelIdLong = (long)key;
+      u_int64_t streamChannelIdLong = (u_int64_t)key;
       unsigned char streamChannelId = (unsigned char)streamChannelIdLong;
 
       rtpInterface->removeStreamSocket(fOurSocketNum, streamChannelId);
@@ -374,6 +377,15 @@ SocketDescriptor::~SocketDescriptor() {
     // Then remove the hash table entries themselves, and then remove the hash table:
     while (fSubChannelHashTable->RemoveNext() != NULL) {}
     delete fSubChannelHashTable;
+  }
+
+  // Finally:
+  if (fServerRequestAlternativeByteHandler != NULL) {
+    // Hack: Pass a special character to our alternative byte handler, to tell it that either
+    // - an error occurred when reading the TCP socket, or
+    // - no error occurred, but it needs to take over control of the TCP socket once again.
+    u_int8_t specialChar = fReadErrorOccurred ? 0xFF : 0xFE;
+    (*fServerRequestAlternativeByteHandler)(fServerRequestAlternativeByteHandlerClientData, specialChar);
   }
 }
 
@@ -411,7 +423,7 @@ void SocketDescriptor
   if (fSubChannelHashTable->IsEmpty()) {
     // No more interfaces are using us, so it's curtains for us now:
     if (fAreInReadHandlerLoop) {
-      fDeleteMyselfNext = True; // we can't delete ourself yet, by we'll do so from "tcpReadHandler()" below
+      fDeleteMyselfNext = True; // we can't delete ourself yet, but we'll do so from "tcpReadHandler()" below
     } else {
       delete this;
     }

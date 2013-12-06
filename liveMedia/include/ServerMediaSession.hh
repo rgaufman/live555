@@ -48,8 +48,6 @@ public:
 				       Boolean isSSM = False,
 				       char const* miscSDPLines = NULL);
 
-  virtual ~ServerMediaSession();
-
   static Boolean lookupByName(UsageEnvironment& env,
                               char const* mediumName,
                               ServerMediaSession*& resultSession);
@@ -84,6 +82,8 @@ protected:
 		     char const* info, char const* description,
 		     Boolean isSSM, char const* miscSDPLines);
   // called only by "createNew()"
+
+  virtual ~ServerMediaSession();
 
 private: // redefined virtual functions
   virtual Boolean isServerMediaSession() const;
@@ -123,8 +123,6 @@ private:
 
 class ServerMediaSubsession: public Medium {
 public:
-  virtual ~ServerMediaSubsession();
-
   unsigned trackNumber() const { return fTrackNumber; }
   char const* trackId();
   virtual char const* sdpLines() = 0;
@@ -180,6 +178,7 @@ public:
 
 protected: // we're a virtual base class
   ServerMediaSubsession(UsageEnvironment& env);
+  virtual ~ServerMediaSubsession();
 
   char const* rangeSDPLine() const;
       // returns a string to be delete[]d

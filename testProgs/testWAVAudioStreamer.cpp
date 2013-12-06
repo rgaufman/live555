@@ -98,8 +98,8 @@ void play() {
 	*env << "Unable to create a u-law filter from the PCM audio source: " << env->getResultMsg() << "\n";
 	exit(1);
       }
-      *env << "Converting to 8-bit u-law audio for streaming => " << bitsPerSecond << " bits-per-second\n";
       bitsPerSecond /= 2;
+      *env << "Converting to 8-bit u-law audio for streaming => " << bitsPerSecond << " bits-per-second\n";
       mimeType = "PCMU";
       if (samplingFrequency == 8000 && numChannels == 1) {
 	payloadFormatCode = 0; // a static RTP payload type

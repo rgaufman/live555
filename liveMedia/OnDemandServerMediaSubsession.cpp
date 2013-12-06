@@ -442,7 +442,9 @@ void StreamState
     // Change RTP and RTCP to use the TCP socket instead of UDP:
     if (fRTPSink != NULL) {
       fRTPSink->addStreamSocket(dests->tcpSocketNum, dests->rtpChannelId);
-      fRTPSink->setServerRequestAlternativeByteHandler(dests->tcpSocketNum, serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
+      RTPInterface
+	::setServerRequestAlternativeByteHandler(fRTPSink->envir(), dests->tcpSocketNum,
+						 serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
         // So that we continue to handle RTSP commands from the client
     }
     if (fRTCPInstance != NULL) {
@@ -487,7 +489,10 @@ void StreamState::pause() {
 void StreamState::endPlaying(Destinations* dests) {
 #if 0
   // The following code is temporarily disabled, because it erroneously sends RTCP "BYE"s to all clients if multiple
-  // clients are streaming from the samedata source (i.e., if "reuseFirstSource" is True).  It will be fixed for real later.
+  // clients are streaming from the same data source (i.e., if "reuseFirstSource" is True), and we don't want that to happen
+  // if we're being called as a result of a single one of these clients having sent a "TEARDOWN" (rather than the whole stream
+  // having been closed, for all clients).
+  // This will be fixed for real later.
   if (fRTCPInstance != NULL) {
     // Hack: Explicitly send a RTCP "BYE" packet now, because the code below will prevent that from happening later,
     // when "fRTCPInstance" gets deleted:
@@ -497,7 +502,6 @@ void StreamState::endPlaying(Destinations* dests) {
 
   if (dests->isTCP) {
     if (fRTPSink != NULL) {
-      fRTPSink->setServerRequestAlternativeByteHandler(dests->tcpSocketNum, NULL, NULL);
       fRTPSink->removeStreamSocket(dests->tcpSocketNum, dests->rtpChannelId);
     }
     if (fRTCPInstance != NULL) {

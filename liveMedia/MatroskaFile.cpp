@@ -55,6 +55,35 @@ private:
 UsageEnvironment& operator<<(UsageEnvironment& env, const CuePoint* cuePoint); // used for debugging
 
 
+////////// MatroskaTrackTable definition /////////
+
+// For looking up and iterating over the file's tracks:
+class MatroskaTrackTable {
+public:
+  MatroskaTrackTable();
+  virtual ~MatroskaTrackTable();
+
+  void add(MatroskaTrack* newTrack, unsigned trackNumber);
+  MatroskaTrack* lookup(unsigned trackNumber);
+
+  unsigned numTracks() const;
+
+  class Iterator {
+  public:
+    Iterator(MatroskaTrackTable& ourTable);
+    virtual ~Iterator();
+    MatroskaTrack* next();
+  private:
+    HashTable::Iterator* fIter;
+  };
+
+private:
+  friend class Iterator;
+  HashTable* fTable;
+};
+
+
+
 ////////// MatroskaFile implementation //////////
 
 void MatroskaFile
@@ -70,6 +99,7 @@ MatroskaFile::MatroskaFile(UsageEnvironment& env, char const* fileName, onCreati
     fPreferredLanguage(strDup(preferredLanguage)),
     fTimecodeScale(1000000), fSegmentDuration(0.0), fSegmentDataOffset(0), fClusterOffset(0), fCuesOffset(0), fCuePoints(NULL),
     fChosenVideoTrackNumber(0), fChosenAudioTrackNumber(0), fChosenSubtitleTrackNumber(0) {
+  fTrackTable = new MatroskaTrackTable;
   fDemuxesTable = HashTable::create(ONE_WORD_HASH_KEYS);
 
   FramedSource* inputSource = ByteStreamFileSource::createNew(envir(), fileName);
@@ -93,6 +123,7 @@ MatroskaFile::~MatroskaFile() {
     delete demux;
   }
   delete fDemuxesTable;
+  delete fTrackTable;
 
   delete[] (char*)fPreferredLanguage;
   delete[] (char*)fFileName;
@@ -118,11 +149,11 @@ void MatroskaFile::handleEndOfTrackHeaderParsing() {
   //     - If none is 'forced', choose the one that's 'default'.
   //     - If more than one is 'default', choose the first one that matches our preferred language, or the first if none matches.
   //     - If none is 'default', choose the first one that matches our preferred language, or the first if none matches.
-  unsigned numTracks = fTracks.numTracks();
+  unsigned numTracks = fTrackTable->numTracks();
   if (numTracks > 0) {
     TrackChoiceRecord* trackChoice = new TrackChoiceRecord[numTracks];
     unsigned numEnabledTracks = 0;
-    TrackTable::Iterator iter(fTracks);
+    MatroskaTrackTable::Iterator iter(*fTrackTable);
     MatroskaTrack* track;
     while ((track = iter.next()) != NULL) {
       if (!track->isEnabled || track->trackType == 0 || track->codecID == NULL) continue; // track not enabled, or not fully-defined
@@ -179,6 +210,10 @@ void MatroskaFile::handleEndOfTrackHeaderParsing() {
   if (fOnCreation != NULL) (*fOnCreation)(this, fOnCreationClientData);
 }
 
+MatroskaTrack* MatroskaFile::lookup(unsigned trackNumber) const {
+  return fTrackTable->lookup(trackNumber);
+}
+
 MatroskaDemux* MatroskaFile::newDemux() {
   MatroskaDemux* demux = new MatroskaDemux(*this);
   fDemuxesTable->Add((char const*)demux, demux);
@@ -194,6 +229,10 @@ float MatroskaFile::fileDuration() {
   if (fCuePoints == NULL) return 0.0; // Hack, because the RTSP server code assumes that duration > 0 => seekable. (fix this) #####
 
   return segmentDuration()*(timecodeScale()/1000000000.0f);
+}
+
+void MatroskaFile::addTrack(MatroskaTrack* newTrack, unsigned trackNumber) {
+  fTrackTable->add(newTrack, trackNumber);
 }
 
 void MatroskaFile::addCuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster) {
@@ -213,13 +252,13 @@ void MatroskaFile::printCuePoints(FILE* fid) {
 }
 
 
-////////// MatroskaFile::TrackTable implementation //////////
+////////// MatroskaTrackTable implementation //////////
 
-MatroskaFile::TrackTable::TrackTable()
+MatroskaTrackTable::MatroskaTrackTable()
   : fTable(HashTable::create(ONE_WORD_HASH_KEYS)) {
 }
 
-MatroskaFile::TrackTable::~TrackTable() {
+MatroskaTrackTable::~MatroskaTrackTable() {
   // Remove and delete all of our "MatroskaTrack" descriptors, and the hash table itself:
   MatroskaTrack* track;
   while ((track = (MatroskaTrack*)fTable->RemoveNext()) != NULL) {
@@ -228,27 +267,27 @@ MatroskaFile::TrackTable::~TrackTable() {
   delete fTable;
 } 
 
-void MatroskaFile::TrackTable::add(MatroskaTrack* newTrack, unsigned trackNumber) {
+void MatroskaTrackTable::add(MatroskaTrack* newTrack, unsigned trackNumber) {
   if (newTrack != NULL && newTrack->trackNumber != 0) fTable->Remove((char const*)newTrack->trackNumber);
   MatroskaTrack* existingTrack = (MatroskaTrack*)fTable->Add((char const*)trackNumber, newTrack);
   delete existingTrack; // in case it wasn't NULL
 }
 
-MatroskaTrack* MatroskaFile::TrackTable::lookup(unsigned trackNumber) {
+MatroskaTrack* MatroskaTrackTable::lookup(unsigned trackNumber) {
   return (MatroskaTrack*)fTable->Lookup((char const*)trackNumber);
 }
 
-unsigned MatroskaFile::TrackTable::numTracks() const { return fTable->numEntries(); }
+unsigned MatroskaTrackTable::numTracks() const { return fTable->numEntries(); }
 
-MatroskaFile::TrackTable::Iterator::Iterator(MatroskaFile::TrackTable& ourTable) {
+MatroskaTrackTable::Iterator::Iterator(MatroskaTrackTable& ourTable) {
   fIter = HashTable::Iterator::create(*(ourTable.fTable));
 }
 
-MatroskaFile::TrackTable::Iterator::~Iterator() {
+MatroskaTrackTable::Iterator::~Iterator() {
   delete fIter;
 }
 
-MatroskaTrack* MatroskaFile::TrackTable::Iterator::next() {
+MatroskaTrack* MatroskaTrackTable::Iterator::next() {
   char const* key;
   return (MatroskaTrack*)fIter->next(key);
 }
@@ -277,7 +316,8 @@ MatroskaTrack::~MatroskaTrack() {
 
 MatroskaDemux::MatroskaDemux(MatroskaFile& ourFile)
   : Medium(ourFile.envir()),
-    fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS)) {
+    fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS)),
+    fNextTrackTypeToCheck(0x1) {
   fOurParser = new MatroskaFileParser(ourFile, ByteStreamFileSource::createNew(envir(), ourFile.fileName()),
 				      handleEndOfFile, this, this);
 }
@@ -294,7 +334,30 @@ MatroskaDemux::~MatroskaDemux() {
   fOurFile.removeDemux(this);
 }
 
-FramedSource* MatroskaDemux::newDemuxedTrack(unsigned trackNumber) {
+FramedSource* MatroskaDemux::newDemuxedTrack() {
+  unsigned dummyResultTrackNumber;
+  return newDemuxedTrack(dummyResultTrackNumber);
+}
+
+FramedSource* MatroskaDemux::newDemuxedTrack(unsigned& resultTrackNumber) {
+  FramedSource* result;
+  resultTrackNumber = 0;
+
+  for (result = NULL; result == NULL && fNextTrackTypeToCheck != MATROSKA_TRACK_TYPE_OTHER;
+       fNextTrackTypeToCheck <<= 1) {
+    if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_VIDEO) resultTrackNumber = fOurFile.chosenVideoTrackNumber();
+    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_AUDIO) resultTrackNumber = fOurFile.chosenAudioTrackNumber();
+    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_SUBTITLE) resultTrackNumber = fOurFile.chosenSubtitleTrackNumber();
+
+    result = newDemuxedTrackByTrackNumber(resultTrackNumber);
+  }
+
+  return result;
+}
+
+FramedSource* MatroskaDemux::newDemuxedTrackByTrackNumber(unsigned trackNumber) {
+  if (trackNumber == 0) return NULL;
+
   FramedSource* track = new MatroskaDemuxedTrack(envir(), trackNumber, *this);
   fDemuxedTracksTable->Add((char const*)trackNumber, track);
   return track;

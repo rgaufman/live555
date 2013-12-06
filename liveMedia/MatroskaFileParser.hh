@@ -83,6 +83,7 @@ private:
   Boolean parseEBMLVal_binary(EBMLDataSize& size, u_int8_t*& result);
     // Note: "result" is dynamically allocated; the caller must delete[] it later
   void skipHeader(EBMLDataSize const& size);
+  void skipRemainingHeaderBytes(Boolean isContinuation);
 
   void setParseState();
 
@@ -102,6 +103,9 @@ private:
   MatroskaDemux* fOurDemux;
   MatroskaParseState fCurrentParseState;
   u_int64_t fCurOffsetInFile, fSavedCurOffsetInFile, fLimitOffsetInFile;
+
+  // For skipping over (possibly large) headers:
+  u_int64_t fNumHeaderBytesToSkip;
 
   // For parsing 'Seek ID's:
   EBMLId fLastSeekId;

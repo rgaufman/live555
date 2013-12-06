@@ -32,17 +32,20 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class MatroskaFileServerDemux: public Medium {
 public:
   typedef void (onCreationFunc)(MatroskaFileServerDemux* newDemux, void* clientData);
-  static void createNew(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData);
+  static void createNew(UsageEnvironment& env, char const* fileName,
+			onCreationFunc* onCreation, void* onCreationClientData,
+			char const* preferredLanguage = "eng");
     // Note: Unlike most "createNew()" functions, this one doesn't return a new object immediately.  Instead, because this class
     // requires file reading (to parse the Matroska 'Track' headers) before a new object can be initialized, the creation of a new
     // object is signalled by calling - from the event loop - an 'onCreationFunc' that is passed as a parameter to "createNew()". 
 
   ServerMediaSubsession* newServerMediaSubsession();
+  ServerMediaSubsession* newServerMediaSubsession(unsigned& resultTrackNumber);
     // Returns a new "ServerMediaSubsession" object that represents the next preferred media track
     // (video, audio, subtitle - in that order) from the file. (Preferred media tracks are based on the file's language preference.)
     // This function returns NULL when no more media tracks exist.
 
-  ServerMediaSubsession* newServerMediaSubsession(unsigned trackNumber);
+  ServerMediaSubsession* newServerMediaSubsessionByTrackNumber(unsigned trackNumber);
     // As above, but creates a new "ServerMediaSubsession" object for a specific track number within the Matroska file.
     // (You should not call this function more than once with the same track number.)
 
@@ -57,7 +60,9 @@ public:
     // Used by the "ServerMediaSubsession" objects to implement their "createNewStreamSource()" virtual function.
 
 private:
-  MatroskaFileServerDemux(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData);
+  MatroskaFileServerDemux(UsageEnvironment& env, char const* fileName,
+			  onCreationFunc* onCreation, void* onCreationClientData,
+			  char const* preferredLanguage);
       // called only by createNew()
   virtual ~MatroskaFileServerDemux();
 

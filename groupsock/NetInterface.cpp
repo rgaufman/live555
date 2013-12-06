@@ -90,8 +90,13 @@ Socket::Socket(UsageEnvironment& env, Port port)
   fSocketNum = setupDatagramSocket(fEnv, port);
 }
 
-Socket::~Socket() {
+void Socket::reset() {
   closeSocket(fSocketNum);
+  fSocketNum = -1;
+}
+
+Socket::~Socket() {
+  reset();
 }
 
 Boolean Socket::changePort(Port newPort) {

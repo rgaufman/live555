@@ -84,9 +84,6 @@ public:
   void removeStreamSocket(int sockNum, unsigned char streamChannelId) {
     fRTPInterface.removeStreamSocket(sockNum, streamChannelId);
   }
-  void setServerRequestAlternativeByteHandler(int socketNum, ServerRequestAlternativeByteHandler* handler, void* clientData) {
-    fRTPInterface.setServerRequestAlternativeByteHandler(socketNum, handler, clientData);
-  }
 
 protected:
   RTPSink(UsageEnvironment& env,

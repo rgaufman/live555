@@ -40,32 +40,7 @@ public:
     // requires file reading (to parse the Matroska 'Track' headers) before a new object can be initialized, the creation of a new
     // object is signalled by calling - from the event loop - an 'onCreationFunc' that is passed as a parameter to "createNew()".
 
-  // For looking up and iterating over the file's tracks:
-  class TrackTable {
-  public:
-    TrackTable();
-    virtual ~TrackTable();
-
-    void add(MatroskaTrack* newTrack, unsigned trackNumber);
-    MatroskaTrack* lookup(unsigned trackNumber);
-
-    unsigned numTracks() const;
-
-    class Iterator {
-    public:
-      Iterator(TrackTable& ourTable);
-      virtual ~Iterator();
-      MatroskaTrack* next();
-    private:
-      HashTable::Iterator* fIter;
-    };
-
-  private:
-    friend class Iterator;
-    HashTable* fTable;
-  };
-
-  MatroskaTrack* lookup(unsigned trackNumber) { return fTracks.lookup(trackNumber); } // shortcut
+  MatroskaTrack* lookup(unsigned trackNumber) const;
 
   // Create a demultiplexor for extracting tracks from this file.  (Separate clients will typically have separate demultiplexors.)
   MatroskaDemux* newDemux();
@@ -74,7 +49,6 @@ public:
   unsigned timecodeScale() { return fTimecodeScale; } // in nanoseconds
   float segmentDuration() { return fSegmentDuration; } // in units of "timecodeScale()"
   float fileDuration(); // in seconds
-  TrackTable& tracks() { return fTracks; }
   
   char const* fileName() const { return fFileName; }
 
@@ -91,6 +65,7 @@ private:
   static void handleEndOfTrackHeaderParsing(void* clientData);
   void handleEndOfTrackHeaderParsing();
 
+  void addTrack(MatroskaTrack* newTrack, unsigned trackNumber);
   void addCuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster);
   Boolean lookupCuePoint(double& cueTime, u_int64_t& resultClusterOffsetInFile, unsigned& resultBlockNumWithinCluster);
   void printCuePoints(FILE* fid);
@@ -109,7 +84,7 @@ private:
   float fSegmentDuration; // in units of "fTimecodeScale"
   u_int64_t fSegmentDataOffset, fClusterOffset, fCuesOffset;
 
-  TrackTable fTracks;
+  class MatroskaTrackTable* fTrackTable;
   HashTable* fDemuxesTable;
   class CuePoint* fCuePoints;
   unsigned fChosenVideoTrackNumber, fChosenAudioTrackNumber, fChosenSubtitleTrackNumber;
@@ -149,15 +124,26 @@ public:
 
 class MatroskaDemux: public Medium {
 public:
-  FramedSource* newDemuxedTrack(unsigned trackNumber);
+  FramedSource* newDemuxedTrack();
+  FramedSource* newDemuxedTrack(unsigned& resultTrackNumber);
+      // Returns a new stream ("FramedSource" subclass) that represents the next preferred media
+      // track (video, audio, subtitle - in that order) from the file. (Preferred media tracks
+      // are based on the file's language preference.)
+      // This function returns NULL when no more media tracks exist.
+
+  FramedSource* newDemuxedTrackByTrackNumber(unsigned trackNumber);
+      // As above, but creates a new stream for a specific track number within the Matroska file.
+      // (You should not call this function more than once with the same track number.)
+
     // Note: We assume that:
     // - Every track created by "newDemuxedTrack()" is later read
     // - All calls to "newDemuxedTrack()" are made before any track is read
 
-  class MatroskaDemuxedTrack* lookupDemuxedTrack(unsigned trackNumber);
-
 protected:
   friend class MatroskaFile;
+  friend class MatroskaFileParser;
+  class MatroskaDemuxedTrack* lookupDemuxedTrack(unsigned trackNumber);
+
   MatroskaDemux(MatroskaFile& ourFile); // we're created only by a "MatroskaFile" (a friend)
   virtual ~MatroskaDemux();
 
@@ -174,6 +160,9 @@ private:
   MatroskaFile& fOurFile;
   class MatroskaFileParser* fOurParser;
   HashTable* fDemuxedTracksTable;
+
+  // Used to implement "newServerMediaSubsession()":
+  u_int8_t fNextTrackTypeToCheck;
 };
 
 #endif

@@ -80,6 +80,7 @@ private:
 class Socket: public NetInterface {
 public:
   virtual ~Socket();
+  void reset(); // closes the socket, and sets "fSocketNum" to -1
 
   virtual Boolean handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			     unsigned& bytesRead,

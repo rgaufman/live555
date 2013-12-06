@@ -40,7 +40,8 @@ ByteStreamMemoryBufferSource::ByteStreamMemoryBufferSource(UsageEnvironment& env
 							   unsigned preferredFrameSize,
 							   unsigned playTimePerFrame)
   : FramedSource(env), fBuffer(buffer), fBufferSize(bufferSize), fCurIndex(0), fDeleteBufferOnClose(deleteBufferOnClose),
-    fPreferredFrameSize(preferredFrameSize), fPlayTimePerFrame(playTimePerFrame), fLastPlayTime(0) {
+    fPreferredFrameSize(preferredFrameSize), fPlayTimePerFrame(playTimePerFrame), fLastPlayTime(0),
+    fLimitNumBytesToStream(False), fNumBytesToStream(0) {
 }
 
 ByteStreamMemoryBufferSource::~ByteStreamMemoryBufferSource() {

@@ -69,6 +69,9 @@ public:
 					     char*& password);
   char const* getInviteSdpReply() const { return fInviteSDPDescriptionReturned; }
 
+  void setUserAgentString(char const* userAgentName);
+       // sets an alternative string to be used in SIP "User-Agent:" headers
+
 protected:
   virtual ~SIPClient();
 
@@ -119,7 +122,7 @@ private:
   portNumBits fOurPortNum;
   Groupsock* fOurSocket;
   char* fUserAgentHeaderStr;
-  unsigned fUserAgentHeaderStrSize;
+  unsigned fUserAgentHeaderStrLen;
 
   // Set for each call:
   char const* fURL;
