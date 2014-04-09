@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand, from an MP3 audio track within a Matroska file.
 // (Actually, MPEG-1 or MPEG-2 audio file should also work.)
@@ -24,15 +24,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MatroskaDemuxedTrack.hh"
 
 MP3AudioMatroskaFileServerMediaSubsession* MP3AudioMatroskaFileServerMediaSubsession
-::createNew(MatroskaFileServerDemux& demux, unsigned trackNumber, Boolean generateADUs, Interleaving* interleaving) {
-  return new MP3AudioMatroskaFileServerMediaSubsession(demux, trackNumber, generateADUs, interleaving);
+::createNew(MatroskaFileServerDemux& demux, MatroskaTrack* track,
+	    Boolean generateADUs, Interleaving* interleaving) {
+  return new MP3AudioMatroskaFileServerMediaSubsession(demux, track, generateADUs, interleaving);
 }
 
 MP3AudioMatroskaFileServerMediaSubsession
-::MP3AudioMatroskaFileServerMediaSubsession(MatroskaFileServerDemux& demux, unsigned trackNumber,
+::MP3AudioMatroskaFileServerMediaSubsession(MatroskaFileServerDemux& demux, MatroskaTrack* track,
 					    Boolean generateADUs, Interleaving* interleaving)
   : MP3AudioFileServerMediaSubsession(demux.envir(), demux.fileName(), False, generateADUs, interleaving),
-    fOurDemux(demux), fTrackNumber(trackNumber) {
+    fOurDemux(demux), fTrackNumber(track->trackNumber) {
   fFileDuration = fOurDemux.fileDuration();
 }
 

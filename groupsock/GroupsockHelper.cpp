@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // Implementation
 
@@ -304,36 +304,40 @@ Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct in_addr address, Port port,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize) {
-	do {
-		if (ttlArg != 0) {
-			// Before sending, set the socket's TTL:
+  // Before sending, set the socket's TTL:
 #if defined(__WIN32__) || defined(_WIN32)
 #define TTL_TYPE int
 #else
 #define TTL_TYPE u_int8_t
 #endif
-			TTL_TYPE ttl = (TTL_TYPE)ttlArg;
-			if (setsockopt(socket, IPPROTO_IP, IP_MULTICAST_TTL,
-				       (const char*)&ttl, sizeof ttl) < 0) {
-				socketErr(env, "setsockopt(IP_MULTICAST_TTL) error: ");
-				break;
-			}
-		}
+  TTL_TYPE ttl = (TTL_TYPE)ttlArg;
+  if (setsockopt(socket, IPPROTO_IP, IP_MULTICAST_TTL,
+		 (const char*)&ttl, sizeof ttl) < 0) {
+    socketErr(env, "setsockopt(IP_MULTICAST_TTL) error: ");
+    return False;
+  }
 
-		MAKE_SOCKADDR_IN(dest, address.s_addr, port.num());
-		int bytesSent = sendto(socket, (char*)buffer, bufferSize, 0,
-			               (struct sockaddr*)&dest, sizeof dest);
-		if (bytesSent != (int)bufferSize) {
-			char tmpBuf[100];
-			sprintf(tmpBuf, "writeSocket(%d), sendTo() error: wrote %d bytes instead of %u: ", socket, bytesSent, bufferSize);
-			socketErr(env, tmpBuf);
-			break;
-		}
+  return writeSocket(env, socket, address, port, buffer, bufferSize);
+}
 
-		return True;
-	} while (0);
+Boolean writeSocket(UsageEnvironment& env,
+		    int socket, struct in_addr address, Port port,
+		    unsigned char* buffer, unsigned bufferSize) {
+  do {
+    MAKE_SOCKADDR_IN(dest, address.s_addr, port.num());
+    int bytesSent = sendto(socket, (char*)buffer, bufferSize, 0,
+			   (struct sockaddr*)&dest, sizeof dest);
+    if (bytesSent != (int)bufferSize) {
+      char tmpBuf[100];
+      sprintf(tmpBuf, "writeSocket(%d), sendTo() error: wrote %d bytes instead of %u: ", socket, bytesSent, bufferSize);
+      socketErr(env, tmpBuf);
+      break;
+    }
+    
+    return True;
+  } while (0);
 
-	return False;
+  return False;
 }
 
 static unsigned getBufferSize(UsageEnvironment& env, int bufOptName,
@@ -482,7 +486,7 @@ Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   struct ip_mreq_source imr;
-#ifdef ANDROID
+#ifdef __ANDROID__
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = ReceivingInterfaceAddr;
@@ -508,7 +512,7 @@ Boolean socketLeaveGroupSSM(UsageEnvironment& /*env*/, int socket,
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   struct ip_mreq_source imr;
-#ifdef ANDROID
+#ifdef __ANDROID__
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = ReceivingInterfaceAddr;
@@ -565,6 +569,12 @@ netAddressBits ourIPAddress(UsageEnvironment& env) {
   static netAddressBits ourAddress = 0;
   int sock = -1;
   struct in_addr testAddr;
+
+  if (ReceivingInterfaceAddr != INADDR_ANY) {
+    // Hack: If we were told to receive on a specific interface address, then 
+    // define this to be our ip address:
+    ourAddress = ReceivingInterfaceAddr;
+  }
 
   if (ourAddress == 0) {
     // We need to find our source address

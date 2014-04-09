@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // C++ header
 
@@ -84,6 +84,7 @@ public:
   void removeStreamSocket(int sockNum, unsigned char streamChannelId) {
     fRTPInterface.removeStreamSocket(sockNum, streamChannelId);
   }
+  unsigned& estimatedBitrate() { return fEstimatedBitrate; } // kbps; usually 0 (i.e., unset)
 
 protected:
   RTPSink(UsageEnvironment& env,
@@ -124,6 +125,7 @@ private:
   char const* fRTPPayloadFormatName;
   unsigned fNumChannels;
   struct timeval fCreationTime;
+  unsigned fEstimatedBitrate; // set on creation if known; otherwise 0
 
   RTPTransmissionStatsDB* fTransmissionStatsDB;
 };

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Abstract class for parsing a byte stream
 // C++ header
 
@@ -74,7 +74,7 @@ protected: // we're a virtual base class
     fRemainingUnparsedBits = 0;
     return curBank()[fCurParserIndex++];
   }
-  u_int8_t test1Byte(unsigned numBytes) { // as above, but doesn't advance ptr
+  u_int8_t test1Byte() { // as above, but doesn't advance ptr
     ensureValidBytes(1);
     return nextToParse()[0];
   }

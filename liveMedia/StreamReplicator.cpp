@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // An class that can be used to create (possibly multiple) 'replicas' of an incoming stream.
 // Implementation.
 
@@ -69,7 +69,7 @@ FramedSource* StreamReplicator::createStreamReplica() {
 
 void StreamReplicator::getNextFrame(StreamReplica* replica) {
   if (fInputSourceHasClosed) { // handle closure instead
-    FramedSource::handleClosure(replica);
+    replica->handleClosure();
     return;
   }
 
@@ -228,16 +228,16 @@ void StreamReplicator::onSourceClosure() {
   while ((replica = fReplicasAwaitingCurrentFrame) != NULL) {
     fReplicasAwaitingCurrentFrame = replica->fNext;
     replica->fNext = NULL;
-    FramedSource::handleClosure(replica);
+    replica->handleClosure();
   }
   while ((replica = fReplicasAwaitingNextFrame) != NULL) {
     fReplicasAwaitingNextFrame = replica->fNext;
     replica->fNext = NULL;
-    FramedSource::handleClosure(replica);
+    replica->handleClosure();
   }
   if ((replica = fMasterReplica) != NULL) {
     fMasterReplica = NULL;
-    FramedSource::handleClosure(replica);
+    replica->handleClosure();
   }
 }
 

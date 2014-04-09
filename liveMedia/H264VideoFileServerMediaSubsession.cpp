@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand, from a H264 video file.
 // Implementation
@@ -70,7 +70,7 @@ void H264VideoFileServerMediaSubsession::checkForAuxSDPLine1() {
 
     // Signal the event loop that we're done:
     setDoneFlag();
-  } else {
+  } else if (!fDoneFlag) {
     // try again after a brief delay:
     int uSecsToDelay = 100000; // 100 ms
     nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecsToDelay,

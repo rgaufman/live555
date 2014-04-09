@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2013, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2014, Live Networks, Inc.  All rights reserved
 // A test program that demonstrates how to stream - via unicast RTP
 // - various kinds of file on demand, using a built-in RTSP server.
 // main program
@@ -36,11 +36,18 @@ Boolean iFramesOnly = False;
 static void announceStream(RTSPServer* rtspServer, ServerMediaSession* sms,
 			   char const* streamName, char const* inputFileName); // fwd
 
-static char newMatroskaDemuxWatchVariable;
-static MatroskaFileServerDemux* demux;
+static char newDemuxWatchVariable;
+
+static MatroskaFileServerDemux* matroskaDemux;
 static void onMatroskaDemuxCreation(MatroskaFileServerDemux* newDemux, void* /*clientData*/) {
-  demux = newDemux;
-  newMatroskaDemuxWatchVariable = 1;
+  matroskaDemux = newDemux;
+  newDemuxWatchVariable = 1;
+}
+
+static OggFileServerDemux* oggDemux;
+static void onOggDemuxCreation(OggFileServerDemux* newDemux, void* /*clientData*/) {
+  oggDemux = newDemux;
+  newDemuxWatchVariable = 1;
 }
 
 int main(int argc, char** argv) {
@@ -94,6 +101,20 @@ int main(int argc, char** argv) {
       = ServerMediaSession::createNew(*env, streamName, streamName,
 				      descriptionString);
     sms->addSubsession(H264VideoFileServerMediaSubsession
+		       ::createNew(*env, inputFileName, reuseFirstSource));
+    rtspServer->addServerMediaSession(sms);
+
+    announceStream(rtspServer, sms, streamName, inputFileName);
+  }
+
+  // A H.265 video elementary stream:
+  {
+    char const* streamName = "h265ESVideoTest";
+    char const* inputFileName = "test.265";
+    ServerMediaSession* sms
+      = ServerMediaSession::createNew(*env, streamName, streamName,
+				      descriptionString);
+    sms->addSubsession(H265VideoFileServerMediaSubsession
 		       ::createNew(*env, inputFileName, reuseFirstSource));
     rtspServer->addServerMediaSession(sms);
 
@@ -282,13 +303,13 @@ int main(int argc, char** argv) {
       = ServerMediaSession::createNew(*env, streamName, streamName,
 				      descriptionString);
 
-    newMatroskaDemuxWatchVariable = 0;
+    newDemuxWatchVariable = 0;
     MatroskaFileServerDemux::createNew(*env, inputFileName, onMatroskaDemuxCreation, NULL);
-    env->taskScheduler().doEventLoop(&newMatroskaDemuxWatchVariable);
+    env->taskScheduler().doEventLoop(&newDemuxWatchVariable);
 
     Boolean sessionHasTracks = False;
     ServerMediaSubsession* smss;
-    while ((smss = demux->newServerMediaSubsession()) != NULL) {
+    while ((smss = matroskaDemux->newServerMediaSubsession()) != NULL) {
       sms->addSubsession(smss);
       sessionHasTracks = True;
     }
@@ -309,13 +330,66 @@ int main(int argc, char** argv) {
       = ServerMediaSession::createNew(*env, streamName, streamName,
 				      descriptionString);
 
-    newMatroskaDemuxWatchVariable = 0;
+    newDemuxWatchVariable = 0;
     MatroskaFileServerDemux::createNew(*env, inputFileName, onMatroskaDemuxCreation, NULL);
-    env->taskScheduler().doEventLoop(&newMatroskaDemuxWatchVariable);
+    env->taskScheduler().doEventLoop(&newDemuxWatchVariable);
 
     Boolean sessionHasTracks = False;
     ServerMediaSubsession* smss;
-    while ((smss = demux->newServerMediaSubsession()) != NULL) {
+    while ((smss = matroskaDemux->newServerMediaSubsession()) != NULL) {
+      sms->addSubsession(smss);
+      sessionHasTracks = True;
+    }
+    if (sessionHasTracks) {
+      rtspServer->addServerMediaSession(sms);
+    }
+    // otherwise, because the stream has no tracks, we don't add a ServerMediaSession to the server.
+
+    announceStream(rtspServer, sms, streamName, inputFileName);
+  }
+
+  // An Ogg ('.ogg') file, with video and/or audio streams:
+  {
+    char const* streamName = "oggFileTest";
+    char const* inputFileName = "test.ogg";
+    ServerMediaSession* sms
+      = ServerMediaSession::createNew(*env, streamName, streamName,
+				      descriptionString);
+
+    newDemuxWatchVariable = 0;
+    OggFileServerDemux::createNew(*env, inputFileName, onOggDemuxCreation, NULL);
+    env->taskScheduler().doEventLoop(&newDemuxWatchVariable);
+
+    Boolean sessionHasTracks = False;
+    ServerMediaSubsession* smss;
+    while ((smss = oggDemux->newServerMediaSubsession()) != NULL) {
+      sms->addSubsession(smss);
+      sessionHasTracks = True;
+    }
+    if (sessionHasTracks) {
+      rtspServer->addServerMediaSession(sms);
+    }
+    // otherwise, because the stream has no tracks, we don't add a ServerMediaSession to the server.
+
+    announceStream(rtspServer, sms, streamName, inputFileName);
+  }
+
+  // An Opus ('.opus') audio file:
+  // (Note: ".opus' files are special types of Ogg files, so we use the same code as the Ogg ('.ogg') file code above.)
+  {
+    char const* streamName = "opusFileTest";
+    char const* inputFileName = "test.opus";
+    ServerMediaSession* sms
+      = ServerMediaSession::createNew(*env, streamName, streamName,
+				      descriptionString);
+
+    newDemuxWatchVariable = 0;
+    OggFileServerDemux::createNew(*env, inputFileName, onOggDemuxCreation, NULL);
+    env->taskScheduler().doEventLoop(&newDemuxWatchVariable);
+
+    Boolean sessionHasTracks = False;
+    ServerMediaSubsession* smss;
+    while ((smss = oggDemux->newServerMediaSubsession()) != NULL) {
       sms->addSubsession(smss);
       sessionHasTracks = True;
     }

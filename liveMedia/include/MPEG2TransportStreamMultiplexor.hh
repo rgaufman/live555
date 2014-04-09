@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A class for generating MPEG-2 Transport Stream from one or more input
 // Elementary Stream data sources
 // C++ header
@@ -76,5 +76,10 @@ private:
   unsigned fInputBufferSize, fInputBufferBytesUsed;
   Boolean fIsFirstAdaptationField;
 };
+
+
+// The CRC calculation function that Transport Streams use.  We make this function public
+// here in case it's useful elsewhere:
+u_int32_t calculateCRC(u_int8_t const* data, unsigned dataLength, u_int32_t initialValue = 0xFFFFFFFF);
 
 #endif

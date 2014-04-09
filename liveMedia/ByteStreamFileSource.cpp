@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A file source that is a plain byte stream (rather than frames)
 // Implementation
 
@@ -57,8 +57,11 @@ void ByteStreamFileSource::seekToByteAbsolute(u_int64_t byteNumber, u_int64_t nu
   fLimitNumBytesToStream = fNumBytesToStream > 0;
 }
 
-void ByteStreamFileSource::seekToByteRelative(int64_t offset) {
+void ByteStreamFileSource::seekToByteRelative(int64_t offset, u_int64_t numBytesToStream) {
   SeekFile64(fFid, offset, SEEK_CUR);
+
+  fNumBytesToStream = numBytesToStream;
+  fLimitNumBytesToStream = fNumBytesToStream > 0;
 }
 
 void ByteStreamFileSource::seekToEnd() {
@@ -91,7 +94,7 @@ ByteStreamFileSource::~ByteStreamFileSource() {
 
 void ByteStreamFileSource::doGetNextFrame() {
   if (feof(fFid) || ferror(fFid) || (fLimitNumBytesToStream && fNumBytesToStream == 0)) {
-    handleClosure(this);
+    handleClosure();
     return;
   }
 
@@ -142,7 +145,7 @@ void ByteStreamFileSource::doReadFromFile() {
   }
 #endif
   if (fFrameSize == 0) {
-    handleClosure(this);
+    handleClosure();
     return;
   }
   fNumBytesToStream -= fFrameSize;

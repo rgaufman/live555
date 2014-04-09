@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client
 // Implementation
 
@@ -23,7 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Base64.hh"
 #include "Locale.hh"
 #include <GroupsockHelper.hh>
-#include "our_md5.h"
+#include "ourMD5.hh"
 
 ////////// RTSPClient implementation //////////
 
@@ -68,6 +68,7 @@ unsigned RTSPClient::sendPlayCommand(MediaSession& session, responseHandler* res
                                      double start, double end, float scale,
                                      Authenticator* authenticator) {
   if (authenticator != NULL) fCurrentAuthenticator = *authenticator;
+  sendDummyUDPPackets(session); // hack to improve NAT traversal
   return sendRequest(new RequestRecord(++fCSeq, "PLAY", responseHandler, &session, NULL, 0, start, end, scale));
 }
 
@@ -75,6 +76,7 @@ unsigned RTSPClient::sendPlayCommand(MediaSubsession& subsession, responseHandle
                                      double start, double end, float scale,
                                      Authenticator* authenticator) {
   if (authenticator != NULL) fCurrentAuthenticator = *authenticator;
+  sendDummyUDPPackets(subsession); // hack to improve NAT traversal
   return sendRequest(new RequestRecord(++fCSeq, "PLAY", responseHandler, NULL, &subsession, 0, start, end, scale));
 }
 
@@ -82,6 +84,7 @@ unsigned RTSPClient::sendPlayCommand(MediaSession& session, responseHandler* res
 				     char const* absStartTime, char const* absEndTime, float scale,
                                      Authenticator* authenticator) {
   if (authenticator != NULL) fCurrentAuthenticator = *authenticator;
+  sendDummyUDPPackets(session); // hack to improve NAT traversal
   return sendRequest(new RequestRecord(++fCSeq, responseHandler, absStartTime, absEndTime, scale, &session, NULL));
 }
 
@@ -89,6 +92,7 @@ unsigned RTSPClient::sendPlayCommand(MediaSubsession& subsession, responseHandle
 				     char const* absStartTime, char const* absEndTime, float scale,
                                      Authenticator* authenticator) {
   if (authenticator != NULL) fCurrentAuthenticator = *authenticator;
+  sendDummyUDPPackets(subsession); // hack to improve NAT traversal
   return sendRequest(new RequestRecord(++fCSeq, responseHandler, absStartTime, absEndTime, scale, NULL, &subsession));
 }
 
@@ -151,6 +155,29 @@ unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHand
   unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
   delete[] paramString;
   return result;
+}
+
+void RTSPClient::sendDummyUDPPackets(MediaSession& session, unsigned numDummyPackets) {
+  MediaSubsessionIterator iter(session);
+  MediaSubsession* subsession;
+
+  while ((subsession = iter.next()) != NULL) {
+    sendDummyUDPPackets(*subsession, numDummyPackets);
+  }
+}
+
+void RTSPClient::sendDummyUDPPackets(MediaSubsession& subsession, unsigned numDummyPackets) {
+  // Hack: To increase the likelihood of UDP packets from the server reaching us,
+  // if we're behind a NAT, send a few 'dummy' UDP packets to the server now.
+  // (We do this on both our RTP port and our RTCP port.)
+  Groupsock* gs1 = NULL; Groupsock* gs2 = NULL;
+  if (subsession.rtpSource() != NULL) gs1 = subsession.rtpSource()->RTPgs();
+  if (subsession.rtcpInstance() != NULL) gs2 = subsession.rtcpInstance()->RTCPgs();
+  u_int32_t const dummy = 0xFEEDFACE;
+  for (unsigned i = 0; i < numDummyPackets; ++i) {
+    if (gs1 != NULL) gs1->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
+    if (gs2 != NULL) gs2->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
+  }
 }
 
 Boolean RTSPClient::changeResponseHandler(unsigned cseq, responseHandler* newResponseHandler) { 
@@ -618,7 +645,7 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 	delete[] cmdURL;
 	return False;
       }
-      rtcpNumber = rtpNumber + 1;
+      rtcpNumber = subsession.rtcpIsMuxed() ? rtpNumber : rtpNumber + 1;
     }
     unsigned transportSize = strlen(transportFmt)
       + strlen(transportTypeStr) + strlen(modeStr) + strlen(portTypeStr) + 2*5 /* max port len */;
@@ -636,7 +663,8 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
     delete[] transportStr; delete[] sessionStr;
   } else if (strcmp(request->commandName(), "GET") == 0 || strcmp(request->commandName(), "POST") == 0) {
     // We will be sending a HTTP (not a RTSP) request.
-    // Begin by re-parsing our RTSP URL, just to get the stream name, which we'll use as our 'cmdURL' in the subsequent request:
+    // Begin by re-parsing our RTSP URL, to get the stream name (which we'll use as our 'cmdURL'
+    // in the subsequent request), and the server address (which we'll use in a "Host:" header):
     char* username;
     char* password;
     NetAddress destAddress;
@@ -645,6 +673,8 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
     if (cmdURL[0] == '\0') cmdURL = (char*)"/";
     delete[] username;
     delete[] password;
+    netAddressBits serverAddress = *(netAddressBits*)(destAddress.data());
+    AddressString serverAddressString(serverAddress);
     
     protocolStr = "HTTP/1.1";
     
@@ -661,18 +691,22 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
       fSessionCookie[23] = '\0';
       
       char const* const extraHeadersFmt =
+	"Host: %s\r\n"
 	"x-sessioncookie: %s\r\n"
 	"Accept: application/x-rtsp-tunnelled\r\n"
 	"Pragma: no-cache\r\n"
 	"Cache-Control: no-cache\r\n";
       unsigned extraHeadersSize = strlen(extraHeadersFmt)
+	+ strlen(serverAddressString.val())
 	+ strlen(fSessionCookie);
       extraHeaders = new char[extraHeadersSize];
       extraHeadersWereAllocated = True;
       sprintf(extraHeaders, extraHeadersFmt,
+	      serverAddressString.val(),
 	      fSessionCookie);
     } else { // "POST"
       char const* const extraHeadersFmt =
+	"Host: %s\r\n"
 	"x-sessioncookie: %s\r\n"
 	"Content-Type: application/x-rtsp-tunnelled\r\n"
 	"Pragma: no-cache\r\n"
@@ -680,10 +714,12 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 	"Content-Length: 32767\r\n"
 	"Expires: Sun, 9 Jan 1972 00:00:00 GMT\r\n";
       unsigned extraHeadersSize = strlen(extraHeadersFmt)
+	+ strlen(serverAddressString.val())
 	+ strlen(fSessionCookie);
       extraHeaders = new char[extraHeadersSize];
       extraHeadersWereAllocated = True;
       sprintf(extraHeaders, extraHeadersFmt,
+	      serverAddressString.val(),
 	      fSessionCookie);
     }
   } else { // "PLAY", "PAUSE", "TEARDOWN", "RECORD", "SET_PARAMETER", "GET_PARAMETER"
@@ -1079,18 +1115,6 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
       netAddressBits destAddress = subsession.connectionEndpointAddress();
       if (destAddress == 0) destAddress = fServerAddress;
       subsession.setDestinations(destAddress);
-
-      // Hack: To increase the likelihood of UDP packets from the server reaching us, if we're behind a NAT, send a few 'dummy'
-      // UDP packets to the server now.  (We do this on both our RTP port and our RTCP port.)
-      Groupsock* gs1 = NULL; Groupsock* gs2 = NULL;
-      if (subsession.rtpSource() != NULL) gs1 = subsession.rtpSource()->RTPgs();
-      if (subsession.rtcpInstance() != NULL) gs2 = subsession.rtcpInstance()->RTCPgs();
-      u_int32_t const dummy = 0xFEEDFACE;
-      unsigned const numDummyPackets = 2;
-      for (unsigned i = 0; i < numDummyPackets; ++i) {
-	if (gs1 != NULL) gs1->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
-	if (gs2 != NULL) gs2->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
-      }
     }
 
     success = True;
@@ -1108,8 +1132,12 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession& session, MediaSubsession& s
       // The command was on the whole session
       if (scaleParamsStr != NULL && !parseScaleParam(scaleParamsStr, session.scale())) break;
       scaleOK = True;
-      if (rangeParamsStr != NULL && !parseRangeParam(rangeParamsStr, session.playStartTime(), session.playEndTime(),
-						     session._absStartTime(), session._absEndTime())) break;
+      Boolean startTimeIsNow;
+      if (rangeParamsStr != NULL &&
+	  !parseRangeParam(rangeParamsStr,
+			   session.playStartTime(), session.playEndTime(),
+			   session._absStartTime(), session._absEndTime(),
+			   startTimeIsNow)) break;
       rangeOK = True;
 
       MediaSubsessionIterator iter(session);
@@ -1129,8 +1157,12 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession& session, MediaSubsession& s
       // The command was on a subsession
       if (scaleParamsStr != NULL && !parseScaleParam(scaleParamsStr, subsession.scale())) break;
       scaleOK = True;
-      if (rangeParamsStr != NULL && !parseRangeParam(rangeParamsStr, subsession._playStartTime(), subsession._playEndTime(),
-						     subsession._absStartTime(), subsession._absEndTime())) break;
+      Boolean startTimeIsNow;
+      if (rangeParamsStr != NULL &&
+	  !parseRangeParam(rangeParamsStr,
+			   subsession._playStartTime(), subsession._playEndTime(),
+			   subsession._absStartTime(), subsession._absEndTime(),
+			   startTimeIsNow)) break;
       rangeOK = True;
 
       u_int16_t seqNum; u_int32_t timestamp;

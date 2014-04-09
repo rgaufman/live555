@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *streamers* - i.e., servers.
@@ -24,6 +24,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ServerMediaSession.hh"
 #include <GroupsockHelper.hh>
 #include <math.h>
+#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
+#define snprintf _snprintf
+#endif
 
 ////////// ServerMediaSession //////////
 
@@ -272,30 +275,35 @@ char* ServerMediaSession::generateSDPDescription() {
       + strlen(fDescriptionSDPString)
       + strlen(fInfoSDPString)
       + strlen(fMiscSDPLines);
+    sdpLength += 1000; // in case the length of the "subsession->sdpLines()" calls below change
     sdp = new char[sdpLength];
     if (sdp == NULL) break;
 
     // Generate the SDP prefix (session-level lines):
-    sprintf(sdp, sdpPrefixFmt,
-	    fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
-	    1, // o= <version> // (needs to change if params are modified)
-	    ipAddressStr.val(), // o= <address>
-	    fDescriptionSDPString, // s= <description>
-	    fInfoSDPString, // i= <info>
-	    libNameStr, libVersionStr, // a=tool:
-	    sourceFilterLine, // a=source-filter: incl (if a SSM session)
-	    rangeLine, // a=range: line
-	    fDescriptionSDPString, // a=x-qt-text-nam: line
-	    fInfoSDPString, // a=x-qt-text-inf: line
-	    fMiscSDPLines); // miscellaneous session SDP lines (if any)
+    snprintf(sdp, sdpLength, sdpPrefixFmt,
+	     fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
+	     1, // o= <version> // (needs to change if params are modified)
+	     ipAddressStr.val(), // o= <address>
+	     fDescriptionSDPString, // s= <description>
+	     fInfoSDPString, // i= <info>
+	     libNameStr, libVersionStr, // a=tool:
+	     sourceFilterLine, // a=source-filter: incl (if a SSM session)
+	     rangeLine, // a=range: line
+	     fDescriptionSDPString, // a=x-qt-text-nam: line
+	     fInfoSDPString, // a=x-qt-text-inf: line
+	     fMiscSDPLines); // miscellaneous session SDP lines (if any)
 
     // Then, add the (media-level) lines for each subsession:
     char* mediaSDP = sdp;
     for (subsession = fSubsessionsHead; subsession != NULL;
 	 subsession = subsession->fNext) {
-      mediaSDP += strlen(mediaSDP);
+      unsigned mediaSDPLength = strlen(mediaSDP);
+      mediaSDP += mediaSDPLength;
+      sdpLength -= mediaSDPLength;
+      if (sdpLength <= 1) break; // the SDP has somehow become too long
+
       char const* sdpLines = subsession->sdpLines();
-      if (sdpLines != NULL) sprintf(mediaSDP, "%s", sdpLines);
+      if (sdpLines != NULL) snprintf(mediaSDP, sdpLength, "%s", sdpLines);
     }
   } while (0);
 
@@ -367,8 +375,10 @@ void ServerMediaSubsession::seekStream(unsigned /*clientSessionId*/,
   delete[] absStart; absStart = NULL;
   delete[] absEnd; absEnd = NULL;
 }
-void ServerMediaSubsession::nullSeekStream(unsigned /*clientSessionId*/, void* /*streamToken*/) {
+void ServerMediaSubsession::nullSeekStream(unsigned /*clientSessionId*/, void* /*streamToken*/,
+					   double streamEndTime, u_int64_t& numBytes) {
   // default implementation: do nothing
+  numBytes = 0;
 }
 void ServerMediaSubsession::setStreamScale(unsigned /*clientSessionId*/,
 					   void* /*streamToken*/, float /*scale*/) {

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // An object that redirects one or more RTP/RTCP streams - forming a single
 // multimedia session - into a 'Darwin Streaming Server' (for subsequent
 // reflection to potentially arbitrarily many remote RTSP clients).

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A filter that produces a sequence of I-frame indices from a MPEG-2 Transport Stream
 // Implementation
 
@@ -28,12 +28,18 @@ enum RecordType {
   RECORD_GOP = 2,
   RECORD_PIC_NON_IFRAME = 3, // includes slices
   RECORD_PIC_IFRAME = 4, // includes slices
-  RECORD_NAL_SPS = 5, // H.264	
-  RECORD_NAL_PPS = 6, // H.264	
-  RECORD_NAL_SEI = 7, // H.264	
-  RECORD_NAL_NON_IFRAME = 8, // H.264	
-  RECORD_NAL_IFRAME = 9, // H.264	
-  RECORD_NAL_OTHER = 10, // H.264	
+  RECORD_NAL_H264_SPS = 5, // H.264
+  RECORD_NAL_H264_PPS = 6, // H.264
+  RECORD_NAL_H264_SEI = 7, // H.264
+  RECORD_NAL_H264_NON_IFRAME = 8, // H.264
+  RECORD_NAL_H264_IFRAME = 9, // H.264
+  RECORD_NAL_H264_OTHER = 10, // H.264
+  RECORD_NAL_H265_VPS = 11, // H.265
+  RECORD_NAL_H265_SPS = 12, // H.265
+  RECORD_NAL_H265_PPS = 13, // H.265
+  RECORD_NAL_H265_NON_IFRAME = 14, // H.265
+  RECORD_NAL_H265_IFRAME = 15, // H.265
+  RECORD_NAL_H265_OTHER = 16, // H.265
   RECORD_JUNK
 };
 
@@ -80,8 +86,15 @@ static char const* recordTypeStr[] = {
   "H.264 non-I-frame",
   "H.264 I-frame",
   "other NAL unit (H.264)",
+  "VPS (H.265)",
+  "SPS (H.265)",
+  "PPS (H.265)",
+  "H.265 non-I-frame",
+  "H.265 I-frame",
+  "other NAL unit (H.265)",
   "JUNK"
 };
+
 UsageEnvironment& operator<<(UsageEnvironment& env, IndexRecord& r) {
   return env << "[" << ((r.recordType()&0x80) != 0 ? "1" : "")
 	     << recordTypeStr[r.recordType()&0x7F] << ":"
@@ -113,8 +126,8 @@ MPEG2IFrameIndexFromTransportStream
 ::MPEG2IFrameIndexFromTransportStream(UsageEnvironment& env,
 				      FramedSource* inputSource)
   : FramedFilter(env, inputSource),
-    fIsH264(False), fInputTransportPacketCounter((unsigned)-1), fClosureNumber(0),
-    fLastContinuityCounter(~0),
+    fIsH264(False), fIsH265(False),
+    fInputTransportPacketCounter((unsigned)-1), fClosureNumber(0), fLastContinuityCounter(~0),
     fFirstPCR(0.0), fLastPCR(0.0), fHaveSeenFirstPCR(False),
     fPMT_PID(0x10), fVideo_PID(0xE0), // default values
     fParseBufferSize(PARSE_BUFFER_SIZE),
@@ -190,6 +203,11 @@ void MPEG2IFrameIndexFromTransportStream
   u_int8_t adaptation_field_control = (fInputBuffer[3]&0x30)>>4;
   u_int8_t totalHeaderSize
     = adaptation_field_control == 1 ? 4 : 5 + fInputBuffer[4];
+  if (totalHeaderSize >= TRANSPORT_PACKET_SIZE) {
+      envir() << "Bad \"adaptation_field_length\": " << fInputBuffer[4] << "\n";
+      doGetNextFrame();
+      return;
+  }
 
   // Check for a PCR:
   if (totalHeaderSize > 5 && (fInputBuffer[5]&0x10) != 0) {
@@ -206,9 +224,10 @@ void MPEG2IFrameIndexFromTransportStream
       fFirstPCR = pcr;
       fHaveSeenFirstPCR = True;
     } else if (pcr < fLastPCR) {
-      // The PCR timestamp has gone backwards.  DIsplay a warning about this (because it indicates buggy Transport Stream data),
-      // and compensate for it.
-      envir() << "\nWarning: At about " << fLastPCR-fFirstPCR << " seconds into the file, the PCR timestamp decreased - from "
+      // The PCR timestamp has gone backwards.  Display a warning about this
+      // (because it indicates buggy Transport Stream data), and compensate for it.
+      envir() << "\nWarning: At about " << fLastPCR-fFirstPCR
+	      << " seconds into the file, the PCR timestamp decreased - from "
 	      << fLastPCR << " to " << pcr << "\n";
       fFirstPCR -= (fLastPCR - pcr);
     }
@@ -236,11 +255,10 @@ void MPEG2IFrameIndexFromTransportStream
 
   // Also, if this is the start of a PES packet, then skip over the PES header:
   Boolean payload_unit_start_indicator = (fInputBuffer[1]&0x40) != 0;
-  //fprintf(stderr, "PUSI: %d\n", payload_unit_start_indicator);//#####
-  if (payload_unit_start_indicator) {
-    // Note: The following works only for MPEG-2 data #####
+  if (payload_unit_start_indicator && totalHeaderSize < TRANSPORT_PACKET_SIZE - 8 
+      && fInputBuffer[totalHeaderSize] == 0x00 && fInputBuffer[totalHeaderSize+1] == 0x00
+      && fInputBuffer[totalHeaderSize+2] == 0x01) {
     u_int8_t PES_header_data_length = fInputBuffer[totalHeaderSize+8];
-    //fprintf(stderr, "PES_header_data_length: %d\n", PES_header_data_length);//#####
     totalHeaderSize += 9 + PES_header_data_length;
     if (totalHeaderSize >= TRANSPORT_PACKET_SIZE) {
       envir() << "Unexpectedly large PES header size: " << PES_header_data_length << "\n";
@@ -291,7 +309,7 @@ void MPEG2IFrameIndexFromTransportStream::handleInputClosure1() {
     doGetNextFrame();
   } else {
     // Handle closure in the regular way:
-    FramedSource::handleClosure(this);
+    handleClosure();
   }
 }
 
@@ -324,14 +342,15 @@ void MPEG2IFrameIndexFromTransportStream
   if (size < program_info_length) return; // not enough data
   pkt += program_info_length; size -= program_info_length;
 
-  // Look at each ("stream_type","elementary_PID") pair, looking for a video stream
-  // ("stream_type" == 1 or 2):
+  // Look at each ("stream_type","elementary_PID") pair, looking for a video stream:
   while (size >= 9) {
     u_int8_t stream_type = pkt[0];
     u_int16_t elementary_PID = ((pkt[1]&0x1F)<<8) | pkt[2];
-    if (stream_type == 1 || stream_type == 2 || stream_type == 0x1B/*H.264 video*/) {
-	if (stream_type == 0x1B) fIsH264 = True;
-	fVideo_PID = elementary_PID;
+    if (stream_type == 1 || stream_type == 2 ||
+	stream_type == 0x1B/*H.264 video*/ || stream_type == 0x24/*H.265 video*/) {
+      if (stream_type == 0x1B) fIsH264 = True;
+      else if (stream_type == 0x24) fIsH265 = True;
+      fVideo_PID = elementary_PID;
       return;
     }
 
@@ -406,7 +425,7 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame() {
   // to "fParseBufferDataEnd".  We now parse through this data, looking for
   // a complete 'frame', where a 'frame', in this case, means:
   // 	for MPEG video: a Video Sequence Header, GOP Header, Picture Header, or Slice
-  // 	for H.264 video: a NAL unit
+  // 	for H.264 or H.265 video: a NAL unit
 
   // Inspect the frame's initial 4-byte code, to make sure it starts with a system code:
   if (fParseBufferDataEnd-fParseBufferFrameStart < 4) return False; // not enough data
@@ -422,7 +441,6 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame() {
     if (!parseToNextCode(nextCode)) return False;
 
     numInitialBadBytes = fParseBufferParseEnd - fParseBufferFrameStart;
-    //fprintf(stderr, "#####numInitialBadBytes: %d (0x%x)\n", numInitialBadBytes, numInitialBadBytes);
     fParseBufferFrameStart = fParseBufferParseEnd;
     fParseBufferParseEnd += 4; // skip over the code that we just saw
     p = &fParseBuffer[fParseBufferFrameStart];
@@ -430,77 +448,102 @@ Boolean MPEG2IFrameIndexFromTransportStream::parseFrame() {
 
   unsigned char curCode = p[3];
   if (fIsH264) curCode &= 0x1F; // nal_unit_type
+  else if (fIsH265) curCode = (curCode&0x7E)>>1;
+
   RecordType curRecordType;
   unsigned char nextCode;
-  switch (curCode) {
-  case VIDEO_SEQUENCE_START_CODE:
-  case VISUAL_OBJECT_SEQUENCE_START_CODE: {
-    curRecordType = RECORD_VSH;
-    while (1) {
+  if (fIsH264) {
+    switch (curCode) {
+    case 1: // Coded slice of a non-IDR picture
+      curRecordType = RECORD_NAL_H264_NON_IFRAME;
       if (!parseToNextCode(nextCode)) return False;
-      if (nextCode == GROUP_START_CODE || /*nextCode == GROUP_VOP_START_CODE ||*/
-	  nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE) break;
-      fParseBufferParseEnd += 4; // skip over the code that we just saw
+      break;
+    case 5: // Coded slice of an IDR picture
+      curRecordType = RECORD_NAL_H264_IFRAME;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    case 6: // Supplemental enhancement information (SEI)
+      curRecordType = RECORD_NAL_H264_SEI;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    case 7: // Sequence parameter set (SPS)
+      curRecordType = RECORD_NAL_H264_SPS;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    case 8: // Picture parameter set (PPS)
+      curRecordType = RECORD_NAL_H264_PPS;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    default:
+      curRecordType = RECORD_NAL_H264_OTHER;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
     }
-    break;
-  }
-  case GROUP_START_CODE:
-    /*case GROUP_VOP_START_CODE:*/ {
-    curRecordType = RECORD_GOP;
-    while (1) {
+  } else if (fIsH265) {
+    switch (curCode) {
+    case 19: // Coded slice segment of an IDR picture
+    case 20: // Coded slice segment of an IDR picture
+      curRecordType = RECORD_NAL_H265_IFRAME;
       if (!parseToNextCode(nextCode)) return False;
-      if (nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE) break;
-      fParseBufferParseEnd += 4; // skip over the code that we just saw
+      break;
+    case 32: // Video parameter set (VPS)
+      curRecordType = RECORD_NAL_H265_VPS;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    case 33: // Sequence parameter set (SPS)
+      curRecordType = RECORD_NAL_H265_SPS;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    case 34: // Picture parameter set (PPS)
+      curRecordType = RECORD_NAL_H265_PPS;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
+    default:
+      curRecordType = (curCode <= 31) ? RECORD_NAL_H265_NON_IFRAME : RECORD_NAL_H265_OTHER;
+      if (!parseToNextCode(nextCode)) return False;
+      break;
     }
-    break;
-  }
-  case 1: // Coded slice of a non-IDR picture (H.264)
-    curRecordType = RECORD_NAL_NON_IFRAME;
-    if (!parseToNextCode(nextCode)) return False;
-    break;
-  case 5: // Coded slice of an IDR picture (H.264) 
-    curRecordType = RECORD_NAL_IFRAME;
-    if (!parseToNextCode(nextCode)) return False;
-    break;
-  case 6: // Supplemental enhancement information (SEI) (H.264)
-    curRecordType = RECORD_NAL_SEI;
-    if (!parseToNextCode(nextCode)) return False;
-    break;
-  case 7: // Sequence parameter set (SPS) (H.264)
-    curRecordType = RECORD_NAL_SPS;
-    if (!parseToNextCode(nextCode)) return False;
-    break;
-  case 8: // Picture parameter set (PPS) (H.264)
-    curRecordType = RECORD_NAL_PPS;
-    if (!parseToNextCode(nextCode)) return False;
-    break;
-  default: { // picture (including slices), or some other H.264 NAL unit
-    if (fIsH264) {
-      curRecordType = RECORD_NAL_OTHER;
-      if (!parseToNextCode(nextCode)) return False;
-    } else {
+  } else { // MPEG-1, 2, or 4
+    switch (curCode) {
+    case VIDEO_SEQUENCE_START_CODE:
+    case VISUAL_OBJECT_SEQUENCE_START_CODE:
+      curRecordType = RECORD_VSH;
+      while (1) {
+	if (!parseToNextCode(nextCode)) return False;
+	if (nextCode == GROUP_START_CODE ||
+	    nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE) break;
+	fParseBufferParseEnd += 4; // skip over the code that we just saw
+      }
+      break;
+    case GROUP_START_CODE:
+      curRecordType = RECORD_GOP;
+      while (1) {
+	if (!parseToNextCode(nextCode)) return False;
+	if (nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE) break;
+	fParseBufferParseEnd += 4; // skip over the code that we just saw
+      }
+      break;
+    default: // picture
       curRecordType = RECORD_PIC_NON_IFRAME; // may get changed to IFRAME later
       while (1) {
         if (!parseToNextCode(nextCode)) return False;
-        if (nextCode == VIDEO_SEQUENCE_START_CODE || nextCode == VISUAL_OBJECT_SEQUENCE_START_CODE ||
+        if (nextCode == VIDEO_SEQUENCE_START_CODE ||
+	    nextCode == VISUAL_OBJECT_SEQUENCE_START_CODE ||
 	    nextCode == GROUP_START_CODE || nextCode == GROUP_VOP_START_CODE ||
 	    nextCode == PICTURE_START_CODE || nextCode == VOP_START_CODE) break;
         fParseBufferParseEnd += 4; // skip over the code that we just saw
       }
+      break;
     }
-    break;
-  }
   }
 
   if (curRecordType == RECORD_PIC_NON_IFRAME) {
     if (curCode == VOP_START_CODE) { // MPEG-4
-      //fprintf(stderr, "#####parseFrame()1(4): 0x%x, 0x%x\n", curCode, fParseBuffer[fParseBufferFrameStart+4]&0xC0);
       if ((fParseBuffer[fParseBufferFrameStart+4]&0xC0) == 0) {
 	// This is actually an I-frame.  Note it as such:
 	curRecordType = RECORD_PIC_IFRAME;
       }
     } else { // MPEG-1 or 2
-      //fprintf(stderr, "#####parseFrame()1(!4): 0x%x, 0x%x\n", curCode, fParseBuffer[fParseBufferFrameStart+5]&0x38);
       if ((fParseBuffer[fParseBufferFrameStart+5]&0x38) == 0x08) {
 	// This is actually an I-frame.  Note it as such:
 	curRecordType = RECORD_PIC_IFRAME;

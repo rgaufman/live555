@@ -14,11 +14,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // DV Video RTP Sources
 // C++ header
 
-#ifndef _DV_VIDEOO_RTP_SOURCE_HH
+#ifndef _DV_VIDEO_RTP_SOURCE_HH
 #define _DV_VIDEO_RTP_SOURCE_HH
 
 #ifndef _MULTI_FRAMED_RTP_SOURCE_HH

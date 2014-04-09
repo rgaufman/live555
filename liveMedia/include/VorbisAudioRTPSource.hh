@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Vorbis Audio RTP Sources
 // C++ header
 
@@ -51,5 +51,16 @@ protected:
 private:
   u_int32_t fCurPacketIdent; // only the low-order 24 bits are used
 };
+
+void parseVorbisOrTheoraConfigStr(char const* configStr,
+				  u_int8_t*& identificationHdr, unsigned& identificationHdrSize,
+				  u_int8_t*& commentHdr, unsigned& commentHdrSize,
+				  u_int8_t*& setupHdr, unsigned& setupHdrSize,
+				  u_int32_t& identField);
+    // Returns (in each of the result parameters) unpacked Vorbis or Theora
+    // "identification", "comment", and "setup" headers that were specified in a
+    // "config" string (in the SDP description for a Vorbis/RTP or Theora/RTP stream).
+    // Each of the "*Hdr" result arrays are dynamically allocated by this routine,
+    // and must be delete[]d by the caller.
 
 #endif

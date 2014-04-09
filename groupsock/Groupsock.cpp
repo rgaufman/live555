@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // 'Group sockets'
 // Implementation
 
@@ -31,12 +31,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 OutputSocket::OutputSocket(UsageEnvironment& env)
   : Socket(env, 0 /* let kernel choose port */),
-    fSourcePort(0), fLastSentTTL(0) {
+    fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/) {
 }
 
 OutputSocket::OutputSocket(UsageEnvironment& env, Port port)
   : Socket(env, port),
-    fSourcePort(0), fLastSentTTL(0) {
+    fSourcePort(0), fLastSentTTL(256/*hack: a deliberately invalid value*/) {
 }
 
 OutputSocket::~OutputSocket() {
@@ -44,16 +44,14 @@ OutputSocket::~OutputSocket() {
 
 Boolean OutputSocket::write(netAddressBits address, Port port, u_int8_t ttl,
 			    unsigned char* buffer, unsigned bufferSize) {
-  if (ttl == fLastSentTTL) {
-    // Optimization: So we don't do a 'set TTL' system call again
-    ttl = 0;
-  } else {
-    fLastSentTTL = ttl;
-  }
   struct in_addr destAddr; destAddr.s_addr = address;
-  if (!writeSocket(env(), socketNum(), destAddr, port, ttl,
-		   buffer, bufferSize))
-    return False;
+  if ((unsigned)ttl == fLastSentTTL) {
+    // Optimization: Don't do a 'set TTL' system call again
+    if (!writeSocket(env(), socketNum(), destAddr, port, buffer, bufferSize)) return False;
+  } else {
+    if (!writeSocket(env(), socketNum(), destAddr, port, ttl, buffer, bufferSize)) return False;
+    fLastSentTTL = (unsigned)ttl;
+  }
 
   if (sourcePortNum() == 0) {
     // Now that we've sent a packet, we can find out what the

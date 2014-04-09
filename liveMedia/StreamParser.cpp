@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Abstract class for parsing a byte stream
 // Implementation
 
@@ -85,7 +85,7 @@ unsigned StreamParser::getBits(unsigned numBits) {
     lastByte >>= (fRemainingUnparsedBits - numBits);
     fRemainingUnparsedBits -= numBits;
 
-    return (unsigned)lastByte &~ ((~0)<<numBits);
+    return (unsigned)lastByte &~ ((~0u)<<numBits);
   } else {
     unsigned char lastByte;
     if (fRemainingUnparsedBits > 0) {
@@ -102,7 +102,7 @@ unsigned StreamParser::getBits(unsigned numBits) {
 
     result >>= (32 - remainingBits);
     result |= (lastByte << remainingBits);
-    if (numBits < 32) result &=~ ((~0)<<numBits);
+    if (numBits < 32) result &=~ ((~0u)<<numBits);
 
     unsigned const numRemainingBytes = (remainingBits+7)/8;
     fCurParserIndex += numRemainingBytes;

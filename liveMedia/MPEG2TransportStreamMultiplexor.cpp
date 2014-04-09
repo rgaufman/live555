@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A class for generating MPEG-2 Transport Stream from one or more input
 // Elementary Stream data sources
 // Implementation
@@ -115,7 +115,8 @@ void MPEG2TransportStreamMultiplexor
       // Instead, set the stream's type to default values, based on whether
       // the stream is audio or video, and whether it's MPEG-1 or MPEG-2:
       if ((stream_id&0xF0) == 0xE0) { // video
-	streamType = mpegVersion == 1 ? 1 : mpegVersion == 2 ? 2 : mpegVersion == 4 ? 0x10 : 0x1B;
+	streamType = mpegVersion == 1 ? 1 : mpegVersion == 2 ? 2 : mpegVersion == 4 ? 0x10 :
+	  mpegVersion == 5/*H.264*/ ? 0x1B : 0x24/*assume H.265*/;
       } else if ((stream_id&0xE0) == 0xC0) { // audio
 	streamType = mpegVersion == 1 ? 3 : mpegVersion == 2 ? 4 : 0xF;
       } else if (stream_id == 0xBD) { // private_stream1 (usually AC-3)
@@ -127,7 +128,7 @@ void MPEG2TransportStreamMultiplexor
 
     if (fPCR_PID == 0) { // set it to this stream, if it's appropriate:
       if ((!fHaveVideoStreams && (streamType == 3 || streamType == 4 || streamType == 0xF))/* audio stream */ ||
-	  (streamType == 1 || streamType == 2 || streamType == 0x10 || streamType == 0x1B)/* video stream */) {
+	  (streamType == 1 || streamType == 2 || streamType == 0x10 || streamType == 0x1B || streamType == 0x24)/* video stream */) {
 	fPCR_PID = fCurrentPID; // use this stream's SCR for PCR
       }
     }
@@ -232,8 +233,6 @@ void MPEG2TransportStreamMultiplexor
     startPositionInBuffer += numDataBytes;
   }
 }
-
-static u_int32_t calculateCRC(u_int8_t* data, unsigned dataLength); // forward
 
 #define PAT_PID 0
 #define OUR_PROGRAM_NUMBER 1
@@ -426,8 +425,8 @@ static u_int32_t const CRC32[256] = {
   0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
-static u_int32_t calculateCRC(u_int8_t* data, unsigned dataLength) {
-  u_int32_t crc = 0xFFFFFFFF;
+u_int32_t calculateCRC(u_int8_t const* data, unsigned dataLength, u_int32_t initialValue) {
+  u_int32_t crc = initialValue;
 
   while (dataLength-- > 0) {
     crc = (crc<<8) ^ CRC32[(crc>>24) ^ (u_int32_t)(*data++)];

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // EBML numbers (ids and sizes)
 // Implementation
 
@@ -135,6 +135,9 @@ char const* EBMLId::stringName() const {
     case MATROSKA_ID_CUE_CLUSTER_POSITION: { return "Cue Cluster Position"; }
     case MATROSKA_ID_CUE_BLOCK_NUMBER: { return "Cue Block Number"; }
     case MATROSKA_ID_TAGS: { return "Tags"; }
+    case MATROSKA_ID_SEEK_PRE_ROLL: { return "SeekPreRoll"; }
+    case MATROSKA_ID_CODEC_DELAY: { return "CodecDelay"; }
+    case MATROSKA_ID_DISCARD_PADDING: { return "DiscardPadding"; }
     default: { return "*****unknown*****"; }
   }
 }

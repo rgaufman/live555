@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Framed Sources
 // C++ header
 
@@ -45,6 +45,7 @@ public:
 		    void* onCloseClientData);
 
   static void handleClosure(void* clientData);
+  void handleClosure();
       // This should be called (on ourself) if the source is discovered
       // to be closed (i.e., no longer readable)
 

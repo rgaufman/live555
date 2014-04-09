@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A simplified version of "H264VideoStreamFramer" that takes only complete,
 // discrete frames (rather than an arbitrary byte stream) as input.
 // This avoids the parsing and data copying overhead of the full
@@ -24,34 +24,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _H264_VIDEO_STREAM_DISCRETE_FRAMER_HH
 #define _H264_VIDEO_STREAM_DISCRETE_FRAMER_HH
 
-#ifndef _H264_VIDEO_STREAM_FRAMER_HH
-#include "H264VideoStreamFramer.hh"
+#ifndef _H264_OR_5_VIDEO_STREAM_DISCRETE_FRAMER_HH
+#include "H264or5VideoStreamDiscreteFramer.hh"
 #endif
 
-class H264VideoStreamDiscreteFramer: public H264VideoStreamFramer {
+class H264VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
 public:
   static H264VideoStreamDiscreteFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource);
 
 protected:
-  H264VideoStreamDiscreteFramer(UsageEnvironment& env,
-				 FramedSource* inputSource);
+  H264VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource);
       // called only by createNew()
   virtual ~H264VideoStreamDiscreteFramer();
 
-protected:
+private:
   // redefined virtual functions:
-  virtual void doGetNextFrame();
-
-protected:
-  static void afterGettingFrame(void* clientData, unsigned frameSize,
-                                unsigned numTruncatedBytes,
-                                struct timeval presentationTime,
-                                unsigned durationInMicroseconds);
-  void afterGettingFrame1(unsigned frameSize,
-                          unsigned numTruncatedBytes,
-                          struct timeval presentationTime,
-                          unsigned durationInMicroseconds);
+  virtual Boolean isH264VideoStreamFramer() const;
 };
 
 #endif

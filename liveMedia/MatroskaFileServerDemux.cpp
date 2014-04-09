@@ -14,18 +14,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A server demultiplexor for a Matroska file
 // Implementation
 
 #include "MatroskaFileServerDemux.hh"
 #include "MP3AudioMatroskaFileServerMediaSubsession.hh"
-#include "AACAudioMatroskaFileServerMediaSubsession.hh"
-#include "AC3AudioMatroskaFileServerMediaSubsession.hh"
-#include "VorbisAudioMatroskaFileServerMediaSubsession.hh"
-#include "H264VideoMatroskaFileServerMediaSubsession.hh"
-#include "VP8VideoMatroskaFileServerMediaSubsession.hh"
-#include "T140TextMatroskaFileServerMediaSubsession.hh"
+#include "MatroskaFileServerMediaSubsession.hh"
 
 void MatroskaFileServerDemux
 ::createNew(UsageEnvironment& env, char const* fileName,
@@ -64,27 +59,10 @@ ServerMediaSubsession* MatroskaFileServerDemux
 
   // Use the track's "codecID" string to figure out which "ServerMediaSubsession" subclass to use:
   ServerMediaSubsession* result = NULL;
-  if (strncmp(track->codecID, "A_MPEG", 6) == 0) {
-    track->mimeType = "audio/MPEG";
-    result = MP3AudioMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber, False, NULL);
-  } else if (strncmp(track->codecID, "A_AAC", 5) == 0) {
-    track->mimeType = "audio/AAC";
-    result = AACAudioMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber);
-  } else if (strncmp(track->codecID, "A_AC3", 5) == 0) {
-    track->mimeType = "audio/AC3";
-    result = AC3AudioMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber);
-  } else if (strncmp(track->codecID, "A_VORBIS", 8) == 0) {
-    track->mimeType = "audio/VORBIS";
-    result = VorbisAudioMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber);
-  } else if (strcmp(track->codecID, "V_MPEG4/ISO/AVC") == 0) {
-    track->mimeType = "video/H264";
-    result = H264VideoMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber);
-  } else if (strncmp(track->codecID, "V_VP8", 5) == 0) {
-    track->mimeType = "video/VP8";
-    result = VP8VideoMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber);
-  } else if (strncmp(track->codecID, "S_TEXT", 6) == 0) {
-    track->mimeType = "text/T140";
-    result = T140TextMatroskaFileServerMediaSubsession::createNew(*this, track->trackNumber);
+  if (strcmp(track->mimeType, "audio/MPEG") == 0) {
+    result = MP3AudioMatroskaFileServerMediaSubsession::createNew(*this, track);
+  } else {
+    result = MatroskaFileServerMediaSubsession::createNew(*this, track);
   }
 
   if (result != NULL) {

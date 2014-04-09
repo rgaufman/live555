@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2013, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2014, Live Networks, Inc.  All rights reserved
 // A demo application, showing how to create and run a RTSP client (that can potentially receive multiple streams concurrently).
 //
 // NOTE: This code - although it builds a running application - is intended only to illustrate how to develop your own RTSP
@@ -238,8 +238,13 @@ void setupNextSubsession(RTSPClient* rtspClient) {
       env << *rtspClient << "Failed to initiate the \"" << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
       setupNextSubsession(rtspClient); // give up on this subsession; go to the next one
     } else {
-      env << *rtspClient << "Initiated the \"" << *scs.subsession
-	  << "\" subsession (client ports " << scs.subsession->clientPortNum() << "-" << scs.subsession->clientPortNum()+1 << ")\n";
+      env << *rtspClient << "Initiated the \"" << *scs.subsession << "\" subsession (";
+      if (scs.subsession->rtcpIsMuxed()) {
+	env << "client port " << scs.subsession->clientPortNum();
+      } else {
+	env << "client ports " << scs.subsession->clientPortNum() << "-" << scs.subsession->clientPortNum()+1;
+      }
+      env << ")\n";
 
       // Continue setting up this subsession, by sending a RTSP "SETUP" command:
       rtspClient->sendSetupCommand(*scs.subsession, continueAfterSETUP, False, REQUEST_STREAMING_OVER_TCP);
@@ -267,8 +272,13 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
       break;
     }
 
-    env << *rtspClient << "Set up the \"" << *scs.subsession
-	<< "\" subsession (client ports " << scs.subsession->clientPortNum() << "-" << scs.subsession->clientPortNum()+1 << ")\n";
+    env << *rtspClient << "Set up the \"" << *scs.subsession << "\" subsession (";
+    if (scs.subsession->rtcpIsMuxed()) {
+      env << "client port " << scs.subsession->clientPortNum();
+    } else {
+      env << "client ports " << scs.subsession->clientPortNum() << "-" << scs.subsession->clientPortNum()+1;
+    }
+    env << ")\n";
 
     // Having successfully setup the subsession, create a data sink for it, and call "startPlaying()" on it.
     // (This will prepare the data sink to receive data; the actual flow of data from the client won't start happening until later,

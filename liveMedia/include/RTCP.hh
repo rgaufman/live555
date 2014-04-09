@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -47,7 +47,7 @@ public:
 				 unsigned totSessionBW, /* in kbps */
 				 unsigned char const* cname,
 				 RTPSink* sink,
-				 RTPSource const* source,
+				 RTPSource* source,
 				 Boolean isSSMSource = False);
 
   static Boolean lookupByName(UsageEnvironment& env, char const* instanceName,
@@ -97,10 +97,13 @@ public:
 					    handlerClientData);
   }
 
+  void injectReport(u_int8_t const* packet, unsigned packetSize, struct sockaddr_in const& fromAddress);
+    // Allows an outside party to inject an RTCP report (from other than the network interface)
+
 protected:
   RTCPInstance(UsageEnvironment& env, Groupsock* RTPgs, unsigned totSessionBW,
 	       unsigned char const* cname,
-	       RTPSink* sink, RTPSource const* source,
+	       RTPSink* sink, RTPSource* source,
 	       Boolean isSSMSource);
       // called only by createNew()
   virtual ~RTCPInstance();
@@ -127,16 +130,17 @@ private:
 
   static void incomingReportHandler(RTCPInstance* instance, int /*mask*/);
   void incomingReportHandler1();
+  void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress);
   void onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc);
 
 private:
-  unsigned char* fInBuf;
+  u_int8_t* fInBuf;
   unsigned fNumBytesAlreadyRead;
   OutPacketBuffer* fOutBuf;
   RTPInterface fRTCPInterface;
   unsigned fTotSessionBW;
   RTPSink* fSink;
-  RTPSource const* fSource;
+  RTPSource* fSource;
   Boolean fIsSSMSource;
 
   SDESItem fCNAME;

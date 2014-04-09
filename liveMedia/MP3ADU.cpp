@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // 'ADU' MP3 streams (for improved loss-tolerance)
 // Implementation
 
@@ -162,7 +162,7 @@ void ADUFromMP3Source::doGetNextFrame() {
 
     if (!doGetNextFrame1()) {
       // An internal error occurred; act as if our source went away:
-      FramedSource::handleClosure(this);
+      handleClosure();
     }
   }
 }
@@ -512,7 +512,7 @@ void SegmentQueue::enqueueNewSegment(FramedSource* inputSource,
 				     FramedSource* usingSource) {
   if (isFull()) {
     usingSource->envir() << "SegmentQueue::enqueueNewSegment() overflow\n";
-    FramedSource::handleClosure(usingSource);
+    usingSource->handleClosure();
     return;
   }
 

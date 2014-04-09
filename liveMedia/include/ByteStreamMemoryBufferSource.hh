@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A class for streaming data from a (static) memory buffer, as if it were a file.
 // C++ header
 
@@ -39,7 +39,7 @@ public:
 
   void seekToByteAbsolute(u_int64_t byteNumber, u_int64_t numBytesToStream = 0);
     // if "numBytesToStream" is >0, then we limit the stream to that number of bytes, before treating it as EOF
-  void seekToByteRelative(int64_t offset);
+  void seekToByteRelative(int64_t offset, u_int64_t numBytesToStream = 0);
 
 protected:
   ByteStreamMemoryBufferSource(UsageEnvironment& env,

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates MPEG-2 Transport Stream 'index files'/
 // These index files are used to implement 'trick play' operations
 // (seek-by-time, fast forward, reverse play) on Transport Stream files.
@@ -286,7 +286,10 @@ void MPEG2TransportStreamIndexFile::setMPEGVersionFromRecordType(u_int8_t record
  
   u_int8_t const recordTypeWithoutStartBit = recordType&~0x80;
   if (recordTypeWithoutStartBit >= 1 && recordTypeWithoutStartBit <= 4) fMPEGVersion = 2;
-  else if (recordTypeWithoutStartBit >= 5 && recordTypeWithoutStartBit <= 10) fMPEGVersion = 5; // represents H.264
+  else if (recordTypeWithoutStartBit >= 5 && recordTypeWithoutStartBit <= 10) fMPEGVersion = 5;
+      // represents H.264
+  else if (recordTypeWithoutStartBit >= 11 && recordTypeWithoutStartBit <= 16) fMPEGVersion = 6;
+      // represents H.265
 }
 
 Boolean MPEG2TransportStreamIndexFile::rewindToCleanPoint(unsigned long&ixFound) {
@@ -298,17 +301,23 @@ Boolean MPEG2TransportStreamIndexFile::rewindToCleanPoint(unsigned long&ixFound)
     u_int8_t recordType = recordTypeFromBuf();
     setMPEGVersionFromRecordType(recordType);
 
-    // A 'clean point' is the start of a 'frame' from which a decoder can cleanly resume handling the stream:
-    // For H.264, this is a SPS.  For MPEG-2, this is a Video Sequence Header, or a GOP. 
+    // A 'clean point' is the start of a 'frame' from which a decoder can cleanly resume
+    // handling the stream.  For H.264, this is a SPS.  For H.265, this is a VPS.
+    // For MPEG-2, this is a Video Sequence Header, or a GOP. 
 
     if ((recordType&0x80) != 0) { // This is the start of a 'frame'
       recordType &=~ 0x80; // remove the 'start of frame' bit
-      if (fMPEGVersion == 5/*H.264*/) {
+      if (fMPEGVersion == 5) { // H.264
         if (recordType == 5/*SPS*/) {
 	  success = True;
 	  break;
 	}
-      } else {
+      } else if (fMPEGVersion == 6) { // H.265
+        if (recordType == 11/*VPS*/) {
+	  success = True;
+	  break;
+	}
+      } else { // MPEG-1, 2, or 4
 	if (recordType == 1/*VSH*/) {
 	  success = True;
 	  break;

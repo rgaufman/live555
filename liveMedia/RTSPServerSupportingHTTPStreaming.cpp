@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A server that supports both RTSP, and HTTP streaming (using Apple's "HTTP Live Streaming" protocol)
 // Implementation
 
@@ -112,7 +112,7 @@ void RTSPServerSupportingHTTPStreaming::RTSPClientConnectionSupportingHTTPStream
       u_int8_t destinationTTL = 0;
       Boolean isMulticast = False;
       void* streamToken;
-      subsession->getStreamParameters(fClientSessionId, 0, clientRTPPort,clientRTCPPort, 0,0,0, destinationAddress,destinationTTL, isMulticast, serverRTPPort,serverRTCPPort, streamToken);
+      subsession->getStreamParameters(fClientSessionId, 0, clientRTPPort,clientRTCPPort, -1,0,0, destinationAddress,destinationTTL, isMulticast, serverRTPPort,serverRTCPPort, streamToken);
       
       // Seek the stream source to the desired place, with the desired duration, and (as a side effect) get the number of bytes:
       double dOffsetInSeconds = (double)offsetInSeconds;

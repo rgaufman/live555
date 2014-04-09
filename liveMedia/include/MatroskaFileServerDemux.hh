@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A server demultiplexor for a Matroska file
 // C++ header
 
@@ -54,7 +54,6 @@ public:
   MatroskaFile* ourMatroskaFile() { return fOurMatroskaFile; }
   char const* fileName() const { return fFileName; }
   float fileDuration() const { return fOurMatroskaFile->fileDuration(); }
-  MatroskaTrack* lookup(unsigned trackNumber) { return fOurMatroskaFile->lookup(trackNumber); } // shortcut
 
   FramedSource* newDemuxedTrack(unsigned clientSessionId, unsigned trackNumber);
     // Used by the "ServerMediaSubsession" objects to implement their "createNewStreamSource()" virtual function.

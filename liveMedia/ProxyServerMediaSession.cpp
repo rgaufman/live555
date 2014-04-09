@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // Implementation
@@ -64,6 +64,16 @@ UsageEnvironment& operator<<(UsageEnvironment& env, const ProxyServerMediaSessio
   return env << "ProxyServerMediaSession[\"" << psms.url() << "\"]";
 }
 
+ProxyRTSPClient*
+defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSession,
+				    char const* rtspURL,
+				    char const* username, char const* password,
+				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+				    int socketNumToServer) {
+  return new ProxyRTSPClient(ourServerMediaSession, rtspURL, username, password,
+			     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer);
+}
+
 ProxyServerMediaSession* ProxyServerMediaSession
 ::createNew(UsageEnvironment& env, RTSPServer* ourRTSPServer,
 	    char const* inputStreamURL, char const* streamName,
@@ -74,17 +84,25 @@ ProxyServerMediaSession* ProxyServerMediaSession
 }
 
 
-ProxyServerMediaSession::ProxyServerMediaSession(UsageEnvironment& env, RTSPServer* ourRTSPServer,
-						 char const* inputStreamURL, char const* streamName,
-						 char const* username, char const* password,
-						 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer)
+ProxyServerMediaSession
+::ProxyServerMediaSession(UsageEnvironment& env, RTSPServer* ourRTSPServer,
+			  char const* inputStreamURL, char const* streamName,
+			  char const* username, char const* password,
+			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+			  int socketNumToServer,
+			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc)
   : ServerMediaSession(env, streamName, NULL, NULL, False, NULL),
     describeCompletedFlag(0), fOurRTSPServer(ourRTSPServer), fClientMediaSession(NULL),
-    fVerbosityLevel(verbosityLevel), fPresentationTimeSessionNormalizer(new PresentationTimeSessionNormalizer(envir())) {
+    fVerbosityLevel(verbosityLevel),
+    fPresentationTimeSessionNormalizer(new PresentationTimeSessionNormalizer(envir())),
+    fCreateNewProxyRTSPClientFunc(ourCreateNewProxyRTSPClientFunc) {
   // Open a RTSP connection to the input stream, and send a "DESCRIBE" command.
   // We'll use the SDP description in the response to set ourselves up.
-  fProxyRTSPClient = createNewProxyRTSPClient(inputStreamURL, username, password, tunnelOverHTTPPortNum,
-					      verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel, socketNumToServer);
+  fProxyRTSPClient
+    = (*fCreateNewProxyRTSPClientFunc)(*this, inputStreamURL, username, password,
+				       tunnelOverHTTPPortNum,
+				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
+				       socketNumToServer);
   ProxyRTSPClient::sendDESCRIBE(fProxyRTSPClient);
 }
 
@@ -104,13 +122,6 @@ ProxyServerMediaSession::~ProxyServerMediaSession() {
 
 char const* ProxyServerMediaSession::url() const {
   return fProxyRTSPClient == NULL ? NULL : fProxyRTSPClient->url();
-}
-
-ProxyRTSPClient* ProxyServerMediaSession
-::createNewProxyRTSPClient(char const* rtspURL, char const* username, char const* password,
-			   portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer){
-  // default implementation:
-  return new ProxyRTSPClient(*this, rtspURL, username, password, tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer);
 }
 
 void ProxyServerMediaSession::continueAfterDESCRIBE(char const* sdpDescription) {
@@ -434,18 +445,26 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
 							codecName);
       fClientMediaSubsession.addFilter(normalizerFilter);
 
-      // Some data sources require a 'framer' object to be added, before they can be fed into a "RTPSink".  Adjust for this now:
+      // Some data sources require a 'framer' object to be added, before they can be fed into
+      // a "RTPSink".  Adjust for this now:
       if (strcmp(codecName, "H264") == 0) {
-	fClientMediaSubsession.addFilter(H264VideoStreamDiscreteFramer::createNew(envir(), fClientMediaSubsession.readSource()));
+	fClientMediaSubsession.addFilter(H264VideoStreamDiscreteFramer
+					 ::createNew(envir(), fClientMediaSubsession.readSource()));
+      } else if (strcmp(codecName, "H265") == 0) {
+	fClientMediaSubsession.addFilter(H265VideoStreamDiscreteFramer
+					 ::createNew(envir(), fClientMediaSubsession.readSource()));
       } else if (strcmp(codecName, "MP4V-ES") == 0) {
 	fClientMediaSubsession.addFilter(MPEG4VideoStreamDiscreteFramer
-					 ::createNew(envir(), fClientMediaSubsession.readSource(), True/* leave PTs unmodified*/));
+					 ::createNew(envir(), fClientMediaSubsession.readSource(),
+						     True/* leave PTs unmodified*/));
       } else if (strcmp(codecName, "MPV") == 0) {
-	fClientMediaSubsession.addFilter(MPEG1or2VideoStreamDiscreteFramer::createNew(envir(), fClientMediaSubsession.readSource(),
-										      False, 5.0, True/* leave PTs unmodified*/));
+	fClientMediaSubsession.addFilter(MPEG1or2VideoStreamDiscreteFramer
+					 ::createNew(envir(), fClientMediaSubsession.readSource(),
+						     False, 5.0, True/* leave PTs unmodified*/));
       } else if (strcmp(codecName, "DV") == 0) {
-	fClientMediaSubsession.addFilter(DVVideoStreamFramer::createNew(envir(), fClientMediaSubsession.readSource(),
-									False, True/* leave PTs unmodified*/));
+	fClientMediaSubsession.addFilter(DVVideoStreamFramer
+					 ::createNew(envir(), fClientMediaSubsession.readSource(),
+						     False, True/* leave PTs unmodified*/));
       }
     }
 
@@ -539,7 +558,18 @@ RTPSink* ProxyServerMediaSubsession
 					      fClientMediaSubsession.rtpTimestampFrequency()); 
   } else if (strcmp(codecName, "H264") == 0) {
     newSink = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					  fClientMediaSubsession.fmtp_spropparametersets());
+					  fClientMediaSubsession.fmtp_spropparametersets(),
+					  fClientMediaSubsession.attrVal_unsigned("profile-level-id"));
+  } else if (strcmp(codecName, "H265") == 0) {
+    newSink = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
+					  fClientMediaSubsession.fmtp_spropvps(),
+					  fClientMediaSubsession.fmtp_spropsps(),
+					  fClientMediaSubsession.fmtp_sproppps(),
+					  fClientMediaSubsession.attrVal_unsigned("profile-space"),
+					  fClientMediaSubsession.attrVal_unsigned("profile-id"),
+					  fClientMediaSubsession.attrVal_unsigned("tier-flag"),
+					  fClientMediaSubsession.attrVal_unsigned("level-id"),
+					  fClientMediaSubsession.attrVal_str("interop-constraints"));
   } else if (strcmp(codecName, "JPEG") == 0) {
     newSink = SimpleRTPSink::createNew(envir(), rtpGroupsock, 26, 90000, "video", "JPEG",
 				       1/*numChannels*/, False/*allowMultipleFramesPerPacket*/, False/*doNormalMBitRule*/);
@@ -551,7 +581,8 @@ RTPSink* ProxyServerMediaSubsession
   } else if (strcmp(codecName, "MP4V-ES") == 0) {
     newSink = MPEG4ESVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					     fClientMediaSubsession.rtpTimestampFrequency(),
-					     fClientMediaSubsession.fmtp_profile_level_id(), fClientMediaSubsession.fmtp_config()); 
+					     fClientMediaSubsession.attrVal_unsigned("profile-level-id"),
+					     fClientMediaSubsession.fmtp_config()); 
   } else if (strcmp(codecName, "MPA") == 0) {
     newSink = MPEG1or2AudioRTPSink::createNew(envir(), rtpGroupsock);
   } else if (strcmp(codecName, "MPA-ROBUST") == 0) {
@@ -559,12 +590,19 @@ RTPSink* ProxyServerMediaSubsession
   } else if (strcmp(codecName, "MPEG4-GENERIC") == 0) {
     newSink = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock,
 					     rtpPayloadTypeIfDynamic, fClientMediaSubsession.rtpTimestampFrequency(),
-					     fClientMediaSubsession.mediumName(), fClientMediaSubsession.fmtp_mode(),
+					     fClientMediaSubsession.mediumName(),
+					     fClientMediaSubsession.attrVal_str("mode"),
 					     fClientMediaSubsession.fmtp_config(), fClientMediaSubsession.numChannels());
   } else if (strcmp(codecName, "MPV") == 0) {
     newSink = MPEG1or2VideoRTPSink::createNew(envir(), rtpGroupsock);
+  } else if (strcmp(codecName, "OPUS") == 0) {
+    newSink = SimpleRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
+				       48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
   } else if (strcmp(codecName, "T140") == 0) {
     newSink = T140TextRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+  } else if (strcmp(codecName, "THEORA") == 0) {
+    newSink = TheoraVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
+					    fClientMediaSubsession.fmtp_config()); 
   } else if (strcmp(codecName, "VORBIS") == 0) {
     newSink = VorbisAudioRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					    fClientMediaSubsession.rtpTimestampFrequency(), fClientMediaSubsession.numChannels(),
@@ -609,6 +647,7 @@ RTPSink* ProxyServerMediaSubsession
   // Also tell our "PresentationTimeSubsessionNormalizer" object about the "RTPSink", so it can enable RTCP "SR" reports later:
   PresentationTimeSubsessionNormalizer* ssNormalizer;
   if (strcmp(codecName, "H264") == 0 ||
+      strcmp(codecName, "H265") == 0 ||
       strcmp(codecName, "MP4V-ES") == 0 ||
       strcmp(codecName, "MPV") == 0 ||
       strcmp(codecName, "DV") == 0) {
@@ -633,7 +672,7 @@ void ProxyServerMediaSubsession::subsessionByeHandler() {
 
   // This "BYE" signals that our input source has (effectively) closed, so pass this onto the front-end clients:
   fHaveSetupStream = False; // hack to stop "PAUSE" getting sent by:
-  FramedSource::handleClosure(fClientMediaSubsession.readSource());
+  fClientMediaSubsession.readSource()->handleClosure();
 
   // And then treat this as if we had lost connection to the back-end server,
   // and can reestablish streaming from it only by sending another "DESCRIBE":

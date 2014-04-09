@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
- // Copyright (c) 1996-2013, Live Networks, Inc.  All rights reserved
+ // Copyright (c) 1996-2014, Live Networks, Inc.  All rights reserved
 // Delay queue
 // C++ header
 
@@ -111,9 +111,9 @@ DelayInterval operator*(short arg1, DelayInterval const& arg2);
 
 extern DelayInterval const DELAY_ZERO;
 extern DelayInterval const DELAY_SECOND;
-DelayInterval const DELAY_MINUTE = 60*DELAY_SECOND;
-DelayInterval const DELAY_HOUR = 60*DELAY_MINUTE;
-DelayInterval const DELAY_DAY = 24*DELAY_HOUR;
+extern DelayInterval const DELAY_MINUTE;
+extern DelayInterval const DELAY_HOUR;
+extern DelayInterval const DELAY_DAY;
 
 ///// EventTime /////
 

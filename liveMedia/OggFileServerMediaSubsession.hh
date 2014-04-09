@@ -14,41 +14,40 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
-// on demand, from an AC3 audio track within a Matroska file.
+// on demand, from a track within an Ogg file.
 // C++ header
 
-#ifndef _AC3_AUDIO_MATROSKA_FILE_SERVER_MEDIA_SUBSESSION_HH
-#define _AC3_AUDIO_MATROSKA_FILE_SERVER_MEDIA_SUBSESSION_HH
+#ifndef _OGG_FILE_SERVER_MEDIA_SUBSESSION_HH
+#define _OGG_FILE_SERVER_MEDIA_SUBSESSION_HH
 
 #ifndef _FILE_SERVER_MEDIA_SUBSESSION_HH
 #include "FileServerMediaSubsession.hh"
 #endif
-#ifndef _MATROSKA_FILE_SERVER_DEMUX_HH
-#include "MatroskaFileServerDemux.hh"
+#ifndef _OGG_FILE_SERVER_DEMUX_HH
+#include "OggFileServerDemux.hh"
 #endif
 
-class AC3AudioMatroskaFileServerMediaSubsession: public FileServerMediaSubsession {
+class OggFileServerMediaSubsession: public FileServerMediaSubsession {
 public:
-  static AC3AudioMatroskaFileServerMediaSubsession*
-  createNew(MatroskaFileServerDemux& demux, unsigned trackNumber);
+  static OggFileServerMediaSubsession*
+  createNew(OggFileServerDemux& demux, OggTrack* track);
 
-private:
-  AC3AudioMatroskaFileServerMediaSubsession(MatroskaFileServerDemux& demux, unsigned trackNumber);
-      // called only by createNew();
-  virtual ~AC3AudioMatroskaFileServerMediaSubsession();
+protected:
+  OggFileServerMediaSubsession(OggFileServerDemux& demux, OggTrack* track);
+      // called only by createNew(), or by subclass constructors
+  virtual ~OggFileServerMediaSubsession();
 
-private: // redefined virtual functions
-  virtual float duration() const;
-  virtual void seekStreamSource(FramedSource* inputSource, double& seekNPT, double streamDuration, u_int64_t& numBytes);
+protected: // redefined virtual functions
   virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
 					      unsigned& estBitrate);
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource);
 
-private:
-  MatroskaFileServerDemux& fOurDemux;
-  unsigned fTrackNumber;
+protected:
+  OggFileServerDemux& fOurDemux;
+  OggTrack* fTrack;
+  unsigned fNumFiltersInFrontOfTrack;
 };
 
 #endif

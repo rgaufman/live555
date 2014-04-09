@@ -14,12 +14,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // RTP source for a common kind of payload format: Those that pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // Implementation
 
 #include "MultiFramedRTPSource.hh"
+#include "RTCP.hh"
 #include "GroupsockHelper.hh"
 #include <string.h>
 
@@ -72,7 +73,7 @@ MultiFramedRTPSource
   fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
 
   // Try to use a big receive buffer for RTP:
-  increaseReceiveBufferTo(env, RTPgs->socketNum(), 2000000);
+  increaseReceiveBufferTo(env, RTPgs->socketNum(), 50*1024*10);
 }
 
 void MultiFramedRTPSource::reset() {
@@ -231,8 +232,9 @@ void MultiFramedRTPSource::networkReadHandler1() {
   // Read the network packet, and perform sanity checks on the RTP header:
   Boolean readSuccess = False;
   do {
+    struct sockaddr_in fromAddress;
     Boolean packetReadWasIncomplete = fPacketReadInProgress != NULL;
-    if (!bPacket->fillInData(fRTPInterface, packetReadWasIncomplete)) {
+    if (!bPacket->fillInData(fRTPInterface, fromAddress, packetReadWasIncomplete)) {
       if (bPacket->bytesAvailable() == 0) {
 	envir() << "MultiFramedRTPSource error: Hit limit when reading incoming packet over TCP. Increase \"MAX_PACKET_SIZE\"\n";
       }
@@ -262,6 +264,19 @@ void MultiFramedRTPSource::networkReadHandler1() {
     // Check the RTP version number (it should be 2):
     if ((rtpHdr&0xC0000000) != 0x80000000) break;
 
+    // Check the Payload Type.
+    unsigned char rtpPayloadType = (unsigned char)((rtpHdr&0x007F0000)>>16);
+    if (rtpPayloadType != rtpPayloadFormat()) {
+      if (fRTCPInstanceForMultiplexedRTCPPackets != NULL
+	  && rtpPayloadType >= 64 && rtpPayloadType <= 95) {
+	// This is a multiplexed RTCP packet, and we've been asked to deliver such packets.
+	// Do so now:
+	fRTCPInstanceForMultiplexedRTCPPackets
+	  ->injectReport(bPacket->data()-12, bPacket->dataSize()+12, fromAddress);
+      }
+      break;
+    }
+
     // Skip over any CSRC identifiers in the header:
     unsigned cc = (rtpHdr>>24)&0xF;
     if (bPacket->dataSize() < cc) break;
@@ -283,11 +298,6 @@ void MultiFramedRTPSource::networkReadHandler1() {
 	= (unsigned)(bPacket->data())[bPacket->dataSize()-1];
       if (bPacket->dataSize() < numPaddingBytes) break;
       bPacket->removePadding(numPaddingBytes);
-    }
-    // Check the Payload Type.
-    if ((unsigned char)((rtpHdr&0x007F0000)>>16)
-	!= rtpPayloadFormat()) {
-      break;
     }
 
     // The rest of the packet is the usable data.  Record and save it:
@@ -371,11 +381,11 @@ void BufferedPacket
   frameDurationInMicroseconds = 0; // by default.  Subclasses should correct this.
 }
 
-Boolean BufferedPacket::fillInData(RTPInterface& rtpInterface, Boolean& packetReadWasIncomplete) {
+Boolean BufferedPacket::fillInData(RTPInterface& rtpInterface, struct sockaddr_in& fromAddress,
+				   Boolean& packetReadWasIncomplete) {
   if (!packetReadWasIncomplete) reset();
 
   unsigned numBytesRead;
-  struct sockaddr_in fromAddress;
   unsigned const maxBytesToRead = bytesAvailable();
   if (maxBytesToRead == 0) return False; // exceeded buffer size when reading over TCP
   if (!rtpInterface.handleRead(&fBuf[fTail], maxBytesToRead, numBytesRead, fromAddress, packetReadWasIncomplete)) {

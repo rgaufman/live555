@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Network Interfaces
 // Implementation
 
@@ -101,13 +101,18 @@ Socket::~Socket() {
 
 Boolean Socket::changePort(Port newPort) {
   int oldSocketNum = fSocketNum;
+  unsigned oldReceiveBufferSize = getReceiveBufferSize(fEnv, fSocketNum);
+  unsigned oldSendBufferSize = getSendBufferSize(fEnv, fSocketNum);
   closeSocket(fSocketNum);
+
   fSocketNum = setupDatagramSocket(fEnv, newPort);
   if (fSocketNum < 0) {
     fEnv.taskScheduler().turnOffBackgroundReadHandling(oldSocketNum);
     return False;
   }
 
+  setReceiveBufferTo(fEnv, fSocketNum, oldReceiveBufferSize);
+  setSendBufferTo(fEnv, fSocketNum, oldSendBufferSize);
   if (fSocketNum != oldSocketNum) { // the socket number has changed, so move any event handling for it:
     fEnv.taskScheduler().moveSocketHandling(oldSocketNum, fSocketNum);
   }

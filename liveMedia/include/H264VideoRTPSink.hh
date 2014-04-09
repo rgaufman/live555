@@ -14,37 +14,41 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // RTP sink for H.264 video (RFC 3984)
 // C++ header
 
 #ifndef _H264_VIDEO_RTP_SINK_HH
 #define _H264_VIDEO_RTP_SINK_HH
 
-#ifndef _VIDEO_RTP_SINK_HH
-#include "VideoRTPSink.hh"
-#endif
-#ifndef _FRAMED_FILTER_HH
-#include "FramedFilter.hh"
+#ifndef _H264_OR_5_VIDEO_RTP_SINK_HH
+#include "H264or5VideoRTPSink.hh"
 #endif
 
-class H264FUAFragmenter;
-
-class H264VideoRTPSink: public VideoRTPSink {
+class H264VideoRTPSink: public H264or5VideoRTPSink {
 public:
-  static H264VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
-  static H264VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
-				     u_int8_t const* sps, unsigned spsSize, u_int8_t const* pps, unsigned ppsSize);
-    // an optional variant of "createNew()", useful if we know, in advance, the stream's SPS and PPL NAL units.
-  static H264VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
-				     char const* sPropParameterSetsStr);
-    // an optional variant of "createNew()", useful if we know, in advance, the stream's SPS and PPL NAL units.
+  static H264VideoRTPSink*
+  createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+  static H264VideoRTPSink*
+  createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
+	    u_int8_t const* sps, unsigned spsSize, u_int8_t const* pps, unsigned ppsSize,
+	    unsigned profile_level_id);
+    // an optional variant of "createNew()", useful if we know, in advance,
+    // the stream's SPS and PPS NAL units, and its 'profile_level_id'.
+    // This avoids us having to 'pre-read' from the input source in order to get these values.
+  static H264VideoRTPSink*
+  createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
+	    char const* sPropParameterSetsStr, unsigned profile_level_id);
+    // an optional variant of "createNew()", useful if we know, in advance,
+    // the stream's SPS and PPS NAL units, and its 'profile_level_id'.
+    // This avoids us having to 'pre-read' from the input source in order to get these values.
 
 protected:
   H264VideoRTPSink(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
-		   u_int8_t const* sps = NULL, unsigned spsSize = 0, u_int8_t const* pps = NULL, unsigned ppsSize = 0);
+		   u_int8_t const* sps = NULL, unsigned spsSize = 0,
+		   u_int8_t const* pps = NULL, unsigned ppsSize = 0,
+		   unsigned profile_level_id = 0);
 	// called only by createNew()
-
   virtual ~H264VideoRTPSink();
 
 protected: // redefined virtual functions:
@@ -52,63 +56,9 @@ protected: // redefined virtual functions:
 
 private: // redefined virtual functions:
   virtual Boolean sourceIsCompatibleWithUs(MediaSource& source);
-  virtual Boolean continuePlaying();
-  virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
-                                      unsigned char* frameStart,
-                                      unsigned numBytesInFrame,
-                                      struct timeval framePresentationTime,
-                                      unsigned numRemainingBytes);
-  virtual Boolean frameCanAppearAfterPacketStart(unsigned char const* frameStart,
-						 unsigned numBytesInFrame) const;
-
-protected:
-  H264FUAFragmenter* fOurFragmenter;
 
 private:
-  char* fFmtpSDPLine;
-  u_int8_t* fSPS; unsigned fSPSSize; u_int8_t* fPPS; unsigned fPPSSize;
+  unsigned fProfileLevelId;
 };
-
-
-////////// H264FUAFragmenter definition //////////
-
-// Because of the ideosyncracies of the H.264 RTP payload format, we implement
-// "H264VideoRTPSink" using a separate "H264FUAFragmenter" class that delivers,
-// to the "H264VideoRTPSink", only fragments that will fit within an outgoing
-// RTP packet.  I.e., we implement fragmentation in this separate "H264FUAFragmenter"
-// class, rather than in "H264VideoRTPSink".
-// (Note: This class should be used only by "H264VideoRTPSink", or a subclass.)
-
-class H264FUAFragmenter: public FramedFilter {
-public:
-  H264FUAFragmenter(UsageEnvironment& env, FramedSource* inputSource,
-		    unsigned inputBufferMax, unsigned maxOutputPacketSize);
-  virtual ~H264FUAFragmenter();
-
-  Boolean lastFragmentCompletedNALUnit() const { return fLastFragmentCompletedNALUnit; }
-
-private: // redefined virtual functions:
-  virtual void doGetNextFrame();
-
-private:
-  static void afterGettingFrame(void* clientData, unsigned frameSize,
-				unsigned numTruncatedBytes,
-                                struct timeval presentationTime,
-                                unsigned durationInMicroseconds);
-  void afterGettingFrame1(unsigned frameSize,
-                          unsigned numTruncatedBytes,
-                          struct timeval presentationTime,
-                          unsigned durationInMicroseconds);
-
-private:
-  unsigned fInputBufferSize;
-  unsigned fMaxOutputPacketSize;
-  unsigned char* fInputBuffer;
-  unsigned fNumValidDataBytes;
-  unsigned fCurDataOffset;
-  unsigned fSaveNumTruncatedBytes;
-  Boolean fLastFragmentCompletedNALUnit;
-};
-
 
 #endif

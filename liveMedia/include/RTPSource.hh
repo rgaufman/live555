@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // RTP Sources
 // C++ header
 
@@ -49,6 +49,10 @@ public:
   u_int32_t SSRC() const { return fSSRC; }
       // Note: This is *our* SSRC, not the SSRC in incoming RTP packets.
      // later need a means of changing the SSRC if there's a collision #####
+  void registerForMultiplexedRTCPPackets(class RTCPInstance* rtcpInstance) {
+    fRTCPInstanceForMultiplexedRTCPPackets = rtcpInstance;
+  }
+  void deregisterForMultiplexedRTCPPackets() { registerForMultiplexedRTCPPackets(NULL); }
 
   unsigned timestampFrequency() const {return fTimestampFrequency;}
 
@@ -93,6 +97,7 @@ protected:
   Boolean fCurPacketMarkerBit;
   Boolean fCurPacketHasBeenSynchronizedUsingRTCP;
   u_int32_t fLastReceivedSSRC;
+  class RTCPInstance* fRTCPInstanceForMultiplexedRTCPPackets;
 
 private:
   // redefined virtual functions:

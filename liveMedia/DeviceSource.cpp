@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A template for a MediaSource encapsulating an audio/video input device
 //
 // NOTE: Sections of this code labeled "%%% TO BE WRITTEN %%%" are incomplete, and need to be written by the programmer
@@ -80,7 +80,7 @@ void DeviceSource::doGetNextFrame() {
 
   // Note: If, for some reason, the source device stops being readable (e.g., it gets closed), then you do the following:
   if (0 /* the source stops being readable */ /*%%% TO BE WRITTEN %%%*/) {
-    handleClosure(this);
+    handleClosure();
     return;
   }
 

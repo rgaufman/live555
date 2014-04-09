@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A source object for AAC audio files in ADTS format
 // Implementation
 
@@ -120,7 +120,7 @@ void ADTSAudioFileSource::doGetNextFrame() {
   if (fread(headers, 1, sizeof headers, fFid) < sizeof headers
       || feof(fFid) || ferror(fFid)) {
     // The input source has ended:
-    handleClosure(this);
+    handleClosure();
     return;
   }
 

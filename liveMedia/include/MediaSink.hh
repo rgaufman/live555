@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Media Sinks
 // C++ header
 
@@ -74,6 +74,7 @@ public:
   ~OutPacketBuffer();
 
   static unsigned maxSize;
+  static void increaseMaxSizeTo(unsigned newMaxSize) { if (newMaxSize > OutPacketBuffer::maxSize) OutPacketBuffer::maxSize = newMaxSize; }
 
   unsigned char* curPtr() const {return &fBuf[fPacketStart + fCurOffset];}
   unsigned totalBytesAvailable() const {

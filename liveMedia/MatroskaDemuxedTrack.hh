@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A media track, demultiplexed from a Matroska file
 // C++ header
 
@@ -58,6 +58,7 @@ private:
   MatroskaDemux& fOurSourceDemux;
   struct timeval fPrevPresentationTime;
   int fDurationImbalance;
+  unsigned fOpusTrackNumber; // hack for Opus audio
 };
 
 #endif

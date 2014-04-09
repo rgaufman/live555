@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A filter that passes through (unchanged) chunks that contain an integral number
 // of MPEG-2 Transport Stream packets, but returning (in "fDurationInMicroseconds")
 // an updated estimate of the time gap between chunks.
@@ -104,7 +104,7 @@ void MPEG2TransportStreamFramer::setPCRLimit(float pcrLimit) {
 void MPEG2TransportStreamFramer::doGetNextFrame() {
   if (fLimitNumTSPacketsToStream) {
     if (fNumTSPacketsToStream == 0) {
-      handleClosure(this);
+      handleClosure();
       return;
     }
     if (fNumTSPacketsToStream*TRANSPORT_PACKET_SIZE < fMaxSize) {
@@ -146,7 +146,7 @@ void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
   fFrameSize = numTSPackets*TRANSPORT_PACKET_SIZE; // an integral # of TS packets
   if (fFrameSize == 0) {
     // We didn't read a complete TS packet; assume that the input source has closed.
-    handleClosure(this);
+    handleClosure();
     return;
   }
 
@@ -157,7 +157,7 @@ void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
   }
   if (syncBytePosition == fFrameSize) {
     envir() << "No Transport Stream sync byte in data.";
-    handleClosure(this);
+    handleClosure();
     return;
   } else if (syncBytePosition > 0) {
     // There's a sync byte, but not at the start of the data.  Move the good data
@@ -180,7 +180,7 @@ void MPEG2TransportStreamFramer::afterGettingFrame1(unsigned frameSize,
   for (unsigned i = 0; i < numTSPackets; ++i) {
     if (!updateTSPacketDurationEstimate(&fTo[i*TRANSPORT_PACKET_SIZE], timeNow)) {
       // We hit a preset limit (based on PCR) within the stream.  Handle this as if the input source has closed:
-      handleClosure(this);
+      handleClosure();
       return;
     }
   }

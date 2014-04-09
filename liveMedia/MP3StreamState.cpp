@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A class encapsulating the state of a MP3 stream
 // Implementation
 
@@ -24,6 +24,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #if defined(__WIN32__) || defined(_WIN32)
 #define snprintf _snprintf
+#if _MSC_VER >= 1400 // 1400 == vs2005
+#define fileno _fileno
+#endif
 #endif
 
 #define MILLION 1000000
@@ -184,30 +187,6 @@ void MP3StreamState::getAttributes(char* buffer, unsigned bufferSize) const {
 	  fr().bitrate, fr().isMPEG2 ? 2 : 1, fr().layer, fr().samplingFreq, fr().isStereo,
 	  fpt, fIsVBR);
 #endif
-}
-
-void MP3StreamState::writeGetCmd(char const* hostName,
-				 unsigned short portNum,
-				 char const* fileName) {
-  char const* const getCmdFmt = "GET %s HTTP/1.1\r\nHost: %s:%d\r\n\r\n";
-
-  if (fFidIsReallyASocket) {
-    intptr_t fid_long = (intptr_t)fFid;
-    int sock = (int)fid_long;
-    char writeBuf[100];
-#if defined(IRIX) || defined(ALPHA) || defined(_QNX4) || defined(IMN_PIM) || defined(CRIS)
-    /* snprintf() isn't defined, so just use sprintf() */
-    /* This is a security risk if filename can come from an external user */
-    sprintf(writeBuf, getCmdFmt, fileName, hostName, portNum);
-#else
-    snprintf(writeBuf, sizeof writeBuf, getCmdFmt,
-	     fileName, hostName, portNum);
-#endif
-    send(sock, writeBuf, strlen(writeBuf), 0);
-  } else {
-    fprintf(fFid, getCmdFmt, fileName, hostName, portNum);
-    fflush(fFid);
-  }
 }
 
 // This is crufty old code that needs to be cleaned up #####

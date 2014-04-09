@@ -14,19 +14,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *receivers* - i.e., clients.
 //  For media streamers, use "ServerMediaSession" instead.)
 // C++ header
 
-/* NOTE: To support receiving your own custom RTP payload format, you must first define a new subclass of "MultiFramedRTPSource"
-   (or "BasicUDPSource") that implements it.  Then define your own subclass of "MediaSession" and "MediaSubsession", as follows:
+/* NOTE: To support receiving your own custom RTP payload format, you must first define a new
+   subclass of "MultiFramedRTPSource" (or "BasicUDPSource") that implements it.
+   Then define your own subclass of "MediaSession" and "MediaSubsession", as follows:
    - In your subclass of "MediaSession" (named, for example, "myMediaSession"):
        - Define and implement your own static member function
            static myMediaSession* createNew(UsageEnvironment& env, char const* sdpDescription);
-	 and call this - instead of "MediaSession::createNew()" - in your application, when you create a new "MediaSession" object.
+	 and call this - instead of "MediaSession::createNew()" - in your application,
+	 when you create a new "MediaSession" object.
        - Reimplement the "createNewMediaSubsession()" virtual function, as follows:
            MediaSubsession* myMediaSession::createNewMediaSubsession() { return new myMediaSubsession(*this); }
    - In your subclass of "MediaSubsession" (named, for example, "myMediaSubsession"):
@@ -174,6 +176,7 @@ public:
   RTPSource* rtpSource() { return fRTPSource; }
   RTCPInstance* rtcpInstance() { return fRTCPInstance; }
   unsigned rtpTimestampFrequency() const { return fRTPTimestampFrequency; }
+  Boolean rtcpIsMuxed() const { return fMultiplexRTCPWithRTP; }
   FramedSource* readSource() { return fReadSource; }
     // This is the source that client sinks read from.  It is usually
     // (but not necessarily) the same as "rtpSource()"
@@ -201,8 +204,8 @@ public:
       // description does not specfy a client port number - an ephemeral
       // (even) port number is chosen.)  This routine must *not* be
       // called after initiate().
-  void receiveRawMP3ADUs() { fReceiveRawMP3ADUs = True; } // optional hack for audio/MPA-ROBUST; must not be called after Initiate()
-  void receiveRawJPEGFrames() { fReceiveRawJPEGFrames = True; } // optional hack for video/JPEG; must not be called after Initiate()
+  void receiveRawMP3ADUs() { fReceiveRawMP3ADUs = True; } // optional hack for audio/MPA-ROBUST; must not be called after initiate()
+  void receiveRawJPEGFrames() { fReceiveRawJPEGFrames = True; } // optional hack for video/JPEG; must not be called after initiate()
   char*& connectionEndpointName() { return fConnectionEndpointName; }
   char const* connectionEndpointName() const {
     return fConnectionEndpointName;
@@ -211,33 +214,21 @@ public:
   // 'Bandwidth' parameter, set in the "b=" SDP line:
   unsigned bandwidth() const { return fBandwidth; }
 
-  // Various parameters set in "a=fmtp:" SDP lines:
-  unsigned fmtp_auxiliarydatasizelength() const { return fAuxiliarydatasizelength; }
-  unsigned fmtp_constantduration() const { return fConstantduration; }
-  unsigned fmtp_constantsize() const { return fConstantsize; }
-  unsigned fmtp_crc() const { return fCRC; }
-  unsigned fmtp_ctsdeltalength() const { return fCtsdeltalength; }
-  unsigned fmtp_de_interleavebuffersize() const { return fDe_interleavebuffersize; }
-  unsigned fmtp_dtsdeltalength() const { return fDtsdeltalength; }
-  unsigned fmtp_indexdeltalength() const { return fIndexdeltalength; }
-  unsigned fmtp_indexlength() const { return fIndexlength; }
-  unsigned fmtp_interleaving() const { return fInterleaving; }
-  unsigned fmtp_maxdisplacement() const { return fMaxdisplacement; }
-  unsigned fmtp_objecttype() const { return fObjecttype; }
-  unsigned fmtp_octetalign() const { return fOctetalign; }
-  unsigned fmtp_profile_level_id() const { return fProfile_level_id; }
-  unsigned fmtp_robustsorting() const { return fRobustsorting; }
-  unsigned fmtp_sizelength() const { return fSizelength; }
-  unsigned fmtp_streamstateindication() const { return fStreamstateindication; }
-  unsigned fmtp_streamtype() const { return fStreamtype; }
-  Boolean fmtp_cpresent() const { return fCpresent; }
-  Boolean fmtp_randomaccessindication() const { return fRandomaccessindication; }
-  char const* fmtp_config() const { return fConfig; }
+  // General SDP attribute accessor functions:
+  char const* attrVal_str(char const* attrName) const;
+      // returns "" if attribute doesn't exist (and has no default value), or is not a string
+  unsigned attrVal_int(char const* attrName) const;
+      // also returns 0 if attribute doesn't exist (and has no default value)
+  unsigned attrVal_unsigned(char const* attrName) const { return (unsigned)attrVal_int(attrName); }
+  Boolean attrVal_bool(char const* attrName) const { return attrVal_int(attrName) != 0; }
+
+  // Old, now-deprecated SDP attribute accessor functions, kept here for backwards-compatibility:
+  char const* fmtp_config() const;
   char const* fmtp_configuration() const { return fmtp_config(); }
-  char const* fmtp_mode() const { return fMode; }
-  char const* fmtp_spropparametersets() const { return fSpropParameterSets; }
-  char const* fmtp_emphasis() const { return fEmphasis; }
-  char const* fmtp_channelorder() const { return fChannelOrder; }
+  char const* fmtp_spropparametersets() const { return attrVal_str("sprop-parameter-sets"); }
+  char const* fmtp_spropvps() const { return attrVal_str("sprop-vps"); }
+  char const* fmtp_spropsps() const { return attrVal_str("sprop-sps"); }
+  char const* fmtp_sproppps() const { return attrVal_str("sprop-pps"); }
 
   netAddressBits connectionEndpointAddress() const;
       // Converts "fConnectionEndpointName" to an address (or 0 if unknown)
@@ -281,9 +272,12 @@ protected:
   UsageEnvironment& env() { return fParent.envir(); }
   void setNext(MediaSubsession* next) { fNext = next; }
 
+  void setAttribute(char const* name, char const* value = NULL, Boolean valueIsHexadecimal = False);
+
   Boolean parseSDPLine_c(char const* sdpLine);
   Boolean parseSDPLine_b(char const* sdpLine);
   Boolean parseSDPAttribute_rtpmap(char const* sdpLine);
+  Boolean parseSDPAttribute_rtcpmux(char const* sdpLine);
   Boolean parseSDPAttribute_control(char const* sdpLine);
   Boolean parseSDPAttribute_range(char const* sdpLine);
   Boolean parseSDPAttribute_fmtp(char const* sdpLine);
@@ -309,19 +303,10 @@ protected:
   char* fCodecName;
   char* fProtocolName;
   unsigned fRTPTimestampFrequency;
+  Boolean fMultiplexRTCPWithRTP;
   char* fControlPath; // holds optional a=control: string
   struct in_addr fSourceFilterAddr; // used for SSM
   unsigned fBandwidth; // in kilobits-per-second, from b= line
-
-  // Parameters set by "a=fmtp:" SDP lines:
-  unsigned fAuxiliarydatasizelength, fConstantduration, fConstantsize;
-  unsigned fCRC, fCtsdeltalength, fDe_interleavebuffersize, fDtsdeltalength;
-  unsigned fIndexdeltalength, fIndexlength, fInterleaving;
-  unsigned fMaxdisplacement, fObjecttype;
-  unsigned fOctetalign, fProfile_level_id, fRobustsorting;
-  unsigned fSizelength, fStreamstateindication, fStreamtype;
-  Boolean fCpresent, fRandomaccessindication;
-  char *fConfig, *fMode, *fSpropParameterSets, *fEmphasis, *fChannelOrder;
 
   double fPlayStartTime;
   double fPlayEndTime;
@@ -335,6 +320,7 @@ protected:
      // optionally set by "a=rtpmap:" lines for audio sessions.  Default: 1
   float fScale; // set from a RTSP "Scale:" header
   double fNPT_PTS_Offset; // set by "getNormalPlayTime()"; add this to a PTS to get NPT
+  HashTable* fAttributeTable; // for "a=fmtp:" attributes.  (Later an array by payload type #####)
 
   // Fields set or used by initiate():
   Groupsock* fRTPSocket; Groupsock* fRTCPSocket; // works even for unicast

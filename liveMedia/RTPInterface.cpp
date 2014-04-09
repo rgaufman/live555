@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -268,7 +268,6 @@ Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
       packetReadWasIncomplete = True;
       return True;
     }
-    fNextTCPReadStreamSocketNum = -1; // default, for next time
   }
 
   if (readSuccess && fAuxReadHandlerFunc != NULL) {

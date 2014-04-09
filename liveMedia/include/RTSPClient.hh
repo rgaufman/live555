@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client - for a single "rtsp://" URL
 // C++ header
 
@@ -144,6 +144,14 @@ public:
 				   Authenticator* authenticator = NULL);
       // Issues an aggregate RTSP "GET_PARAMETER" command on "session", then returns the "CSeq" sequence number that was used in the command.
       // (The "responseHandler" and "authenticator" parameters are as described for "sendDescribeCommand".)
+
+  void sendDummyUDPPackets(MediaSession& session, unsigned numDummyPackets = 2);
+  void sendDummyUDPPackets(MediaSubsession& subsession, unsigned numDummyPackets = 2);
+      // Sends short 'dummy' (i.e., non-RTP or RTCP) UDP packets towards the server, to increase
+      // the likelihood of RTP/RTCP packets from the server reaching us if we're behind a NAT.
+      // (If we requested RTP-over-TCP streaming, then these functions have no effect.)
+      // Our implementation automatically does this just prior to sending each "PLAY" command;
+      // You should not call these functions yourself unless you know what you're doing.
 
   Boolean changeResponseHandler(unsigned cseq, responseHandler* newResponseHandler);
       // Changes the response handler for the previously-performed command (whose operation returned "cseq").

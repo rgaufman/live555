@@ -11,23 +11,23 @@ all:	$(ALL)
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 
 MP3_SOURCE_OBJS = MP3FileSource.$(OBJ) MP3Transcoder.$(OBJ) MP3ADU.$(OBJ) MP3ADUdescriptor.$(OBJ) MP3ADUinterleaving.$(OBJ) MP3ADUTranscoder.$(OBJ) MP3StreamState.$(OBJ) MP3Internals.$(OBJ) MP3InternalsHuffman.$(OBJ) MP3InternalsHuffmanTable.$(OBJ) MP3ADURTPSource.$(OBJ)
-MPEG_SOURCE_OBJS = MPEG1or2Demux.$(OBJ) MPEG1or2DemuxedElementaryStream.$(OBJ) MPEGVideoStreamFramer.$(OBJ) MPEG1or2VideoStreamFramer.$(OBJ) MPEG1or2VideoStreamDiscreteFramer.$(OBJ) MPEG4VideoStreamFramer.$(OBJ) MPEG4VideoStreamDiscreteFramer.$(OBJ) H264VideoStreamFramer.$(OBJ) H264VideoStreamDiscreteFramer.$(OBJ) MPEGVideoStreamParser.$(OBJ) MPEG1or2AudioStreamFramer.$(OBJ) MPEG1or2AudioRTPSource.$(OBJ) MPEG4LATMAudioRTPSource.$(OBJ) MPEG4ESVideoRTPSource.$(OBJ) MPEG4GenericRTPSource.$(OBJ) $(MP3_SOURCE_OBJS) MPEG1or2VideoRTPSource.$(OBJ) MPEG2TransportStreamMultiplexor.$(OBJ) MPEG2TransportStreamFromPESSource.$(OBJ) MPEG2TransportStreamFromESSource.$(OBJ) MPEG2TransportStreamFramer.$(OBJ) ADTSAudioFileSource.$(OBJ)
+MPEG_SOURCE_OBJS = MPEG1or2Demux.$(OBJ) MPEG1or2DemuxedElementaryStream.$(OBJ) MPEGVideoStreamFramer.$(OBJ) MPEG1or2VideoStreamFramer.$(OBJ) MPEG1or2VideoStreamDiscreteFramer.$(OBJ) MPEG4VideoStreamFramer.$(OBJ) MPEG4VideoStreamDiscreteFramer.$(OBJ) H264or5VideoStreamFramer.$(OBJ) H264or5VideoStreamDiscreteFramer.$(OBJ) H264VideoStreamFramer.$(OBJ) H264VideoStreamDiscreteFramer.$(OBJ) H265VideoStreamFramer.$(OBJ) H265VideoStreamDiscreteFramer.$(OBJ) MPEGVideoStreamParser.$(OBJ) MPEG1or2AudioStreamFramer.$(OBJ) MPEG1or2AudioRTPSource.$(OBJ) MPEG4LATMAudioRTPSource.$(OBJ) MPEG4ESVideoRTPSource.$(OBJ) MPEG4GenericRTPSource.$(OBJ) $(MP3_SOURCE_OBJS) MPEG1or2VideoRTPSource.$(OBJ) MPEG2TransportStreamMultiplexor.$(OBJ) MPEG2TransportStreamFromPESSource.$(OBJ) MPEG2TransportStreamFromESSource.$(OBJ) MPEG2TransportStreamFramer.$(OBJ) ADTSAudioFileSource.$(OBJ)
 H263_SOURCE_OBJS = H263plusVideoRTPSource.$(OBJ) H263plusVideoStreamFramer.$(OBJ) H263plusVideoStreamParser.$(OBJ)
 AC3_SOURCE_OBJS = AC3AudioStreamFramer.$(OBJ) AC3AudioRTPSource.$(OBJ)
 DV_SOURCE_OBJS = DVVideoStreamFramer.$(OBJ) DVVideoRTPSource.$(OBJ)
 MP3_SINK_OBJS = MP3ADURTPSink.$(OBJ)
 MPEG_SINK_OBJS = MPEG1or2AudioRTPSink.$(OBJ) $(MP3_SINK_OBJS) MPEG1or2VideoRTPSink.$(OBJ) MPEG4LATMAudioRTPSink.$(OBJ) MPEG4GenericRTPSink.$(OBJ) MPEG4ESVideoRTPSink.$(OBJ)
 H263_SINK_OBJS = H263plusVideoRTPSink.$(OBJ)
-H264_SINK_OBJS = H264VideoRTPSink.$(OBJ)
+H264_OR_5_SINK_OBJS = H264or5VideoRTPSink.$(OBJ) H264VideoRTPSink.$(OBJ) H265VideoRTPSink.$(OBJ)
 DV_SINK_OBJS = DVVideoRTPSink.$(OBJ)
 AC3_SINK_OBJS = AC3AudioRTPSink.$(OBJ)
 
 MISC_SOURCE_OBJS = MediaSource.$(OBJ) FramedSource.$(OBJ) FramedFileSource.$(OBJ) FramedFilter.$(OBJ) ByteStreamFileSource.$(OBJ) ByteStreamMultiFileSource.$(OBJ) ByteStreamMemoryBufferSource.$(OBJ) BasicUDPSource.$(OBJ) DeviceSource.$(OBJ) AudioInputDevice.$(OBJ) WAVAudioFileSource.$(OBJ) $(MPEG_SOURCE_OBJS) $(H263_SOURCE_OBJS) $(AC3_SOURCE_OBJS) $(DV_SOURCE_OBJS) JPEGVideoSource.$(OBJ) AMRAudioSource.$(OBJ) AMRAudioFileSource.$(OBJ) InputFile.$(OBJ) StreamReplicator.$(OBJ)
-MISC_SINK_OBJS = MediaSink.$(OBJ) FileSink.$(OBJ) BasicUDPSink.$(OBJ) AMRAudioFileSink.$(OBJ) H264VideoFileSink.$(OBJ) $(MPEG_SINK_OBJS) $(H263_SINK_OBJS) $(H264_SINK_OBJS) $(DV_SINK_OBJS) $(AC3_SINK_OBJS) VorbisAudioRTPSink.$(OBJ) VP8VideoRTPSink.$(OBJ) GSMAudioRTPSink.$(OBJ) JPEGVideoRTPSink.$(OBJ) SimpleRTPSink.$(OBJ) AMRAudioRTPSink.$(OBJ) T140TextRTPSink.$(OBJ) TCPStreamSink.$(OBJ) OutputFile.$(OBJ)
+MISC_SINK_OBJS = MediaSink.$(OBJ) FileSink.$(OBJ) BasicUDPSink.$(OBJ) AMRAudioFileSink.$(OBJ) H264or5VideoFileSink.$(OBJ) H264VideoFileSink.$(OBJ) H265VideoFileSink.$(OBJ) OggFileSink.$(OBJ) $(MPEG_SINK_OBJS) $(H263_SINK_OBJS) $(H264_OR_5_SINK_OBJS) $(DV_SINK_OBJS) $(AC3_SINK_OBJS) VorbisAudioRTPSink.$(OBJ) TheoraVideoRTPSink.$(OBJ) VP8VideoRTPSink.$(OBJ) GSMAudioRTPSink.$(OBJ) JPEGVideoRTPSink.$(OBJ) SimpleRTPSink.$(OBJ) AMRAudioRTPSink.$(OBJ) T140TextRTPSink.$(OBJ) TCPStreamSink.$(OBJ) OutputFile.$(OBJ)
 MISC_FILTER_OBJS = uLawAudioFilter.$(OBJ)
 TRANSPORT_STREAM_TRICK_PLAY_OBJS = MPEG2IndexFromTransportStream.$(OBJ) MPEG2TransportStreamIndexFile.$(OBJ) MPEG2TransportStreamTrickModeFilter.$(OBJ)
 
-RTP_SOURCE_OBJS = RTPSource.$(OBJ) MultiFramedRTPSource.$(OBJ) SimpleRTPSource.$(OBJ) H261VideoRTPSource.$(OBJ) H264VideoRTPSource.$(OBJ) QCELPAudioRTPSource.$(OBJ) AMRAudioRTPSource.$(OBJ) JPEGVideoRTPSource.$(OBJ) VorbisAudioRTPSource.$(OBJ) VP8VideoRTPSource.$(OBJ)
+RTP_SOURCE_OBJS = RTPSource.$(OBJ) MultiFramedRTPSource.$(OBJ) SimpleRTPSource.$(OBJ) H261VideoRTPSource.$(OBJ) H264VideoRTPSource.$(OBJ) H265VideoRTPSource.$(OBJ) QCELPAudioRTPSource.$(OBJ) AMRAudioRTPSource.$(OBJ) JPEGVideoRTPSource.$(OBJ) VorbisAudioRTPSource.$(OBJ) TheoraVideoRTPSource.$(OBJ) VP8VideoRTPSource.$(OBJ)
 RTP_SINK_OBJS = RTPSink.$(OBJ) MultiFramedRTPSink.$(OBJ) AudioRTPSink.$(OBJ) VideoRTPSink.$(OBJ) TextRTPSink.$(OBJ)
 RTP_INTERFACE_OBJS = RTPInterface.$(OBJ)
 RTP_OBJS = $(RTP_SOURCE_OBJS) $(RTP_SINK_OBJS) $(RTP_INTERFACE_OBJS)
@@ -36,22 +36,24 @@ RTCP_OBJS = RTCP.$(OBJ) rtcp_from_spec.$(OBJ)
 RTSP_OBJS = RTSPServer.$(OBJ) RTSPClient.$(OBJ) RTSPCommon.$(OBJ) RTSPServerSupportingHTTPStreaming.$(OBJ) RTSPRegisterSender.$(OBJ)
 SIP_OBJS = SIPClient.$(OBJ)
 
-SESSION_OBJS = MediaSession.$(OBJ) ServerMediaSession.$(OBJ) PassiveServerMediaSubsession.$(OBJ) OnDemandServerMediaSubsession.$(OBJ) FileServerMediaSubsession.$(OBJ) MPEG4VideoFileServerMediaSubsession.$(OBJ) H264VideoFileServerMediaSubsession.$(OBJ) H263plusVideoFileServerMediaSubsession.$(OBJ) WAVAudioFileServerMediaSubsession.$(OBJ) AMRAudioFileServerMediaSubsession.$(OBJ) MP3AudioFileServerMediaSubsession.$(OBJ) MPEG1or2VideoFileServerMediaSubsession.$(OBJ) MPEG1or2FileServerDemux.$(OBJ) MPEG1or2DemuxedServerMediaSubsession.$(OBJ) MPEG2TransportFileServerMediaSubsession.$(OBJ) ADTSAudioFileServerMediaSubsession.$(OBJ) DVVideoFileServerMediaSubsession.$(OBJ) AC3AudioFileServerMediaSubsession.$(OBJ) MPEG2TransportUDPServerMediaSubsession.$(OBJ) ProxyServerMediaSession.$(OBJ)
+SESSION_OBJS = MediaSession.$(OBJ) ServerMediaSession.$(OBJ) PassiveServerMediaSubsession.$(OBJ) OnDemandServerMediaSubsession.$(OBJ) FileServerMediaSubsession.$(OBJ) MPEG4VideoFileServerMediaSubsession.$(OBJ) H264VideoFileServerMediaSubsession.$(OBJ) H265VideoFileServerMediaSubsession.$(OBJ) H263plusVideoFileServerMediaSubsession.$(OBJ) WAVAudioFileServerMediaSubsession.$(OBJ) AMRAudioFileServerMediaSubsession.$(OBJ) MP3AudioFileServerMediaSubsession.$(OBJ) MPEG1or2VideoFileServerMediaSubsession.$(OBJ) MPEG1or2FileServerDemux.$(OBJ) MPEG1or2DemuxedServerMediaSubsession.$(OBJ) MPEG2TransportFileServerMediaSubsession.$(OBJ) ADTSAudioFileServerMediaSubsession.$(OBJ) DVVideoFileServerMediaSubsession.$(OBJ) AC3AudioFileServerMediaSubsession.$(OBJ) MPEG2TransportUDPServerMediaSubsession.$(OBJ) ProxyServerMediaSession.$(OBJ)
 
 QUICKTIME_OBJS = QuickTimeFileSink.$(OBJ) QuickTimeGenericRTPSource.$(OBJ)
 AVI_OBJS = AVIFileSink.$(OBJ)
 
 MATROSKA_FILE_OBJS = MatroskaFile.$(OBJ) MatroskaFileParser.$(OBJ) EBMLNumber.$(OBJ) MatroskaDemuxedTrack.$(OBJ)
-MATROSKA_SERVER_MEDIA_SUBSESSION_VIDEO_OBJS = H264VideoMatroskaFileServerMediaSubsession.$(OBJ) VP8VideoMatroskaFileServerMediaSubsession.$(OBJ)
-MATROSKA_SERVER_MEDIA_SUBSESSION_AUDIO_OBJS = AACAudioMatroskaFileServerMediaSubsession.$(OBJ) AC3AudioMatroskaFileServerMediaSubsession.$(OBJ) MP3AudioMatroskaFileServerMediaSubsession.$(OBJ) VorbisAudioMatroskaFileServerMediaSubsession.$(OBJ)
-MATROSKA_SERVER_MEDIA_SUBSESSION_TEXT_OBJS = T140TextMatroskaFileServerMediaSubsession.$(OBJ)
-MATROSKA_SERVER_MEDIA_SUBSESSION_OBJS = $(MATROSKA_SERVER_MEDIA_SUBSESSION_VIDEO_OBJS) $(MATROSKA_SERVER_MEDIA_SUBSESSION_AUDIO_OBJS) $(MATROSKA_SERVER_MEDIA_SUBSESSION_TEXT_OBJS)
+MATROSKA_SERVER_MEDIA_SUBSESSION_OBJS = MatroskaFileServerMediaSubsession.$(OBJ) MP3AudioMatroskaFileServerMediaSubsession.$(OBJ)
 MATROSKA_RTSP_SERVER_OBJS = MatroskaFileServerDemux.$(OBJ) $(MATROSKA_SERVER_MEDIA_SUBSESSION_OBJS)
 MATROSKA_OBJS = $(MATROSKA_FILE_OBJS) $(MATROSKA_RTSP_SERVER_OBJS)
 
-MISC_OBJS = DarwinInjector.$(OBJ) BitVector.$(OBJ) StreamParser.$(OBJ) DigestAuthentication.$(OBJ) our_md5.$(OBJ) our_md5hl.$(OBJ) Base64.$(OBJ) Locale.$(OBJ)
+OGG_FILE_OBJS = OggFile.$(OBJ) OggFileParser.$(OBJ) OggDemuxedTrack.$(OBJ)
+OGG_SERVER_MEDIA_SUBSESSION_OBJS = OggFileServerMediaSubsession.$(OBJ)
+OGG_RTSP_SERVER_OBJS = OggFileServerDemux.$(OBJ) $(OGG_SERVER_MEDIA_SUBSESSION_OBJS)
+OGG_OBJS = $(OGG_FILE_OBJS) $(OGG_RTSP_SERVER_OBJS)
 
-LIVEMEDIA_LIB_OBJS = Media.$(OBJ) $(MISC_SOURCE_OBJS) $(MISC_SINK_OBJS) $(MISC_FILTER_OBJS) $(RTP_OBJS) $(RTCP_OBJS) $(RTSP_OBJS) $(SIP_OBJS) $(SESSION_OBJS) $(QUICKTIME_OBJS) $(AVI_OBJS) $(TRANSPORT_STREAM_TRICK_PLAY_OBJS) $(MATROSKA_OBJS) $(MISC_OBJS)
+MISC_OBJS = DarwinInjector.$(OBJ) BitVector.$(OBJ) StreamParser.$(OBJ) DigestAuthentication.$(OBJ) ourMD5.$(OBJ) Base64.$(OBJ) Locale.$(OBJ)
+
+LIVEMEDIA_LIB_OBJS = Media.$(OBJ) $(MISC_SOURCE_OBJS) $(MISC_SINK_OBJS) $(MISC_FILTER_OBJS) $(RTP_OBJS) $(RTCP_OBJS) $(RTSP_OBJS) $(SIP_OBJS) $(SESSION_OBJS) $(QUICKTIME_OBJS) $(AVI_OBJS) $(TRANSPORT_STREAM_TRICK_PLAY_OBJS) $(MATROSKA_OBJS) $(OGG_OBJS) $(MISC_OBJS)
 
 $(LIVEMEDIA_LIB): $(LIVEMEDIA_LIB_OBJS) \
     $(PLATFORM_SPECIFIC_LIB_OBJS)
@@ -71,7 +73,7 @@ include/FramedFilter.hh:	include/FramedSource.hh
 RTPSource.$(CPP):	include/RTPSource.hh
 include/RTPSource.hh:		include/FramedSource.hh include/RTPInterface.hh
 include/RTPInterface.hh:	include/Media.hh
-MultiFramedRTPSource.$(CPP):	include/MultiFramedRTPSource.hh
+MultiFramedRTPSource.$(CPP):	include/MultiFramedRTPSource.hh include/RTCP.hh
 include/MultiFramedRTPSource.hh:	include/RTPSource.hh
 SimpleRTPSource.$(CPP):	include/SimpleRTPSource.hh
 include/SimpleRTPSource.hh:	include/MultiFramedRTPSource.hh
@@ -79,14 +81,18 @@ H261VideoRTPSource.$(CPP):	include/H261VideoRTPSource.hh
 include/H261VideoRTPSource.hh:	include/MultiFramedRTPSource.hh
 H264VideoRTPSource.$(CPP):      include/H264VideoRTPSource.hh include/Base64.hh
 include/H264VideoRTPSource.hh:  include/MultiFramedRTPSource.hh
+H265VideoRTPSource.$(CPP):      include/H265VideoRTPSource.hh
+include/H265VideoRTPSource.hh:  include/MultiFramedRTPSource.hh
 QCELPAudioRTPSource.$(CPP):	include/QCELPAudioRTPSource.hh include/MultiFramedRTPSource.hh include/FramedFilter.hh
 include/QCELPAudioRTPSource.hh:		include/RTPSource.hh
 AMRAudioRTPSource.$(CPP):	include/AMRAudioRTPSource.hh include/MultiFramedRTPSource.hh
 include/AMRAudioRTPSource.hh:		include/RTPSource.hh include/AMRAudioSource.hh
 JPEGVideoRTPSource.$(CPP):	include/JPEGVideoRTPSource.hh
 include/JPEGVideoRTPSource.hh:	include/MultiFramedRTPSource.hh
-VorbisAudioRTPSource.$(CPP):	include/VorbisAudioRTPSource.hh
+VorbisAudioRTPSource.$(CPP):	include/VorbisAudioRTPSource.hh include/Base64.hh
 include/VorbisAudioRTPSource.hh:	include/MultiFramedRTPSource.hh
+TheoraVideoRTPSource.$(CPP):	include/TheoraVideoRTPSource.hh
+include/TheoraVideoRTPSource.hh:	include/MultiFramedRTPSource.hh
 VP8VideoRTPSource.$(CPP):	include/VP8VideoRTPSource.hh
 include/VP8VideoRTPSource.hh:	include/MultiFramedRTPSource.hh
 ByteStreamFileSource.$(CPP):	include/ByteStreamFileSource.hh include/InputFile.hh
@@ -119,10 +125,18 @@ MPEG4VideoStreamFramer.$(CPP):	include/MPEG4VideoStreamFramer.hh MPEGVideoStream
 include/MPEG4VideoStreamFramer.hh:	include/MPEGVideoStreamFramer.hh
 MPEG4VideoStreamDiscreteFramer.$(CPP):	include/MPEG4VideoStreamDiscreteFramer.hh
 include/MPEG4VideoStreamDiscreteFramer.hh:	include/MPEG4VideoStreamFramer.hh
-H264VideoStreamFramer.$(CPP):	include/H264VideoStreamFramer.hh MPEGVideoStreamParser.hh include/BitVector.hh include/H264VideoRTPSource.hh
-include/H264VideoStreamFramer.hh:	include/MPEGVideoStreamFramer.hh
+H264or5VideoStreamFramer.$(CPP):	include/H264or5VideoStreamFramer.hh MPEGVideoStreamParser.hh include/BitVector.hh
+include/H264or5VideoStreamFramer.hh:	include/MPEGVideoStreamFramer.hh
+H264or5VideoStreamDiscreteFramer.$(CPP):	include/H264or5VideoStreamDiscreteFramer.hh
+include/H264or5VideoStreamDiscreteFramer.hh:	include/H264or5VideoStreamFramer.hh
+H264VideoStreamFramer.$(CPP):	include/H264VideoStreamFramer.hh
+include/H264VideoStreamFramer.hh:	include/H264or5VideoStreamFramer.hh
 H264VideoStreamDiscreteFramer.$(CPP):	include/H264VideoStreamDiscreteFramer.hh
 include/H264VideoStreamDiscreteFramer.hh:	include/H264VideoStreamFramer.hh
+H265VideoStreamFramer.$(CPP):	include/H265VideoStreamFramer.hh
+include/H265VideoStreamFramer.hh:	include/H264or5VideoStreamFramer.hh
+H265VideoStreamDiscreteFramer.$(CPP):	include/H265VideoStreamDiscreteFramer.hh
+include/H265VideoStreamDiscreteFramer.hh:	include/H265VideoStreamFramer.hh
 MPEGVideoStreamParser.$(CPP):	MPEGVideoStreamParser.hh
 MPEG1or2AudioStreamFramer.$(CPP):	include/MPEG1or2AudioStreamFramer.hh StreamParser.hh MP3Internals.hh
 include/MPEG1or2AudioStreamFramer.hh:	include/FramedFilter.hh
@@ -195,9 +209,15 @@ BasicUDPSink.$(CPP):	include/BasicUDPSink.hh
 include/BasicUDPSink.hh:	include/MediaSink.hh
 AMRAudioFileSink.$(CPP):	include/AMRAudioFileSink.hh include/AMRAudioSource.hh include/OutputFile.hh
 include/AMRAudioFileSink.hh:	include/FileSink.hh
-H264VideoFileSink.$(CPP):       include/H264VideoFileSink.hh include/OutputFile.hh include/H264VideoRTPSource.hh
-include/H264VideoFileSink.hh:   include/FileSink.hh
-RTPSink.$(CPP):		include/RTPSink.hh
+H264or5VideoFileSink.$(CPP):	include/H264or5VideoFileSink.hh include/H264VideoRTPSource.hh
+include/H264or5VideoFileSink.hh:   include/FileSink.hh
+H264VideoFileSink.$(CPP):       include/H264VideoFileSink.hh include/OutputFile.hh
+include/H264VideoFileSink.hh:   include/H264or5VideoFileSink.hh
+H265VideoFileSink.$(CPP):       include/H265VideoFileSink.hh include/OutputFile.hh
+include/H265VideoFileSink.hh:   include/H264or5VideoFileSink.hh
+OggFileSink.$(CPP):		include/OggFileSink.hh include/OutputFile.hh include/VorbisAudioRTPSource.hh include/MPEG2TransportStreamMultiplexor.hh include/FramedSource.hh
+include/OggFileSink.hh:		include/FileSink.hh
+RTPSink.$(CPP):			include/RTPSink.hh
 include/RTPSink.hh:		include/MediaSink.hh include/RTPInterface.hh
 MultiFramedRTPSink.$(CPP):	include/MultiFramedRTPSink.hh
 include/MultiFramedRTPSink.hh:		include/RTPSink.hh
@@ -222,15 +242,21 @@ MPEG4ESVideoRTPSink.$(CPP):	include/MPEG4ESVideoRTPSink.hh include/MPEG4VideoStr
 include/MPEG4ESVideoRTPSink.hh: include/VideoRTPSink.hh
 H263plusVideoRTPSink.$(CPP):	include/H263plusVideoRTPSink.hh
 include/H263plusVideoRTPSink.hh:	include/VideoRTPSink.hh
+H264or5VideoRTPSink.$(CPP):	include/H264or5VideoRTPSink.hh include/H264or5VideoStreamFramer.hh
+include/H264or5VideoRTPSink.hh:	include/VideoRTPSink.hh include/FramedFilter.hh
 H264VideoRTPSink.$(CPP):	include/H264VideoRTPSink.hh include/H264VideoStreamFramer.hh include/Base64.hh include/H264VideoRTPSource.hh
-include/H264VideoRTPSink.hh:	include/VideoRTPSink.hh include/FramedFilter.hh
+include/H264VideoRTPSink.hh:	include/H264or5VideoRTPSink.hh
+H265VideoRTPSink.$(CPP):	include/H265VideoRTPSink.hh include/H265VideoStreamFramer.hh include/Base64.hh include/BitVector.hh include/H264VideoRTPSource.hh
+include/H265VideoRTPSink.hh:	include/H264or5VideoRTPSink.hh
 DVVideoRTPSink.$(CPP):	include/DVVideoRTPSink.hh
 include/DVVideoRTPSink.hh:	include/VideoRTPSink.hh include/DVVideoStreamFramer.hh
 include/DVVideoStreamFramer.hh:	include/FramedFilter.hh
 AC3AudioRTPSink.$(CPP):		include/AC3AudioRTPSink.hh
 include/AC3AudioRTPSink.hh:	include/AudioRTPSink.hh
-VorbisAudioRTPSink.$(CPP):	include/VorbisAudioRTPSink.hh include/Base64.hh
+VorbisAudioRTPSink.$(CPP):	include/VorbisAudioRTPSink.hh include/Base64.hh include/VorbisAudioRTPSource.hh
 include/VorbisAudioRTPSink.hh:	include/AudioRTPSink.hh
+TheoraVideoRTPSink.$(CPP):	include/TheoraVideoRTPSink.hh include/Base64.hh include/VorbisAudioRTPSource.hh include/VorbisAudioRTPSink.hh
+include/TheoraVideoRTPSink.hh:	include/VideoRTPSink.hh
 VP8VideoRTPSink.$(CPP):		include/VP8VideoRTPSink.hh
 include/VP8VideoRTPSink.hh:	include/VideoRTPSink.hh
 GSMAudioRTPSink.$(CPP):		include/GSMAudioRTPSink.hh
@@ -243,7 +269,7 @@ AMRAudioRTPSink.$(CPP):		include/AMRAudioRTPSink.hh include/AMRAudioSource.hh
 include/AMRAudioRTPSink.hh:	include/AudioRTPSink.hh
 T140TextRTPSink.$(CPP):		include/T140TextRTPSink.hh
 include/T140TextRTPSink.hh:	include/TextRTPSink.hh include/FramedFilter.hh
-TCPStreamSink.$(CPP):		include/TCPStreamSink.hh
+TCPStreamSink.$(CPP):		include/TCPStreamSink.hh include/RTSPCommon.hh
 include/TCPStreamSink.hh:	include/MediaSink.hh
 OutputFile.$(CPP):		include/OutputFile.hh
 uLawAudioFilter.$(CPP):		include/uLawAudioFilter.hh
@@ -260,7 +286,7 @@ rtcp_from_spec.$(C):	rtcp_from_spec.h
 RTSPServer.$(CPP):	include/RTSPServer.hh include/RTSPCommon.hh include/RTSPRegisterSender.hh include/ProxyServerMediaSession.hh include/Base64.hh
 include/RTSPServer.hh:		include/ServerMediaSession.hh include/DigestAuthentication.hh include/RTSPCommon.hh
 include/ServerMediaSession.hh:	include/Media.hh include/FramedSource.hh include/RTPInterface.hh
-RTSPClient.$(CPP):	include/RTSPClient.hh  include/RTSPCommon.hh include/Base64.hh include/Locale.hh our_md5.h
+RTSPClient.$(CPP):	include/RTSPClient.hh  include/RTSPCommon.hh include/Base64.hh include/Locale.hh ourMD5.hh
 include/RTSPClient.hh:		include/MediaSession.hh include/DigestAuthentication.hh
 RTSPCommon.$(CPP):	include/RTSPCommon.hh include/Locale.hh
 RTSPServerSupportingHTTPStreaming.$(CPP):	include/RTSPServerSupportingHTTPStreaming.hh include/RTSPCommon.hh
@@ -282,6 +308,8 @@ MPEG4VideoFileServerMediaSubsession.$(CPP):	include/MPEG4VideoFileServerMediaSub
 include/MPEG4VideoFileServerMediaSubsession.hh:	include/FileServerMediaSubsession.hh
 H264VideoFileServerMediaSubsession.$(CPP):	include/H264VideoFileServerMediaSubsession.hh include/H264VideoRTPSink.hh include/ByteStreamFileSource.hh include/H264VideoStreamFramer.hh
 include/H264VideoFileServerMediaSubsession.hh:	include/FileServerMediaSubsession.hh
+H265VideoFileServerMediaSubsession.$(CPP):	include/H265VideoFileServerMediaSubsession.hh include/H265VideoRTPSink.hh include/ByteStreamFileSource.hh include/H265VideoStreamFramer.hh
+include/H265VideoFileServerMediaSubsession.hh:	include/FileServerMediaSubsession.hh
 H263plusVideoFileServerMediaSubsession.$(CPP):	include/H263plusVideoFileServerMediaSubsession.hh include/H263plusVideoRTPSink.hh include/ByteStreamFileSource.hh include/H263plusVideoStreamFramer.hh
 include/H263plusVideoFileServerMediaSubsession.hh:	include/FileServerMediaSubsession.hh
 WAVAudioFileServerMediaSubsession.$(CPP):	include/WAVAudioFileServerMediaSubsession.hh include/WAVAudioFileSource.hh include/uLawAudioFilter.hh include/SimpleRTPSink.hh
@@ -314,44 +342,43 @@ QuickTimeGenericRTPSource.$(CPP):	include/QuickTimeGenericRTPSource.hh
 include/QuickTimeGenericRTPSource.hh:	include/MultiFramedRTPSource.hh
 AVIFileSink.$(CPP):	include/AVIFileSink.hh include/InputFile.hh include/OutputFile.hh
 include/AVIFileSink.hh:	include/MediaSession.hh
-MatroskaFile.$(CPP): MatroskaFileParser.hh MatroskaDemuxedTrack.hh include/ByteStreamFileSource.hh
+MatroskaFile.$(CPP): MatroskaFileParser.hh MatroskaDemuxedTrack.hh include/ByteStreamFileSource.hh include/H264VideoStreamDiscreteFramer.hh include/H265VideoStreamDiscreteFramer.hh include/MPEG1or2AudioRTPSink.hh include/MPEG4GenericRTPSink.hh include/AC3AudioRTPSink.hh include/SimpleRTPSink.hh include/VorbisAudioRTPSink.hh include/H264VideoRTPSink.hh include/H265VideoRTPSink.hh include/VP8VideoRTPSink.hh include/T140TextRTPSink.hh
 MatroskaFileParser.hh:	StreamParser.hh include/MatroskaFile.hh EBMLNumber.hh
-include/MatroskaFile.hh: include/Media.hh
+include/MatroskaFile.hh: include/RTPSink.hh
 MatroskaDemuxedTrack.hh:	include/FramedSource.hh
 MatroskaFileParser.$(CPP): MatroskaFileParser.hh MatroskaDemuxedTrack.hh include/ByteStreamFileSource.hh
 EBMLNumber.$(CPP): EBMLNumber.hh
 MatroskaDemuxedTrack.$(CPP): MatroskaDemuxedTrack.hh include/MatroskaFile.hh
-H264VideoMatroskaFileServerMediaSubsession.$(CPP): H264VideoMatroskaFileServerMediaSubsession.hh include/H264VideoStreamDiscreteFramer.hh
-H264VideoMatroskaFileServerMediaSubsession.hh: include/H264VideoFileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-VP8VideoMatroskaFileServerMediaSubsession.$(CPP): VP8VideoMatroskaFileServerMediaSubsession.hh include/VP8VideoRTPSink.hh
-VP8VideoMatroskaFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-AACAudioMatroskaFileServerMediaSubsession.$(CPP): AACAudioMatroskaFileServerMediaSubsession.hh include/MPEG4GenericRTPSink.hh
-AACAudioMatroskaFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-AC3AudioMatroskaFileServerMediaSubsession.$(CPP): AC3AudioMatroskaFileServerMediaSubsession.hh include/AC3AudioRTPSink.hh
-AC3AudioMatroskaFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-VorbisAudioMatroskaFileServerMediaSubsession.$(CPP): VorbisAudioMatroskaFileServerMediaSubsession.hh include/VorbisAudioRTPSink.hh
-VorbisAudioMatroskaFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-MP3AudioMatroskaFileServerMediaSubsession.$(CPP): MP3AudioMatroskaFileServerMediaSubsession.hh
-MP3AudioMatroskaFileServerMediaSubsession.hh: include/MP3AudioFileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-T140TextMatroskaFileServerMediaSubsession.$(CPP): T140TextMatroskaFileServerMediaSubsession.hh include/T140TextRTPSink.hh
-T140TextMatroskaFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh MatroskaDemuxedTrack.hh
-MatroskaFileServerDemux.$(CPP): include/MatroskaFileServerDemux.hh H264VideoMatroskaFileServerMediaSubsession.hh VP8VideoMatroskaFileServerMediaSubsession.hh AACAudioMatroskaFileServerMediaSubsession.hh AC3AudioMatroskaFileServerMediaSubsession.hh VorbisAudioMatroskaFileServerMediaSubsession.hh MP3AudioMatroskaFileServerMediaSubsession.hh T140TextMatroskaFileServerMediaSubsession.hh
+MatroskaFileServerMediaSubsession.$(CPP): MatroskaFileServerMediaSubsession.hh MatroskaDemuxedTrack.hh include/FramedFilter.hh
+MatroskaFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh
+MP3AudioMatroskaFileServerMediaSubsession.$(CPP): MP3AudioMatroskaFileServerMediaSubsession.hh MatroskaDemuxedTrack.hh
+MP3AudioMatroskaFileServerMediaSubsession.hh: include/MP3AudioFileServerMediaSubsession.hh include/MatroskaFileServerDemux.hh
+MatroskaFileServerDemux.$(CPP): include/MatroskaFileServerDemux.hh MP3AudioMatroskaFileServerMediaSubsession.hh MatroskaFileServerMediaSubsession.hh
 include/MatroskaFileServerDemux.hh: include/ServerMediaSession.hh include/MatroskaFile.hh
+OggFile.$(CPP): OggFileParser.hh OggDemuxedTrack.hh include/ByteStreamFileSource.hh include/VorbisAudioRTPSink.hh include/SimpleRTPSink.hh include/TheoraVideoRTPSink.hh
+OggFileParser.hh:	StreamParser.hh include/OggFile.hh
+include/OggFile.hh: include/RTPSink.hh
+OggDemuxedTrack.hh:	include/FramedSource.hh
+OggFileParser.$(CPP): OggFileParser.hh OggDemuxedTrack.hh
+OggDemuxedTrack.$(CPP): OggDemuxedTrack.hh include/OggFile.hh
+OggFileServerMediaSubsession.$(CPP): OggFileServerMediaSubsession.hh OggDemuxedTrack.hh include/FramedFilter.hh
+OggFileServerMediaSubsession.hh: include/FileServerMediaSubsession.hh include/OggFileServerDemux.hh
+OggFileServerDemux.$(CPP): include/OggFileServerDemux.hh OggFileServerMediaSubsession.hh
+include/OggFileServerDemux.hh: include/ServerMediaSession.hh include/OggFile.hh
 DarwinInjector.$(CPP):	include/DarwinInjector.hh
 include/DarwinInjector.hh:	include/RTSPClient.hh include/RTCP.hh
 BitVector.$(CPP):	include/BitVector.hh
 StreamParser.$(CPP):	StreamParser.hh
-DigestAuthentication.$(CPP):	include/DigestAuthentication.hh our_md5.h
-our_md5.$(C):		our_md5.h
-our_md5hl.$(C):		our_md5.h
+DigestAuthentication.$(CPP):	include/DigestAuthentication.hh ourMD5.hh
+ourMD5.$(CPP):	ourMD5.hh
 Base64.$(CPP):	include/Base64.hh
 Locale.$(CPP):	include/Locale.hh
 
-include/liveMedia.hh:: include/MPEG1or2AudioRTPSink.hh include/MP3ADURTPSink.hh include/MPEG1or2VideoRTPSink.hh include/MPEG4ESVideoRTPSink.hh include/BasicUDPSink.hh include/AMRAudioFileSink.hh include/H264VideoFileSink.hh include/GSMAudioRTPSink.hh include/H263plusVideoRTPSink.hh include/H264VideoRTPSink.hh include/DVVideoRTPSource.hh include/DVVideoRTPSink.hh include/DVVideoStreamFramer.hh include/H264VideoStreamDiscreteFramer.hh include/JPEGVideoRTPSink.hh include/SimpleRTPSink.hh include/uLawAudioFilter.hh include/MPEG2IndexFromTransportStream.hh include/MPEG2TransportStreamTrickModeFilter.hh include/ByteStreamMultiFileSource.hh include/ByteStreamMemoryBufferSource.hh include/BasicUDPSource.hh include/SimpleRTPSource.hh include/MPEG1or2AudioRTPSource.hh include/MPEG4LATMAudioRTPSource.hh include/MPEG4LATMAudioRTPSink.hh include/MPEG4ESVideoRTPSource.hh include/MPEG4GenericRTPSource.hh include/MP3ADURTPSource.hh include/QCELPAudioRTPSource.hh include/AMRAudioRTPSource.hh include/JPEGVideoRTPSource.hh include/JPEGVideoSource.hh include/MPEG1or2VideoRTPSource.hh include/VorbisAudioRTPSource.hh include/VP8VideoRTPSource.hh
+include/liveMedia.hh:: include/MPEG1or2AudioRTPSink.hh include/MP3ADURTPSink.hh include/MPEG1or2VideoRTPSink.hh include/MPEG4ESVideoRTPSink.hh include/BasicUDPSink.hh include/AMRAudioFileSink.hh include/H264VideoFileSink.hh include/H265VideoFileSink.hh include/OggFileSink.hh include/GSMAudioRTPSink.hh include/H263plusVideoRTPSink.hh include/H264VideoRTPSink.hh include/H265VideoRTPSink.hh include/DVVideoRTPSource.hh include/DVVideoRTPSink.hh include/DVVideoStreamFramer.hh include/H264VideoStreamFramer.hh include/H265VideoStreamFramer.hh include/H264VideoStreamDiscreteFramer.hh include/H265VideoStreamDiscreteFramer.hh include/JPEGVideoRTPSink.hh include/SimpleRTPSink.hh include/uLawAudioFilter.hh include/MPEG2IndexFromTransportStream.hh include/MPEG2TransportStreamTrickModeFilter.hh include/ByteStreamMultiFileSource.hh include/ByteStreamMemoryBufferSource.hh include/BasicUDPSource.hh include/SimpleRTPSource.hh include/MPEG1or2AudioRTPSource.hh include/MPEG4LATMAudioRTPSource.hh include/MPEG4LATMAudioRTPSink.hh include/MPEG4ESVideoRTPSource.hh include/MPEG4GenericRTPSource.hh include/MP3ADURTPSource.hh include/QCELPAudioRTPSource.hh include/AMRAudioRTPSource.hh include/JPEGVideoRTPSource.hh include/JPEGVideoSource.hh include/MPEG1or2VideoRTPSource.hh include/VorbisAudioRTPSource.hh include/TheoraVideoRTPSource.hh include/VP8VideoRTPSource.hh
 
-include/liveMedia.hh::	include/MPEG2TransportStreamFromPESSource.hh include/MPEG2TransportStreamFromESSource.hh include/MPEG2TransportStreamFramer.hh include/ADTSAudioFileSource.hh include/H261VideoRTPSource.hh include/H263plusVideoRTPSource.hh include/H264VideoRTPSource.hh include/MP3FileSource.hh include/MP3ADU.hh include/MP3ADUinterleaving.hh include/MP3Transcoder.hh include/MPEG1or2DemuxedElementaryStream.hh include/MPEG1or2AudioStreamFramer.hh include/MPEG1or2VideoStreamDiscreteFramer.hh include/MPEG4VideoStreamDiscreteFramer.hh include/H263plusVideoStreamFramer.hh include/AC3AudioStreamFramer.hh include/AC3AudioRTPSource.hh include/AC3AudioRTPSink.hh include/VorbisAudioRTPSink.hh include/VP8VideoRTPSink.hh include/MPEG4GenericRTPSink.hh include/DeviceSource.hh include/AudioInputDevice.hh include/WAVAudioFileSource.hh include/StreamReplicator.hh include/RTSPRegisterSender.hh
+include/liveMedia.hh::	include/MPEG2TransportStreamFromPESSource.hh include/MPEG2TransportStreamFromESSource.hh include/MPEG2TransportStreamFramer.hh include/ADTSAudioFileSource.hh include/H261VideoRTPSource.hh include/H263plusVideoRTPSource.hh include/H264VideoRTPSource.hh include/H265VideoRTPSource.hh include/MP3FileSource.hh include/MP3ADU.hh include/MP3ADUinterleaving.hh include/MP3Transcoder.hh include/MPEG1or2DemuxedElementaryStream.hh include/MPEG1or2AudioStreamFramer.hh include/MPEG1or2VideoStreamDiscreteFramer.hh include/MPEG4VideoStreamDiscreteFramer.hh include/H263plusVideoStreamFramer.hh include/AC3AudioStreamFramer.hh include/AC3AudioRTPSource.hh include/AC3AudioRTPSink.hh include/VorbisAudioRTPSink.hh include/TheoraVideoRTPSink.hh include/VP8VideoRTPSink.hh include/MPEG4GenericRTPSink.hh include/DeviceSource.hh include/AudioInputDevice.hh include/WAVAudioFileSource.hh include/StreamReplicator.hh include/RTSPRegisterSender.hh
 
-include/liveMedia.hh:: include/RTSPServerSupportingHTTPStreaming.hh include/RTSPClient.hh include/SIPClient.hh include/QuickTimeFileSink.hh include/QuickTimeGenericRTPSource.hh include/AVIFileSink.hh include/PassiveServerMediaSubsession.hh include/MPEG4VideoFileServerMediaSubsession.hh include/H264VideoFileServerMediaSubsession.hh include/WAVAudioFileServerMediaSubsession.hh include/AMRAudioFileServerMediaSubsession.hh include/AMRAudioFileSource.hh include/AMRAudioRTPSink.hh include/T140TextRTPSink.hh include/TCPStreamSink.hh include/MP3AudioFileServerMediaSubsession.hh include/MPEG1or2VideoFileServerMediaSubsession.hh include/MPEG1or2FileServerDemux.hh include/MPEG2TransportFileServerMediaSubsession.hh include/H263plusVideoFileServerMediaSubsession.hh include/ADTSAudioFileServerMediaSubsession.hh include/DVVideoFileServerMediaSubsession.hh include/AC3AudioFileServerMediaSubsession.hh include/MPEG2TransportUDPServerMediaSubsession.hh include/MatroskaFileServerDemux.hh include/ProxyServerMediaSession.hh include/DarwinInjector.hh
+include/liveMedia.hh:: include/RTSPServerSupportingHTTPStreaming.hh include/RTSPClient.hh include/SIPClient.hh include/QuickTimeFileSink.hh include/QuickTimeGenericRTPSource.hh include/AVIFileSink.hh include/PassiveServerMediaSubsession.hh include/MPEG4VideoFileServerMediaSubsession.hh include/H264VideoFileServerMediaSubsession.hh include/H265VideoFileServerMediaSubsession.hh include/WAVAudioFileServerMediaSubsession.hh include/AMRAudioFileServerMediaSubsession.hh include/AMRAudioFileSource.hh include/AMRAudioRTPSink.hh include/T140TextRTPSink.hh include/TCPStreamSink.hh include/MP3AudioFileServerMediaSubsession.hh include/MPEG1or2VideoFileServerMediaSubsession.hh include/MPEG1or2FileServerDemux.hh include/MPEG2TransportFileServerMediaSubsession.hh include/H263plusVideoFileServerMediaSubsession.hh include/ADTSAudioFileServerMediaSubsession.hh include/DVVideoFileServerMediaSubsession.hh include/AC3AudioFileServerMediaSubsession.hh include/MPEG2TransportUDPServerMediaSubsession.hh include/MatroskaFileServerDemux.hh include/OggFileServerDemux.hh include/ProxyServerMediaSession.hh include/DarwinInjector.hh
 
 clean:
 	-rm -rf *.$(OBJ) $(ALL) core *.core *~ include/*~

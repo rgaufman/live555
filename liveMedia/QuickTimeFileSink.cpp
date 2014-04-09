@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A sink that generates a QuickTime file from a composite media session
 // Implementation
 
@@ -314,10 +314,12 @@ QuickTimeFileSink::QuickTimeFileSink(UsageEnvironment& env,
 QuickTimeFileSink::~QuickTimeFileSink() {
   completeOutputFile();
 
-  // Then, delete each active "SubsessionIOState":
+  // Then, stop streaming and delete each active "SubsessionIOState":
   MediaSubsessionIterator iter(fInputSession);
   MediaSubsession* subsession;
   while ((subsession = iter.next()) != NULL) {
+    if (subsession->readSource() != NULL) subsession->readSource()->stopGettingFrames();
+
     SubsessionIOState* ioState
       = (SubsessionIOState*)(subsession->miscPtr);
     if (ioState == NULL) continue;
@@ -1034,8 +1036,8 @@ void SubsessionIOState::useFrameForHinting(unsigned frameSize,
     }
   } else if (hackm4a_generic) {
     // Synthesize a special header, so that this frame can be in its own RTP packet.
-    unsigned const sizeLength = fOurSubsession.fmtp_sizelength();
-    unsigned const indexLength = fOurSubsession.fmtp_indexlength();
+    unsigned const sizeLength = fOurSubsession.attrVal_unsigned("sizelength");
+    unsigned const indexLength = fOurSubsession.attrVal_unsigned("indexlength");
     if (sizeLength + indexLength != 16) {
       envir() << "Warning: unexpected 'sizeLength' " << sizeLength
 	      << " and 'indexLength' " << indexLength

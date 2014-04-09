@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2013, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2014, Live Networks, Inc.  All rights reserved
 //	Help by Carlo Bonamico to get working for Windows
 // Delay queue
 // Implementation
@@ -83,6 +83,9 @@ DelayInterval operator*(short arg1, const DelayInterval& arg2) {
 #endif
 const DelayInterval DELAY_ZERO(0, 0);
 const DelayInterval DELAY_SECOND(1, 0);
+const DelayInterval DELAY_MINUTE = 60*DELAY_SECOND;
+const DelayInterval DELAY_HOUR = 60*DELAY_MINUTE;
+const DelayInterval DELAY_DAY = 24*DELAY_HOUR;
 const DelayInterval ETERNITY(INT_MAX, MILLION-1);
 // used internally to make the implementation work
 

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // A sink that generates an AVI file from a composite media session
 // Implementation
 
@@ -174,10 +174,12 @@ AVIFileSink::AVIFileSink(UsageEnvironment& env,
 AVIFileSink::~AVIFileSink() {
   completeOutputFile();
 
-  // Then, delete each active "AVISubsessionIOState":
+  // Then, stop streaming and delete each active "AVISubsessionIOState":
   MediaSubsessionIterator iter(fInputSession);
   MediaSubsession* subsession;
   while ((subsession = iter.next()) != NULL) {
+    if (subsession->readSource() != NULL) subsession->readSource()->stopGettingFrames();
+
     AVISubsessionIOState* ioState
       = (AVISubsessionIOState*)(subsession->miscPtr);
     if (ioState == NULL) continue;

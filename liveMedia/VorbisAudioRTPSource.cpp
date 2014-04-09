@@ -14,11 +14,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2013 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
 // Vorbis Audio RTP Sources
 // Implementation
 
 #include "VorbisAudioRTPSource.hh"
+#include "Base64.hh"
 
 ////////// VorbisBufferedPacket and VorbisBufferedPacketFactory //////////
 
@@ -38,7 +39,7 @@ private: // redefined virtual functions
 };
 
 
-///////// MPEG4VorbisAudioRTPSource implementation ////////
+///////// VorbisAudioRTPSource implementation ////////
 
 VorbisAudioRTPSource*
 VorbisAudioRTPSource::createNew(UsageEnvironment& env, Groupsock* RTPgs,
@@ -112,4 +113,85 @@ unsigned VorbisBufferedPacket
 BufferedPacket* VorbisBufferedPacketFactory
 ::createNewPacket(MultiFramedRTPSource* /*ourSource*/) {
   return new VorbisBufferedPacket();
+}
+
+
+////////// parseVorbisOrTheoraConfigStr() implementation //////////
+
+#define ADVANCE(n) do { p += (n); rem -= (n); } while (0)
+#define GET_ENCODED_VAL(n) do { u_int8_t byte; n = 0; do { if (rem == 0) break; byte = *p; n = (n*128) + (byte&0x7F); ADVANCE(1); } while (byte&0x80); } while (0); if (rem == 0) break
+
+void parseVorbisOrTheoraConfigStr(char const* configStr,
+                                  u_int8_t*& identificationHdr, unsigned& identificationHdrSize,
+                                  u_int8_t*& commentHdr, unsigned& commentHdrSize,
+                                  u_int8_t*& setupHdr, unsigned& setupHdrSize,
+				  u_int32_t& identField) {
+  identificationHdr = commentHdr = setupHdr = NULL; // default values, if an error occur
+  identificationHdrSize = commentHdrSize = setupHdrSize = 0; // ditto
+  identField = 0; // ditto
+
+  // Begin by Base64-decoding the configuration string:
+  unsigned configDataSize;
+  u_int8_t* configData = base64Decode(configStr, configDataSize);
+  u_int8_t* p = configData;
+  unsigned rem = configDataSize;
+
+  do {
+    if (rem < 4) break;
+    u_int32_t numPackedHeaders = (p[0]<<24)|(p[1]<<16)|(p[2]<<8)|p[3]; ADVANCE(4);
+    if (numPackedHeaders == 0) break;
+
+    // Use the first 'packed header' only.
+    if (rem < 3) break;
+    identField = (p[0]<<16)|(p[1]<<8)|p[2]; ADVANCE(3);
+
+    if (rem < 2) break;
+    u_int16_t length = (p[0]<<8)|p[1]; ADVANCE(2);
+
+    unsigned numHeaders;
+    GET_ENCODED_VAL(numHeaders);
+
+    Boolean success = False;
+    for (unsigned i = 0; i < numHeaders+1 && i < 3; ++i) {
+      success = False;
+      unsigned headerSize;
+      if (i < numHeaders) {
+        // The header size is encoded:
+	GET_ENCODED_VAL(headerSize);
+        if (headerSize > length) break;
+        length -= headerSize;
+      } else {
+	// The last header is implicit:
+        headerSize = length;
+      }
+
+      // Allocate space for the header bytes; we'll fill it in later
+      if (i == 0) {
+	identificationHdrSize = headerSize;
+        identificationHdr = new u_int8_t[identificationHdrSize];
+      } else if (i == 1) {
+        commentHdrSize = headerSize;
+	commentHdr = new u_int8_t[commentHdrSize];
+      } else { // i == 2
+        setupHdrSize = headerSize;
+        setupHdr = new u_int8_t[setupHdrSize];
+      }
+
+      success = True;
+    }
+    if (!success) break;
+
+    // Copy the remaining config bytes into the appropriate 'header' buffers:
+    if (identificationHdr != NULL) {
+      memmove(identificationHdr, p, identificationHdrSize); ADVANCE(identificationHdrSize);
+      if (commentHdr != NULL) {
+        memmove(commentHdr, p, commentHdrSize); ADVANCE(commentHdrSize);
+	if (setupHdr != NULL) {
+          memmove(setupHdr, p, setupHdrSize); ADVANCE(setupHdrSize);
+        }
+      }
+    }
+  } while (0);
+
+  delete[] configData;
 }
