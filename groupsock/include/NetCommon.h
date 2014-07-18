@@ -57,9 +57,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 /* Definitions of size-specific types: */
 typedef __int64 int64_t;
 typedef unsigned __int64 u_int64_t;
+
+typedef int int32_t;
 typedef unsigned u_int32_t;
+
+typedef short int16_t;
 typedef unsigned short u_int16_t;
+
 typedef unsigned char u_int8_t;
+
 // For "uintptr_t" and "intptr_t", we assume that if they're not already defined, then this must be
 // an old, 32-bit version of Windows:
 #if !defined(_MSC_STDINT_H_) && !defined(_UINTPTR_T_DEFINED) && !defined(_UINTPTR_T_DECLARED) && !defined(_UINTPTR_T)

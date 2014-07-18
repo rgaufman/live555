@@ -189,7 +189,7 @@ void StreamReplicator::removeStreamReplica(StreamReplica* replicaBeingRemoved) {
 
   // If this was the last replica, then delete ourselves (if we were set up to do so):
   if (fNumReplicas == 0 && fDeleteWhenLastReplicaDies) {
-    delete this;
+    Medium::close(this);
     return;
   }
 

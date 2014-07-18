@@ -63,8 +63,7 @@ void H263plusVideoRTPSink
       return;
     }
     if (frameStart[0] != 0 || frameStart[1] != 0) {
-      envir() << "H263plusVideoRTPSink::doSpecialFrameHandling(): unexpected non-zero first two bytes: "
-	      << (void*)(frameStart[0]) << "," << (void*)(frameStart[1]) << "\n";
+      envir() << "H263plusVideoRTPSink::doSpecialFrameHandling(): unexpected non-zero first two bytes!\n";
     }
     frameStart[0] = specialHeader>>8;
     frameStart[1] = (unsigned char)specialHeader;

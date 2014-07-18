@@ -33,7 +33,7 @@ public:
   InputESSourceRecord(MPEG2TransportStreamFromESSource& parent,
 		      FramedSource* inputSource,
 		      u_int8_t streamId, int mpegVersion,
-		      InputESSourceRecord* next);
+		      InputESSourceRecord* next, int16_t PID = -1);
   virtual ~InputESSourceRecord();
 
   InputESSourceRecord* next() const { return fNext; }
@@ -68,6 +68,7 @@ private:
   unsigned fInputBufferBytesAvailable;
   Boolean fInputBufferInUse;
   MPEG1or2Demux::SCR fSCR;
+  int16_t fPID;
 };
 
 
@@ -79,16 +80,16 @@ MPEG2TransportStreamFromESSource* MPEG2TransportStreamFromESSource
 }
 
 void MPEG2TransportStreamFromESSource
-::addNewVideoSource(FramedSource* inputSource, int mpegVersion) {
+::addNewVideoSource(FramedSource* inputSource, int mpegVersion, int16_t PID) {
   u_int8_t streamId = 0xE0 | (fVideoSourceCounter++&0x0F);
-  addNewInputSource(inputSource, streamId, mpegVersion);
+  addNewInputSource(inputSource, streamId, mpegVersion, PID);
   fHaveVideoStreams = True;
 }
 
 void MPEG2TransportStreamFromESSource
-::addNewAudioSource(FramedSource* inputSource, int mpegVersion) {
+::addNewAudioSource(FramedSource* inputSource, int mpegVersion, int16_t PID) {
   u_int8_t streamId = 0xC0 | (fAudioSourceCounter++&0x0F);
-  addNewInputSource(inputSource, streamId, mpegVersion);
+  addNewInputSource(inputSource, streamId, mpegVersion, PID);
 }
 
 MPEG2TransportStreamFromESSource
@@ -143,10 +144,10 @@ void MPEG2TransportStreamFromESSource
 
 void MPEG2TransportStreamFromESSource
 ::addNewInputSource(FramedSource* inputSource,
-		    u_int8_t streamId, int mpegVersion) {
+		    u_int8_t streamId, int mpegVersion, int16_t PID) {
   if (inputSource == NULL) return;
   fInputSources = new InputESSourceRecord(*this, inputSource, streamId,
-					  mpegVersion, fInputSources);
+					  mpegVersion, fInputSources, PID);
 }
 
 
@@ -156,9 +157,9 @@ InputESSourceRecord
 ::InputESSourceRecord(MPEG2TransportStreamFromESSource& parent,
 		      FramedSource* inputSource,
 		      u_int8_t streamId, int mpegVersion,
-		      InputESSourceRecord* next)
+		      InputESSourceRecord* next, int16_t PID)
   : fNext(next), fParent(parent), fInputSource(inputSource),
-    fStreamId(streamId), fMPEGVersion(mpegVersion) {
+    fStreamId(streamId), fMPEGVersion(mpegVersion), fPID(PID) {
   fInputBuffer = new unsigned char[INPUT_BUFFER_SIZE];
   reset();
 }
@@ -216,7 +217,7 @@ Boolean InputESSourceRecord::deliverBufferToClient() {
 
   // Do the delivery:
   fParent.handleNewBuffer(fInputBuffer, fInputBufferBytesAvailable,
-			 fMPEGVersion, fSCR);
+			 fMPEGVersion, fSCR, fPID);
 
   return True;
 }

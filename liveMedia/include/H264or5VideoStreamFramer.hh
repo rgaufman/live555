@@ -48,11 +48,6 @@ public:
     saveCopyOfPPS(pps, ppsSize);
   }
 
-  u_int32_t profileLevelId() const { return fProfileLevelId; }
-      // used for H.264 only
-  u_int8_t const* profileTierLevelHeaderBytes() const { return fProfileTierLevelHeaderBytes; }
-      // used for H.265 only
-
 protected:
   H264or5VideoStreamFramer(int hNumber, // 264 or 265
 			   UsageEnvironment& env, FramedSource* inputSource,
@@ -79,8 +74,6 @@ protected:
   unsigned fLastSeenSPSSize;
   u_int8_t* fLastSeenPPS;
   unsigned fLastSeenPPSSize;
-  u_int32_t fProfileLevelId;  // set/used for H.264 only
-  u_int8_t fProfileTierLevelHeaderBytes[12]; // set/used for H.265 only
   struct timeval fNextPresentationTime; // the presentation time to be used for the next NAL unit to be parsed/delivered after this
   friend class H264or5VideoStreamParser; // hack
 };

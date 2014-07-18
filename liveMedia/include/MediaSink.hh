@@ -70,7 +70,9 @@ private:
 // A data structure that a sink may use for an output packet:
 class OutPacketBuffer {
 public:
-  OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize);
+  OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize,
+		  unsigned maxBufferSize = 0);
+      // if "maxBufferSize" is >0, use it - instead of "maxSize" to compute the buffer size
   ~OutPacketBuffer();
 
   static unsigned maxSize;

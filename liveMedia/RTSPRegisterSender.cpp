@@ -89,11 +89,11 @@ Boolean RTSPRegisterSender::setRequestFields(RequestRecord* request,
       sprintf(proxyURLSuffixParameterStr, proxyURLSuffixParameterFmt, request_REGISTER->proxyURLSuffix());
     }
 
-    char const* transportHeaderFmt = "Transport: reuse_connection=%d; preferred_delivery_protocol=%s%s\r\n";
+    char const* transportHeaderFmt = "Transport: %spreferred_delivery_protocol=%s%s\r\n";
     unsigned transportHeaderSize = strlen(transportHeaderFmt) + 100/*conservative*/ + strlen(proxyURLSuffixParameterStr);
     char* transportHeaderStr = new char[transportHeaderSize];
     sprintf(transportHeaderStr, transportHeaderFmt,
-	    request_REGISTER->reuseConnection(),
+	    request_REGISTER->reuseConnection() ? "reuse_connection; " : "",
 	    request_REGISTER->requestStreamingViaTCP() ? "interleaved" : "udp",
 	    proxyURLSuffixParameterStr);
     delete[] proxyURLSuffixParameterStr;

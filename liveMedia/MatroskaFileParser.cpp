@@ -1025,7 +1025,7 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock() {
       if (demuxedTrack->fOpusTrackNumber == 0) {
 	specialFrameSource = track->codecPrivate;
 	frameSize = track->codecPrivateSize;
-      } else if (demuxedTrack->fOpusTrackNumber == 1) {
+      } else { // demuxedTrack->fOpusTrackNumber == 1
 	specialFrameSource = opusCommentHeader;
 	frameSize = sizeof opusCommentHeader;
       }

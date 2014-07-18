@@ -36,11 +36,11 @@ public:
 
   void addData(unsigned char const* inputData, unsigned inputDataSize);
   void end(char* outputDigest /*must point to an array of size DIGEST_SIZE_AS_STRING*/);
-
-private:
   void finalize(unsigned char* outputDigestInBytes);
       // Like "end()", except that the argument is a byte array, of size DIGEST_SIZE_IN_BYTES.
       // This function is used to implement "end()".
+
+private:
   void zeroize(); // to remove potentially sensitive information
   void transform64Bytes(unsigned char const block[64]); // does the actual MD5 transform
 
@@ -57,6 +57,18 @@ char* our_MD5Data(unsigned char const* data, unsigned dataSize, char* outputDige
 
   if (outputDigest == NULL) outputDigest = new char[DIGEST_SIZE_AS_STRING];
   ctx.end(outputDigest);
+
+  return outputDigest;
+}
+
+unsigned char* our_MD5DataRaw(unsigned char const* data, unsigned dataSize,
+			      unsigned char* outputDigest) {
+  MD5Context ctx;
+
+  ctx.addData(data, dataSize);
+
+  if (outputDigest == NULL) outputDigest = new unsigned char[DIGEST_SIZE_IN_BYTES];
+  ctx.finalize(outputDigest);
 
   return outputDigest;
 }

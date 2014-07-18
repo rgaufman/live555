@@ -73,10 +73,7 @@ H264or5VideoStreamFramer
     fHNumber(hNumber),
     fLastSeenVPS(NULL), fLastSeenVPSSize(0),
     fLastSeenSPS(NULL), fLastSeenSPSSize(0),
-    fLastSeenPPS(NULL), fLastSeenPPSSize(0),
-    fProfileLevelId(0) {
-  for (unsigned i = 0; i < 12; ++i) fProfileTierLevelHeaderBytes[i] = 0;
-
+    fLastSeenPPS(NULL), fLastSeenPPSSize(0) {
   fParser = createParser
     ? new H264or5VideoStreamParser(hNumber, this, inputSource, includeStartCodeInOutput)
     : NULL;
@@ -99,16 +96,6 @@ void H264or5VideoStreamFramer::saveCopyOfVPS(u_int8_t* from, unsigned size) {
   memmove(fLastSeenVPS, from, size);
 
   fLastSeenVPSSize = size;
-
-  // We also make another copy - without 'emulation bytes', to extract parameters that we need:
-  u_int8_t vps[VPS_MAX_SIZE];
-  unsigned vpsSize
-    = removeH264or5EmulationBytes(vps, VPS_MAX_SIZE, fLastSeenVPS, fLastSeenVPSSize);
-
-  // Extract the first 12 'profile_tier_level' bytes:
-  if (vpsSize >= 6/*'profile_tier_level' offset*/ + 12/*num 'profile_tier_level' bytes*/) {
-    memmove(fProfileTierLevelHeaderBytes, &vps[6], 12);
-  }
 }
 
 #define SPS_MAX_SIZE 1000 // larger than the largest possible SPS (Sequence Parameter Set) NAL unit
@@ -120,22 +107,6 @@ void H264or5VideoStreamFramer::saveCopyOfSPS(u_int8_t* from, unsigned size) {
   memmove(fLastSeenSPS, from, size);
 
   fLastSeenSPSSize = size;
-
-  // We also make another copy - without 'emulation bytes', to extract parameters that we need:
-  u_int8_t sps[SPS_MAX_SIZE];
-  unsigned spsSize
-    = removeH264or5EmulationBytes(sps, SPS_MAX_SIZE, fLastSeenSPS, fLastSeenSPSSize);
-  if (fHNumber == 264) {
-    // Extract the first 3 bytes of the SPS (after the nal_unit_header byte) as 'profile_level_id'
-    if (spsSize >= 1/*'profile_level_id' offset within SPS*/ + 3/*num bytes needed*/) {
-      fProfileLevelId = (sps[1]<<16) | (sps[2]<<8) | sps[3];
-    }
-  } else { // 265
-    // Extract the first 12 'profile_tier_level' bytes:
-    if (spsSize >= 3/*'profile_tier_level' offset*/ + 12/*num 'profile_tier_level' bytes*/) {
-      memmove(fProfileTierLevelHeaderBytes, &sps[3], 12);
-    }
-  }
 }
 
 void H264or5VideoStreamFramer::saveCopyOfPPS(u_int8_t* from, unsigned size) {

@@ -558,18 +558,12 @@ RTPSink* ProxyServerMediaSubsession
 					      fClientMediaSubsession.rtpTimestampFrequency()); 
   } else if (strcmp(codecName, "H264") == 0) {
     newSink = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					  fClientMediaSubsession.fmtp_spropparametersets(),
-					  fClientMediaSubsession.attrVal_unsigned("profile-level-id"));
+					  fClientMediaSubsession.fmtp_spropparametersets());
   } else if (strcmp(codecName, "H265") == 0) {
     newSink = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 					  fClientMediaSubsession.fmtp_spropvps(),
 					  fClientMediaSubsession.fmtp_spropsps(),
-					  fClientMediaSubsession.fmtp_sproppps(),
-					  fClientMediaSubsession.attrVal_unsigned("profile-space"),
-					  fClientMediaSubsession.attrVal_unsigned("profile-id"),
-					  fClientMediaSubsession.attrVal_unsigned("tier-flag"),
-					  fClientMediaSubsession.attrVal_unsigned("level-id"),
-					  fClientMediaSubsession.attrVal_str("interop-constraints"));
+					  fClientMediaSubsession.fmtp_sproppps());
   } else if (strcmp(codecName, "JPEG") == 0) {
     newSink = SimpleRTPSink::createNew(envir(), rtpGroupsock, 26, 90000, "video", "JPEG",
 				       1/*numChannels*/, False/*allowMultipleFramesPerPacket*/, False/*doNormalMBitRule*/);

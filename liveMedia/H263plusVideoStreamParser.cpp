@@ -632,7 +632,7 @@ static int LoadNextH263Object(  FILE           *inputFileHandle,
   // This table and the following loop implements a state machine enabling
   // us to read bytes from the file untill (and inclusing) the requested
   // start code (00 00 8X) is found
-  int8_t        row = 0;
+  char        row = 0;
   u_int8_t     *bufferStart = frameBuffer;
   // The buffer end which will allow the loop to leave place for
   // the additionalBytesNeeded

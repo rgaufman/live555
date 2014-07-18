@@ -202,11 +202,12 @@ void MPEG2IFrameIndexFromTransportStream
   // Figure out how much of this Transport Packet contains PES data:
   u_int8_t adaptation_field_control = (fInputBuffer[3]&0x30)>>4;
   u_int8_t totalHeaderSize
-    = adaptation_field_control == 1 ? 4 : 5 + fInputBuffer[4];
-  if (totalHeaderSize >= TRANSPORT_PACKET_SIZE) {
-      envir() << "Bad \"adaptation_field_length\": " << fInputBuffer[4] << "\n";
-      doGetNextFrame();
-      return;
+    = adaptation_field_control <= 1 ? 4 : 5 + fInputBuffer[4];
+  if (adaptation_field_control == 2 && totalHeaderSize != TRANSPORT_PACKET_SIZE ||
+      adaptation_field_control == 3 && totalHeaderSize >= TRANSPORT_PACKET_SIZE) {
+    envir() << "Bad \"adaptation_field_length\": " << fInputBuffer[4] << "\n";
+    doGetNextFrame();
+    return;
   }
 
   // Check for a PCR:
@@ -246,7 +247,7 @@ void MPEG2IFrameIndexFromTransportStream
   // or packets with no data, or packets that duplicate the previous packet:
   u_int8_t continuity_counter = fInputBuffer[3]&0x0F;
   if ((PID != fVideo_PID) ||
-      !(adaptation_field_control == 1  || adaptation_field_control == 3) ||
+      !(adaptation_field_control == 1 || adaptation_field_control == 3) ||
       continuity_counter == fLastContinuityCounter) {
     doGetNextFrame();
     return;

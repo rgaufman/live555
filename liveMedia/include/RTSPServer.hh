@@ -136,6 +136,10 @@ public:
       // Changes the server's authentication database to "newDB", returning a pointer to the old database (if there was one).
       // "newDB" may be NULL (you can use this to disable authentication at runtime, if desired).
 
+  void disableStreamingRTPOverTCP() {
+    fAllowStreamingRTPOverTCP = False;
+  }
+
   Boolean setUpTunnelingOverHTTP(Port httpPort);
       // (Attempts to) enable RTSP-over-HTTP tunneling on the specified port.
       // Returns True iff the specified port can be used in this way (i.e., it's not already being used for a separate HTTP server).
@@ -179,8 +183,6 @@ public: // should be protected, but some old compilers complain otherwise
   // The state of a TCP connection used by a RTSP client:
   class RTSPClientConnection {
   public:
-    RTSPClientConnection(RTSPServer& ourServer, int clientSocket, struct sockaddr_in clientAddr);
-    virtual ~RTSPClientConnection();
     // A data structure that's used to implement the "REGISTER" command:
     class ParamsForREGISTER {
     public:
@@ -196,6 +198,10 @@ public: // should be protected, but some old compilers complain otherwise
       char* fProxyURLSuffix;
     };
   protected:
+    RTSPClientConnection(RTSPServer& ourServer, int clientSocket, struct sockaddr_in clientAddr);
+    virtual ~RTSPClientConnection();
+
+    friend class RTSPServer;
     friend class RTSPClientSession;
     // Make the handler functions for each command virtual, to allow subclasses to reimplement them, if necessary:
     virtual void handleCmd_OPTIONS();
@@ -261,10 +267,10 @@ public: // should be protected, but some old compilers complain otherwise
 
   // The state of an individual client session (using one or more sequential TCP connections) handled by a RTSP server:
   class RTSPClientSession {
-  public:
+  protected:
     RTSPClientSession(RTSPServer& ourServer, u_int32_t sessionId);
     virtual ~RTSPClientSession();
-  protected:
+
     friend class RTSPServer;
     friend class RTSPClientConnection;
     // Make the handler functions for each command virtual, to allow subclasses to redefine them:
@@ -363,6 +369,7 @@ private:
   unsigned fRegisterRequestCounter;
   UserAuthenticationDatabase* fAuthDB;
   unsigned fReclamationTestSeconds;
+  Boolean fAllowStreamingRTPOverTCP; // by default, True
 };
 
 

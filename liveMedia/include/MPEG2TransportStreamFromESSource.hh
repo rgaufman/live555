@@ -30,9 +30,12 @@ class MPEG2TransportStreamFromESSource: public MPEG2TransportStreamMultiplexor {
 public:
   static MPEG2TransportStreamFromESSource* createNew(UsageEnvironment& env);
 
-  void addNewVideoSource(FramedSource* inputSource, int mpegVersion);
+  void addNewVideoSource(FramedSource* inputSource, int mpegVersion, int16_t PID = -1);
       // Note: For MPEG-4 video, set "mpegVersion" to 4; for H.264 video, set "mpegVersion" to 5.
-  void addNewAudioSource(FramedSource* inputSource, int mpegVersion);
+  void addNewAudioSource(FramedSource* inputSource, int mpegVersion, int16_t PID = -1);
+      // Note: In these functions, if "PID" is not -1, then it (currently, just the low 8 bits)
+      // is used as the stream's PID.  Otherwise (if "PID" is -1) the 'stream_id' is used as
+      // the PID.
 
 protected:
   MPEG2TransportStreamFromESSource(UsageEnvironment& env);
@@ -40,7 +43,7 @@ protected:
   virtual ~MPEG2TransportStreamFromESSource();
 
   void addNewInputSource(FramedSource* inputSource,
-			 u_int8_t streamId, int mpegVersion);
+			 u_int8_t streamId, int mpegVersion, int16_t PID = -1);
   // used to implement addNew*Source() above
 
 private:

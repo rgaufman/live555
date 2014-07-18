@@ -30,18 +30,12 @@ H265VideoRTPSink
 ::H265VideoRTPSink(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
 		   u_int8_t const* vps, unsigned vpsSize,
 		   u_int8_t const* sps, unsigned spsSize,
-		   u_int8_t const* pps, unsigned ppsSize,
-		   unsigned profileSpace, unsigned profileId,
-                   unsigned tierFlag, unsigned levelId,
-                   char const* interopConstraintsStr)
+		   u_int8_t const* pps, unsigned ppsSize)
   : H264or5VideoRTPSink(265, env, RTPgs, rtpPayloadFormat,
-			vps, vpsSize, sps, spsSize, pps, ppsSize),
-    fProfileSpace(profileSpace), fProfileId(profileId), fTierFlag(tierFlag), fLevelId(levelId),
-    fInteropConstraintsStr(strDup(interopConstraintsStr)) {
+			vps, vpsSize, sps, spsSize, pps, ppsSize) {
 }
 
 H265VideoRTPSink::~H265VideoRTPSink() {
-  delete[] fInteropConstraintsStr;
 }
 
 H265VideoRTPSink* H265VideoRTPSink
@@ -53,19 +47,14 @@ H265VideoRTPSink* H265VideoRTPSink
 ::createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
 	    u_int8_t const* vps, unsigned vpsSize,
 	    u_int8_t const* sps, unsigned spsSize,
-	    u_int8_t const* pps, unsigned ppsSize,
-	    unsigned profileSpace, unsigned profileId, unsigned tierFlag, unsigned levelId,
-	    char const* interopConstraintsStr) {
+	    u_int8_t const* pps, unsigned ppsSize) {
   return new H265VideoRTPSink(env, RTPgs, rtpPayloadFormat,
-			      vps, vpsSize, sps, spsSize, pps, ppsSize,
-			      profileSpace, profileId, tierFlag, levelId, interopConstraintsStr);
+			      vps, vpsSize, sps, spsSize, pps, ppsSize);
 }
 
 H265VideoRTPSink* H265VideoRTPSink
 ::createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
-	    char const* sPropVPSStr, char const* sPropSPSStr, char const* sPropPPSStr,
-	    unsigned profileSpace, unsigned profileId, unsigned tierFlag, unsigned levelId,
-	    char const* interopConstraintsStr) {
+	    char const* sPropVPSStr, char const* sPropSPSStr, char const* sPropPPSStr) {
   u_int8_t* vps = NULL; unsigned vpsSize = 0;
   u_int8_t* sps = NULL; unsigned spsSize = 0;
   u_int8_t* pps = NULL; unsigned ppsSize = 0;
@@ -100,9 +89,7 @@ H265VideoRTPSink* H265VideoRTPSink
   }
 
   H265VideoRTPSink* result = new H265VideoRTPSink(env, RTPgs, rtpPayloadFormat,
-						  vps, vpsSize, sps, spsSize, pps, ppsSize,
-						  profileSpace, profileId, tierFlag, levelId,
-						  interopConstraintsStr);
+						  vps, vpsSize, sps, spsSize, pps, ppsSize);
   delete[] sPropRecords[0]; delete[] sPropRecords[1]; delete[] sPropRecords[2];
 
   return result;
@@ -121,31 +108,38 @@ char const* H265VideoRTPSink::auxSDPLine() {
   u_int8_t* vps = fVPS; unsigned vpsSize = fVPSSize;
   u_int8_t* sps = fSPS; unsigned spsSize = fSPSSize;
   u_int8_t* pps = fPPS; unsigned ppsSize = fPPSSize;
-  if (vps == NULL || sps == NULL || pps == NULL || fInteropConstraintsStr == NULL) {
+  if (vps == NULL || sps == NULL || pps == NULL) {
     // We need to get VPS, SPS and PPS from our framer source:
     if (fOurFragmenter == NULL) return NULL; // we don't yet have a fragmenter (and therefore not a source)
     framerSource = (H264or5VideoStreamFramer*)(fOurFragmenter->inputSource());
     if (framerSource == NULL) return NULL; // we don't yet have a source
 
     framerSource->getVPSandSPSandPPS(vps, vpsSize, sps, spsSize, pps, ppsSize);
-    if (vps == NULL || sps == NULL || pps == NULL) return NULL; // our source isn't ready
-
-    // Extract from our upstream framer's 'profile_tier_level' bytes
-    // several parameters that we'll put in this line:
-    u_int8_t const* profileTierLevelHeaderBytes = framerSource->profileTierLevelHeaderBytes();
-    fProfileSpace  = profileTierLevelHeaderBytes[0]>>6; // general_profile_space
-    fProfileId = profileTierLevelHeaderBytes[0]&0x1F; // general_profile_idc
-    fTierFlag = (profileTierLevelHeaderBytes[0]>>5)&0x1; // general_tier_flag
-    fLevelId = profileTierLevelHeaderBytes[11]; // general_level_idc
-    u_int8_t const* interop_constraints = &profileTierLevelHeaderBytes[5];
-    char buf[100];
-    sprintf(buf, "%02X%02X%02X%02X%02X%02X", 
-	    interop_constraints[0], interop_constraints[1], interop_constraints[2],
-	    interop_constraints[3], interop_constraints[4], interop_constraints[5]);
-    delete[] fInteropConstraintsStr; fInteropConstraintsStr = strDup(buf);
+    if (vps == NULL || sps == NULL || pps == NULL) {
+      return NULL; // our source isn't ready
+    }
   }
 
   // Set up the "a=fmtp:" SDP line for this stream.
+  u_int8_t* vpsWEB = new u_int8_t[vpsSize]; // "WEB" means "Without Emulation Bytes"
+  unsigned vpsWEBSize = removeH264or5EmulationBytes(vpsWEB, vpsSize, vps, vpsSize);
+  if (vpsWEBSize < 6/*'profile_tier_level' offset*/ + 12/*num 'profile_tier_level' bytes*/) {
+    // Bad VPS size => assume our source isn't ready
+    delete[] vpsWEB;
+    return NULL;
+  }
+  u_int8_t const* profileTierLevelHeaderBytes = &vpsWEB[6];
+  unsigned profileSpace  = profileTierLevelHeaderBytes[0]>>6; // general_profile_space
+  unsigned profileId = profileTierLevelHeaderBytes[0]&0x1F; // general_profile_idc
+  unsigned tierFlag = (profileTierLevelHeaderBytes[0]>>5)&0x1; // general_tier_flag
+  unsigned levelId = profileTierLevelHeaderBytes[11]; // general_level_idc
+  u_int8_t const* interop_constraints = &profileTierLevelHeaderBytes[5];
+  char interopConstraintsStr[100];
+  sprintf(interopConstraintsStr, "%02X%02X%02X%02X%02X%02X", 
+	  interop_constraints[0], interop_constraints[1], interop_constraints[2],
+	  interop_constraints[3], interop_constraints[4], interop_constraints[5]);
+  delete[] vpsWEB;
+
   char* sprop_vps = base64Encode((char*)vps, vpsSize);
   char* sprop_sps = base64Encode((char*)sps, spsSize);
   char* sprop_pps = base64Encode((char*)pps, ppsSize);
@@ -164,17 +158,17 @@ char const* H265VideoRTPSink::auxSDPLine() {
     + 20 /* max num chars: profile_id */
     + 20 /* max num chars: tier_flag */
     + 20 /* max num chars: level_id */
-    + strlen(fInteropConstraintsStr)
+    + strlen(interopConstraintsStr)
     + strlen(sprop_vps)
     + strlen(sprop_sps)
     + strlen(sprop_pps);
   char* fmtp = new char[fmtpFmtSize];
   sprintf(fmtp, fmtpFmt,
-          rtpPayloadType(), fProfileSpace,
-	  fProfileId,
-	  fTierFlag,
-	  fLevelId,
-	  fInteropConstraintsStr,
+          rtpPayloadType(), profileSpace,
+	  profileId,
+	  tierFlag,
+	  levelId,
+	  interopConstraintsStr,
 	  sprop_vps,
 	  sprop_sps,
 	  sprop_pps);

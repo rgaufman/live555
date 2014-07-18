@@ -19,9 +19,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "UsageEnvironment.hh"
 
-void UsageEnvironment::reclaim() {
+Boolean UsageEnvironment::reclaim() {
   // We delete ourselves only if we have no remainining state:
-  if (liveMediaPriv == NULL && groupsockPriv == NULL) delete this;
+  if (liveMediaPriv == NULL && groupsockPriv == NULL) {
+    delete this;
+    return True;
+  }
+
+  return False;
 }
 
 UsageEnvironment::UsageEnvironment(TaskScheduler& scheduler)

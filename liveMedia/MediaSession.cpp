@@ -1361,6 +1361,7 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
 		   || strcmp(fCodecName, "L16") == 0 // 16-bit linear audio
 		   || strcmp(fCodecName, "L20") == 0 // 20-bit linear audio (RFC 3190)
 		   || strcmp(fCodecName, "L24") == 0 // 24-bit linear audio (RFC 3190)
+		   || strcmp(fCodecName, "G722") == 0 // G.722 audio (RFC 3551)
 		   || strcmp(fCodecName, "G726-16") == 0 // G.726, 16 kbps
 		   || strcmp(fCodecName, "G726-24") == 0 // G.726, 24 kbps
 		   || strcmp(fCodecName, "G726-32") == 0 // G.726, 32 kbps

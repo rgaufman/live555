@@ -75,6 +75,12 @@ protected:
   fd_set fReadSet;
   fd_set fWriteSet;
   fd_set fExceptionSet;
+
+private:
+#if defined(__WIN32__) || defined(_WIN32)
+  // Hack to work around a bug in Windows' "select()" implementation:
+  int fDummySocketNum;
+#endif
 };
 
 #endif

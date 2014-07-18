@@ -60,14 +60,19 @@ DynamicRTSPServer::lookupServerMediaSession(char const* streamName) {
       // "sms" was created for a file that no longer exists. Remove it:
       removeServerMediaSession(sms);
     }
+
     return NULL;
   } else {
-    if (!smsExists) {
-      // Create a new "ServerMediaSession" object for streaming from the named file.
-      sms = createNewSMS(envir(), streamName, fid);
-      addServerMediaSession(sms);
-    }
+    if (smsExists) { 
+      // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
+      // file has changed in some way:
+      removeServerMediaSession(sms); 
+    } 
+
+    sms = createNewSMS(envir(), streamName, fid); 
+    addServerMediaSession(sms); 
     fclose(fid);
+
     return sms;
   }
 }

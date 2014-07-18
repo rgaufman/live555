@@ -52,7 +52,8 @@ class TaskScheduler; // forward
 
 class UsageEnvironment {
 public:
-  void reclaim();
+  Boolean reclaim();
+      // returns True iff we were actually able to delete our object
 
   // task scheduler:
   TaskScheduler& taskScheduler() const {return fScheduler;}

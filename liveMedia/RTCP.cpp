@@ -115,7 +115,7 @@ static double dTimeNow() {
 
 static unsigned const maxRTCPPacketSize = 1450;
 	// bytes (1500, minus some allowance for IP, UDP, UMTP headers)
-static unsigned const preferredPacketSize = 1000; // bytes
+static unsigned const preferredRTCPPacketSize = 1000; // bytes
 
 RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
 			   unsigned totSessionBW,
@@ -151,11 +151,7 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
   if (fKnownMembers == NULL || fInBuf == NULL) return;
   fNumBytesAlreadyRead = 0;
 
-  // A hack to save buffer space, because RTCP packets are always small:
-  unsigned savedMaxSize = OutPacketBuffer::maxSize;
-  OutPacketBuffer::maxSize = maxRTCPPacketSize;
-  fOutBuf = new OutPacketBuffer(preferredPacketSize, maxRTCPPacketSize);
-  OutPacketBuffer::maxSize = savedMaxSize;
+  fOutBuf = new OutPacketBuffer(preferredRTCPPacketSize, maxRTCPPacketSize, maxRTCPPacketSize);
   if (fOutBuf == NULL) return;
 
   if (fSource != NULL && fSource->RTPgs() == RTCPgs) {

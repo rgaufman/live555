@@ -55,7 +55,8 @@ unsigned increaseReceiveBufferTo(UsageEnvironment& env,
 				 int socket, unsigned requestedSize);
 
 Boolean makeSocketNonBlocking(int sock);
-Boolean makeSocketBlocking(int sock);
+Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
+  // A "writeTimeoutInMilliseconds" value of 0 means: Don't timeout
 
 Boolean socketJoinGroup(UsageEnvironment& env, int socket,
 			netAddressBits groupAddress);

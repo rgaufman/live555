@@ -33,7 +33,11 @@ BasicTaskScheduler* BasicTaskScheduler::createNew(unsigned maxSchedulerGranulari
 }
 
 BasicTaskScheduler::BasicTaskScheduler(unsigned maxSchedulerGranularity)
-  : fMaxSchedulerGranularity(maxSchedulerGranularity), fMaxNumSockets(0) {
+  : fMaxSchedulerGranularity(maxSchedulerGranularity), fMaxNumSockets(0)
+#if defined(__WIN32__) || defined(_WIN32)
+  , fDummySocketNum(-1)
+#endif
+{
   FD_ZERO(&fReadSet);
   FD_ZERO(&fWriteSet);
   FD_ZERO(&fExceptionSet);
@@ -42,6 +46,9 @@ BasicTaskScheduler::BasicTaskScheduler(unsigned maxSchedulerGranularity)
 }
 
 BasicTaskScheduler::~BasicTaskScheduler() {
+#if defined(__WIN32__) || defined(_WIN32)
+  if (fDummySocketNum >= 0) closeSocket(fDummySocketNum);
+#endif
 }
 
 void BasicTaskScheduler::schedulerTickTask(void* clientData) {
@@ -89,8 +96,9 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
     if (err == WSAEINVAL && readSet.fd_count == 0) {
       err = EINTR;
       // To stop this from happening again, create a dummy socket:
-      int dummySocketNum = socket(AF_INET, SOCK_DGRAM, 0);
-      FD_SET((unsigned)dummySocketNum, &fReadSet);
+      if (fDummySocketNum >= 0) closeSocket(fDummySocketNum);
+      fDummySocketNum = socket(AF_INET, SOCK_DGRAM, 0);
+      FD_SET((unsigned)fDummySocketNum, &fReadSet);
     }
     if (err != EINTR) {
 #else
