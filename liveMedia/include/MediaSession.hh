@@ -217,6 +217,8 @@ public:
   // General SDP attribute accessor functions:
   char const* attrVal_str(char const* attrName) const;
       // returns "" if attribute doesn't exist (and has no default value), or is not a string
+  char const* attrVal_strToLower(char const* attrName) const;
+      // returns "" if attribute doesn't exist (and has no default value), or is not a string
   unsigned attrVal_int(char const* attrName) const;
       // also returns 0 if attribute doesn't exist (and has no default value)
   unsigned attrVal_unsigned(char const* attrName) const { return (unsigned)attrVal_int(attrName); }

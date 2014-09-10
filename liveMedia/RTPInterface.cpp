@@ -215,10 +215,11 @@ Boolean RTPInterface::sendPacket(unsigned char* packet, unsigned packetSize) {
   if (!fGS->output(envir(), fGS->ttl(), packet, packetSize)) success = False;
 
   // Also, send over each of our TCP sockets:
-  for (tcpStreamRecord* streams = fTCPStreams; streams != NULL;
-       streams = streams->fNext) {
+  tcpStreamRecord* nextStream;
+  for (tcpStreamRecord* stream = fTCPStreams; stream != NULL; stream = nextStream) {
+    nextStream = stream->fNext; // Set this now, in case the following deletes "stream":
     if (!sendRTPorRTCPPacketOverTCP(packet, packetSize,
-				    streams->fStreamSocketNum, streams->fStreamChannelId)) {
+				    stream->fStreamSocketNum, stream->fStreamChannelId)) {
       success = False;
     }
   }
@@ -245,14 +246,20 @@ void RTPInterface
 }
 
 Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
-				 unsigned& bytesRead, struct sockaddr_in& fromAddress, Boolean& packetReadWasIncomplete) {
+				 unsigned& bytesRead, struct sockaddr_in& fromAddress,
+				 int& tcpSocketNum, unsigned char& tcpStreamChannelId,
+				 Boolean& packetReadWasIncomplete) {
   packetReadWasIncomplete = False; // by default
   Boolean readSuccess;
   if (fNextTCPReadStreamSocketNum < 0) {
     // Normal case: read from the (datagram) 'groupsock':
+    tcpSocketNum = -1;
     readSuccess = fGS->handleRead(buffer, bufferMaxSize, bytesRead, fromAddress);
   } else {
     // Read from the TCP connection:
+    tcpSocketNum = fNextTCPReadStreamSocketNum;
+    tcpStreamChannelId = fNextTCPReadStreamChannelId;
+
     bytesRead = 0;
     unsigned totBytesToRead = fNextTCPReadSize;
     if (totBytesToRead > bufferMaxSize) totBytesToRead = bufferMaxSize;
@@ -278,6 +285,7 @@ Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
       packetReadWasIncomplete = True;
       return True;
     }
+    fNextTCPReadStreamSocketNum = -1; // default, for next time
   }
 
   if (readSuccess && fAuxReadHandlerFunc != NULL) {

@@ -585,7 +585,7 @@ RTPSink* ProxyServerMediaSubsession
     newSink = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock,
 					     rtpPayloadTypeIfDynamic, fClientMediaSubsession.rtpTimestampFrequency(),
 					     fClientMediaSubsession.mediumName(),
-					     fClientMediaSubsession.attrVal_str("mode"),
+					     fClientMediaSubsession.attrVal_strToLower("mode"),
 					     fClientMediaSubsession.fmtp_config(), fClientMediaSubsession.numChannels());
   } else if (strcmp(codecName, "MPV") == 0) {
     newSink = MPEG1or2VideoRTPSink::createNew(envir(), rtpGroupsock);

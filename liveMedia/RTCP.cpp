@@ -316,7 +316,8 @@ void RTCPInstance
 ::injectReport(u_int8_t const* packet, unsigned packetSize, struct sockaddr_in const& fromAddress) {
   if (packetSize > maxRTCPPacketSize) packetSize = maxRTCPPacketSize;
   memmove(fInBuf, packet, packetSize);
-  processIncomingReport(packetSize, fromAddress);
+
+  processIncomingReport(packetSize, fromAddress, -1, 0xFF); // assume report received over UDP
 }
 
 static unsigned const IP_UDP_HDR_SIZE = 28;
@@ -331,17 +332,23 @@ void RTCPInstance::incomingReportHandler(RTCPInstance* instance,
 
 void RTCPInstance::incomingReportHandler1() {
   do {
-    unsigned packetSize = 0;
-    unsigned numBytesRead;
-    struct sockaddr_in fromAddress;
-    Boolean packetReadWasIncomplete;
     if (fNumBytesAlreadyRead >= maxRTCPPacketSize) {
       envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. Increase \"maxRTCPPacketSize\"\n";
       break;
     }
+
+    unsigned numBytesRead;
+    struct sockaddr_in fromAddress;
+    int tcpSocketNum;
+    unsigned char tcpStreamChannelId;
+    Boolean packetReadWasIncomplete;
     Boolean readResult
       = fRTCPInterface.handleRead(&fInBuf[fNumBytesAlreadyRead], maxRTCPPacketSize - fNumBytesAlreadyRead,
-				  numBytesRead, fromAddress, packetReadWasIncomplete);
+				  numBytesRead, fromAddress,
+				  tcpSocketNum, tcpStreamChannelId,
+				  packetReadWasIncomplete);
+
+    unsigned packetSize = 0;
     if (packetReadWasIncomplete) {
       fNumBytesAlreadyRead += numBytesRead;
       return; // more reads are needed to get the entire packet
@@ -391,25 +398,26 @@ void RTCPInstance::incomingReportHandler1() {
       fLastPacketSentSize = packetSize;
     }
 
-    processIncomingReport(packetSize, fromAddress);
+    processIncomingReport(packetSize, fromAddress, tcpSocketNum, tcpStreamChannelId);
   } while (0);
 }
 
 void RTCPInstance
-::processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress) {
+::processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress,
+			int tcpSocketNum, unsigned char tcpStreamChannelId) {
   do {
     Boolean callByeHandler = False;
-    int tcpReadStreamSocketNum = fRTCPInterface.nextTCPReadStreamSocketNum();
-    unsigned char tcpReadStreamChannelId = fRTCPInterface.nextTCPReadStreamChannelId();
     unsigned char* pkt = fInBuf;
 
 #ifdef DEBUG
-    fprintf(stderr, "[%p]saw incoming RTCP packet", this);
-    if (tcpReadStreamSocketNum < 0) {
+    fprintf(stderr, "[%p]saw incoming RTCP packet (from ", this);
+    if (tcpSocketNum < 0) {
       // Note that "fromAddress" is valid only if we're receiving over UDP (not over TCP):
-      fprintf(stderr, " (from address %s, port %d)", AddressString(fromAddress).val(), ntohs(fromAddress.sin_port));
+      fprintf(stderr, "address %s, port %d", AddressString(fromAddress).val(), ntohs(fromAddress.sin_port));
+    } else {
+      fprintf(stderr, "TCP socket #%d, stream channel id %d", tcpSocketNum, tcpStreamChannelId);
     }
-    fprintf(stderr, "\n");
+    fprintf(stderr, ")\n");
     for (unsigned i = 0; i < packetSize; ++i) {
       if (i%4 == 0) fprintf(stderr, " ");
       fprintf(stderr, "%02x", pkt[i]);
@@ -511,15 +519,15 @@ void RTCPInstance
 	    if (fSpecificRRHandlerTable != NULL) {
 	      netAddressBits fromAddr;
 	      portNumBits fromPortNum;
-	      if (tcpReadStreamSocketNum < 0) {
+	      if (tcpSocketNum < 0) {
 		// Normal case: We read the RTCP packet over UDP
 		fromAddr = fromAddress.sin_addr.s_addr;
 		fromPortNum = ntohs(fromAddress.sin_port);
 	      } else {
 		// Special case: We read the RTCP packet over TCP (interleaved)
 		// Hack: Use the TCP socket and channel id to look up the handler
-		fromAddr = tcpReadStreamSocketNum;
-		fromPortNum = tcpReadStreamChannelId;
+		fromAddr = tcpSocketNum;
+		fromPortNum = tcpStreamChannelId;
 	      }
 	      Port fromPort(fromPortNum);
 	      RRHandlerRecord* rrHandler

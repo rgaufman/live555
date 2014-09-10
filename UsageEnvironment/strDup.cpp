@@ -19,7 +19,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "strDup.hh"
-#include "string.h"
 
 char* strDup(char const* str) {
   if (str == NULL) return NULL;
@@ -33,10 +32,19 @@ char* strDup(char const* str) {
 }
 
 char* strDupSize(char const* str) {
-  if (str == NULL) return NULL;
-  size_t len = strlen(str) + 1;
-  char* copy = new char[len];
+  size_t dummy;
+
+  return strDupSize(str, dummy);
+}
+
+char* strDupSize(char const* str, size_t& resultBufSize) {
+  if (str == NULL) {
+    resultBufSize = 0;
+    return NULL;
+  }
+
+  resultBufSize = strlen(str) + 1;
+  char* copy = new char[resultBufSize];
 
   return copy;
 }
-

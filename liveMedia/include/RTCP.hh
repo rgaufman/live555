@@ -130,7 +130,8 @@ private:
 
   static void incomingReportHandler(RTCPInstance* instance, int /*mask*/);
   void incomingReportHandler1();
-  void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress);
+  void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress,
+			     int tcpSocketNum, unsigned char tcpStreamChannelId);
   void onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc);
 
 private:

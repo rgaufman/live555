@@ -385,10 +385,16 @@ Boolean BufferedPacket::fillInData(RTPInterface& rtpInterface, struct sockaddr_i
 				   Boolean& packetReadWasIncomplete) {
   if (!packetReadWasIncomplete) reset();
 
-  unsigned numBytesRead;
   unsigned const maxBytesToRead = bytesAvailable();
   if (maxBytesToRead == 0) return False; // exceeded buffer size when reading over TCP
-  if (!rtpInterface.handleRead(&fBuf[fTail], maxBytesToRead, numBytesRead, fromAddress, packetReadWasIncomplete)) {
+
+  unsigned numBytesRead;
+  int tcpSocketNum; // not used
+  unsigned char tcpStreamChannelId; // not used
+  if (!rtpInterface.handleRead(&fBuf[fTail], maxBytesToRead,
+			       numBytesRead, fromAddress,
+			       tcpSocketNum, tcpStreamChannelId,
+			       packetReadWasIncomplete)) {
     return False;
   }
   fTail += numBytesRead;
