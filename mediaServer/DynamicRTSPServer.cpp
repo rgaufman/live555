@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2014, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2015, Live Networks, Inc.  All rights reserved
 // A subclass of "RTSPServer" that creates "ServerMediaSession"s on demand,
 // based on whether or not the specified stream name exists as a file
 // Implementation
@@ -44,8 +44,8 @@ DynamicRTSPServer::~DynamicRTSPServer() {
 static ServerMediaSession* createNewSMS(UsageEnvironment& env,
 					char const* fileName, FILE* fid); // forward
 
-ServerMediaSession*
-DynamicRTSPServer::lookupServerMediaSession(char const* streamName) {
+ServerMediaSession* DynamicRTSPServer
+::lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession) {
   // First, check whether the specified "streamName" exists as a local file:
   FILE* fid = fopen(streamName, "rb");
   Boolean fileExists = fid != NULL;
@@ -59,20 +59,24 @@ DynamicRTSPServer::lookupServerMediaSession(char const* streamName) {
     if (smsExists) {
       // "sms" was created for a file that no longer exists. Remove it:
       removeServerMediaSession(sms);
+      sms = NULL;
     }
 
     return NULL;
   } else {
-    if (smsExists) { 
+    if (smsExists && isFirstLookupInSession) { 
       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
       // file has changed in some way:
       removeServerMediaSession(sms); 
+      sms = NULL;
     } 
 
-    sms = createNewSMS(envir(), streamName, fid); 
-    addServerMediaSession(sms); 
-    fclose(fid);
+    if (sms == NULL) {
+      sms = createNewSMS(envir(), streamName, fid); 
+      addServerMediaSession(sms);
+    }
 
+    fclose(fid);
     return sms;
   }
 }
@@ -201,6 +205,7 @@ static ServerMediaSession* createNewSMS(UsageEnvironment& env,
     sms->addSubsession(DVVideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
   } else if (strcmp(extension, ".mkv") == 0 || strcmp(extension, ".webm") == 0) {
     // Assumed to be a Matroska file (note that WebM ('.webm') files are also Matroska files)
+    OutPacketBuffer::maxSize = 100000; // allow for some possibly large VP8 or VP9 frames
     NEW_SMS("Matroska video+audio+(optional)subtitles");
 
     // Create a Matroska file server demultiplexor for the specified file.

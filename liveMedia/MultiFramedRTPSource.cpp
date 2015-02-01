@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // RTP source for a common kind of payload format: Those that pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // Implementation
@@ -278,8 +278,8 @@ void MultiFramedRTPSource::networkReadHandler1() {
     }
 
     // Skip over any CSRC identifiers in the header:
-    unsigned cc = (rtpHdr>>24)&0xF;
-    if (bPacket->dataSize() < cc) break;
+    unsigned cc = (rtpHdr>>24)&0x0F;
+    if (bPacket->dataSize() < cc*4) break;
     ADVANCE(cc*4);
 
     // Check for (& ignore) any RTP header extension

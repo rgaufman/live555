@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // Inclusion of header files representing the interface
 // for the entire library
 //
@@ -67,6 +67,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VorbisAudioRTPSource.hh"
 #include "TheoraVideoRTPSource.hh"
 #include "VP8VideoRTPSource.hh"
+#include "VP9VideoRTPSource.hh"
 #include "MPEG2TransportStreamFromPESSource.hh"
 #include "MPEG2TransportStreamFromESSource.hh"
 #include "MPEG2TransportStreamFramer.hh"
@@ -88,6 +89,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VorbisAudioRTPSink.hh"
 #include "TheoraVideoRTPSink.hh"
 #include "VP8VideoRTPSink.hh"
+#include "VP9VideoRTPSink.hh"
 #include "MPEG4GenericRTPSink.hh"
 #include "MPEG1or2VideoStreamDiscreteFramer.hh"
 #include "MPEG4VideoStreamDiscreteFramer.hh"

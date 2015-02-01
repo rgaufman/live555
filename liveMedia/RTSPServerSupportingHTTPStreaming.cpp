@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A server that supports both RTSP, and HTTP streaming (using Apple's "HTTP Live Streaming" protocol)
 // Implementation
 
@@ -51,11 +51,12 @@ RTSPServerSupportingHTTPStreaming::createNewClientConnection(int clientSocket, s
 RTSPServerSupportingHTTPStreaming::RTSPClientConnectionSupportingHTTPStreaming
 ::RTSPClientConnectionSupportingHTTPStreaming(RTSPServer& ourServer, int clientSocket, struct sockaddr_in clientAddr)
   : RTSPClientConnection(ourServer, clientSocket, clientAddr),
-    fClientSessionId(0), fPlaylistSource(NULL), fTCPSink(NULL) {
+    fClientSessionId(0), fStreamSource(NULL), fPlaylistSource(NULL), fTCPSink(NULL) {
 }
 
 RTSPServerSupportingHTTPStreaming::RTSPClientConnectionSupportingHTTPStreaming::~RTSPClientConnectionSupportingHTTPStreaming() {
   Medium::close(fPlaylistSource);
+  Medium::close(fStreamSource);
   Medium::close(fTCPSink);
 }
 
@@ -144,10 +145,14 @@ void RTSPServerSupportingHTTPStreaming::RTSPClientConnectionSupportingHTTPStream
       fResponseBuffer[0] = '\0'; // We've already sent the response.  This tells the calling code not to send it again.
       
       // Ask the media source to deliver - to the TCP sink - the desired data:
-      FramedSource* mediaSource = subsession->getStreamSource(streamToken);
-      if (mediaSource != NULL) {
+      if (fStreamSource != NULL) { // sanity check
+	if (fTCPSink != NULL) fTCPSink->stopPlaying();
+	Medium::close(fStreamSource);
+      }
+      fStreamSource = subsession->getStreamSource(streamToken);
+      if (fStreamSource != NULL) {
 	if (fTCPSink == NULL) fTCPSink = TCPStreamSink::createNew(envir(), fClientOutputSocket);
-	fTCPSink->startPlaying(*mediaSource, afterStreaming, this);
+	fTCPSink->startPlaying(*fStreamSource, afterStreaming, this);
       }
     } while(0);
 

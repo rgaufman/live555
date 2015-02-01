@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates a Matroska file.
 // Implementation
 
@@ -31,6 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <H264VideoRTPSink.hh>
 #include <H265VideoRTPSink.hh>
 #include <VP8VideoRTPSink.hh>
+#include <VP9VideoRTPSink.hh>
 #include <TheoraVideoRTPSink.hh>
 #include <T140TextRTPSink.hh>
 
@@ -282,6 +283,8 @@ FramedSource* MatroskaFile
       result = H265VideoStreamDiscreteFramer::createNew(envir(), result);
       ++numFiltersInFrontOfTrack;
     } else if (strcmp(track->mimeType, "video/VP8") == 0) {
+      estBitrate = 500;
+    } else if (strcmp(track->mimeType, "video/VP9") == 0) {
       estBitrate = 500;
     } else if (strcmp(track->mimeType, "video/THEORA") == 0) {
       estBitrate = 500;
@@ -580,6 +583,8 @@ RTPSink* MatroskaFile
       delete[] VPS; delete[] SPS; delete[] PPS;
     } else if (strcmp(track->mimeType, "video/VP8") == 0) {
       result = VP8VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+    } else if (strcmp(track->mimeType, "video/VP9") == 0) {
+      result = VP9VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
     } else if (strcmp(track->mimeType, "text/T140") == 0) {
       result = T140TextRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
     }

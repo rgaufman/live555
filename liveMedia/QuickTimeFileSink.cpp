@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A sink that generates a QuickTime file from a composite media session
 // Implementation
 
@@ -353,6 +353,12 @@ QuickTimeFileSink::createNew(UsageEnvironment& env,
   }
 
   return newSink;
+}
+
+void QuickTimeFileSink
+::noteRecordedFrame(MediaSubsession& /*inputSubsession*/,
+		    unsigned /*packetDataSize*/, struct timeval const& /*presentationTime*/) {
+  // Default implementation: Do nothing
 }
 
 Boolean QuickTimeFileSink::startPlaying(afterPlayingFunc* afterFunc,
@@ -717,6 +723,8 @@ void SubsessionIOState::afterGettingFrame(unsigned packetDataSize,
   fLastPacketRTPSeqNum = rtpSeqNum;
 
   // Now, continue working with the frame that we just got
+  fOurSink.noteRecordedFrame(fOurSubsession, packetDataSize, presentationTime);
+
   if (fBuffer->bytesInUse() == 0) {
     fBuffer->setPresentationTime(presentationTime);
   }

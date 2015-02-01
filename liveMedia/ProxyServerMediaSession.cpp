@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // Implementation
@@ -603,6 +603,8 @@ RTPSink* ProxyServerMediaSubsession
 					    fClientMediaSubsession.fmtp_config()); 
   } else if (strcmp(codecName, "VP8") == 0) {
     newSink = VP8VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+  } else if (strcmp(codecName, "VP9") == 0) {
+    newSink = VP9VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
   } else if (strcmp(codecName, "AMR") == 0 || strcmp(codecName, "AMR-WB") == 0) {
     // Proxying of these codecs is currently *not* supported, because the data received by the "RTPSource" object is not in a
     // form that can be fed directly into a corresponding "RTPSink" object.

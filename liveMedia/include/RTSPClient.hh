@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client - for a single "rtsp://" URL
 // C++ header
 
@@ -173,6 +173,10 @@ public:
   void setUserAgentString(char const* userAgentName);
       // sets an alternative string to be used in RTSP "User-Agent:" headers
 
+  void disallowBasicAuthentication() { fAllowBasicAuthentication = False; }
+      // call this if you don't want the server to request 'Basic' authentication
+      // (which would cause the client to send usernames and passwords over the net).
+
   unsigned sessionTimeoutParameter() const { return fSessionTimeoutParameter; }
 
   char const* url() const { return fBaseURL; }
@@ -306,6 +310,7 @@ protected:
   int fVerbosityLevel;
   unsigned fCSeq; // sequence number, used in consecutive requests
   Authenticator fCurrentAuthenticator;
+  Boolean fAllowBasicAuthentication;
   netAddressBits fServerAddress;
 
 private:

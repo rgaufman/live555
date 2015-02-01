@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // RTCP
 // Implementation
 
@@ -113,7 +113,7 @@ static double dTimeNow() {
     return (double) (timeNow.tv_sec + timeNow.tv_usec/1000000.0);
 }
 
-static unsigned const maxRTCPPacketSize = 1450;
+static unsigned const maxRTCPPacketSize = 1456;
 	// bytes (1500, minus some allowance for IP, UDP, UMTP headers)
 static unsigned const preferredRTCPPacketSize = 1000; // bytes
 
@@ -568,20 +568,140 @@ void RTCPInstance
 	  typeOfPacket = PACKET_BYE;
 	  break;
 	}
-	// Later handle SDES, APP, and compound RTCP packets #####
-        default:
+	// Other RTCP packet types that we don't yet handle:
+        case RTCP_PT_SDES: {
 #ifdef DEBUG
-	  fprintf(stderr, "UNSUPPORTED TYPE(0x%x)\n", pt);
+	  // 'Handle' SDES packets only in debugging code, by printing out the 'SDES items':
+	  fprintf(stderr, "SDES\n");
+
+	  // Process each 'chunk':
+	  Boolean chunkOK = False;
+	  ADVANCE(-4); length += 4; // hack so that we see the first SSRC/CSRC again
+	  while (length >= 8) { // A valid chunk must be at least 8 bytes long
+	    chunkOK = False; // until we learn otherwise
+
+	    u_int32_t SSRC_CSRC = ntohl(*(u_int32_t*)pkt); ADVANCE(4); length -= 4;
+	    fprintf(stderr, "\tSSRC/CSRC: 0x%08x\n", SSRC_CSRC);
+
+	    // Process each 'SDES item' in the chunk:
+	    u_int8_t itemType = *pkt; ADVANCE(1); --length;
+	    while (itemType != 0) {
+	      unsigned itemLen = *pkt; ADVANCE(1); --length;
+	      // Make sure "itemLen" allows for at least 1 zero byte at the end of the chunk:
+	      if (itemLen + 1 > length || pkt[itemLen] != 0) break;
+
+	      fprintf(stderr, "\t\t%s:%s\n",
+		      itemType == 1 ? "CNAME" :
+		      itemType == 2 ? "NAME" :
+		      itemType == 3 ? "EMAIL" :
+		      itemType == 4 ? "PHONE" :
+		      itemType == 5 ? "LOC" :
+		      itemType == 6 ? "TOOL" :
+		      itemType == 7 ? "NOTE" :
+		      itemType == 8 ? "PRIV" :
+		      "(unknown)",
+		      itemType < 8 ? (char*)pkt // hack, because we know it's '\0'-terminated
+		      : "???"/* don't try to print out PRIV or unknown items */);
+	      ADVANCE(itemLen); length -= itemLen;
+
+	      itemType = *pkt; ADVANCE(1); --length;
+	    }
+	    if (itemType != 0) break; // bad 'SDES item'
+
+	    // Thus, itemType == 0.  This zero 'type' marks the end of the list of SDES items.
+	    // Skip over remaining zero padding bytes, so that this chunk ends on a 4-byte boundary:
+	    while (length%4 > 0 && *pkt == 0) { ADVANCE(1); --length; }
+	    if (length%4 > 0) break; // Bad (non-zero) padding byte
+
+	    chunkOK = True;
+	  }
+	  if (!chunkOK || length > 0) break; // bad chunk, or not enough bytes for the last chunk
 #endif
 	  subPacketOK = True;
 	  break;
+	}
+        case RTCP_PT_APP: {
+#ifdef DEBUG
+	  fprintf(stderr, "APP(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_RTPFB: {
+#ifdef DEBUG
+	  fprintf(stderr, "RTPFB(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_PSFB: {
+#ifdef DEBUG
+	  fprintf(stderr, "PSFB(unhandled)\n");
+	  // Temporary code to show "Receiver Estimated Maximum Bitrate" (REMB) feedback reports:
+	  //#####
+	  if (length >= 12 && pkt[4] == 'R' && pkt[5] == 'E' && pkt[6] == 'M' && pkt[7] == 'B') {
+	    u_int8_t exp = pkt[9]>>2;
+	    u_int32_t mantissa = ((pkt[9]&0x03)<<16)|(pkt[10]<<8)|pkt[11];
+	    double remb = (double)mantissa;
+	    while (exp > 0) {
+	      remb *= 2.0;
+	      exp /= 2;
+	    }
+	    fprintf(stderr, "\tReceiver Estimated Max Bitrate (REMB): %g bps\n", remb);
+	  }
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_XR: {
+#ifdef DEBUG
+	  fprintf(stderr, "XR(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_AVB: {
+#ifdef DEBUG
+	  fprintf(stderr, "AVB(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_RSI: {
+#ifdef DEBUG
+	  fprintf(stderr, "RSI(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_TOKEN: {
+#ifdef DEBUG
+	  fprintf(stderr, "TOKEN(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        case RTCP_PT_IDMS: {
+#ifdef DEBUG
+	  fprintf(stderr, "IDMS(unhandled)\n");
+#endif
+	  subPacketOK = True;
+	  break;
+	}
+        default: {
+#ifdef DEBUG
+	  fprintf(stderr, "UNKNOWN TYPE(0x%x)\n", pt);
+#endif
+	  subPacketOK = True;
+	  break;
+	}
       }
       if (!subPacketOK) break;
 
       // need to check for (& handle) SSRC collision! #####
 
 #ifdef DEBUG
-      fprintf(stderr, "validated RTCP subpacket (type %d): %d, %d, %d, 0x%08x\n", typeOfPacket, rc, pt, length, reportSenderSSRC);
+      fprintf(stderr, "validated RTCP subpacket: rc:%d, pt:%d, bytes remaining:%d, report sender SSRC:0x%08x\n", rc, pt, length, reportSenderSSRC);
 #endif
 
       // Skip over any remaining bytes in this subpacket:

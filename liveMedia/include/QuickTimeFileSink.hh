@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A sink that generates a QuickTime file from a composite media session
 // C++ header
 
@@ -45,7 +45,7 @@ public:
 
   unsigned numActiveSubsessions() const { return fNumSubsessions; }
 
-private:
+protected:
   QuickTimeFileSink(UsageEnvironment& env, MediaSession& inputSession,
 		    char const* outputFileName, unsigned bufferSize,
 		    unsigned short movieWidth, unsigned short movieHeight,
@@ -55,6 +55,10 @@ private:
       // called only by createNew()
   virtual ~QuickTimeFileSink();
 
+  virtual void noteRecordedFrame(MediaSubsession& inputSubsession,
+				 unsigned packetDataSize, struct timeval const& presentationTime);
+
+private:
   Boolean continuePlaying();
   static void afterGettingFrame(void* clientData, unsigned frameSize,
 				unsigned numTruncatedBytes,

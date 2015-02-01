@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -191,6 +191,13 @@ const unsigned char RTCP_PT_RR = 201;
 const unsigned char RTCP_PT_SDES = 202;
 const unsigned char RTCP_PT_BYE = 203;
 const unsigned char RTCP_PT_APP = 204;
+const unsigned char RTCP_PT_RTPFB = 205; // Generic RTP Feedback [RFC4585]
+const unsigned char RTCP_PT_PSFB = 206; // Payload-specific [RFC4585]
+const unsigned char RTCP_PT_XR = 207; // extended report [RFC3611]
+const unsigned char RTCP_PT_AVB = 208; // AVB RTCP packet ["Standard for Layer 3 Transport Protocol for Time Sensitive Applications in Local Area Networks." Work in progress.]
+const unsigned char RTCP_PT_RSI = 209; // Receiver Summary Information [RFC5760]
+const unsigned char RTCP_PT_TOKEN = 210; // Port Mapping [RFC6284]
+const unsigned char RTCP_PT_IDMS = 211; // IDMS Settings [RFC7272]
 
 // SDES tags:
 const unsigned char RTCP_SDES_END = 0;

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // C++ header
 
@@ -58,7 +58,7 @@ protected:
 };
 
 #ifndef RTSP_BUFFER_SIZE
-#define RTSP_BUFFER_SIZE 10000 // for incoming requests, and outgoing responses
+#define RTSP_BUFFER_SIZE 20000 // for incoming requests, and outgoing responses
 #endif
 
 class RTSPServer: public Medium {
@@ -78,7 +78,8 @@ public:
 
   void addServerMediaSession(ServerMediaSession* serverMediaSession);
 
-  virtual ServerMediaSession* lookupServerMediaSession(char const* streamName);
+  virtual ServerMediaSession*
+  lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession = True);
 
   void removeServerMediaSession(ServerMediaSession* serverMediaSession);
       // Removes the "ServerMediaSession" object from our lookup table, so it will no longer be accessible by new RTSP clients.

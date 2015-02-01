@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // VP8 Video RTP Sources
 // Implementation
 
@@ -38,6 +38,8 @@ VP8VideoRTPSource
 VP8VideoRTPSource::~VP8VideoRTPSource() {
 }
 
+#define incrHeader do { ++resultSpecialHeaderSize; ++headerStart; if (--packetSize == 0) return False; } while (0)
+
 Boolean VP8VideoRTPSource
 ::processSpecialHeader(BufferedPacket* packet,
                        unsigned& resultSpecialHeaderSize) {
@@ -48,7 +50,7 @@ Boolean VP8VideoRTPSource
   if (packetSize == 0) return False; // error
   resultSpecialHeaderSize = 1; // unless we learn otherwise
 
-  u_int8_t const byte1 = headerStart[0];
+  u_int8_t const byte1 = *headerStart;
   Boolean const X = (byte1&0x80) != 0;
   Boolean const S = (byte1&0x10) != 0;
   u_int8_t const PartID = byte1&0x0F;
@@ -57,23 +59,23 @@ Boolean VP8VideoRTPSource
   fCurrentPacketCompletesFrame = packet->rtpMarkerBit(); // RTP header's "M" bit
 
   if (X) {
-    ++resultSpecialHeaderSize;
+    incrHeader;
 
-    u_int8_t const byte2 = headerStart[1];
+    u_int8_t const byte2 = *headerStart;
     Boolean const I = (byte2&0x80) != 0;
     Boolean const L = (byte2&0x40) != 0;
     Boolean const T = (byte2&0x20) != 0;
     Boolean const K = (byte2&0x10) != 0;
 
     if (I) {
-      ++resultSpecialHeaderSize;
-      if (headerStart[2]&0x80) { // extension flag in the PictureID is set
-	++resultSpecialHeaderSize;
+      incrHeader;
+      if ((*headerStart)&0x80) { // extension flag in the PictureID is set
+	incrHeader;
       }
     }
 
-    if (L) ++resultSpecialHeaderSize;
-    if (T||K) ++resultSpecialHeaderSize;
+    if (L) incrHeader;
+    if (T||K) incrHeader;
   }
   
   return True;

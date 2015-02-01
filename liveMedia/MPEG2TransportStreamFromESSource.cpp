@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A filter for converting one or more MPEG Elementary Streams
 // to a MPEG-2 Transport Stream
 // Implementation
@@ -95,7 +95,8 @@ void MPEG2TransportStreamFromESSource
 MPEG2TransportStreamFromESSource
 ::MPEG2TransportStreamFromESSource(UsageEnvironment& env)
   : MPEG2TransportStreamMultiplexor(env),
-    fInputSources(NULL), fVideoSourceCounter(0), fAudioSourceCounter(0) {
+    fInputSources(NULL), fVideoSourceCounter(0), fAudioSourceCounter(0),
+    fAwaitingBackgroundDelivery(False) {
   fHaveVideoStreams = False; // unless we add a video source
 }
 
@@ -124,14 +125,16 @@ void MPEG2TransportStreamFromESSource
 	break;
       }
     }
+    fAwaitingBackgroundDelivery = False;
   }
 
   if (isCurrentlyAwaitingData()) {
     // Try to deliver one filled-in buffer to the client:
     for (sourceRec = fInputSources; sourceRec != NULL;
 	 sourceRec = sourceRec->next()) {
-      if (sourceRec->deliverBufferToClient()) break;
+      if (sourceRec->deliverBufferToClient()) return;
     }
+    fAwaitingBackgroundDelivery = True;
   }
 
   // No filled-in buffers are available. Ask each of our inputs for data:
@@ -139,7 +142,6 @@ void MPEG2TransportStreamFromESSource
        sourceRec = sourceRec->next()) {
     sourceRec->askForNewData();
   }
-
 }
 
 void MPEG2TransportStreamFromESSource
@@ -256,5 +258,8 @@ void InputESSourceRecord
   fParent.fPresentationTime = presentationTime;
 
   // Now that we have new input data, check if we can deliver to the client:
-  fParent.awaitNewBuffer(NULL);
+  if (fParent.fAwaitingBackgroundDelivery) {
+    fParent.fAwaitingBackgroundDelivery = False;
+    fParent.awaitNewBuffer(NULL);
+  }
 }

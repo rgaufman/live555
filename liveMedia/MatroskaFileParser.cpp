@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A parser for a Matroska file.
 // Implementation
 
@@ -452,6 +452,8 @@ Boolean MatroskaFileParser::parseTrack() {
 	      track->mimeType = "video/H265";
 	    } else if (strncmp(codecID, "V_VP8", 5) == 0) {
 	      track->mimeType = "video/VP8";
+	    } else if (strncmp(codecID, "V_VP9", 5) == 0) {
+	      track->mimeType = "video/VP9";
 	    } else if (strncmp(codecID, "V_THEORA", 8) == 0) {
 	      track->mimeType = "video/THEORA";
 	    } else if (strncmp(codecID, "S_TEXT", 6) == 0) {

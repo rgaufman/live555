@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
- // Copyright (c) 1996-2014, Live Networks, Inc.  All rights reserved
+ // Copyright (c) 1996-2015, Live Networks, Inc.  All rights reserved
 // Delay queue
 // C++ header
 
@@ -115,19 +115,19 @@ extern DelayInterval const DELAY_MINUTE;
 extern DelayInterval const DELAY_HOUR;
 extern DelayInterval const DELAY_DAY;
 
-///// EventTime /////
+///// _EventTime /////
 
-class EventTime: public Timeval {
+class _EventTime: public Timeval {
 public:
-  EventTime(unsigned secondsSinceEpoch = 0,
+  _EventTime(unsigned secondsSinceEpoch = 0,
 	    unsigned usecondsSinceEpoch = 0)
     // We use the Unix standard epoch: January 1, 1970
     : Timeval(secondsSinceEpoch, usecondsSinceEpoch) {}
 };
 
-EventTime TimeNow();
+_EventTime TimeNow();
 
-extern EventTime const THE_END_OF_TIME;
+extern _EventTime const THE_END_OF_TIME;
 
 
 ///// DelayQueueEntry /////
@@ -176,7 +176,7 @@ private:
   DelayQueueEntry* findEntryByToken(intptr_t token);
   void synchronize(); // bring the 'time remaining' fields up-to-date
 
-  EventTime fLastSyncTime;
+  _EventTime fLastSyncTime;
 };
 
 #endif

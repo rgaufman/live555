@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // Implementation
@@ -1271,6 +1271,11 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
       } else if (strcmp(fCodecName, "VP8") == 0) { // VP8 video
 	fReadSource = fRTPSource
 	  = VP8VideoRTPSource::createNew(env(), fRTPSocket,
+					 fRTPPayloadFormat,
+					 fRTPTimestampFrequency);
+      } else if (strcmp(fCodecName, "VP9") == 0) { // VP9 video
+	fReadSource = fRTPSource
+	  = VP9VideoRTPSource::createNew(env(), fRTPSocket,
 					 fRTPPayloadFormat,
 					 fRTPTimestampFrequency);
       } else if (strcmp(fCodecName, "AC3") == 0 || strcmp(fCodecName, "EAC3") == 0) { // AC3 audio

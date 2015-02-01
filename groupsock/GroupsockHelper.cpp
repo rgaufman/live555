@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // Implementation
 
@@ -712,7 +712,9 @@ char const* timestampString() {
 
 #if !defined(_WIN32_WCE)
   static char timeString[9]; // holds hh:mm:ss plus trailing '\0'
-  char const* ctimeResult = ctime((time_t*)&tvNow.tv_sec);
+
+  time_t tvNow_t = tvNow.tv_sec;
+  char const* ctimeResult = ctime(&tvNow_t);
   if (ctimeResult == NULL) {
     sprintf(timeString, "??:??:??");
   } else {

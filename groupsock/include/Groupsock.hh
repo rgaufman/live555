@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2014 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
 // 'Group sockets'
 // C++ header
 
@@ -116,9 +116,9 @@ public:
 
   void multicastSendOnly(); // send, but don't receive any multicast packets
 
-  Boolean output(UsageEnvironment& env, u_int8_t ttl,
-		 unsigned char* buffer, unsigned bufferSize,
-		 DirectedNetInterface* interfaceNotToFwdBackTo = NULL);
+  virtual Boolean output(UsageEnvironment& env, u_int8_t ttl,
+			 unsigned char* buffer, unsigned bufferSize,
+			 DirectedNetInterface* interfaceNotToFwdBackTo = NULL);
 
   DirectedNetInterfaceSet& members() { return fMembers; }
 

@@ -26,7 +26,7 @@ diff --exclude=.gitignore --exclude=.git -rupN live/README.md live555/README.md
 +### Buffer sizes
 +
 +increaseReceiveBufferTo is increased to 2,000,000 bytes (same as VLC default) and
-+OutPacketBuffer::maxSize is increased 5 fold to 500000 in the ProxyServer. These
++OutPacketBuffer::maxSize is increased 10 fold to 1000000 in the ProxyServer. These
 +2 changes make live555 work a hell of a lot better out of box.
 +
 +### -p option for proxyServer - allows specifying a listening port on the command line
@@ -47,59 +47,6 @@ diff --exclude=.gitignore --exclude=.git -rupN live/liveMedia/MultiFramedRTPSour
  }
  
  void MultiFramedRTPSource::reset() {
-diff --exclude=.gitignore --exclude=.git -rupN live/modifications.patch live555/modifications.patch
---- live/modifications.patch	1970-01-01 01:00:00.000000000 +0100
-+++ live555/modifications.patch	2014-04-09 08:06:18.000000000 +0100
-@@ -0,0 +1,49 @@
-+diff --exclude=.gitignore --exclude=.git -rupN live/README.md live555/README.md
-+--- live/README.md	1970-01-01 01:00:00.000000000 +0100
-++++ live555/README.md	2014-04-09 07:58:41.000000000 +0100
-+@@ -0,0 +1,33 @@
-++# Build Instructions
-++
-++For example:
-++
-++```bash
-++./genMakefiles linux
-++make -j4
-++```
-++
-++Replace "linux" with your platform, e.g. avr32-linux, cygwin, freebsd, iphoneos, linux, linux-64bit, macosx, openbsd, solaris-64bit, etc (see config.PLATFORM files)
-++
-++You will find various executables:
-++
-++ * ./testProgs - contain various programs such as testRTSPClient to receive an RTSP stream
-++ * ./proxyServer/live555ProxyServer - a great RTSP proxy server
-++ * ./mediaServer/live555MediaServer - an RTSP media server for serving static files over RTSP
-++
-++# Changes to Master
-++
-++See modifications.patch to see exactly what was changed compared to vanilla.
-++
-++### Buffer sizes
-++
-++increaseReceiveBufferTo is increased to 2,000,000 bytes (same as VLC default) and
-++OutPacketBuffer::maxSize is increased 5 fold to 500000 in the ProxyServer. These
-++2 changes make live555 work a hell of a lot better out of box.
-++
-++### -p option for proxyServer - allows specifying a listening port on the command line
-++ 
-++This was rejected from the mailing list, but often RTSPProxy fails to run on
-++more than a few cameras with bad corruption, frames seeking back and forth and
-++many other adverse side effects. Being able to run multiple instances listening
-++on different ports is crucial.
-+diff --exclude=.gitignore --exclude=.git -rupN live/liveMedia/MultiFramedRTPSource.cpp live555/liveMedia/MultiFramedRTPSource.cpp
-+--- live/liveMedia/MultiFramedRTPSource.cpp	2014-03-25 21:30:30.000000000 +0000
-++++ live555/liveMedia/MultiFramedRTPSource.cpp	2014-04-09 08:00:05.000000000 +0100
-+@@ -73,7 +73,7 @@ MultiFramedRTPSource
-+   fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
-+ 
-+   // Try to use a big receive buffer for RTP:
-+-  increaseReceiveBufferTo(env, RTPgs->socketNum(), 50*1024);
-++  increaseReceiveBufferTo(env, RTPgs->socketNum(), 2000000);
-+ }
-+ 
-+ void MultiFramedRTPSource::reset() {
 diff --exclude=.gitignore --exclude=.git -rupN live/proxyServer/live555ProxyServer.cpp live555/proxyServer/live555ProxyServer.cpp
 --- live/proxyServer/live555ProxyServer.cpp	2014-03-25 21:30:30.000000000 +0000
 +++ live555/proxyServer/live555ProxyServer.cpp	2014-04-09 08:00:58.000000000 +0100
@@ -124,7 +71,7 @@ diff --exclude=.gitignore --exclude=.git -rupN live/proxyServer/live555ProxyServ
    // Increase the maximum size of video frames that we can 'proxy' without truncation.
    // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
 -  OutPacketBuffer::maxSize = 100000; // bytes
-+  OutPacketBuffer::maxSize = 500000; // bytes
++  OutPacketBuffer::maxSize = 1000000; // bytes
  
    // Begin by setting up our usage environment:
    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
