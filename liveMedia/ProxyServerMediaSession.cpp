@@ -34,7 +34,7 @@ public:
   ProxyServerMediaSubsession(MediaSubsession& mediaSubsession);
   virtual ~ProxyServerMediaSubsession();
 
-  char const* codecName() const { return fClientMediaSubsession.codecName(); }
+  char const* codecName() const { return fCodecName; }
 
 private: // redefined virtual functions
   virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
@@ -53,6 +53,7 @@ private:
 private:
   friend class ProxyRTSPClient;
   MediaSubsession& fClientMediaSubsession; // the 'client' media subsession object that corresponds to this 'server' media subsession
+  char const* fCodecName;  // copied from "fClientMediaSubsession" once it's been set up
   ProxyServerMediaSubsession* fNext; // used when we're part of a queue
   Boolean fHaveSetupStream;
 };
@@ -112,7 +113,9 @@ ProxyServerMediaSession::~ProxyServerMediaSession() {
   }
 
   // Begin by sending a "TEARDOWN" command (without checking for a response):
-  if (fProxyRTSPClient != NULL) fProxyRTSPClient->sendTeardownCommand(*fClientMediaSession, NULL, fProxyRTSPClient->auth());
+  if (fProxyRTSPClient != NULL && fClientMediaSession != NULL) {
+    fProxyRTSPClient->sendTeardownCommand(*fClientMediaSession, NULL, fProxyRTSPClient->auth());
+  }
 
   // Then delete our state:
   Medium::close(fClientMediaSession);
@@ -407,7 +410,8 @@ void ProxyRTSPClient::handleSubsessionTimeout() {
 
 ProxyServerMediaSubsession::ProxyServerMediaSubsession(MediaSubsession& mediaSubsession)
   : OnDemandServerMediaSubsession(mediaSubsession.parentSession().envir(), True/*reuseFirstSource*/),
-    fClientMediaSubsession(mediaSubsession), fNext(NULL), fHaveSetupStream(False) {
+    fClientMediaSubsession(mediaSubsession), fCodecName(strDup(mediaSubsession.codecName())),
+    fNext(NULL), fHaveSetupStream(False) {
 }
 
 UsageEnvironment& operator<<(UsageEnvironment& env, const ProxyServerMediaSubsession& psmss) { // used for debugging
@@ -418,6 +422,8 @@ ProxyServerMediaSubsession::~ProxyServerMediaSubsession() {
   if (verbosityLevel() > 0) {
     envir() << *this << "::~ProxyServerMediaSubsession()\n";
   }
+
+  delete[] fCodecName;
 }
 
 FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate) {
@@ -668,7 +674,9 @@ void ProxyServerMediaSubsession::subsessionByeHandler() {
 
   // This "BYE" signals that our input source has (effectively) closed, so pass this onto the front-end clients:
   fHaveSetupStream = False; // hack to stop "PAUSE" getting sent by:
-  fClientMediaSubsession.readSource()->handleClosure();
+  if (fClientMediaSubsession.readSource() != NULL) {
+    fClientMediaSubsession.readSource()->handleClosure();
+  }
 
   // And then treat this as if we had lost connection to the back-end server,
   // and can reestablish streaming from it only by sending another "DESCRIBE":

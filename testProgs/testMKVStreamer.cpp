@@ -31,7 +31,7 @@ MatroskaFile* matroskaFile;
 MatroskaDemux* matroskaDemux;
 
 // An array of structures representing the state of the video, audio, and subtitle tracks:
-struct {
+static struct {
   unsigned trackNumber;
   FramedSource* source;
   RTPSink* sink;

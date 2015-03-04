@@ -336,13 +336,14 @@ static Boolean parseVorbisSetup_codebook(LEBitVector& bv) {
   fprintf(stderr, "\t\t\tcodebook_dimensions: %d; codebook_entries: %d, ordered: %d\n",
 	  codebook_dimensions, codebook_entries, ordered);
 #endif
-  unsigned codewordLength;
   if (!ordered) {
     unsigned sparse = bv.getBits(1);
 #ifdef DEBUG_SETUP_HEADER
     fprintf(stderr, "\t\t\t!ordered: sparse %d\n", sparse);
 #endif
     for (unsigned i = 0; i < codebook_entries; ++i) {
+      unsigned codewordLength;
+
       if (sparse) {
 	unsigned flag = bv.getBits(1);
 	if (flag) {
@@ -355,6 +356,8 @@ static Boolean parseVorbisSetup_codebook(LEBitVector& bv) {
       }
 #ifdef DEBUG_SETUP_HEADER
       fprintf(stderr, "\t\t\t\tcodeword length[%d]:\t%d\n", i, codewordLength);
+#else
+      codewordLength = codewordLength; // to prevent compiler warning
 #endif
     }
   } else { // ordered

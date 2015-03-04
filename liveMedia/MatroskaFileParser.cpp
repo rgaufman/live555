@@ -484,7 +484,7 @@ Boolean MatroskaFileParser::parseTrack() {
 	    if (track->codecID != NULL) {
 	      if (strcmp(track->codecID, "V_MPEG4/ISO/AVC") == 0) { // H.264
 		// Byte 4 of the 'codec private' data contains 'lengthSizeMinusOne':
-		if (codecPrivateSize >= 5) track->subframeSizeSize = (codecPrivate[4])&0x3 + 1;
+		if (codecPrivateSize >= 5) track->subframeSizeSize = (codecPrivate[4]&0x3) + 1;
 	      } else if (strcmp(track->codecID, "V_MPEGH/ISO/HEVC") == 0) { // H.265
 		// H.265 'codec private' data is *supposed* to use the format that's described in
 		// http://lists.matroska.org/pipermail/matroska-devel/2013-September/004567.html
@@ -498,13 +498,13 @@ Boolean MatroskaFileParser::parseTrack() {
 		  track->codecPrivateUsesH264FormatForH265 = True;
 		  
 		  // Byte 4 of the 'codec private' data contains 'lengthSizeMinusOne':
-		  if (codecPrivateSize >= 5) track->subframeSizeSize = (codecPrivate[4])&0x3 + 1;
+		  if (codecPrivateSize >= 5) track->subframeSizeSize = (codecPrivate[4]&0x3) + 1;
 		} else {
 		  // This looks like the 'correct' format:
 		  track->codecPrivateUsesH264FormatForH265 = False;
 
 		  // Byte 21 of the 'codec private' data contains 'lengthSizeMinusOne':
-		  track->subframeSizeSize = (codecPrivate[21])&0x3 + 1;
+		  track->subframeSizeSize = (codecPrivate[21]&0x3) + 1;
 		}
 	      }
 	    }

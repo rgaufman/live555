@@ -49,8 +49,10 @@ Authenticator& Authenticator::operator=(const Authenticator& rightSide) {
 }
 
 Boolean Authenticator::operator<(const Authenticator* rightSide) {
+  // Returns True if "rightSide" is 'newer' than us:
   if (rightSide != NULL && rightSide != this &&
       (rightSide->realm() != NULL || rightSide->nonce() != NULL ||
+       username() == NULL || password() == NULL ||
        strcmp(rightSide->username(), username()) != 0 ||
        strcmp(rightSide->password(), password()) != 0)) {
     return True;

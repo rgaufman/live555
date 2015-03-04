@@ -100,7 +100,23 @@ protected: // new virtual functions, defined by all subclasses
 
 public:
   void multiplexRTCPWithRTP() { fMultiplexRTCPWithRTP = True; }
-  // An alternative to passing the "multiplexRTCPWithRTP" parameter as True in the constructor
+    // An alternative to passing the "multiplexRTCPWithRTP" parameter as True in the constructor
+
+  void setRTCPAppPacketHandler(RTCPAppHandlerFunc* handler, void* clientData);
+    // Sets a handler to be called if a RTCP "APP" packet arrives from any future client.
+    // (Any current clients are not affected; any "APP" packets from them will continue to be
+    // handled by whatever handler existed when the client sent its first RTSP "PLAY" command.)
+    // (Call with (NULL, NULL) to remove an existing handler - for future clients only)
+
+  void sendRTCPAppPacket(u_int8_t subtype, char const* name,
+			 u_int8_t* appDependentData, unsigned appDependentDataSize);
+    // Sends a custom RTCP "APP" packet to the most recent client (if "reuseFirstSource" was False),
+    // or to all current clients (if "reuseFirstSource" was True).
+    // The parameters correspond to their
+    // respective fields as described in the RTP/RTCP definition (RFC 3550).
+    // Note that only the low-order 5 bits of "subtype" are used, and only the first 4 bytes
+    // of "name" are used.  (If "name" has fewer than 4 bytes, or is NULL,
+    // then the remaining bytes are '\0'.)
 
 private:
   void setSDPLinesFromRTPSink(RTPSink* rtpSink, FramedSource* inputSource,
@@ -117,6 +133,8 @@ private:
   Boolean fMultiplexRTCPWithRTP;
   void* fLastStreamToken;
   char fCNAME[100]; // for RTCP
+  RTCPAppHandlerFunc* fAppHandlerTask;
+  void* fAppHandlerClientData;
   friend class StreamState;
 };
 
@@ -160,6 +178,8 @@ public:
 		    ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
                     void* serverRequestAlternativeByteHandlerClientData);
   void pause();
+  void sendRTCPAppPacket(u_int8_t subtype, char const* name,
+			 u_int8_t* appDependentData, unsigned appDependentDataSize);
   void endPlaying(Destinations* destinations);
   void reclaim();
 

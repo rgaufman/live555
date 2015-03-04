@@ -21,6 +21,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTCP.hh"
 #include "GroupsockHelper.hh"
 #include "rtcp_from_spec.h"
+#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
+#define snprintf _snprintf
+#endif
 
 ////////// RTCPMemberDatabase //////////
 
@@ -132,7 +135,8 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
     fByeHandlerTask(NULL), fByeHandlerClientData(NULL),
     fSRHandlerTask(NULL), fSRHandlerClientData(NULL),
     fRRHandlerTask(NULL), fRRHandlerClientData(NULL),
-    fSpecificRRHandlerTable(NULL) {
+    fSpecificRRHandlerTable(NULL),
+    fAppHandlerTask(NULL), fAppHandlerClientData(NULL) {
 #ifdef DEBUG
   fprintf(stderr, "RTCPInstance[%p]::RTCPInstance()\n", this);
 #endif
@@ -284,6 +288,46 @@ void RTCPInstance
   }
 }
 
+void RTCPInstance::setAppHandler(RTCPAppHandlerFunc* handlerTask, void* clientData) {
+  fAppHandlerTask = handlerTask;
+  fAppHandlerClientData = clientData;
+}
+
+void RTCPInstance::sendAppPacket(u_int8_t subtype, char const* name,
+				 u_int8_t* appDependentData, unsigned appDependentDataSize) {
+  // Set up the first 4 bytes: V,PT,subtype,PT,length:
+  u_int32_t rtcpHdr = 0x80000000; // version 2, no padding
+  rtcpHdr |= (subtype&0x1F)<<24;
+  rtcpHdr |= (RTCP_PT_APP<<16);
+  unsigned length = 2 + (appDependentDataSize+3)/4;
+  rtcpHdr |= (length&0xFFFF);
+  fOutBuf->enqueueWord(rtcpHdr);
+
+  // Set up the next 4 bytes: SSRC:
+  fOutBuf->enqueueWord(fSource != NULL ? fSource->SSRC() : fSink != NULL ? fSink->SSRC() : 0);
+
+  // Set up the next 4 bytes: name:
+  char nameBytes[4];
+  nameBytes[0] = nameBytes[1] = nameBytes[2] = nameBytes[3] = '\0'; // by default
+  if (name != NULL) {
+    snprintf(nameBytes, 4, "%s", name);
+  }
+  fOutBuf->enqueue((u_int8_t*)nameBytes, 4);
+
+  // Set up the remaining bytes (if any): application-dependent data (+ padding):
+  if (appDependentData != NULL && appDependentDataSize > 0) {
+    fOutBuf->enqueue(appDependentData, appDependentDataSize);
+
+    unsigned modulo = appDependentDataSize%4;
+    unsigned paddingSize = modulo == 0 ? 0 : 4-modulo;
+    u_int8_t const paddingByte = 0x00;
+    for (unsigned i = 0; i < paddingSize; ++i) fOutBuf->enqueue(&paddingByte, 1);
+  }
+
+  // Finally, send the packet:
+  sendBuiltPacket();
+}
+
 void RTCPInstance::setStreamSocket(int sockNum,
 				   unsigned char streamChannelId) {
   // Turn off background read handling:
@@ -429,10 +473,11 @@ void RTCPInstance
     // Check the RTCP packet for validity:
     // It must at least contain a header (4 bytes), and this header
     // must be version=2, with no padding bit, and a payload type of
-    // SR (200) or RR (201):
+    // SR (200), RR (201), or APP (204):
     if (packetSize < 4) break;
     unsigned rtcpHdr = ntohl(*(u_int32_t*)pkt);
-    if ((rtcpHdr & 0xE0FE0000) != (0x80000000 | (RTCP_PT_SR<<16))) {
+    if ((rtcpHdr & 0xE0FE0000) != (0x80000000 | (RTCP_PT_SR<<16)) &&
+	(rtcpHdr & 0xE0FF0000) != (0x80000000 | (RTCP_PT_APP<<16))) {
 #ifdef DEBUG
       fprintf(stderr, "rejected bad RTCP packet: header 0x%08x\n", rtcpHdr);
 #endif
@@ -445,8 +490,8 @@ void RTCPInstance
     unsigned reportSenderSSRC = 0;
     Boolean packetOK = False;
     while (1) {
-      unsigned rc = (rtcpHdr>>24)&0x1F;
-      unsigned pt = (rtcpHdr>>16)&0xFF;
+      u_int8_t rc = (rtcpHdr>>24)&0x1F;
+      u_int8_t pt = (rtcpHdr>>16)&0xFF;
       unsigned length = 4*(rtcpHdr&0xFFFF); // doesn't count hdr
       ADVANCE(4); // skip over the header
       if (length > packetSize) break;
@@ -568,6 +613,34 @@ void RTCPInstance
 	  typeOfPacket = PACKET_BYE;
 	  break;
 	}
+        case RTCP_PT_APP: {
+	  u_int8_t& subtype = rc; // In "APP" packets, the "rc" field gets used as "subtype"
+#ifdef DEBUG
+	  fprintf(stderr, "APP (subtype 0x%02x)\n", subtype);
+#endif
+	  if (length < 4) {
+#ifdef DEBUG
+	    fprintf(stderr, "\tError: No \"name\" field!\n");
+#endif
+	    break;
+	  }
+#ifdef DEBUG
+	  fprintf(stderr, "\tname:%c%c%c%c\n", pkt[0], pkt[1], pkt[2], pkt[3]);
+#endif
+	  u_int32_t nameBytes = (pkt[0]<<24)|(pkt[1]<<16)|(pkt[2]<<8)|(pkt[3]);
+	  ADVANCE(4); // skip over "name", to the 'application-dependent data'
+#ifdef DEBUG
+	  fprintf(stderr, "\tapplication-dependent data size: %d bytes\n", length);
+#endif
+
+	  // If an 'APP' packet handler was set, call it now:
+	  if (fAppHandlerTask != NULL) {
+	    (*fAppHandlerTask)(fAppHandlerClientData, subtype, nameBytes, pkt, length);
+	  }
+	  subPacketOK = True;
+	  typeOfPacket = PACKET_RTCP_APP;
+	  break;
+	}
 	// Other RTCP packet types that we don't yet handle:
         case RTCP_PT_SDES: {
 #ifdef DEBUG
@@ -616,13 +689,6 @@ void RTCPInstance
 	    chunkOK = True;
 	  }
 	  if (!chunkOK || length > 0) break; // bad chunk, or not enough bytes for the last chunk
-#endif
-	  subPacketOK = True;
-	  break;
-	}
-        case RTCP_PT_APP: {
-#ifdef DEBUG
-	  fprintf(stderr, "APP(unhandled)\n");
 #endif
 	  subPacketOK = True;
 	  break;

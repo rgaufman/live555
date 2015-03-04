@@ -39,6 +39,10 @@ private:
   unsigned char fData[2 + 0xFF]; // first 2 bytes are tag and length
 };
 
+typedef void RTCPAppHandlerFunc(void* clientData,
+				u_int8_t subtype, u_int32_t nameBytes/*big-endian order*/,
+				u_int8_t* appDependentData, unsigned appDependentDataSize);
+
 class RTCPMemberDatabase; // forward
 
 class RTCPInstance: public Medium {
@@ -71,16 +75,26 @@ public:
       // (To remove an existing "BYE" handler, call "setByeHandler()" again, with a "handlerTask" of NULL.)
   void setSRHandler(TaskFunc* handlerTask, void* clientData);
   void setRRHandler(TaskFunc* handlerTask, void* clientData);
-      // Assigns a handler routine to be called if a "SR" or "RR"
+      // Assigns a handler routine to be called if a "SR" or "RR" packet
       // (respectively) arrives.  Unlike "setByeHandler()", the handler will
       // be called once for each incoming "SR" or "RR".  (To turn off handling,
-      // call the function again with "handlerTask" (and "clientData") as NULL.
+      // call the function again with "handlerTask" (and "clientData") as NULL.)
   void setSpecificRRHandler(netAddressBits fromAddress, Port fromPort,
 			    TaskFunc* handlerTask, void* clientData);
       // Like "setRRHandler()", but applies only to "RR" packets that come from
       // a specific source address and port.  (Note that if both a specific
       // and a general "RR" handler function is set, then both will be called.)
   void unsetSpecificRRHandler(netAddressBits fromAddress, Port fromPort); // equivalent to setSpecificRRHandler(..., NULL, NULL);
+  void setAppHandler(RTCPAppHandlerFunc* handlerTask, void* clientData);
+      // Assigns a handler routine to be called whenever an "APP" packet arrives.  (To turn off
+      // handling, call the function again with "handlerTask" (and "clientData") as NULL.)
+  void sendAppPacket(u_int8_t subtype, char const* name,
+		     u_int8_t* appDependentData, unsigned appDependentDataSize);
+      // Sends a custom RTCP "APP" packet to the peer(s).  The parameters correspond to their
+      // respective fields as described in the RTP/RTCP definition (RFC 3550).
+      // Note that only the low-order 5 bits of "subtype" are used, and only the first 4 bytes
+      // of "name" are used.  (If "name" has fewer than 4 bytes, or is NULL,
+      // then the remaining bytes are '\0'.)
 
   Groupsock* RTCPgs() const { return fRTCPInterface.gs(); }
 
@@ -170,6 +184,8 @@ private:
   TaskFunc* fRRHandlerTask;
   void* fRRHandlerClientData;
   AddressPortLookupTable* fSpecificRRHandlerTable;
+  RTCPAppHandlerFunc* fAppHandlerTask;
+  void* fAppHandlerClientData;
 
 public: // because this stuff is used by an external "C" function
   void schedule(double nextTime);

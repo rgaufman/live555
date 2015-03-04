@@ -40,6 +40,7 @@ typedef void* packet;
 #define PACKET_RTP 1
 #define PACKET_RTCP_REPORT 2
 #define PACKET_BYE 3
+#define PACKET_RTCP_APP 4
 
 /* The code from the spec calls drand48(), but we have drand30() instead */
 #define drand48 drand30

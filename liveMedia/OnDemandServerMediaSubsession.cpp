@@ -29,7 +29,8 @@ OnDemandServerMediaSubsession
 				Boolean multiplexRTCPWithRTP)
   : ServerMediaSubsession(env),
     fSDPLines(NULL), fReuseFirstSource(reuseFirstSource),
-    fMultiplexRTCPWithRTP(multiplexRTCPWithRTP), fLastStreamToken(NULL) {
+    fMultiplexRTCPWithRTP(multiplexRTCPWithRTP), fLastStreamToken(NULL),
+    fAppHandlerTask(NULL), fAppHandlerClientData(NULL) {
   fDestinationsHashTable = HashTable::create(ONE_WORD_HASH_KEYS);
   if (fMultiplexRTCPWithRTP) {
     fInitialPortNum = initialPortNum;
@@ -303,7 +304,7 @@ float OnDemandServerMediaSubsession::getCurrentNPT(void* streamToken) {
 
     return streamState->startNPT()
       + (rtpSink->mostRecentPresentationTime().tv_sec - rtpSink->initialPresentationTime().tv_sec)
-      + (rtpSink->mostRecentPresentationTime().tv_sec - rtpSink->initialPresentationTime().tv_sec)/1000000.0f;
+      + (rtpSink->mostRecentPresentationTime().tv_usec - rtpSink->initialPresentationTime().tv_usec)/1000000.0f;
   } while (0);
 
   return 0.0;
@@ -375,6 +376,21 @@ void OnDemandServerMediaSubsession
 
 void OnDemandServerMediaSubsession::closeStreamSource(FramedSource *inputSource) {
   Medium::close(inputSource);
+}
+
+void OnDemandServerMediaSubsession
+::setRTCPAppPacketHandler(RTCPAppHandlerFunc* handler, void* clientData) {
+  fAppHandlerTask = handler;
+  fAppHandlerClientData = clientData;
+}
+
+void OnDemandServerMediaSubsession
+::sendRTCPAppPacket(u_int8_t subtype, char const* name,
+		    u_int8_t* appDependentData, unsigned appDependentDataSize) {
+  StreamState* streamState = (StreamState*)fLastStreamToken;
+  if (streamState != NULL) {
+    streamState->sendRTCPAppPacket(subtype, name, appDependentData, appDependentDataSize);
+  }
 }
 
 void OnDemandServerMediaSubsession
@@ -473,6 +489,7 @@ void StreamState
 				fTotalBW, (unsigned char*)fMaster.fCNAME,
 				fRTPSink, NULL /* we're a server */);
         // Note: This starts RTCP running automatically
+    fRTCPInstance->setAppHandler(fMaster.fAppHandlerTask, fMaster.fAppHandlerClientData);
   }
 
   if (dests->isTCP) {
@@ -552,6 +569,13 @@ void StreamState::endPlaying(Destinations* dests) {
     if (fRTCPInstance != NULL) {
       fRTCPInstance->unsetSpecificRRHandler(dests->addr.s_addr, dests->rtcpPort);
     }
+  }
+}
+
+void StreamState::sendRTCPAppPacket(u_int8_t subtype, char const* name,
+				    u_int8_t* appDependentData, unsigned appDependentDataSize) {
+  if (fRTCPInstance != NULL) {
+    fRTCPInstance->sendAppPacket(subtype, name, appDependentData, appDependentDataSize);
   }
 }
 

@@ -203,8 +203,8 @@ void MPEG2IFrameIndexFromTransportStream
   u_int8_t adaptation_field_control = (fInputBuffer[3]&0x30)>>4;
   u_int8_t totalHeaderSize
     = adaptation_field_control <= 1 ? 4 : 5 + fInputBuffer[4];
-  if (adaptation_field_control == 2 && totalHeaderSize != TRANSPORT_PACKET_SIZE ||
-      adaptation_field_control == 3 && totalHeaderSize >= TRANSPORT_PACKET_SIZE) {
+  if ((adaptation_field_control == 2 && totalHeaderSize != TRANSPORT_PACKET_SIZE) ||
+      (adaptation_field_control == 3 && totalHeaderSize >= TRANSPORT_PACKET_SIZE)) {
     envir() << "Bad \"adaptation_field_length\": " << fInputBuffer[4] << "\n";
     doGetNextFrame();
     return;

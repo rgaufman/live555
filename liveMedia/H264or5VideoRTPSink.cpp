@@ -40,6 +40,7 @@ public:
 
 private: // redefined virtual functions:
   virtual void doGetNextFrame();
+  virtual void doStopGettingFrames();
 
 private:
   static void afterGettingFrame(void* clientData, unsigned frameSize,
@@ -50,6 +51,7 @@ private:
                           unsigned numTruncatedBytes,
                           struct timeval presentationTime,
                           unsigned durationInMicroseconds);
+  void reset();
 
 private:
   int fHNumber;
@@ -161,10 +163,9 @@ H264or5Fragmenter::H264or5Fragmenter(int hNumber,
 				     unsigned inputBufferMax, unsigned maxOutputPacketSize)
   : FramedFilter(env, inputSource),
     fHNumber(hNumber),
-    fInputBufferSize(inputBufferMax+1), fMaxOutputPacketSize(maxOutputPacketSize),
-    fNumValidDataBytes(1), fCurDataOffset(1), fSaveNumTruncatedBytes(0),
-    fLastFragmentCompletedNALUnit(True) {
+    fInputBufferSize(inputBufferMax+1), fMaxOutputPacketSize(maxOutputPacketSize) {
   fInputBuffer = new unsigned char[fInputBufferSize];
+  reset();
 }
 
 H264or5Fragmenter::~H264or5Fragmenter() {
@@ -263,6 +264,12 @@ void H264or5Fragmenter::doGetNextFrame() {
   }
 }
 
+void H264or5Fragmenter::doStopGettingFrames() {
+  // Make sure that we don't have any stale data fragments lying around, should we later resume:
+  reset();
+  FramedFilter::doStopGettingFrames();
+}
+
 void H264or5Fragmenter::afterGettingFrame(void* clientData, unsigned frameSize,
 					  unsigned numTruncatedBytes,
 					  struct timeval presentationTime,
@@ -283,4 +290,10 @@ void H264or5Fragmenter::afterGettingFrame1(unsigned frameSize,
 
   // Deliver data to the client:
   doGetNextFrame();
+}
+
+void H264or5Fragmenter::reset() {
+  fNumValidDataBytes = fCurDataOffset = 1;
+  fSaveNumTruncatedBytes = 0;
+  fLastFragmentCompletedNALUnit = True;
 }
