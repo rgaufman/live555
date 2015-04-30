@@ -266,6 +266,7 @@ private:
   int openConnection(); // -1: failure; 0: pending; 1: success
   int connectToServer(int socketNum, portNumBits remotePortNum); // used to implement "openConnection()"; result values are the same
   char* createAuthenticatorString(char const* cmd, char const* url);
+  char* createBlocksizeString(Boolean streamUsingTCP);
   void handleRequestError(RequestRecord* request);
   Boolean parseResponseCode(char const* line, unsigned& responseCode, char const*& responseString);
   void handleIncomingRequest();
@@ -305,6 +306,11 @@ private:
   static void incomingDataHandler(void*, int /*mask*/);
   void incomingDataHandler1();
   void handleResponseBytes(int newBytesRead);
+
+public:
+  u_int16_t desiredMaxIncomingPacketSize;
+    // If set to a value >0, then a "Blocksize:" header with this value (minus an allowance for
+    // IP, UDP, and RTP headers) will be sent with each "SETUP" request.
 
 protected:
   int fVerbosityLevel;

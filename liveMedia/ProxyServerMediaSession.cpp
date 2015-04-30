@@ -423,7 +423,7 @@ ProxyServerMediaSubsession::~ProxyServerMediaSubsession() {
     envir() << *this << "::~ProxyServerMediaSubsession()\n";
   }
 
-  delete[] fCodecName;
+  delete[] (char*)fCodecName;
 }
 
 FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate) {

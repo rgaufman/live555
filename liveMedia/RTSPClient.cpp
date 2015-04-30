@@ -210,6 +210,27 @@ Boolean RTSPClient::lookupByName(UsageEnvironment& env,
   return True;
 }
 
+static void copyUsernameOrPasswordStringFromURL(char* dest, char const* src, unsigned len) {
+  // Normally, we just copy from the source to the destination.  However, if the source contains
+  // %-encoded characters, then we decode them while doing the copy:
+  while (len > 0) {
+    int nBefore = 0;
+    int nAfter = 0;
+    
+    if (*src == '%' && len >= 3 && sscanf(src+1, "%n%2hhx%n", &nBefore, dest, &nAfter) == 1) {
+      unsigned codeSize = nAfter - nBefore; // should be 1 or 2
+
+      ++dest;
+      src += (1 + codeSize);
+      len -= (1 + codeSize);
+    } else {
+      *dest++ = *src++;
+      --len;
+    }
+  }
+  *dest = '\0';
+}
+
 Boolean RTSPClient::parseRTSPURL(UsageEnvironment& env, char const* url,
 				 char*& username, char*& password,
 				 NetAddress& address,
@@ -243,15 +264,13 @@ Boolean RTSPClient::parseRTSPURL(UsageEnvironment& env, char const* url,
 	char const* usernameStart = from;
 	unsigned usernameLen = colonPasswordStart - usernameStart;
 	username = new char[usernameLen + 1] ; // allow for the trailing '\0'
-	for (unsigned i = 0; i < usernameLen; ++i) username[i] = usernameStart[i];
-	username[usernameLen] = '\0';
+	copyUsernameOrPasswordStringFromURL(username, usernameStart, usernameLen);
 
 	char const* passwordStart = colonPasswordStart;
 	if (passwordStart < p) ++passwordStart; // skip over the ':'
 	unsigned passwordLen = p - passwordStart;
 	password = new char[passwordLen + 1]; // allow for the trailing '\0'
-	for (unsigned j = 0; j < passwordLen; ++j) password[j] = passwordStart[j];
-	password[passwordLen] = '\0';
+	copyUsernameOrPasswordStringFromURL(password, passwordStart, passwordLen);
 
 	from = p + 1; // skip over the '@'
 	break;
@@ -325,8 +344,10 @@ RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 		       int verbosityLevel, char const* applicationName,
 		       portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
   : Medium(env),
-    fVerbosityLevel(verbosityLevel), fCSeq(1), fAllowBasicAuthentication(True), fServerAddress(0),
-    fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum), fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0),
+    desiredMaxIncomingPacketSize(0), fVerbosityLevel(verbosityLevel), fCSeq(1),
+    fAllowBasicAuthentication(True), fServerAddress(0),
+    fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum),
+    fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0),
     fInputSocketNum(-1), fOutputSocketNum(-1), fBaseURL(NULL), fTCPStreamIdCount(0),
     fLastSessionId(NULL), fSessionTimeoutParameter(0), fSessionCookieCounter(0), fHTTPTunnelingConnectionIsPending(False) {
   setBaseURL(rtspURL);
@@ -656,11 +677,15 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
     // When sending more than one "SETUP" request, include a "Session:" header in the 2nd and later commands:
     char* sessionStr = createSessionString(fLastSessionId);
     
-    // The "Transport:" and "Session:" (if present) headers make up the 'extra headers':
-    extraHeaders = new char[transportSize + strlen(sessionStr)];
+    // Optionally include a "Blocksize:" string:
+    char* blocksizeStr = createBlocksizeString(streamUsingTCP);
+
+    // The "Transport:" and "Session:" (if present) and "Blocksize:" (if present) headers
+    // make up the 'extra headers':
+    extraHeaders = new char[transportSize + strlen(sessionStr) + strlen(blocksizeStr)];
     extraHeadersWereAllocated = True;
-    sprintf(extraHeaders, "%s%s", transportStr, sessionStr);
-    delete[] transportStr; delete[] sessionStr;
+    sprintf(extraHeaders, "%s%s%s", transportStr, sessionStr, blocksizeStr);
+    delete[] transportStr; delete[] sessionStr; delete[] blocksizeStr;
   } else if (strcmp(request->commandName(), "GET") == 0 || strcmp(request->commandName(), "POST") == 0) {
     // We will be sending a HTTP (not a RTSP) request.
     // Begin by re-parsing our RTSP URL, to get the stream name (which we'll use as our 'cmdURL'
@@ -886,6 +911,28 @@ char* RTSPClient::createAuthenticatorString(char const* cmd, char const* url) {
 
   // We don't have a (filled-in) authenticator.
   return strDup("");
+}
+
+char* RTSPClient::createBlocksizeString(Boolean streamUsingTCP) {
+  char* blocksizeStr;
+  u_int16_t maxPacketSize = desiredMaxIncomingPacketSize;
+
+  // Allow for the RTP header (if streaming over TCP)
+  // or the IP/UDP/RTP headers (if streaming over UDP):
+  u_int16_t const headerAllowance = streamUsingTCP ? 12 : 50/*conservative*/;
+  if (maxPacketSize < headerAllowance) {
+    maxPacketSize = 0;
+  } else {
+    maxPacketSize -= headerAllowance;
+  }
+
+  if (maxPacketSize > 0) {
+    blocksizeStr = new char[25]; // more than enough space
+    sprintf(blocksizeStr, "Blocksize: %u\r\n", maxPacketSize);
+  } else {
+    blocksizeStr = strDup("");
+  }
+  return blocksizeStr;
 }
 
 void RTSPClient::handleRequestError(RequestRecord* request) {
@@ -1228,23 +1275,34 @@ Boolean RTSPClient::handleAuthenticationFailure(char const* paramsStr) {
   if (paramsStr == NULL) return False; // There was no "WWW-Authenticate:" header; we can't proceed.
 
   // Fill in "fCurrentAuthenticator" with the information from the "WWW-Authenticate:" header:
-  Boolean alreadyHadRealm = fCurrentAuthenticator.realm() != NULL;
+  Boolean realmHasChanged = False; // by default
+  Boolean isStale = False; // by default
   char* realm = strDupSize(paramsStr);
   char* nonce = strDupSize(paramsStr);
+  char* stale = strDupSize(paramsStr);
   Boolean success = True;
-  if (sscanf(paramsStr, "Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"", realm, nonce) == 2) {
+  if (sscanf(paramsStr, "Digest realm=\"%[^\"]\", nonce=\"%[^\"]\", stale=%[a-zA-Z]", realm, nonce, stale) == 3) {
+    realmHasChanged = fCurrentAuthenticator.realm() == NULL || strcmp(fCurrentAuthenticator.realm(), realm) != 0;
+    isStale = _strncasecmp(stale, "true", 4) == 0;
+    fCurrentAuthenticator.setRealmAndNonce(realm, nonce);
+  } else if (sscanf(paramsStr, "Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"", realm, nonce) == 2) {
+    realmHasChanged = fCurrentAuthenticator.realm() == NULL || strcmp(fCurrentAuthenticator.realm(), realm) != 0;
     fCurrentAuthenticator.setRealmAndNonce(realm, nonce);
   } else if (sscanf(paramsStr, "Basic realm=\"%[^\"]\"", realm) == 1 && fAllowBasicAuthentication) {
+    realmHasChanged = fCurrentAuthenticator.realm() == NULL || strcmp(fCurrentAuthenticator.realm(), realm) != 0;
     fCurrentAuthenticator.setRealmAndNonce(realm, NULL); // Basic authentication
   } else {
     success = False; // bad "WWW-Authenticate:" header
   }
-  delete[] realm; delete[] nonce;
+  delete[] realm; delete[] nonce; delete[] stale;
 
-  if (alreadyHadRealm || fCurrentAuthenticator.username() == NULL || fCurrentAuthenticator.password() == NULL) {
-    // We already had a 'realm', or don't have a username and/or password,
-    // so the new "WWW-Authenticate:" header information won't help us.  We remain unauthenticated.
-    success = False;
+  if (success) {
+    if ((!realmHasChanged && !isStale) || fCurrentAuthenticator.username() == NULL || fCurrentAuthenticator.password() == NULL) {
+      // We already tried with the same realm (and a non-stale nonce),
+      // or don't have a username and/or password, so the new "WWW-Authenticate:" header
+      // information won't help us.  We remain unauthenticated.
+      success = False;
+    }
   }
 
   return success;

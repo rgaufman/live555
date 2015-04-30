@@ -393,7 +393,7 @@ install1: $(LIVEMEDIA_LIB)
 	 install -m 644 include/*.hh $(DESTDIR)$(PREFIX)/include/liveMedia
 	 install -m 644 $(LIVEMEDIA_LIB) $(DESTDIR)$(LIBDIR)
 install_shared_libraries: $(LIVEMEDIA_LIB)
-	 ln -s $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).$(SHORT_LIB_SUFFIX)
-	 ln -s $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).so
+	 ln -fs $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).$(SHORT_LIB_SUFFIX)
+	 ln -fs $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).so
 
 ##### Any additional, platform-specific rules come here:

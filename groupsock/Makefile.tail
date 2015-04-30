@@ -39,7 +39,7 @@ install1: libgroupsock.$(LIB_SUFFIX)
 	  install -m 644 include/*.hh include/*.h $(DESTDIR)$(PREFIX)/include/groupsock
 	  install -m 644 libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)
 install_shared_libraries: libgroupsock.$(LIB_SUFFIX)
-	  ln -s libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/libgroupsock.$(SHORT_LIB_SUFFIX)
-	  ln -s libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/libgroupsock.so
+	  ln -fs libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/libgroupsock.$(SHORT_LIB_SUFFIX)
+	  ln -fs libgroupsock.$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/libgroupsock.so
 
 ##### Any additional, platform-specific rules come here:

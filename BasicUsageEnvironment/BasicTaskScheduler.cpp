@@ -180,7 +180,7 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
   if (fTriggersAwaitingHandling != 0) {
     if (fTriggersAwaitingHandling == fLastUsedTriggerMask) {
       // Common-case optimization for a single event trigger:
-      fTriggersAwaitingHandling = 0;
+      fTriggersAwaitingHandling &=~ fLastUsedTriggerMask;
       if (fTriggeredEventHandlers[fLastUsedTriggerNum] != NULL) {
 	(*fTriggeredEventHandlers[fLastUsedTriggerNum])(fTriggeredEventClientDatas[fLastUsedTriggerNum]);
       }

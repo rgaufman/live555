@@ -79,11 +79,7 @@ void H264or5VideoStreamDiscreteFramer
     saveCopyOfPPS(fTo, frameSize);
   }
 
-  // Next, check whether this NAL unit ends the current 'access unit' (basically, a video frame).
-  //  Unfortunately, we can't do this reliably, because we don't yet know anything about the
-  // *next* NAL unit that we'll see.  So, we guess this as best as we can, by assuming that
-  // if this NAL unit is a VCL NAL unit, then it ends the current 'access unit'.
-  if (isVCL(nal_unit_type)) fPictureEndMarker = True;
+  fPictureEndMarker = nalUnitEndsAccessUnit(nal_unit_type);
 
   // Finally, complete delivery to the client:
   fFrameSize = frameSize;
@@ -91,4 +87,16 @@ void H264or5VideoStreamDiscreteFramer
   fPresentationTime = presentationTime;
   fDurationInMicroseconds = durationInMicroseconds;
   afterGetting(this);
+}
+
+Boolean H264or5VideoStreamDiscreteFramer::nalUnitEndsAccessUnit(u_int8_t nal_unit_type) {
+  // Check whether this NAL unit ends the current 'access unit' (basically, a video frame).
+  //  Unfortunately, we can't do this reliably, because we don't yet know anything about the
+  // *next* NAL unit that we'll see.  So, we guess this as best as we can, by assuming that
+  // if this NAL unit is a VCL NAL unit, then it ends the current 'access unit'.
+  //
+  // This will be wrong if you are streaming multiple 'slices' per picture.  In that case,
+  // you can define a subclass that reimplements this virtual function to do the right thing.
+
+  return isVCL(nal_unit_type);
 }

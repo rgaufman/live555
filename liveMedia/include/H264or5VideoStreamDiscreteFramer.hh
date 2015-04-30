@@ -47,6 +47,8 @@ protected:
                           unsigned numTruncatedBytes,
                           struct timeval presentationTime,
                           unsigned durationInMicroseconds);
+
+  virtual Boolean nalUnitEndsAccessUnit(u_int8_t nal_unit_type);
 };
 
 #endif
