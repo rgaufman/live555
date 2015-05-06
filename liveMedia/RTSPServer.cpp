@@ -137,7 +137,7 @@ public:
     ourServer.fPendingRegisterRequests->Add((char const*)this, this);
   }
 
-  virtual ~RegisterRequestRecord(){
+  virtual ~RegisterRequestRecord() {
     // Remove ourself from the server's 'pending REGISTER requests' hash table before we go:
     fOurServer.fPendingRegisterRequests->Remove((char const*)this);
   }
@@ -336,6 +336,7 @@ RTSPServer::RTSPServer(UsageEnvironment& env,
     fClientConnections(HashTable::create(ONE_WORD_HASH_KEYS)),
     fClientConnectionsForHTTPTunneling(NULL), // will get created if needed
     fClientSessions(HashTable::create(STRING_HASH_KEYS)),
+    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)),
     fPendingRegisterRequests(HashTable::create(ONE_WORD_HASH_KEYS)), fRegisterRequestCounter(0),
     fAuthDB(authDatabase), fReclamationTestSeconds(reclamationTestSeconds),
     fAllowStreamingRTPOverTCP(True) {
@@ -346,6 +347,22 @@ RTSPServer::RTSPServer(UsageEnvironment& env,
 						   (TaskScheduler::BackgroundHandlerProc*)&incomingConnectionHandlerRTSP, this);
 }
 
+// A data structure that is used to implement "fTCPStreamingDatabase"
+// (and the "noteTCPStreamingOnSocket()" and "stopTCPStreamingOnSocket()" member functions):
+class streamingOverTCPRecord {
+public:
+  streamingOverTCPRecord(u_int32_t sessionId, unsigned trackNum, streamingOverTCPRecord* next)
+    : fNext(next), fSessionId(sessionId), fTrackNum(trackNum) {
+  }
+  virtual ~streamingOverTCPRecord() {
+    delete fNext;
+  }
+
+  streamingOverTCPRecord* fNext;
+  u_int32_t fSessionId;
+  unsigned fTrackNum;
+};
+
 RTSPServer::~RTSPServer() {
   // Turn off background read handling:
   envir().taskScheduler().turnOffBackgroundReadHandling(fRTSPServerSocket);
@@ -354,6 +371,13 @@ RTSPServer::~RTSPServer() {
   envir().taskScheduler().turnOffBackgroundReadHandling(fHTTPServerSocket);
   ::closeSocket(fHTTPServerSocket);
   
+  // Empty out and close "fTCPStreamingDatabase":
+  streamingOverTCPRecord* sotcp;
+  while ((sotcp = (streamingOverTCPRecord*)fTCPStreamingDatabase->getFirst()) != NULL) {
+    delete sotcp;
+  }
+  delete fTCPStreamingDatabase;
+
   // Close all client session objects:
   RTSPServer::RTSPClientSession* clientSession;
   while ((clientSession = (RTSPServer::RTSPClientSession*)fClientSessions->getFirst()) != NULL) {
@@ -424,6 +448,76 @@ void RTSPServer::incomingConnectionHandler(int serverSocket) {
   
   // Create a new object for handling this RTSP connection:
   (void)createNewClientConnection(clientSocket, clientAddr);
+}
+
+void RTSPServer
+::noteTCPStreamingOnSocket(int socketNum, RTSPClientSession* clientSession, unsigned trackNum) {
+  streamingOverTCPRecord* sotcpCur
+    = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)socketNum);
+  streamingOverTCPRecord* sotcpNew
+    = new streamingOverTCPRecord(clientSession->fOurSessionId, trackNum, sotcpCur);
+  fTCPStreamingDatabase->Add((char const*)socketNum, sotcpNew);
+}
+
+void RTSPServer
+::unnoteTCPStreamingOnSocket(int socketNum, RTSPClientSession* clientSession, unsigned trackNum) {
+  if (socketNum < 0) return;
+  streamingOverTCPRecord* sotcpHead
+    = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)socketNum);
+  if (sotcpHead == NULL) return;
+
+  // Look for a record of the (session,track); remove it if found:
+  streamingOverTCPRecord* sotcp = sotcpHead;
+  streamingOverTCPRecord* sotcpPrev = sotcpHead;
+  do {
+    if (sotcp->fSessionId == clientSession->fOurSessionId && sotcp->fTrackNum == trackNum) break;
+    sotcpPrev = sotcp;
+    sotcp = sotcp->fNext;
+  } while (sotcp != NULL);
+  if (sotcp == NULL) return; // not found
+  
+  if (sotcp == sotcpHead) {
+    // We found it at the head of the list.  Remove it and reinsert the tail into the hash table:
+    sotcpHead = sotcp->fNext;
+    sotcp->fNext = NULL;
+    delete sotcp;
+
+    if (sotcpHead == NULL) {
+      // There were no more entries on the list.  Remove the original entry from the hash table:
+      fTCPStreamingDatabase->Remove((char const*)socketNum);
+    } else {
+      // Add the rest of the list into the hash table (replacing the original):
+      fTCPStreamingDatabase->Add((char const*)socketNum, sotcpHead);
+    }
+  } else {
+    // We found it on the list, but not at the head.  Unlink it:
+    sotcpPrev->fNext = sotcp->fNext;
+    sotcp->fNext = NULL;
+    delete sotcp;
+  }
+}
+
+void RTSPServer::stopTCPStreamingOnSocket(int socketNum) {
+  // Close any stream that is streaming over "socketNum" (using RTP/RTCP-over-TCP streaming):
+  streamingOverTCPRecord* sotcp
+    = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)socketNum);
+  if (sotcp != NULL) {
+    do {
+      char sessionIdStr[9];
+      sprintf(sessionIdStr, "%08X", sotcp->fSessionId);
+      RTSPClientSession* clientSession
+	= (RTSPServer::RTSPClientSession*)(fClientSessions->Lookup(sessionIdStr));
+      if (clientSession != NULL) {
+	clientSession->deleteStreamByTrack(sotcp->fTrackNum);
+      }
+
+      streamingOverTCPRecord* sotcpNext = sotcp->fNext;
+      sotcp->fNext = NULL;
+      delete sotcp;
+      sotcp = sotcpNext;
+    } while (sotcp != NULL);
+    fTCPStreamingDatabase->Remove((char const*)socketNum);
+  }
 }
 
 
@@ -775,6 +869,9 @@ void RTSPServer::RTSPClientConnection::resetRequestBuffer() {
 }
 
 void RTSPServer::RTSPClientConnection::closeSockets() {
+  // First, tell our server to stop any streaming that it might be doing over our output socket:
+  fOurServer.stopTCPStreamingOnSocket(fClientOutputSocket);
+
   // Turn off background handling on our input socket (and output socket, if different); then close it (or them):
   if (fClientOutputSocket != fClientInputSocket) {
     envir().taskScheduler().disableBackgroundHandling(fClientOutputSocket);
@@ -1415,9 +1512,28 @@ RTSPServer::RTSPClientSession::~RTSPClientSession() {
   }
 }
 
+void RTSPServer::RTSPClientSession::deleteStreamByTrack(unsigned trackNum) {
+  if (trackNum >= fNumStreamStates) return; // sanity check; shouldn't happen
+  if (fStreamStates[trackNum].subsession != NULL) {
+    fStreamStates[trackNum].subsession->deleteStream(fOurSessionId, fStreamStates[trackNum].streamToken);
+    fStreamStates[trackNum].subsession = NULL;
+  }
+  
+  // Optimization: If all subsessions have now been deleted, then we can delete ourself now:
+  Boolean noSubsessionsRemain = True;
+  for (unsigned i = 0; i < fNumStreamStates; ++i) {
+    if (fStreamStates[i].subsession != NULL) {
+      noSubsessionsRemain = False;
+      break;
+    }
+  }
+  if (noSubsessionsRemain) delete this;
+}
+
 void RTSPServer::RTSPClientSession::reclaimStreamStates() {
   for (unsigned i = 0; i < fNumStreamStates; ++i) {
     if (fStreamStates[i].subsession != NULL) {
+      fOurServer.unnoteTCPStreamingOnSocket(fStreamStates[i].tcpSocketNum, this, i);
       fStreamStates[i].subsession->deleteStream(fOurSessionId, fStreamStates[i].streamToken);
     }
   }
@@ -1569,19 +1685,20 @@ void RTSPServer::RTSPClientSession
       for (unsigned i = 0; i < fNumStreamStates; ++i) {
 	subsession = iter.next();
 	fStreamStates[i].subsession = subsession;
+	fStreamStates[i].tcpSocketNum = -1; // for now; may get set for RTP-over-TCP streaming
 	fStreamStates[i].streamToken = NULL; // for now; it may be changed by the "getStreamParameters()" call that comes later
       }
     }
     
     // Look up information for the specified subsession (track):
     ServerMediaSubsession* subsession = NULL;
-    unsigned streamNum;
+    unsigned trackNum;
     if (trackId != NULL && trackId[0] != '\0') { // normal case
-      for (streamNum = 0; streamNum < fNumStreamStates; ++streamNum) {
-	subsession = fStreamStates[streamNum].subsession;
+      for (trackNum = 0; trackNum < fNumStreamStates; ++trackNum) {
+	subsession = fStreamStates[trackNum].subsession;
 	if (subsession != NULL && strcmp(trackId, subsession->trackId()) == 0) break;
       }
-      if (streamNum >= fNumStreamStates) {
+      if (trackNum >= fNumStreamStates) {
 	// The specified track id doesn't exist, so this request fails:
 	ourClientConnection->handleCmd_notFound();
 	break;
@@ -1593,16 +1710,17 @@ void RTSPServer::RTSPClientSession
 	ourClientConnection->handleCmd_bad();
 	break;
       }
-      streamNum = 0;
-      subsession = fStreamStates[streamNum].subsession;
+      trackNum = 0;
+      subsession = fStreamStates[trackNum].subsession;
     }
     // ASSERT: subsession != NULL
     
-    void*& token = fStreamStates[streamNum].streamToken; // alias
+    void*& token = fStreamStates[trackNum].streamToken; // alias
     if (token != NULL) {
       // We already handled a "SETUP" for this track (to the same client),
       // so stop any existing streaming of it, before we set it up again:
       subsession->pauseStream(fOurSessionId, token);
+      fOurServer.unnoteTCPStreamingOnSocket(fStreamStates[trackNum].tcpSocketNum, this, trackNum);
       subsession->deleteStream(fOurSessionId, token);
     }
 
@@ -1646,7 +1764,11 @@ void RTSPServer::RTSPClientSession
     }
     
     // Then, get server parameters from the 'subsession':
-    int tcpSocketNum = streamingMode == RTP_TCP ? ourClientConnection->fClientOutputSocket : -1;
+    if (streamingMode == RTP_TCP) {
+      // Note that we'll be streaming over the RTSP TCP connection:
+      fStreamStates[trackNum].tcpSocketNum = ourClientConnection->fClientOutputSocket;
+      fOurServer.noteTCPStreamingOnSocket(fStreamStates[trackNum].tcpSocketNum, this, trackNum);
+    }
     netAddressBits destinationAddress = 0;
     u_int8_t destinationTTL = 255;
 #ifdef RTSP_ALLOW_CLIENT_DESTINATION_SETTING
@@ -1676,10 +1798,10 @@ void RTSPServer::RTSPClientSession
     
     subsession->getStreamParameters(fOurSessionId, ourClientConnection->fClientAddr.sin_addr.s_addr,
 				    clientRTPPort, clientRTCPPort,
-				    tcpSocketNum, rtpChannelId, rtcpChannelId,
+				    fStreamStates[trackNum].tcpSocketNum, rtpChannelId, rtcpChannelId,
 				    destinationAddress, destinationTTL, fIsMulticast,
 				    serverRTPPort, serverRTCPPort,
-				    fStreamStates[streamNum].streamToken);
+				    fStreamStates[trackNum].streamToken);
     SendingInterfaceAddr = origSendingInterfaceAddr;
     ReceivingInterfaceAddr = origReceivingInterfaceAddr;
     
@@ -1847,6 +1969,7 @@ void RTSPServer::RTSPClientSession
     if (subsession == NULL /* means: aggregated operation */
 	|| subsession == fStreamStates[i].subsession) {
       if (fStreamStates[i].subsession != NULL) {
+	fOurServer.unnoteTCPStreamingOnSocket(fStreamStates[i].tcpSocketNum, this, i);
 	fStreamStates[i].subsession->deleteStream(fOurSessionId, fStreamStates[i].streamToken);
 	fStreamStates[i].subsession = NULL;
       }

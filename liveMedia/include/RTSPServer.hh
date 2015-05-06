@@ -293,6 +293,7 @@ public: // should be protected, but some old compilers complain otherwise
 					 ServerMediaSubsession* subsession, char const* fullRequestStr);
   protected:
     UsageEnvironment& envir() { return fOurServer.envir(); }
+    void deleteStreamByTrack(unsigned trackNum);
     void reclaimStreamStates();
     Boolean isMulticast() const { return fIsMulticast; }
     void noteLiveness();
@@ -316,6 +317,7 @@ public: // should be protected, but some old compilers complain otherwise
     unsigned fNumStreamStates;
     struct streamState {
       ServerMediaSubsession* subsession;
+      int tcpSocketNum;
       void* streamToken;
     } * fStreamStates;
   };
@@ -350,6 +352,10 @@ private:
 
   void incomingConnectionHandler(int serverSocket);
 
+  void noteTCPStreamingOnSocket(int socketNum, RTSPClientSession* clientSession, unsigned trackNum);
+  void unnoteTCPStreamingOnSocket(int socketNum, RTSPClientSession* clientSession, unsigned trackNum);
+  void stopTCPStreamingOnSocket(int socketNum);
+
 protected:
   Port fRTSPServerPort;
 
@@ -366,6 +372,8 @@ private:
   HashTable* fClientConnectionsForHTTPTunneling; // maps client-supplied 'session cookie' strings to "RTSPClientConnection"s
     // (used only for optional RTSP-over-HTTP tunneling)
   HashTable* fClientSessions; // maps 'session id' strings to "RTSPClientSession" objects
+  HashTable* fTCPStreamingDatabase;
+    // maps TCP socket numbers to ids of sessions that are streaming over it (RTP/RTCP-over-TCP)
   HashTable* fPendingRegisterRequests;
   unsigned fRegisterRequestCounter;
   UserAuthenticationDatabase* fAuthDB;

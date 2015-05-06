@@ -16,8 +16,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Copyright (c) 1996-2015, Live Networks, Inc.  All rights reserved
 // A demonstration application that uses our custom RTSP "REGISTER" command to register a stream
 // (given by "rtsp://" URL) with a RTSP client or proxy server
-// splits it into Audio (AC3) and Video (MPEG) Elementary Streams,
-// and streams both using RTP.
 // main program
 
 #include "liveMedia.hh"
