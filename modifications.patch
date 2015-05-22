@@ -1,7 +1,7 @@
-diff --exclude=.gitignore --exclude=.git -rupN live/README.md live555/README.md
---- live/README.md	1970-01-01 01:00:00.000000000 +0100
-+++ live555/README.md	2014-04-09 07:58:41.000000000 +0100
-@@ -0,0 +1,33 @@
+diff -rupN live-orig/README.md live-new/README.md
+--- live-orig/README.md	1970-01-01 01:00:00.000000000 +0100
++++ live-new/README.md	2015-05-22 21:42:28.000000000 +0100
+@@ -0,0 +1,39 @@
 +# Build Instructions
 +
 +For example:
@@ -30,14 +30,20 @@ diff --exclude=.gitignore --exclude=.git -rupN live/README.md live555/README.md
 +2 changes make live555 work a hell of a lot better out of box.
 +
 +### -p option for proxyServer - allows specifying a listening port on the command line
-+ 
++
 +This was rejected from the mailing list, but often RTSPProxy fails to run on
 +more than a few cameras with bad corruption, frames seeking back and forth and
 +many other adverse side effects. Being able to run multiple instances listening
 +on different ports is crucial.
-diff --exclude=.gitignore --exclude=.git -rupN live/liveMedia/MultiFramedRTPSource.cpp live555/liveMedia/MultiFramedRTPSource.cpp
---- live/liveMedia/MultiFramedRTPSource.cpp	2014-03-25 21:30:30.000000000 +0000
-+++ live555/liveMedia/MultiFramedRTPSource.cpp	2014-04-09 08:00:05.000000000 +0100
++
++### Force port re-use
++
++When restarting live555ProxyServer, you are often greeted with a "Port Already in Use"
++error and forced to wait for the port to time out. Adding
++"define ALLOW_RTSP_SERVER_PORT_REUSE 1" to liveMedia/RTSPServer.cpp prevents this.
+diff -rupN live-orig/liveMedia/MultiFramedRTPSource.cpp live-new/liveMedia/MultiFramedRTPSource.cpp
+--- live-orig/liveMedia/MultiFramedRTPSource.cpp	2015-05-12 07:50:20.000000000 +0100
++++ live-new/liveMedia/MultiFramedRTPSource.cpp	2015-05-22 21:33:47.000000000 +0100
 @@ -73,7 +73,7 @@ MultiFramedRTPSource
    fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
  
@@ -47,9 +53,21 @@ diff --exclude=.gitignore --exclude=.git -rupN live/liveMedia/MultiFramedRTPSour
  }
  
  void MultiFramedRTPSource::reset() {
-diff --exclude=.gitignore --exclude=.git -rupN live/proxyServer/live555ProxyServer.cpp live555/proxyServer/live555ProxyServer.cpp
---- live/proxyServer/live555ProxyServer.cpp	2014-03-25 21:30:30.000000000 +0000
-+++ live555/proxyServer/live555ProxyServer.cpp	2014-04-09 08:00:58.000000000 +0100
+diff -rupN live-orig/liveMedia/RTSPServer.cpp live-new/liveMedia/RTSPServer.cpp
+--- live-orig/liveMedia/RTSPServer.cpp	2015-05-12 07:50:20.000000000 +0100
++++ live-new/liveMedia/RTSPServer.cpp	2015-05-22 21:33:47.000000000 +0100
+@@ -25,6 +25,8 @@ along with this library; if not, write t
+ #include "Base64.hh"
+ #include <GroupsockHelper.hh>
+ 
++#define ALLOW_RTSP_SERVER_PORT_REUSE 1
++
+ ////////// RTSPServer implementation //////////
+ 
+ RTSPServer*
+diff -rupN live-orig/proxyServer/live555ProxyServer.cpp live-new/proxyServer/live555ProxyServer.cpp
+--- live-orig/proxyServer/live555ProxyServer.cpp	2015-05-12 07:50:20.000000000 +0100
++++ live-new/proxyServer/live555ProxyServer.cpp	2015-05-22 21:33:47.000000000 +0100
 @@ -29,6 +29,7 @@ UserAuthenticationDatabase* authDBForREG
  int verbosityLevel = 0;
  Boolean streamRTPOverTCP = False;
@@ -75,15 +93,6 @@ diff --exclude=.gitignore --exclude=.git -rupN live/proxyServer/live555ProxyServ
  
    // Begin by setting up our usage environment:
    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-@@ -95,7 +97,7 @@ int main(int argc, char** argv) {
-     case 'T': {
-       // stream RTP and RTCP over a HTTP connection
-       if (argc > 3 && argv[2][0] != '-') {
--	// The next argument is the HTTP server port number:                                                                       
-+	// The next argument is the HTTP server port number:
- 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
- 	    && tunnelOverHTTPPortNum > 0) {
- 	  ++argv; --argc;
 @@ -108,6 +110,22 @@ int main(int argc, char** argv) {
        break;
      }
@@ -107,15 +116,6 @@ diff --exclude=.gitignore --exclude=.git -rupN live/proxyServer/live555ProxyServ
      case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
        if (argc < 4) usage(); // there's no argv[3] (for the "password")
        username = argv[2];
-@@ -140,7 +158,7 @@ int main(int argc, char** argv) {
- 
-     ++argv; --argc;
-   }
--  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end 
-+  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end
-   // Make sure that the remaining arguments appear to be "rtsp://" URLs:
-   int i;
-   for (i = 1; i < argc; ++i) {
 @@ -167,16 +185,10 @@ int main(int argc, char** argv) {
        // Repeat this line with each <username>, <password> that you wish to allow access to the server.
  #endif

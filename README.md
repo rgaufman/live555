@@ -26,8 +26,14 @@ OutPacketBuffer::maxSize is increased 10 fold to 1000000 in the ProxyServer. The
 2 changes make live555 work a hell of a lot better out of box.
 
 ### -p option for proxyServer - allows specifying a listening port on the command line
- 
+
 This was rejected from the mailing list, but often RTSPProxy fails to run on
 more than a few cameras with bad corruption, frames seeking back and forth and
 many other adverse side effects. Being able to run multiple instances listening
 on different ports is crucial.
+
+### Force port re-use
+
+When restarting live555ProxyServer, you are often greeted with a "Port Already in Use"
+error and forced to wait for the port to time out. Adding
+"define ALLOW_RTSP_SERVER_PORT_REUSE 1" to liveMedia/RTSPServer.cpp prevents this.
