@@ -25,12 +25,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <ctype.h> // for "isxdigit()
 #include <time.h> // for "strftime()" and "gmtime()"
 
-#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
-#else
-#include <signal.h>
-#define USE_SIGNALS 1
-#endif
-
 static void decodeURL(char* url) {
   // Replace (in place) any %<hex><hex> sequences with the appropriate 8-bit character.
   char* cursor = url;
@@ -366,15 +360,4 @@ char const* dateHeader() {
   wcstombs(buf, inBuf, wcslen(inBuf));
 #endif
   return buf;
-}
-
-void ignoreSigPipeOnSocket(int socketNum) {
-#ifdef USE_SIGNALS
-#ifdef SO_NOSIGPIPE
-  int set_option = 1;
-  setsockopt(socketNum, SOL_SOCKET, SO_NOSIGPIPE, &set_option, sizeof set_option);
-#else
-  signal(SIGPIPE, SIG_IGN);
-#endif
-#endif
 }

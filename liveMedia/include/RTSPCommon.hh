@@ -62,6 +62,4 @@ Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsRespon
 
 char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
 
-void ignoreSigPipeOnSocket(int socketNum);
-
 #endif

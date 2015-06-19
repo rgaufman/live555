@@ -68,14 +68,14 @@ OnDemandServerMediaSubsession::sdpLines() {
 
     struct in_addr dummyAddr;
     dummyAddr.s_addr = 0;
-    Groupsock dummyGroupsock(envir(), dummyAddr, 0, 0);
+    Groupsock* dummyGroupsock = createGroupsock(dummyAddr, 0);
     unsigned char rtpPayloadType = 96 + trackNumber()-1; // if dynamic
-    RTPSink* dummyRTPSink
-      = createNewRTPSink(&dummyGroupsock, rtpPayloadType, inputSource);
+    RTPSink* dummyRTPSink = createNewRTPSink(dummyGroupsock, rtpPayloadType, inputSource);
     if (dummyRTPSink != NULL && dummyRTPSink->estimatedBitrate() > 0) estBitrate = dummyRTPSink->estimatedBitrate();
 
     setSDPLinesFromRTPSink(dummyRTPSink, inputSource, estBitrate);
     Medium::close(dummyRTPSink);
+    delete dummyGroupsock;
     closeStreamSource(inputSource);
   }
 
@@ -129,7 +129,7 @@ void OnDemandServerMediaSubsession
 	  struct in_addr dummyAddr; dummyAddr.s_addr = 0;
 	  
 	  serverRTPPort = serverPortNum;
-	  rtpGroupsock = new Groupsock(envir(), dummyAddr, serverRTPPort, 255);
+	  rtpGroupsock = createGroupsock(dummyAddr, serverRTPPort);
 	  if (rtpGroupsock->socketNum() >= 0) break; // success
 	}
 
@@ -143,7 +143,7 @@ void OnDemandServerMediaSubsession
 	  struct in_addr dummyAddr; dummyAddr.s_addr = 0;
 
 	  serverRTPPort = serverPortNum;
-	  rtpGroupsock = new Groupsock(envir(), dummyAddr, serverRTPPort, 255);
+	  rtpGroupsock = createGroupsock(dummyAddr, serverRTPPort);
 	  if (rtpGroupsock->socketNum() < 0) {
 	    delete rtpGroupsock;
 	    continue; // try again
@@ -156,7 +156,7 @@ void OnDemandServerMediaSubsession
 	  } else {
 	    // Create a separate 'groupsock' object (with the next (odd) port number) for RTCP:
 	    serverRTCPPort = ++serverPortNum;
-	    rtcpGroupsock = new Groupsock(envir(), dummyAddr, serverRTCPPort, 255);
+	    rtcpGroupsock = createGroupsock(dummyAddr, serverRTCPPort);
 	    if (rtcpGroupsock->socketNum() < 0) {
 	      delete rtpGroupsock;
 	      delete rtcpGroupsock;
@@ -376,6 +376,12 @@ void OnDemandServerMediaSubsession
 
 void OnDemandServerMediaSubsession::closeStreamSource(FramedSource *inputSource) {
   Medium::close(inputSource);
+}
+
+Groupsock* OnDemandServerMediaSubsession
+::createGroupsock(struct in_addr const& addr, Port port) {
+  // Default implementation; may be redefined by subclasses:
+  return new Groupsock(envir(), addr, port, 255);
 }
 
 void OnDemandServerMediaSubsession

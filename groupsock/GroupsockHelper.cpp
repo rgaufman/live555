@@ -29,6 +29,11 @@ extern "C" int initializeWinsockIfNecessary();
 #include <fcntl.h>
 #define initializeWinsockIfNecessary() 1
 #endif
+#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
+#else
+#include <signal.h>
+#define USE_SIGNALS 1
+#endif
 #include <stdio.h>
 
 // By default, use INADDR_ANY for the sending and receiving interfaces:
@@ -350,6 +355,17 @@ Boolean writeSocket(UsageEnvironment& env,
   } while (0);
 
   return False;
+}
+
+void ignoreSigPipeOnSocket(int socketNum) {
+  #ifdef USE_SIGNALS
+  #ifdef SO_NOSIGPIPE
+  int set_option = 1;
+  setsockopt(socketNum, SOL_SOCKET, SO_NOSIGPIPE, &set_option, sizeof set_option);
+  #else
+  signal(SIGPIPE, SIG_IGN);
+  #endif
+  #endif
 }
 
 static unsigned getBufferSize(UsageEnvironment& env, int bufOptName,

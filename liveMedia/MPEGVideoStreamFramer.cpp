@@ -142,6 +142,11 @@ void MPEGVideoStreamFramer::doGetNextFrame() {
   continueReadProcessing();
 }
 
+void MPEGVideoStreamFramer::doStopGettingFrames() {
+  flushInput();
+  FramedFilter::doStopGettingFrames();
+}
+
 void MPEGVideoStreamFramer
 ::continueReadProcessing(void* clientData,
 			 unsigned char* /*ptr*/, unsigned /*size*/,

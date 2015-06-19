@@ -19,7 +19,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "TCPStreamSink.hh"
-#include "RTSPCommon.hh" // for "ignoreSigPipeOnSocket()"
+#include <GroupsockHelper.hh> // for "ignoreSigPipeOnSocket()"
 
 TCPStreamSink* TCPStreamSink::createNew(UsageEnvironment& env, int socketNum) {
   return new TCPStreamSink(env, socketNum);

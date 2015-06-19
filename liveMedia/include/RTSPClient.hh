@@ -153,6 +153,10 @@ public:
       // Our implementation automatically does this just prior to sending each "PLAY" command;
       // You should not call these functions yourself unless you know what you're doing.
 
+  void setSpeed(MediaSession& session, float speed = 1.0f);
+      // Set (recorded) media download speed to given value to support faster download using 'Speed:'
+      // option on 'PLAY' command.
+
   Boolean changeResponseHandler(unsigned cseq, responseHandler* newResponseHandler);
       // Changes the response handler for the previously-performed command (whose operation returned "cseq").
       // (To turn off any response handling for the command, use a "newResponseHandler" value of NULL.  This might be done as part
@@ -275,11 +279,13 @@ private:
 			       char*& serverAddressStr, portNumBits& serverPortNum,
 			       unsigned char& rtpChannelId, unsigned char& rtcpChannelId);
   Boolean parseScaleParam(char const* paramStr, float& scale);
+  Boolean parseSpeedParam(char const* paramStr, float& speed);
   Boolean parseRTPInfoParams(char const*& paramStr, u_int16_t& seqNum, u_int32_t& timestamp);
   Boolean handleSETUPResponse(MediaSubsession& subsession, char const* sessionParamsStr, char const* transportParamsStr,
 			      Boolean streamUsingTCP);
   Boolean handlePLAYResponse(MediaSession& session, MediaSubsession& subsession,
-                             char const* scaleParamsStr, char const* rangeParamsStr, char const* rtpInfoParamsStr);
+                             char const* scaleParamsStr, const char* speedParamsStr,
+			     char const* rangeParamsStr, char const* rtpInfoParamsStr);
   Boolean handleTEARDOWNResponse(MediaSession& session, MediaSubsession& subsession);
   Boolean handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString);
   Boolean handleAuthenticationFailure(char const* wwwAuthenticateParamsStr);
@@ -352,7 +358,7 @@ public:
 						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,
 						    int verbosityLevel = 0, char const* applicationName = NULL);
       // If ourPort.num() == 0, we'll choose the port number ourself.  (Use the following function to get it.)
-  portNumBits serverPortNum() const { return ntohs(fRTSPServerPort.num()); }
+  portNumBits serverPortNum() const { return ntohs(fServerPort.num()); }
 
 protected:
   HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,

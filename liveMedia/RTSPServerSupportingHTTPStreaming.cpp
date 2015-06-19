@@ -43,7 +43,7 @@ RTSPServerSupportingHTTPStreaming
 RTSPServerSupportingHTTPStreaming::~RTSPServerSupportingHTTPStreaming() {
 }
 
-RTSPServer::RTSPClientConnection*
+GenericMediaServer::ClientConnection*
 RTSPServerSupportingHTTPStreaming::createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr) {
   return new RTSPClientConnectionSupportingHTTPStreaming(*this, clientSocket, clientAddr);
 }

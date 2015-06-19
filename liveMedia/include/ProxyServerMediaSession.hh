@@ -46,6 +46,7 @@ public:
   void continueAfterDESCRIBE(char const* sdpDescription);
   void continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter);
   void continueAfterSETUP();
+  void continueAfterPLAY(int resultCode);
 
 private:
   void reset();

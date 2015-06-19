@@ -38,7 +38,6 @@ private:
 private:
   StreamReplicator& fOurReplicator;
   int fFrameIndex; // 0 or 1, depending upon which frame we're currently requesting; could also be -1 if we've stopped playing
-  Boolean fDeliveryInProgress;
 
   // Replicas that are currently awaiting data are kept in a (singly-linked) list:
   StreamReplica* fNext;
@@ -104,12 +103,15 @@ void StreamReplicator::getNextFrame(StreamReplica* replica) {
 }
 
 void StreamReplicator::deactivateStreamReplica(StreamReplica* replicaBeingDeactivated) {
-  // Assert: fNumActiveReplicas > 0
-  if (fNumReplicas == 0) fprintf(stderr, "StreamReplicator::deactivateStreamReplica() Internal Error!\n"); // should not happen
-  --fNumActiveReplicas;
+  if (replicaBeingDeactivated->fFrameIndex == -1) return; // this replica has already been deactivated (or was never activated at all)
 
-  if (replicaBeingDeactivated->fDeliveryInProgress) --fNumDeliveriesMadeSoFar;
-    // hack in case we're called while in the middle of a frame delivery to us
+  // Assert: fNumActiveReplicas > 0
+  if (fNumActiveReplicas == 0) fprintf(stderr, "StreamReplicator::deactivateStreamReplica() Internal Error!\n"); // should not happen
+  --fNumActiveReplicas;
+  replicaBeingDeactivated->fFrameIndex = -1;
+
+  // Forget about any frame delivery that might have just been made to this replica:
+  if (replicaBeingDeactivated->fFrameIndex != fFrameIndex && fNumDeliveriesMadeSoFar > 0) --fNumDeliveriesMadeSoFar;
 
   // Check whether the replica being deactivated is the 'master' replica, or is enqueued awaiting a frame:
   if (replicaBeingDeactivated == fMasterReplica) {
@@ -177,12 +179,20 @@ void StreamReplicator::deactivateStreamReplica(StreamReplica* replicaBeingDeacti
 	}
       }
     }
+
+    // Check for the possibility that - now that a replica has been deactivated - all other
+    // replicas have received the current frame, and so now we need to complete delivery to
+    // the master replica:
+    if (fMasterReplica != NULL && fInputSource != NULL && !fInputSource->isCurrentlyAwaitingData()) deliverReceivedFrame();
   }
 
   if (fNumActiveReplicas == 0 && fInputSource != NULL) fInputSource->stopGettingFrames(); // tell our source to stop too
 }
 
 void StreamReplicator::removeStreamReplica(StreamReplica* replicaBeingRemoved) {
+  // First, handle the replica that's being removed the same way that we would if it were merely being deactivated:
+  deactivateStreamReplica(replicaBeingRemoved);
+
   // Assert: fNumReplicas > 0
   if (fNumReplicas == 0) fprintf(stderr, "StreamReplicator::removeStreamReplica() Internal Error!\n"); // should not happen
   --fNumReplicas;
@@ -191,11 +201,6 @@ void StreamReplicator::removeStreamReplica(StreamReplica* replicaBeingRemoved) {
   if (fNumReplicas == 0 && fDeleteWhenLastReplicaDies) {
     Medium::close(this);
     return;
-  }
-
-  // Now handle the replica that's being removed the same way that we would if it were merely being deactivated:
-  if (replicaBeingRemoved->fFrameIndex != -1) { // i.e., we haven't already done this
-    deactivateStreamReplica(replicaBeingRemoved);
   }
 }
 
@@ -250,8 +255,6 @@ void StreamReplicator::deliverReceivedFrame() {
     fReplicasAwaitingCurrentFrame = replica->fNext;
     replica->fNext = NULL;
     
-    replica->fDeliveryInProgress = True;
-
     // Assert: fMasterReplica != NULL
     if (fMasterReplica == NULL) fprintf(stderr, "StreamReplicator::deliverReceivedFrame() Internal Error 1!\n"); // shouldn't happen
     StreamReplica::copyReceivedFrame(replica, fMasterReplica);
@@ -263,8 +266,6 @@ void StreamReplicator::deliverReceivedFrame() {
 
     // Complete delivery to this replica:
     FramedSource::afterGetting(replica);
-
-    replica->fDeliveryInProgress = False;
   }
 
   if (fNumDeliveriesMadeSoFar == fNumActiveReplicas - 1 && fMasterReplica != NULL) {
@@ -292,6 +293,7 @@ void StreamReplicator::deliverReceivedFrame() {
     fReplicasAwaitingCurrentFrame = fReplicasAwaitingNextFrame;
     fReplicasAwaitingNextFrame = NULL;
     
+    // Complete delivery to the 'master' replica (thereby completing all deliveries for this frame):
     FramedSource::afterGetting(replica);
   }
 }
@@ -302,7 +304,7 @@ void StreamReplicator::deliverReceivedFrame() {
 StreamReplica::StreamReplica(StreamReplicator& ourReplicator)
   : FramedSource(ourReplicator.envir()),
     fOurReplicator(ourReplicator),
-    fFrameIndex(-1/*we haven't started playing yet*/), fDeliveryInProgress(False), fNext(NULL) {
+    fFrameIndex(-1/*we haven't started playing yet*/), fNext(NULL) {
 }
 
 StreamReplica::~StreamReplica() {
@@ -314,10 +316,7 @@ void StreamReplica::doGetNextFrame() {
 }
 
 void StreamReplica::doStopGettingFrames() {
-  if (fFrameIndex != -1) { // we had been activated
-    fFrameIndex = -1; // When we start reading again, this will tell the replicator that we were previously inactive.
-    fOurReplicator.deactivateStreamReplica(this);
-  }
+  fOurReplicator.deactivateStreamReplica(this);
 }
 
 void StreamReplica::copyReceivedFrame(StreamReplica* toReplica, StreamReplica* fromReplica) {

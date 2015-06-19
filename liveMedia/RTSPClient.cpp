@@ -180,6 +180,21 @@ void RTSPClient::sendDummyUDPPackets(MediaSubsession& subsession, unsigned numDu
   }
 }
 
+void RTSPClient::setSpeed(MediaSession& session, float speed) { 
+  // Optionally set download speed for session to be used later on PLAY command:
+  // The user should call this function after the MediaSession is instantiated, but before the
+  // first "sendPlayCommand()" is called.
+  if (&session != NULL) {
+    session.speed() = speed;
+    MediaSubsessionIterator iter(session);
+    MediaSubsession* subsession;
+
+    while ((subsession = iter.next()) != NULL) {
+      subsession->speed() = speed;
+    }
+  }
+}
+
 Boolean RTSPClient::changeResponseHandler(unsigned cseq, responseHandler* newResponseHandler) { 
   // Look for the matching request record in each of our 'pending requests' queues:
   RequestRecord* request;
@@ -560,6 +575,19 @@ static char* createSessionString(char const* sessionId) {
   return sessionStr;
 }
 
+// Add support for faster download thru "speed:" option on PLAY
+static char* createSpeedString(float speed) {
+  char buf[100];
+  if (speed == 1.0f ) {
+    // This is the default value; we don't need a "Speed:" header:
+    buf[0] = '\0';
+  } else {
+    sprintf(buf, "Speed: %.3f\r\n",speed);
+  }
+
+  return strDup(buf);
+}
+
 static char* createScaleString(float scale, float currentScale) {
   char buf[100];
   if (scale == 1.0f && currentScale == 1.0f) {
@@ -775,14 +803,17 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
     }
     
     if (strcmp(request->commandName(), "PLAY") == 0) {
-      // Create "Session:", "Scale:", and "Range:" headers; these make up the 'extra headers':
+      // Create possible "Session:", "Scale:", "Speed:", and "Range:" headers;
+      // these make up the 'extra headers':
       char* sessionStr = createSessionString(sessionId);
       char* scaleStr = createScaleString(request->scale(), originalScale);
+      float speed = request->session() != NULL ? request->session()->speed() : request->subsession()->speed();
+      char* speedStr = createSpeedString(speed);
       char* rangeStr = createRangeString(request->start(), request->end(), request->absStartTime(), request->absEndTime());
-      extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(rangeStr) + 1];
+      extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(speedStr) + strlen(rangeStr) + 1];
       extraHeadersWereAllocated = True;
-      sprintf(extraHeaders, "%s%s%s", sessionStr, scaleStr, rangeStr);
-      delete[] sessionStr; delete[] scaleStr; delete[] rangeStr;
+      sprintf(extraHeaders, "%s%s%s%s", sessionStr, scaleStr, speedStr, rangeStr);
+      delete[] sessionStr; delete[] scaleStr; delete[] speedStr; delete[] rangeStr;
     } else {
       // Create a "Session:" header; this makes up our 'extra headers':
       extraHeaders = createSessionString(sessionId);
@@ -1086,6 +1117,11 @@ Boolean RTSPClient::parseScaleParam(char const* paramStr, float& scale) {
   return sscanf(paramStr, "%f", &scale) == 1;
 }
 
+Boolean RTSPClient::parseSpeedParam(char const* paramStr, float& speed) {
+  Locale l("C", Numeric);
+  return sscanf(paramStr, "%f", &speed) >= 1;
+}
+
 Boolean RTSPClient::parseRTPInfoParams(char const*& paramsStr, u_int16_t& seqNum, u_int32_t& timestamp) {
   if (paramsStr == NULL || paramsStr[0] == '\0') return False;
   while (paramsStr[0] == ',') ++paramsStr;
@@ -1172,13 +1208,16 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
 }
 
 Boolean RTSPClient::handlePLAYResponse(MediaSession& session, MediaSubsession& subsession,
-                                       char const* scaleParamsStr, char const* rangeParamsStr, char const* rtpInfoParamsStr) {
-  Boolean scaleOK = False, rangeOK = False;
+                                       char const* scaleParamsStr, char const* speedParamsStr,
+                                       char const* rangeParamsStr, char const* rtpInfoParamsStr) {
+  Boolean scaleOK = False, rangeOK = False, speedOK = False;
   do {
     if (&session != NULL) {
       // The command was on the whole session
       if (scaleParamsStr != NULL && !parseScaleParam(scaleParamsStr, session.scale())) break;
       scaleOK = True;
+      if (speedParamsStr != NULL && !parseSpeedParam(speedParamsStr, session.speed())) break;
+      speedOK = True;
       Boolean startTimeIsNow;
       if (rangeParamsStr != NULL &&
 	  !parseRangeParam(rangeParamsStr,
@@ -1204,6 +1243,8 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession& session, MediaSubsession& s
       // The command was on a subsession
       if (scaleParamsStr != NULL && !parseScaleParam(scaleParamsStr, subsession.scale())) break;
       scaleOK = True;
+      if (speedParamsStr != NULL && !parseSpeedParam(speedParamsStr, session.speed())) break;
+      speedOK = True;
       Boolean startTimeIsNow;
       if (rangeParamsStr != NULL &&
 	  !parseRangeParam(rangeParamsStr,
@@ -1229,6 +1270,8 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession& session, MediaSubsession& s
   // An error occurred:
   if (!scaleOK) {
     envir().setResultMsg("Bad \"Scale:\" header");
+  } else if (!speedOK) {
+    envir().setResultMsg("Bad \"Speed:\" header");
   } else if (!rangeOK) {
     envir().setResultMsg("Bad \"Range:\" header");
   } else {
@@ -1587,6 +1630,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
     char const* sessionParamsStr = NULL;
     char const* transportParamsStr = NULL;
     char const* scaleParamsStr = NULL;
+    char const* speedParamsStr = NULL;
     char const* rangeParamsStr = NULL;
     char const* rtpInfoParamsStr = NULL;
     char const* wwwAuthenticateParamsStr = NULL;
@@ -1660,6 +1704,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	} else if (checkForHeader(lineStart, "Session:", 8, sessionParamsStr)) {
 	} else if (checkForHeader(lineStart, "Transport:", 10, transportParamsStr)) {
 	} else if (checkForHeader(lineStart, "Scale:", 6, scaleParamsStr)) {
+	} else if (checkForHeader(lineStart, "Speed:", 6, speedParamsStr)) {
 	} else if (checkForHeader(lineStart, "Range:", 6, rangeParamsStr)) {
 	} else if (checkForHeader(lineStart, "RTP-Info:", 9, rtpInfoParamsStr)) {
 	} else if (checkForHeader(lineStart, "WWW-Authenticate:", 17, headerParamsStr)) {
@@ -1729,7 +1774,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	  if (strcmp(foundRequest->commandName(), "SETUP") == 0) {
 	    if (!handleSETUPResponse(*foundRequest->subsession(), sessionParamsStr, transportParamsStr, foundRequest->booleanFlags()&0x1)) break;
 	  } else if (strcmp(foundRequest->commandName(), "PLAY") == 0) {
-	    if (!handlePLAYResponse(*foundRequest->session(), *foundRequest->subsession(), scaleParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
+	    if (!handlePLAYResponse(*foundRequest->session(), *foundRequest->subsession(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
 	  } else if (strcmp(foundRequest->commandName(), "TEARDOWN") == 0) {
 	    if (!handleTEARDOWNResponse(*foundRequest->session(), *foundRequest->subsession())) break;
 	  } else if (strcmp(foundRequest->commandName(), "GET_PARAMETER") == 0) {

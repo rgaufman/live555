@@ -19,6 +19,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "BasicUsageEnvironment0.hh"
 #include <stdio.h>
+#if defined(__WIN32__) || defined(_WIN32) || defined(_WIN32_WCE)
+#define snprintf _snprintf
+#endif
+
 
 ////////// BasicUsageEnvironment //////////
 
@@ -62,10 +66,24 @@ void BasicUsageEnvironment0::setResultMsg(MsgString msg1, MsgString msg2,
 void BasicUsageEnvironment0::setResultErrMsg(MsgString msg, int err) {
   setResultMsg(msg);
 
-#ifndef _WIN32_WCE
-  appendToResultMsg(strerror(err == 0 ? getErrno() : err));
+  if (err == 0) err = getErrno();
+#if defined(__WIN32__) || defined(_WIN32) || defined(_WIN32_WCE)
+  char errMsg[RESULT_MSG_BUFFER_MAX] = "\0";
+  if (0 != FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errMsg, sizeof(errMsg)/sizeof(errMsg[0]), NULL)) {
+    // Remove all trailing '\r', '\n' and '.'
+    for (char* p = errMsg + strlen(errMsg); p != errMsg && (*p == '\r' || *p == '\n' || *p == '.' || *p == '\0'); --p) {
+      *p = '\0';
+    }
+  } else
+    snprintf(errMsg, sizeof(errMsg)/sizeof(errMsg[0]), "error %d", err);
+  appendToResultMsg(errMsg);
+#else
+  appendToResultMsg(strerror(err));
 #endif
 }
+
+
+
 
 void BasicUsageEnvironment0::appendToResultMsg(MsgString msg) {
   char* curPtr = &fResultMsgBuffer[fCurBufferSize];

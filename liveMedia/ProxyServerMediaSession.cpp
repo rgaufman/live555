@@ -183,6 +183,11 @@ static void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* res
   delete[] resultString;
 }
 
+static void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultString) {
+  ((ProxyRTSPClient*)rtspClient)->continueAfterPLAY(resultCode);
+  delete[] resultString;
+}
+
 static void continueAfterOPTIONS(RTSPClient* rtspClient, int resultCode, char* resultString) {
   Boolean serverSupportsGetParameter = False;
   if (resultCode == 0) {
@@ -320,7 +325,7 @@ void ProxyRTSPClient::continueAfterSETUP() {
     if (fNumSetupsDone >= smss->fParentSession->numSubsessions()) {
       // We've now finished setting up each of our subsessions (i.e., 'tracks').
       // Continue by sending a "PLAY" command (an 'aggregate' "PLAY" command, on the whole session):
-      sendPlayCommand(smss->fClientMediaSubsession.parentSession(), NULL, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
+      sendPlayCommand(smss->fClientMediaSubsession.parentSession(), ::continueAfterPLAY, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
           // the "-1.0f" "start" parameter causes the "PLAY" to be sent without a "Range:" header, in case we'd already done
           // a "PLAY" before (as a result of a 'subsession timeout' (note below))
       fLastCommandWasPLAY = True;
@@ -332,6 +337,14 @@ void ProxyRTSPClient::continueAfterSETUP() {
       fSubsessionTimerTask
 	= envir().taskScheduler().scheduleDelayedTask(SUBSESSION_TIMEOUT_SECONDS*MILLION, (TaskFunc*)subsessionTimeout, this);
     }
+  }
+}
+
+void ProxyRTSPClient::continueAfterPLAY(int resultCode) {
+  if (resultCode != 0) {
+    // The "PLAY" command failed, so reset the connection with the 'back-end' server and start over,
+    // just as if a periodic 'liveness' check with the 'back-end' server had failed:
+    continueAfterLivenessCommand(resultCode, fServerSupportsGetParameter);
   }
 }
 
@@ -401,7 +414,7 @@ void ProxyRTSPClient::subsessionTimeout(void* clientData) {
 void ProxyRTSPClient::handleSubsessionTimeout() {
   // We still have one or more subsessions ('tracks') left to "SETUP".  But we can't wait any longer for them.  Send a "PLAY" now:
   MediaSession* sess = fOurServerMediaSession.fClientMediaSession;
-  if (sess != NULL) sendPlayCommand(*sess, NULL, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
+  if (sess != NULL) sendPlayCommand(*sess, ::continueAfterPLAY, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
   fLastCommandWasPLAY = True;
 }
 
@@ -507,7 +520,7 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
       // have been called here), so we know that the substream was previously "PAUSE"d.  Send "PLAY" downstream once again,
       // to resume the stream:
       if (!proxyRTSPClient->fLastCommandWasPLAY) { // so that we send only one "PLAY"; not one for each subsession
-	proxyRTSPClient->sendPlayCommand(fClientMediaSubsession.parentSession(), NULL, -1.0f/*resume from previous point*/,
+	proxyRTSPClient->sendPlayCommand(fClientMediaSubsession.parentSession(), ::continueAfterPLAY, -1.0f/*resume from previous point*/,
 					 -1.0f, 1.0f, proxyRTSPClient->auth());
 	proxyRTSPClient->fLastCommandWasPLAY = True;
       }

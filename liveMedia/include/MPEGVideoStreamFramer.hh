@@ -54,6 +54,7 @@ protected:
 
 private: // redefined virtual functions
   virtual void doGetNextFrame();
+  virtual void doStopGettingFrames();
 
 private:
   void reset();

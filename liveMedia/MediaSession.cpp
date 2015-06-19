@@ -61,8 +61,8 @@ MediaSession::MediaSession(UsageEnvironment& env)
     fSubsessionsHead(NULL), fSubsessionsTail(NULL),
     fConnectionEndpointName(NULL),
     fMaxPlayStartTime(0.0f), fMaxPlayEndTime(0.0f), fAbsStartTime(NULL), fAbsEndTime(NULL),
-    fScale(1.0f), fMediaSessionType(NULL), fSessionName(NULL), fSessionDescription(NULL),
-    fControlPath(NULL) {
+    fScale(1.0f), fSpeed(1.0f),
+    fMediaSessionType(NULL), fSessionName(NULL), fSessionDescription(NULL), fControlPath(NULL) {
   fSourceFilterAddr.s_addr = 0;
 
   // Get our host name, and use this for the RTCP CNAME:

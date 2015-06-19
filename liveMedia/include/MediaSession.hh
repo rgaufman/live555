@@ -71,6 +71,7 @@ public:
   char const* CNAME() const { return fCNAME; }
   struct in_addr const& sourceFilterAddr() const { return fSourceFilterAddr; }
   float& scale() { return fScale; }
+  float& speed() { return fSpeed; }
   char* mediaSessionType() const { return fMediaSessionType; }
   char* sessionName() const { return fSessionName; }
   char* sessionDescription() const { return fSessionDescription; }
@@ -132,6 +133,7 @@ protected:
   char* fAbsEndTime;
   struct in_addr fSourceFilterAddr; // used for SSM
   float fScale; // set from a RTSP "Scale:" header
+  float fSpeed;
   char* fMediaSessionType; // holds a=type value
   char* fSessionName; // holds s=<session name> value
   char* fSessionDescription; // holds i=<session description> value
@@ -172,6 +174,7 @@ public:
   unsigned videoFPS() const { return fVideoFPS; }
   unsigned numChannels() const { return fNumChannels; }
   float& scale() { return fScale; }
+  float& speed() { return fSpeed; }
 
   RTPSource* rtpSource() { return fRTPSource; }
   RTCPInstance* rtcpInstance() { return fRTCPInstance; }
@@ -321,6 +324,7 @@ protected:
   unsigned fNumChannels;
      // optionally set by "a=rtpmap:" lines for audio sessions.  Default: 1
   float fScale; // set from a RTSP "Scale:" header
+  float fSpeed;
   double fNPT_PTS_Offset; // set by "getNormalPlayTime()"; add this to a PTS to get NPT
   HashTable* fAttributeTable; // for "a=fmtp:" attributes.  (Later an array by payload type #####)
 

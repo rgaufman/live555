@@ -43,6 +43,8 @@ Boolean writeSocket(UsageEnvironment& env,
 		    unsigned char* buffer, unsigned bufferSize);
     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
+void ignoreSigPipeOnSocket(int socketNum);
+
 unsigned getSendBufferSize(UsageEnvironment& env, int socket);
 unsigned getReceiveBufferSize(UsageEnvironment& env, int socket);
 unsigned setSendBufferTo(UsageEnvironment& env,

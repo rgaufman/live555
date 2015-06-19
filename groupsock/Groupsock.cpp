@@ -284,7 +284,9 @@ Boolean Groupsock::output(UsageEnvironment& env, u_int8_t ttlToSend,
   } while (0);
 
   if (DebugLevel >= 0) { // this is a fatal error
-    env.setResultMsg("Groupsock write failed: ", env.getResultMsg());
+    UsageEnvironment::MsgString msg = strDup(env.getResultMsg());
+    env.setResultMsg("Groupsock write failed: ", msg);
+    delete[] (char*)msg;
   }
   return False;
 }
@@ -302,8 +304,9 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			    buffer, maxBytesToRead, fromAddress);
   if (numBytes < 0) {
     if (DebugLevel >= 0) { // this is a fatal error
-      env().setResultMsg("Groupsock read failed: ",
-			 env().getResultMsg());
+      UsageEnvironment::MsgString msg = strDup(env().getResultMsg());
+      env().setResultMsg("Groupsock read failed: ", msg);
+      delete[] (char*)msg;
     }
     return False;
   }
@@ -512,9 +515,7 @@ static Boolean setGroupsockBySocket(UsageEnvironment& env, int sock,
       = (sockets->Lookup((char*)(long)sock) != 0);
     if (alreadyExists) {
       char buf[100];
-      sprintf(buf,
-	      "Attempting to replace an existing socket (%d",
-	      sock);
+      sprintf(buf, "Attempting to replace an existing socket (%d)", sock);
       env.setResultMsg(buf);
       break;
     }
