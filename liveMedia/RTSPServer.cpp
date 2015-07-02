@@ -32,11 +32,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 RTSPServer*
 RTSPServer::createNew(UsageEnvironment& env, Port ourPort,
 		      UserAuthenticationDatabase* authDatabase,
-		      unsigned reclamationTestSeconds) {
+		      unsigned reclamationSeconds) {
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
   
-  return new RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds);
+  return new RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds);
 }
 
 Boolean RTSPServer::lookupByName(UsageEnvironment& env,
@@ -235,14 +235,13 @@ Boolean RTSPServer::specialClientUserAccessCheck(int /*clientSocket*/, struct so
 RTSPServer::RTSPServer(UsageEnvironment& env,
 		       int ourSocket, Port ourPort,
 		       UserAuthenticationDatabase* authDatabase,
-		       unsigned reclamationTestSeconds)
-  : GenericMediaServer(env, ourSocket, ourPort),
+		       unsigned reclamationSeconds)
+  : GenericMediaServer(env, ourSocket, ourPort, reclamationSeconds),
     fHTTPServerSocket(-1), fHTTPServerPort(0),
     fClientConnectionsForHTTPTunneling(NULL), // will get created if needed
     fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)),
     fPendingRegisterRequests(HashTable::create(ONE_WORD_HASH_KEYS)), fRegisterRequestCounter(0),
-    fAuthDB(authDatabase), fReclamationTestSeconds(reclamationTestSeconds),
-    fAllowStreamingRTPOverTCP(True) {
+    fAuthDB(authDatabase), fAllowStreamingRTPOverTCP(True) {
 }
 
 // A data structure that is used to implement "fTCPStreamingDatabase"
@@ -266,6 +265,8 @@ RTSPServer::~RTSPServer() {
   envir().taskScheduler().turnOffBackgroundReadHandling(fHTTPServerSocket);
   ::closeSocket(fHTTPServerSocket);
   delete fClientConnectionsForHTTPTunneling;
+  
+  cleanup(); // Removes all "ClientSession" and "ClientConnection" objects, and their tables.
   
   // Delete any pending REGISTER requests:
   RegisterRequestRecord* registerRequest;
@@ -886,7 +887,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
     Boolean playAfterSetup = False;
     if (parseSucceeded) {
 #ifdef DEBUG
-      fprintf(stderr, "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %ld bytes following the message.\n", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
+      fprintf(stderr, "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %d bytes following the message.\n", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
 #endif
       // If there was a "Content-Length:" header, then make sure we've received all of the data that it specified:
       if (ptr + newBytesRead < tmpPtr + 2 + contentLength) break; // we still need more data; subsequent reads will give it to us 
@@ -1309,14 +1310,10 @@ RTSPServer::RTSPClientSession
 ::RTSPClientSession(RTSPServer& ourServer, u_int32_t sessionId)
   : GenericMediaServer::ClientSession(ourServer, sessionId),
     fOurRTSPServer(ourServer), fIsMulticast(False), fStreamAfterSETUP(False),
-    fTCPStreamIdCount(0), fLivenessCheckTask(NULL), fNumStreamStates(0), fStreamStates(NULL) {
-  noteLiveness();
+    fTCPStreamIdCount(0), fNumStreamStates(0), fStreamStates(NULL) {
 }
 
 RTSPServer::RTSPClientSession::~RTSPClientSession() {
-  // Turn off any liveness checking:
-  envir().taskScheduler().unscheduleDelayedTask(fLivenessCheckTask);
-  
   reclaimStreamStates();
 }
 
@@ -1616,8 +1613,8 @@ void RTSPServer::RTSPClientSession
     AddressString destAddrStr(destinationAddress);
     AddressString sourceAddrStr(sourceAddr);
     char timeoutParameterString[100];
-    if (fOurRTSPServer.fReclamationTestSeconds > 0) {
-      sprintf(timeoutParameterString, ";timeout=%u", fOurRTSPServer.fReclamationTestSeconds);
+    if (fOurRTSPServer.fReclamationSeconds > 0) {
+      sprintf(timeoutParameterString, ";timeout=%u", fOurRTSPServer.fReclamationSeconds);
     } else {
       timeoutParameterString[0] = '\0';
     }
@@ -2052,39 +2049,6 @@ RTSPServer::createNewClientSession(u_int32_t sessionId) {
   return new RTSPClientSession(*this, sessionId);
 }
 
-void RTSPServer::RTSPClientSession::noteLiveness() {
-  if (fOurRTSPServer.fReclamationTestSeconds > 0) {
-    envir().taskScheduler()
-      .rescheduleDelayedTask(fLivenessCheckTask,
-			     fOurRTSPServer.fReclamationTestSeconds*1000000,
-			     (TaskFunc*)livenessTimeoutTask, this);
-  }
-}
-
-void RTSPServer::RTSPClientSession
-::noteClientLiveness(RTSPClientSession* clientSession) {
-#ifdef DEBUG
-  char const* streamName
-    = (clientSession->fOurServerMediaSession == NULL) ? "???" : clientSession->fOurServerMediaSession->streamName();
-  fprintf(stderr, "RTSP client session (id \"%08X\", stream name \"%s\"): Liveness indication\n",
-	  clientSession->fOurSessionId, streamName);
-#endif
-  clientSession->noteLiveness();
-}
-
-void RTSPServer::RTSPClientSession
-::livenessTimeoutTask(RTSPClientSession* clientSession) {
-  // If this gets called, the client session is assumed to have timed out,
-  // so delete it:
-#ifdef DEBUG
-  char const* streamName
-    = (clientSession->fOurServerMediaSession == NULL) ? "???" : clientSession->fOurServerMediaSession->streamName();
-  fprintf(stderr, "RTSP client session (id \"%08X\", stream name \"%s\") has timed out (due to inactivity)\n",
-	  clientSession->fOurSessionId, streamName);
-#endif
-  delete clientSession;
-}
-
 
 ////////// ServerMediaSessionIterator implementation //////////
 
@@ -2147,21 +2111,21 @@ char const* UserAuthenticationDatabase::lookupPassword(char const* username) {
 RTSPServerWithREGISTERProxying* RTSPServerWithREGISTERProxying
 ::createNew(UsageEnvironment& env, Port ourPort,
 	    UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
-	    unsigned reclamationTestSeconds,
+	    unsigned reclamationSeconds,
 	    Boolean streamRTPOverTCP, int verbosityLevelForProxying) {
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
   
-  return new RTSPServerWithREGISTERProxying(env, ourSocket, ourPort, authDatabase, authDatabaseForREGISTER, reclamationTestSeconds,
+  return new RTSPServerWithREGISTERProxying(env, ourSocket, ourPort, authDatabase, authDatabaseForREGISTER, reclamationSeconds,
 					    streamRTPOverTCP, verbosityLevelForProxying);
 }
 
 RTSPServerWithREGISTERProxying
 ::RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
-				 unsigned reclamationTestSeconds,
+				 unsigned reclamationSeconds,
 				 Boolean streamRTPOverTCP, int verbosityLevelForProxying)
-  : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds),
+  : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fVerbosityLevelForProxying(verbosityLevelForProxying),
     fRegisteredProxyCounter(0), fAllowedCommandNames(NULL), fAuthDBForREGISTER(authDatabaseForREGISTER) {
 }

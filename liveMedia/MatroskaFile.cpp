@@ -437,8 +437,8 @@ RTPSink* MatroskaFile
       delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
     } else if (strcmp(track->mimeType, "video/H264") == 0) {
       // Use our track's 'Codec Private' data: Bytes 5 and beyond contain SPS and PPSs:
-      u_int8_t* SPS = NULL; unsigned SPSSize = NULL;
-      u_int8_t* PPS = NULL; unsigned PPSSize = NULL;
+      u_int8_t* SPS = NULL; unsigned SPSSize = 0;
+      u_int8_t* PPS = NULL; unsigned PPSSize = 0;
       u_int8_t* SPSandPPSBytes = NULL; unsigned numSPSandPPSBytes = 0;
 
       do {
@@ -489,9 +489,9 @@ RTPSink* MatroskaFile
 
       delete[] SPS; delete[] PPS;
     } else if (strcmp(track->mimeType, "video/H265") == 0) {
-      u_int8_t* VPS = NULL; unsigned VPSSize = NULL;
-      u_int8_t* SPS = NULL; unsigned SPSSize = NULL;
-      u_int8_t* PPS = NULL; unsigned PPSSize = NULL;
+      u_int8_t* VPS = NULL; unsigned VPSSize = 0;
+      u_int8_t* SPS = NULL; unsigned SPSSize = 0;
+      u_int8_t* PPS = NULL; unsigned PPSSize = 0;
       u_int8_t* VPS_SPS_PPSBytes = NULL; unsigned numVPS_SPS_PPSBytes = 0;
       unsigned i;
 

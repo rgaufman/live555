@@ -34,12 +34,12 @@ int readSocket(UsageEnvironment& env,
 	       struct sockaddr_in& fromAddress);
 
 Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct in_addr address, Port port,
+		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize);
 
 Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct in_addr address, Port port,
+		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
 		    unsigned char* buffer, unsigned bufferSize);
     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 

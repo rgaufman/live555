@@ -72,7 +72,7 @@ void BasicUDPSink::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedB
   }
 
   // Send the packet:
-  fGS->output(envir(), fGS->ttl(), fOutputBuffer, frameSize);
+  fGS->output(envir(), fOutputBuffer, frameSize);
 
   // Figure out the time at which the next packet should be sent, based
   // on the duration of the payload that we just read:

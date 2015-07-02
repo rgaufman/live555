@@ -287,7 +287,7 @@ private:
                              char const* scaleParamsStr, const char* speedParamsStr,
 			     char const* rangeParamsStr, char const* rtpInfoParamsStr);
   Boolean handleTEARDOWNResponse(MediaSession& session, MediaSubsession& subsession);
-  Boolean handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString);
+  Boolean handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString, char* resultValueStringEnd);
   Boolean handleAuthenticationFailure(char const* wwwAuthenticateParamsStr);
   Boolean resendCommand(RequestRecord* request);
   char const* sessionURL(MediaSession const& session) const;

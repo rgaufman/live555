@@ -42,14 +42,14 @@ OutputSocket::OutputSocket(UsageEnvironment& env, Port port)
 OutputSocket::~OutputSocket() {
 }
 
-Boolean OutputSocket::write(netAddressBits address, Port port, u_int8_t ttl,
+Boolean OutputSocket::write(netAddressBits address, portNumBits portNum, u_int8_t ttl,
 			    unsigned char* buffer, unsigned bufferSize) {
   struct in_addr destAddr; destAddr.s_addr = address;
   if ((unsigned)ttl == fLastSentTTL) {
     // Optimization: Don't do a 'set TTL' system call again
-    if (!writeSocket(env(), socketNum(), destAddr, port, buffer, bufferSize)) return False;
+    if (!writeSocket(env(), socketNum(), destAddr, portNum, buffer, bufferSize)) return False;
   } else {
-    if (!writeSocket(env(), socketNum(), destAddr, port, ttl, buffer, bufferSize)) return False;
+    if (!writeSocket(env(), socketNum(), destAddr, portNum, ttl, buffer, bufferSize)) return False;
     fLastSentTTL = (unsigned)ttl;
   }
 
@@ -71,7 +71,7 @@ Boolean OutputSocket::write(netAddressBits address, Port port, u_int8_t ttl,
 // By default, we don't do reads:
 Boolean OutputSocket
 ::handleRead(unsigned char* /*buffer*/, unsigned /*bufferMaxSize*/,
-	     unsigned& /*bytesRead*/, struct sockaddr_in& /*fromAddress*/) {
+	     unsigned& /*bytesRead*/, struct sockaddr_in& /*fromAddressAndPort*/) {
   return True;
 }
 
@@ -79,9 +79,9 @@ Boolean OutputSocket
 ///////// destRecord //////////
 
 destRecord
-::destRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl,
+::destRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl, unsigned sessionId,
 	     destRecord* next)
-  : fNext(next), fGroupEId(addr, port.num(), ttl), fPort(port) {
+  : fNext(next), fGroupEId(addr, port.num(), ttl), fSessionId(sessionId) {
 }
 
 destRecord::~destRecord() {
@@ -101,8 +101,8 @@ Groupsock::Groupsock(UsageEnvironment& env, struct in_addr const& groupAddr,
 		     Port port, u_int8_t ttl)
   : OutputSocket(env, port),
     deleteIfNoMembers(False), isSlave(False),
-    fIncomingGroupEId(groupAddr, port.num(), ttl), fDests(NULL), fTTL(ttl) {
-  addDestination(groupAddr, port);
+    fDests(new destRecord(groupAddr, port, ttl, 0, NULL)),
+    fIncomingGroupEId(groupAddr, port.num(), ttl) {
 
   if (!socketJoinGroup(env, socketNum(), groupAddr.s_addr)) {
     if (DebugLevel >= 1) {
@@ -128,10 +128,8 @@ Groupsock::Groupsock(UsageEnvironment& env, struct in_addr const& groupAddr,
 		     Port port)
   : OutputSocket(env, port),
     deleteIfNoMembers(False), isSlave(False),
-    fIncomingGroupEId(groupAddr, sourceFilterAddr, port.num()),
-    fDests(NULL), fTTL(255) {
-  addDestination(groupAddr, port);
-
+    fDests(new destRecord(groupAddr, port, 255, 0, NULL)),
+    fIncomingGroupEId(groupAddr, sourceFilterAddr, port.num()) {
   // First try a SSM join.  If that fails, try a regular join:
   if (!socketJoinGroupSSM(env, socketNum(), groupAddr.s_addr,
 			  sourceFilterAddr.s_addr)) {
@@ -166,12 +164,24 @@ Groupsock::~Groupsock() {
   if (DebugLevel >= 2) env() << *this << ": deleting\n";
 }
 
+destRecord* Groupsock
+::createNewDestRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl,
+		      unsigned sessionId, destRecord* next) {
+  // Default implementation:
+  return new destRecord(addr, port, ttl, sessionId, next);
+}
+
 void
 Groupsock::changeDestinationParameters(struct in_addr const& newDestAddr,
-				       Port newDestPort, int newDestTTL) {
-  if (fDests == NULL) return;
+				       Port newDestPort, int newDestTTL, unsigned sessionId) {
+  destRecord* dest = fDests;
+  while (dest != NULL && dest->fSessionId != sessionId) dest = dest->fNext;
+  if (dest == NULL) { // no existing "destRecord" for this "sessionId"; add a new one:
+    fDests = createNewDestRecord(newDestAddr, newDestPort, newDestTTL, sessionId, fDests);
+    return;
+  }
 
-  struct in_addr destAddr = fDests->fGroupEId.groupAddress();
+  struct in_addr destAddr = dest->fGroupEId.groupAddress();
   if (newDestAddr.s_addr != 0) {
     if (newDestAddr.s_addr != destAddr.s_addr
 	&& IsMulticastAddress(newDestAddr.s_addr)) {
@@ -184,7 +194,7 @@ Groupsock::changeDestinationParameters(struct in_addr const& newDestAddr,
     destAddr.s_addr = newDestAddr.s_addr;
   }
 
-  portNumBits destPortNum = fDests->fGroupEId.portNum();
+  portNumBits destPortNum = dest->fGroupEId.portNum();
   if (newDestPort.num() != 0) {
     if (newDestPort.num() != destPortNum
 	&& IsMulticastAddress(destAddr.s_addr)) {
@@ -194,32 +204,31 @@ Groupsock::changeDestinationParameters(struct in_addr const& newDestAddr,
       socketJoinGroup(env(), socketNum(), destAddr.s_addr);
     }
     destPortNum = newDestPort.num();
-    fDests->fPort = newDestPort;
   }
 
   u_int8_t destTTL = ttl();
   if (newDestTTL != ~0) destTTL = (u_int8_t)newDestTTL;
 
-  fDests->fGroupEId = GroupEId(destAddr, destPortNum, destTTL);
+  dest->fGroupEId = GroupEId(destAddr, destPortNum, destTTL);
 }
 
-void Groupsock::addDestination(struct in_addr const& addr, Port const& port) {
-  // Check whether this destination is already known:
-  for (destRecord* dests = fDests; dests != NULL; dests = dests->fNext) {
-    if (addr.s_addr == dests->fGroupEId.groupAddress().s_addr
-	&& port.num() == dests->fPort.num()) {
-      return;
-    }
-  }
+unsigned Groupsock
+::lookupSessionIdFromDestination(struct sockaddr_in const& destAddrAndPort) const {
+  destRecord* dest = lookupDestRecordFromDestination(destAddrAndPort);
+  if (dest == NULL) return 0;
 
-  fDests = new destRecord(addr, port, ttl(), fDests);
+  return dest->fSessionId;
 }
 
-void Groupsock::removeDestination(struct in_addr const& addr, Port const& port) {
-  for (destRecord** destsPtr = &fDests; *destsPtr != NULL;
-       destsPtr = &((*destsPtr)->fNext)) {
-    if (addr.s_addr == (*destsPtr)->fGroupEId.groupAddress().s_addr
-	&& port.num() == (*destsPtr)->fPort.num()) {
+void Groupsock::addDestination(struct in_addr const& addr, Port const& port, unsigned sessionId) {
+  // Default implementation:
+  changeDestinationParameters(addr, port, 255, sessionId);
+      // Will add a new "destRecord" for "sessionId" if none already exists
+}
+
+void Groupsock::removeDestination(unsigned sessionId) {
+  for (destRecord** destsPtr = &fDests; *destsPtr != NULL; destsPtr = &((*destsPtr)->fNext)) {
+    if (sessionId == (*destsPtr)->fSessionId) {
       // Remove the record pointed to by *destsPtr :
       destRecord* next = (*destsPtr)->fNext;
       (*destsPtr)->fNext = NULL;
@@ -245,14 +254,13 @@ void Groupsock::multicastSendOnly() {
 #endif
 }
 
-Boolean Groupsock::output(UsageEnvironment& env, u_int8_t ttlToSend,
-			  unsigned char* buffer, unsigned bufferSize,
+Boolean Groupsock::output(UsageEnvironment& env, unsigned char* buffer, unsigned bufferSize,
 			  DirectedNetInterface* interfaceNotToFwdBackTo) {
   do {
     // First, do the datagram send, to each destination:
     Boolean writeSuccess = True;
     for (destRecord* dests = fDests; dests != NULL; dests = dests->fNext) {
-      if (!write(dests->fGroupEId.groupAddress().s_addr, dests->fPort, ttlToSend,
+      if (!write(dests->fGroupEId.groupAddress().s_addr, dests->fGroupEId.portNum(), dests->fGroupEId.ttl(),
 		 buffer, bufferSize)) {
 	writeSuccess = False;
 	break;
@@ -267,14 +275,13 @@ Boolean Groupsock::output(UsageEnvironment& env, u_int8_t ttlToSend,
     if (!members().IsEmpty()) {
       numMembers =
 	outputToAllMembersExcept(interfaceNotToFwdBackTo,
-				 ttlToSend, buffer, bufferSize,
+				 ttl(), buffer, bufferSize,
 				 ourIPAddress(env));
       if (numMembers < 0) break;
     }
 
     if (DebugLevel >= 3) {
-      env << *this << ": wrote " << bufferSize << " bytes, ttl "
-	  << (unsigned)ttlToSend;
+      env << *this << ": wrote " << bufferSize << " bytes, ttl " << (unsigned)ttl();
       if (numMembers > 0) {
 	env << "; relayed to " << numMembers << " members";
       }
@@ -293,7 +300,7 @@ Boolean Groupsock::output(UsageEnvironment& env, u_int8_t ttlToSend,
 
 Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			      unsigned& bytesRead,
-			      struct sockaddr_in& fromAddress) {
+			      struct sockaddr_in& fromAddressAndPort) {
   // Read data from the socket, and relay it across any attached tunnels
   //##### later make this code more general - independent of tunnels
 
@@ -301,7 +308,7 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 
   int maxBytesToRead = bufferMaxSize - TunnelEncapsulationTrailerMaxSize;
   int numBytes = readSocket(env(), socketNum(),
-			    buffer, maxBytesToRead, fromAddress);
+			    buffer, maxBytesToRead, fromAddressAndPort);
   if (numBytes < 0) {
     if (DebugLevel >= 0) { // this is a fatal error
       UsageEnvironment::MsgString msg = strDup(env().getResultMsg());
@@ -313,7 +320,7 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 
   // If we're a SSM group, make sure the source address matches:
   if (isSSM()
-      && fromAddress.sin_addr.s_addr != sourceFilterAddress().s_addr) {
+      && fromAddressAndPort.sin_addr.s_addr != sourceFilterAddress().s_addr) {
     return True;
   }
 
@@ -323,20 +330,20 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
   bytesRead = numBytes;
 
   int numMembers = 0;
-  if (!wasLoopedBackFromUs(env(), fromAddress)) {
+  if (!wasLoopedBackFromUs(env(), fromAddressAndPort)) {
     statsIncoming.countPacket(numBytes);
     statsGroupIncoming.countPacket(numBytes);
     numMembers =
       outputToAllMembersExcept(NULL, ttl(),
 			       buffer, bytesRead,
-			       fromAddress.sin_addr.s_addr);
+			       fromAddressAndPort.sin_addr.s_addr);
     if (numMembers > 0) {
       statsRelayedIncoming.countPacket(numBytes);
       statsGroupRelayedIncoming.countPacket(numBytes);
     }
   }
   if (DebugLevel >= 3) {
-    env() << *this << ": read " << bytesRead << " bytes from " << AddressString(fromAddress).val();
+    env() << *this << ": read " << bytesRead << " bytes from " << AddressString(fromAddressAndPort).val() << ", port " << ntohs(fromAddressAndPort.sin_port);
     if (numMembers > 0) {
       env() << "; relayed to " << numMembers << " members";
     }
@@ -347,10 +354,10 @@ Boolean Groupsock::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 }
 
 Boolean Groupsock::wasLoopedBackFromUs(UsageEnvironment& env,
-				       struct sockaddr_in& fromAddress) {
-  if (fromAddress.sin_addr.s_addr
+				       struct sockaddr_in& fromAddressAndPort) {
+  if (fromAddressAndPort.sin_addr.s_addr
       == ourIPAddress(env)) {
-    if (fromAddress.sin_port == sourcePortNum()) {
+    if (fromAddressAndPort.sin_port == sourcePortNum()) {
 #ifdef DEBUG_LOOPBACK_CHECKING
       if (DebugLevel >= 3) {
 	env() << *this << ": got looped-back packet\n";
@@ -361,6 +368,17 @@ Boolean Groupsock::wasLoopedBackFromUs(UsageEnvironment& env,
   }
 
   return False;
+}
+
+destRecord* Groupsock
+::lookupDestRecordFromDestination(struct sockaddr_in const& destAddrAndPort) const {
+  for (destRecord* dest = fDests; dest != NULL; dest = dest->fNext) {
+    if (destAddrAndPort.sin_addr.s_addr == dest->fGroupEId.groupAddress().s_addr
+	&& destAddrAndPort.sin_port == dest->fGroupEId.portNum()) {
+      return dest;
+    }
+  }
+  return NULL;
 }
 
 int Groupsock::outputToAllMembersExcept(DirectedNetInterface* exceptInterface,
@@ -421,7 +439,8 @@ int Groupsock::outputToAllMembersExcept(DirectedNetInterface* exceptInterface,
 
       if (fDests != NULL) {
 	trailer->address() = fDests->fGroupEId.groupAddress().s_addr;
-	trailer->port() = fDests->fPort; // structure copy, outputs in network order
+	Port destPort(ntohs(fDests->fGroupEId.portNum()));
+	trailer->port() = destPort; // structure copy
       }
       trailer->ttl() = ttlToFwd;
       trailer->command() = tunnelCmd;

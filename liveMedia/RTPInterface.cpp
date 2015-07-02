@@ -212,7 +212,7 @@ Boolean RTPInterface::sendPacket(unsigned char* packet, unsigned packetSize) {
   Boolean success = True; // we'll return False instead if any of the sends fail
 
   // Normal case: Send as a UDP packet:
-  if (!fGS->output(envir(), fGS->ttl(), packet, packetSize)) success = False;
+  if (!fGS->output(envir(), packet, packetSize)) success = False;
 
   // Also, send over each of our TCP sockets:
   tcpStreamRecord* nextStream;

@@ -63,9 +63,13 @@ public:
       //     "closeAllClientSessionsForServerMediaSession(streamName); removeServerMediaSession(streamName);
 
 protected:
-  GenericMediaServer(UsageEnvironment& env, int ourSocket, Port ourPort);
+  GenericMediaServer(UsageEnvironment& env, int ourSocket, Port ourPort,
+		     unsigned reclamationSeconds);
+      // If "reclamationSeconds" > 0, then the "ClientSession" state for each client will get
+      // reclaimed if no activity from the client is detected in at least "reclamationSeconds".
   // we're an abstract base class
   virtual ~GenericMediaServer();
+  void cleanup(); // MUST be called in the destructor of any subclass of us
 
   static int setUpOurSocket(UsageEnvironment& env, Port& ourPort);
 
@@ -107,6 +111,9 @@ public: // should be protected, but some old compilers complain otherwise
     virtual ~ClientSession();
 
     UsageEnvironment& envir() { return fOurServer.envir(); }
+    void noteLiveness();
+    static void noteClientLiveness(ClientSession* clientSession);
+    static void livenessTimeoutTask(ClientSession* clientSession);
 
   protected:
     friend class GenericMediaServer;
@@ -114,6 +121,7 @@ public: // should be protected, but some old compilers complain otherwise
     GenericMediaServer& fOurServer;
     u_int32_t fOurSessionId;
     ServerMediaSession* fOurServerMediaSession;
+    TaskToken fLivenessCheckTask;
   };
 
 protected:
@@ -125,6 +133,7 @@ protected:
   friend class ClientSession;	
   int fServerSocket;
   Port fServerPort;
+  unsigned fReclamationSeconds;
 
   HashTable* fServerMediaSessions; // maps 'stream name' strings to "ServerMediaSession" objects
   HashTable* fClientConnections; // the "ClientConnection" objects that we're using

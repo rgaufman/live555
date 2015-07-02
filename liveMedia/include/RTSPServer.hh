@@ -32,13 +32,13 @@ class RTSPServer: public GenericMediaServer {
 public:
   static RTSPServer* createNew(UsageEnvironment& env, Port ourPort = 554,
 			       UserAuthenticationDatabase* authDatabase = NULL,
-			       unsigned reclamationTestSeconds = 65);
+			       unsigned reclamationSeconds = 65);
       // If ourPort.num() == 0, we'll choose the port number
       // Note: The caller is responsible for reclaiming "authDatabase"
-      // If "reclamationTestSeconds" > 0, then the "RTSPClientSession" state for
+      // If "reclamationSeconds" > 0, then the "RTSPClientSession" state for
       //     each client will get reclaimed (and the corresponding RTP stream(s)
       //     torn down) if no RTSP commands - or RTCP "RR" packets - from the
-      //     client are received in at least "reclamationTestSeconds" seconds.
+      //     client are received in at least "reclamationSeconds" seconds.
 
   static Boolean lookupByName(UsageEnvironment& env, char const* name,
 			      RTSPServer*& resultServer);
@@ -91,7 +91,7 @@ protected:
   RTSPServer(UsageEnvironment& env,
 	     int ourSocket, Port ourPort,
 	     UserAuthenticationDatabase* authDatabase,
-	     unsigned reclamationTestSeconds);
+	     unsigned reclamationSeconds);
       // called only by createNew();
   virtual ~RTSPServer();
 
@@ -230,9 +230,6 @@ public: // should be protected, but some old compilers complain otherwise
     void deleteStreamByTrack(unsigned trackNum);
     void reclaimStreamStates();
     Boolean isMulticast() const { return fIsMulticast; }
-    void noteLiveness();
-    static void noteClientLiveness(RTSPClientSession* clientSession);
-    static void livenessTimeoutTask(RTSPClientSession* clientSession);
 
     // Shortcuts for setting up a RTSP response (prior to sending it):
     void setRTSPResponse(RTSPClientConnection* ourClientConnection, char const* responseStr) { ourClientConnection->setRTSPResponse(responseStr); }
@@ -245,7 +242,6 @@ public: // should be protected, but some old compilers complain otherwise
     Boolean fIsMulticast, fStreamAfterSETUP;
     unsigned char fTCPStreamIdCount; // used for (optional) RTP/TCP
     Boolean usesTCPTransport() const { return fTCPStreamIdCount > 0; }
-    TaskToken fLivenessCheckTask;
     unsigned fNumStreamStates;
     struct streamState {
       ServerMediaSubsession* subsession;
@@ -296,7 +292,6 @@ private:
   HashTable* fPendingRegisterRequests;
   unsigned fRegisterRequestCounter;
   UserAuthenticationDatabase* fAuthDB;
-  unsigned fReclamationTestSeconds;
   Boolean fAllowStreamingRTPOverTCP; // by default, True
 };
 
@@ -308,14 +303,14 @@ public:
   static RTSPServerWithREGISTERProxying* createNew(UsageEnvironment& env, Port ourPort = 554,
 						   UserAuthenticationDatabase* authDatabase = NULL,
 						   UserAuthenticationDatabase* authDatabaseForREGISTER = NULL,
-						   unsigned reclamationTestSeconds = 65,
+						   unsigned reclamationSeconds = 65,
 						   Boolean streamRTPOverTCP = False,
 						   int verbosityLevelForProxying = 0);
 
 protected:
   RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
-				 unsigned reclamationTestSeconds,
+				 unsigned reclamationSeconds,
 				 Boolean streamRTPOverTCP, int verbosityLevelForProxying);
   // called only by createNew();
   virtual ~RTSPServerWithREGISTERProxying();

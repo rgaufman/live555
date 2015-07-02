@@ -86,7 +86,7 @@ public:
 				void* clientData);
   virtual void unscheduleDelayedTask(TaskToken& prevTask);
 
-  virtual void doEventLoop(char* watchVariable);
+  virtual void doEventLoop(char volatile* watchVariable);
 
   virtual EventTriggerId createEventTrigger(TaskFunc* eventHandlerProc);
   virtual void deleteEventTrigger(EventTriggerId eventTriggerId);
@@ -104,7 +104,8 @@ protected:
   int fLastHandledSocketNum;
 
   // To implement event triggers:
-  EventTriggerId fTriggersAwaitingHandling, fLastUsedTriggerMask; // implemented as 32-bit bitmaps
+  EventTriggerId volatile fTriggersAwaitingHandling; // implemented as a 32-bit bitmap
+  EventTriggerId fLastUsedTriggerMask; // implemented as a 32-bit bitmap
   TaskFunc* fTriggeredEventHandlers[MAX_NUM_EVENT_TRIGGERS];
   void* fTriggeredEventClientDatas[MAX_NUM_EVENT_TRIGGERS];
   unsigned fLastUsedTriggerNum; // in the range [0,MAX_NUM_EVENT_TRIGGERS)

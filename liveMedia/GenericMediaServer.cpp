@@ -85,9 +85,10 @@ void GenericMediaServer::deleteServerMediaSession(char const* streamName) {
 }
 
 GenericMediaServer
-::GenericMediaServer(UsageEnvironment& env, int ourSocket, Port ourPort)
+::GenericMediaServer(UsageEnvironment& env, int ourSocket, Port ourPort,
+		     unsigned reclamationSeconds)
   : Medium(env),
-    fServerSocket(ourSocket), fServerPort(ourPort),
+    fServerSocket(ourSocket), fServerPort(ourPort), fReclamationSeconds(reclamationSeconds),
     fServerMediaSessions(HashTable::create(STRING_HASH_KEYS)),
     fClientConnections(HashTable::create(ONE_WORD_HASH_KEYS)),
     fClientSessions(HashTable::create(STRING_HASH_KEYS)) {
@@ -101,7 +102,15 @@ GenericMediaServer::~GenericMediaServer() {
   // Turn off background read handling:
   envir().taskScheduler().turnOffBackgroundReadHandling(fServerSocket);
   ::closeSocket(fServerSocket);
-  
+}
+
+void GenericMediaServer::cleanup() {
+  // This member function must be called in the destructor of any subclass of
+  //"GenericMediaServer".  (We don't call this in the destructor of "GenericMediaServer" itself,
+  // because by that time, the subclass destructor will already have been called, and this may
+  // affect (break) the destruction of the "ClientSession" and "ClientConnection" objects, which
+  // themselves will have been subclassed.)
+
   // Close all client session objects:
   GenericMediaServer::ClientSession* clientSession;
   while ((clientSession = (GenericMediaServer::ClientSession*)fClientSessions->getFirst()) != NULL) {
@@ -244,10 +253,15 @@ void GenericMediaServer::ClientConnection::resetRequestBuffer() {
 
 GenericMediaServer::ClientSession
 ::ClientSession(GenericMediaServer& ourServer, u_int32_t sessionId)
-  : fOurServer(ourServer), fOurSessionId(sessionId), fOurServerMediaSession(NULL) {
+  : fOurServer(ourServer), fOurSessionId(sessionId), fOurServerMediaSession(NULL),
+    fLivenessCheckTask(NULL) {
+  noteLiveness();
 }
 
 GenericMediaServer::ClientSession::~ClientSession() {
+  // Turn off any liveness checking:
+  envir().taskScheduler().unscheduleDelayedTask(fLivenessCheckTask);
+
   // Remove ourself from the server's 'client sessions' hash table before we go:
   char sessionIdStr[9];
   sprintf(sessionIdStr, "%08X", fOurSessionId);
@@ -261,4 +275,33 @@ GenericMediaServer::ClientSession::~ClientSession() {
       fOurServerMediaSession = NULL;
     }
   }
+}
+
+void GenericMediaServer::ClientSession::noteLiveness() {
+#ifdef DEBUG
+  char const* streamName
+    = (fOurServerMediaSession == NULL) ? "???" : fOurServerMediaSession->streamName();
+  fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\"): Liveness indication\n",
+	  fOurSessionId, streamName);
+#endif
+  if (fOurServer.fReclamationSeconds > 0) {
+    envir().taskScheduler().rescheduleDelayedTask(fLivenessCheckTask,
+						  fOurServer.fReclamationSeconds*1000000,
+						  (TaskFunc*)livenessTimeoutTask, this);
+  }
+}
+
+void GenericMediaServer::ClientSession::noteClientLiveness(ClientSession* clientSession) {
+  clientSession->noteLiveness();
+}
+
+void GenericMediaServer::ClientSession::livenessTimeoutTask(ClientSession* clientSession) {
+  // If this gets called, the client session is assumed to have timed out, so delete it:
+#ifdef DEBUG
+  char const* streamName
+    = (clientSession->fOurServerMediaSession == NULL) ? "???" : clientSession->fOurServerMediaSession->streamName();
+  fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\") has timed out (due to inactivity)\n",
+	  clientSession->fOurSessionId, streamName);
+#endif
+  delete clientSession;
 }

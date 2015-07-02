@@ -204,6 +204,38 @@ RTCPInstance::~RTCPInstance() {
   delete[] fInBuf;
 }
 
+void RTCPInstance::noteArrivingRR(struct sockaddr_in const& fromAddressAndPort,
+				  int tcpSocketNum, unsigned char tcpStreamChannelId) {
+  // If a 'RR handler' was set, call it now:
+
+  // Specific RR handler:
+  if (fSpecificRRHandlerTable != NULL) {
+    netAddressBits fromAddr;
+    portNumBits fromPortNum;
+    if (tcpSocketNum < 0) {
+      // Normal case: We read the RTCP packet over UDP
+      fromAddr = fromAddressAndPort.sin_addr.s_addr;
+      fromPortNum = ntohs(fromAddressAndPort.sin_port);
+    } else {
+      // Special case: We read the RTCP packet over TCP (interleaved)
+      // Hack: Use the TCP socket and channel id to look up the handler
+      fromAddr = tcpSocketNum;
+      fromPortNum = tcpStreamChannelId;
+    }
+    Port fromPort(fromPortNum);
+    RRHandlerRecord* rrHandler
+      = (RRHandlerRecord*)(fSpecificRRHandlerTable->Lookup(fromAddr, (~0), fromPort));
+    if (rrHandler != NULL) {
+      if (rrHandler->rrHandlerTask != NULL) {
+	(*(rrHandler->rrHandlerTask))(rrHandler->rrHandlerClientData);
+      }
+    }
+  }
+  
+  // General RR handler:
+  if (fRRHandlerTask != NULL) (*fRRHandlerTask)(fRRHandlerClientData);
+}
+
 RTCPInstance* RTCPInstance::createNew(UsageEnvironment& env, Groupsock* RTCPgs,
 				      unsigned totSessionBW,
 				      unsigned char const* cname,
@@ -447,7 +479,7 @@ void RTCPInstance::incomingReportHandler1() {
 }
 
 void RTCPInstance
-::processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress,
+::processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddressAndPort,
 			int tcpSocketNum, unsigned char tcpStreamChannelId) {
   do {
     Boolean callByeHandler = False;
@@ -456,8 +488,8 @@ void RTCPInstance
 #ifdef DEBUG
     fprintf(stderr, "[%p]saw incoming RTCP packet (from ", this);
     if (tcpSocketNum < 0) {
-      // Note that "fromAddress" is valid only if we're receiving over UDP (not over TCP):
-      fprintf(stderr, "address %s, port %d", AddressString(fromAddress).val(), ntohs(fromAddress.sin_port));
+      // Note that "fromAddressAndPort" is valid only if we're receiving over UDP (not over TCP):
+      fprintf(stderr, "address %s, port %d", AddressString(fromAddressAndPort).val(), ntohs(fromAddressAndPort.sin_port));
     } else {
       fprintf(stderr, "TCP socket #%d, stream channel id %d", tcpSocketNum, tcpStreamChannelId);
     }
@@ -545,7 +577,7 @@ void RTCPInstance
                 unsigned jitter = ntohl(*(u_int32_t*)pkt); ADVANCE(4);
                 unsigned timeLastSR = ntohl(*(u_int32_t*)pkt); ADVANCE(4);
                 unsigned timeSinceLastSR = ntohl(*(u_int32_t*)pkt); ADVANCE(4);
-                transmissionStats.noteIncomingRR(reportSenderSSRC, fromAddress,
+                transmissionStats.noteIncomingRR(reportSenderSSRC, fromAddressAndPort,
 						 lossStats,
 						 highestReceived, jitter,
 						 timeLastSR, timeSinceLastSR);
@@ -558,34 +590,7 @@ void RTCPInstance
           }
 
 	  if (pt == RTCP_PT_RR) { // i.e., we didn't fall through from 'SR'
-	    // If a 'RR handler' was set, call it now:
-
-	    // Specific RR handler:
-	    if (fSpecificRRHandlerTable != NULL) {
-	      netAddressBits fromAddr;
-	      portNumBits fromPortNum;
-	      if (tcpSocketNum < 0) {
-		// Normal case: We read the RTCP packet over UDP
-		fromAddr = fromAddress.sin_addr.s_addr;
-		fromPortNum = ntohs(fromAddress.sin_port);
-	      } else {
-		// Special case: We read the RTCP packet over TCP (interleaved)
-		// Hack: Use the TCP socket and channel id to look up the handler
-		fromAddr = tcpSocketNum;
-		fromPortNum = tcpStreamChannelId;
-	      }
-	      Port fromPort(fromPortNum);
-	      RRHandlerRecord* rrHandler
-		= (RRHandlerRecord*)(fSpecificRRHandlerTable->Lookup(fromAddr, (~0), fromPort));
-	      if (rrHandler != NULL) {
-		if (rrHandler->rrHandlerTask != NULL) {
-		  (*(rrHandler->rrHandlerTask))(rrHandler->rrHandlerClientData);
-		}
-	      }
-	    }
-
-	    // General RR handler:
-	    if (fRRHandlerTask != NULL) (*fRRHandlerTask)(fRRHandlerClientData);
+	    noteArrivingRR(fromAddressAndPort, tcpSocketNum, tcpStreamChannelId);
 	  }
 
 	  subPacketOK = True;

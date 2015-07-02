@@ -175,8 +175,8 @@ void RTSPClient::sendDummyUDPPackets(MediaSubsession& subsession, unsigned numDu
   if (subsession.rtcpInstance() != NULL) gs2 = subsession.rtcpInstance()->RTCPgs();
   u_int32_t const dummy = 0xFEEDFACE;
   for (unsigned i = 0; i < numDummyPackets; ++i) {
-    if (gs1 != NULL) gs1->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
-    if (gs2 != NULL) gs2->output(envir(), 255, (unsigned char*)&dummy, sizeof dummy);
+    if (gs1 != NULL) gs1->output(envir(), (unsigned char*)&dummy, sizeof dummy);
+    if (gs2 != NULL) gs2->output(envir(), (unsigned char*)&dummy, sizeof dummy);
   }
 }
 
@@ -687,7 +687,7 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
       Boolean requestMulticastStreaming
 	= IsMulticastAddress(connectionAddress) || (connectionAddress == 0 && forceMulticastOnUnspecified);
       transportTypeStr = requestMulticastStreaming ? ";multicast" : ";unicast";
-      portTypeStr = ";client_port";
+      portTypeStr = requestMulticastStreaming ? ";port" : ";client_port";
       rtpNumber = subsession.clientPortNum();
       if (rtpNumber == 0) {
 	envir().setResultMsg("Client port number unknown\n");
@@ -1285,7 +1285,7 @@ Boolean RTSPClient::handleTEARDOWNResponse(MediaSession& /*session*/, MediaSubse
   return True;
 }
 
-Boolean RTSPClient::handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString) {
+Boolean RTSPClient::handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString, char* resultValueStringEnd) {
   do {
     // If "parameterName" is non-empty, it may be (possibly followed by ':' and whitespace) at the start of the result string:
     if (parameterName != NULL && parameterName[0] != '\0') {
@@ -1294,15 +1294,26 @@ Boolean RTSPClient::handleGET_PARAMETERResponse(char const* parameterName, char*
       unsigned parameterNameLen = strlen(parameterName);
       // ASSERT: parameterNameLen >= 2;
       parameterNameLen -= 2; // because of the trailing \r\n
+      if (resultValueString + parameterNameLen > resultValueStringEnd) break; // not enough space
       if (_strncasecmp(resultValueString, parameterName, parameterNameLen) == 0) {
 	resultValueString += parameterNameLen;
+	// ASSERT: resultValueString <= resultValueStringEnd
+	if (resultValueString == resultValueStringEnd) break;
+
 	if (resultValueString[0] == ':') ++resultValueString;
-	while (resultValueString[0] == ' ' || resultValueString[0] == '\t') ++resultValueString;
+	while (resultValueString < resultValueStringEnd
+	       && (resultValueString[0] == ' ' || resultValueString[0] == '\t')) {
+	  ++resultValueString;
+	}
       }
     }
 
     // The rest of "resultValueStr" should be our desired result, but first trim off any \r and/or \n characters at the end:
+    char saved = *resultValueStringEnd;
+    *resultValueStringEnd = '\0';
     unsigned resultLen = strlen(resultValueString);
+    *resultValueStringEnd = saved;
+    
     while (resultLen > 0 && (resultValueString[resultLen-1] == '\r' || resultValueString[resultLen-1] == '\n')) --resultLen;
     resultValueString[resultLen] = '\0';
 
@@ -1778,7 +1789,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	  } else if (strcmp(foundRequest->commandName(), "TEARDOWN") == 0) {
 	    if (!handleTEARDOWNResponse(*foundRequest->session(), *foundRequest->subsession())) break;
 	  } else if (strcmp(foundRequest->commandName(), "GET_PARAMETER") == 0) {
-	    if (!handleGET_PARAMETERResponse(foundRequest->contentStr(), bodyStart)) break;
+	    if (!handleGET_PARAMETERResponse(foundRequest->contentStr(), bodyStart, responseEnd)) break;
 	  }
 	} else if (responseCode == 401 && handleAuthenticationFailure(wwwAuthenticateParamsStr)) {
 	  // We need to resend the command, with an "Authorization:" header:

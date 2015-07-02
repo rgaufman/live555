@@ -215,7 +215,7 @@ void OnDemandServerMediaSubsession::startStream(unsigned clientSessionId,
   Destinations* destinations
     = (Destinations*)(fDestinationsHashTable->Lookup((char const*)clientSessionId));
   if (streamState != NULL) {
-    streamState->startPlaying(destinations,
+    streamState->startPlaying(destinations, clientSessionId,
 			      rtcpRRHandler, rtcpRRHandlerClientData,
 			      serverRequestAlternativeByteHandler, serverRequestAlternativeByteHandlerClientData);
     RTPSink* rtpSink = streamState->rtpSink(); // alias
@@ -328,7 +328,7 @@ void OnDemandServerMediaSubsession::deleteStream(unsigned clientSessionId,
     fDestinationsHashTable->Remove((char const*)clientSessionId);
 
     // Stop streaming to these destinations:
-    if (streamState != NULL) streamState->endPlaying(destinations);
+    if (streamState != NULL) streamState->endPlaying(destinations, clientSessionId);
   }
 
   // Delete the "StreamState" structure if it's no longer being used:
@@ -382,6 +382,13 @@ Groupsock* OnDemandServerMediaSubsession
 ::createGroupsock(struct in_addr const& addr, Port port) {
   // Default implementation; may be redefined by subclasses:
   return new Groupsock(envir(), addr, port, 255);
+}
+
+RTCPInstance* OnDemandServerMediaSubsession
+::createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
+	     unsigned char const* cname, RTPSink* sink) {
+  // Default implementation:
+  return RTCPInstance::createNew(envir(), RTCPgs, totSessionBW, cname, sink, NULL/*we're a server*/);
 }
 
 void OnDemandServerMediaSubsession
@@ -482,7 +489,7 @@ StreamState::~StreamState() {
 }
 
 void StreamState
-::startPlaying(Destinations* dests,
+::startPlaying(Destinations* dests, unsigned clientSessionId,
 	       TaskFunc* rtcpRRHandler, void* rtcpRRHandlerClientData,
 	       ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
 	       void* serverRequestAlternativeByteHandlerClientData) {
@@ -490,10 +497,7 @@ void StreamState
 
   if (fRTCPInstance == NULL && fRTPSink != NULL) {
     // Create (and start) a 'RTCP instance' for this RTP sink:
-    fRTCPInstance
-      = RTCPInstance::createNew(fRTPSink->envir(), fRTCPgs,
-				fTotalBW, (unsigned char*)fMaster.fCNAME,
-				fRTPSink, NULL /* we're a server */);
+    fRTCPInstance = fMaster.createRTCP(fRTCPgs, fTotalBW, (unsigned char*)fMaster.fCNAME, fRTPSink);
         // Note: This starts RTCP running automatically
     fRTCPInstance->setAppHandler(fMaster.fAppHandlerTask, fMaster.fAppHandlerClientData);
   }
@@ -515,8 +519,10 @@ void StreamState
   } else {
     // Tell the RTP and RTCP 'groupsocks' about this destination
     // (in case they don't already have it):
-    if (fRTPgs != NULL) fRTPgs->addDestination(dests->addr, dests->rtpPort);
-    if (fRTCPgs != NULL) fRTCPgs->addDestination(dests->addr, dests->rtcpPort);
+    if (fRTPgs != NULL) fRTPgs->addDestination(dests->addr, dests->rtpPort, clientSessionId);
+    if (fRTCPgs != NULL && !(fRTCPgs == fRTPgs && dests->rtcpPort.num() == dests->rtpPort.num())) {
+      fRTCPgs->addDestination(dests->addr, dests->rtcpPort, clientSessionId);
+    }
     if (fRTCPInstance != NULL) {
       fRTCPInstance->setSpecificRRHandler(dests->addr.s_addr, dests->rtcpPort,
 					  rtcpRRHandler, rtcpRRHandlerClientData);
@@ -546,7 +552,7 @@ void StreamState::pause() {
   fAreCurrentlyPlaying = False;
 }
 
-void StreamState::endPlaying(Destinations* dests) {
+void StreamState::endPlaying(Destinations* dests, unsigned clientSessionId) {
 #if 0
   // The following code is temporarily disabled, because it erroneously sends RTCP "BYE"s to all clients if multiple
   // clients are streaming from the same data source (i.e., if "reuseFirstSource" is True), and we don't want that to happen
@@ -570,8 +576,8 @@ void StreamState::endPlaying(Destinations* dests) {
     }
   } else {
     // Tell the RTP and RTCP 'groupsocks' to stop using these destinations:
-    if (fRTPgs != NULL) fRTPgs->removeDestination(dests->addr, dests->rtpPort);
-    if (fRTCPgs != NULL) fRTCPgs->removeDestination(dests->addr, dests->rtcpPort);
+    if (fRTPgs != NULL) fRTPgs->removeDestination(clientSessionId);
+    if (fRTCPgs != NULL && fRTCPgs != fRTPgs) fRTCPgs->removeDestination(clientSessionId);
     if (fRTCPInstance != NULL) {
       fRTCPInstance->unsetSpecificRRHandler(dests->addr.s_addr, dests->rtcpPort);
     }

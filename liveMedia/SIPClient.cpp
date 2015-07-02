@@ -86,7 +86,7 @@ SIPClient::SIPClient(UsageEnvironment& env,
 
   // Now, find out our source port number.  Hack: Do this by first trying to
   // send a 0-length packet, so that the "getSourcePort()" call will work.
-  fOurSocket->output(envir(), 255, (unsigned char*)"", 0);
+  fOurSocket->output(envir(), (unsigned char*)"", 0);
   Port srcPort(0);
   getSourcePort(env, fOurSocket->socketNum(), srcPort);
   if (srcPort.num() != 0) {
@@ -892,8 +892,7 @@ Boolean SIPClient::sendRequest(char const* requestString,
   }
   // NOTE: We should really check that "requestLength" is not #####
   // too large for UDP (see RFC 3261, section 18.1.1) #####
-  return fOurSocket->output(envir(), 255, (unsigned char*)requestString,
-			    requestLength);
+  return fOurSocket->output(envir(), (unsigned char*)requestString, requestLength);
 }
 
 unsigned SIPClient::getResponse(char*& responseBuffer,
