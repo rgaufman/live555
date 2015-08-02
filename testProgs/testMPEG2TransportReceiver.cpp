@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   sessionState.source = SimpleRTPSource::createNew(*env, &rtpGroupsock, 33, 90000, "video/MP2T", 0, False /*no 'M' bit*/);
 
   // Create (and start) a 'RTCP instance' for the RTP source:
-  const unsigned estimatedSessionBandwidth = 160; // in kbps; for RTCP b/w share
+  const unsigned estimatedSessionBandwidth = 5000; // in kbps; for RTCP b/w share
   const unsigned maxCNAMElen = 100;
   unsigned char CNAME[maxCNAMElen+1];
   gethostname((char*)CNAME, maxCNAMElen);

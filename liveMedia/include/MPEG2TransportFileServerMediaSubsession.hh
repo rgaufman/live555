@@ -40,7 +40,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class ClientTrickPlayState; // forward
 
-class MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession{
+class MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession {
 public:
   static MPEG2TransportFileServerMediaSubsession*
   createNew(UsageEnvironment& env,

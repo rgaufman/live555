@@ -429,7 +429,8 @@ void RTSPServer::RTSPClientConnection
   char* sdpDescription = NULL;
   char* rtspURL = NULL;
   do {
-    char urlTotalSuffix[RTSP_PARAM_STRING_MAX];
+    char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
+        // enough space for urlPreSuffix/urlSuffix'\0'
     urlTotalSuffix[0] = '\0';
     if (urlPreSuffix[0] != '\0') {
       strcat(urlTotalSuffix, urlPreSuffix);
@@ -933,7 +934,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	  // because that has a special use (by "OnDemandServerMediaSubsession").)
 
 	  // But first, make sure that we're authenticated to perform this command:
-	  char urlTotalSuffix[RTSP_PARAM_STRING_MAX];
+	  char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
+	      // enough space for urlPreSuffix/urlSuffix'\0'
 	  urlTotalSuffix[0] = '\0';
 	  if (urlPreSuffix[0] != '\0') {
 	    strcat(urlTotalSuffix, urlPreSuffix);

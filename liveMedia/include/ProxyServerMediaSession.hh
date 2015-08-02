@@ -31,6 +31,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _RTSP_CLIENT_HH
 #include "RTSPClient.hh"
 #endif
+#ifndef _MEDIA_TRANSCODING_TABLE_HH
+#include "MediaTranscodingTable.hh"
+#endif
 
 // A subclass of "RTSPClient", used to refer to the particular "ProxyServerMediaSession" object being used.
 // It is used only within the implementation of "ProxyServerMediaSession", but is defined here, in case developers wish to
@@ -45,7 +48,7 @@ public:
 
   void continueAfterDESCRIBE(char const* sdpDescription);
   void continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter);
-  void continueAfterSETUP();
+  void continueAfterSETUP(int resultCode);
   void continueAfterPLAY(int resultCode);
 
 private:
@@ -93,14 +96,15 @@ defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSessi
 class ProxyServerMediaSession: public ServerMediaSession {
 public:
   static ProxyServerMediaSession* createNew(UsageEnvironment& env,
-					    RTSPServer* ourRTSPServer, // Note: We can be used by just one "RTSPServer"
+					    GenericMediaServer* ourMediaServer, // Note: We can be used by just one server
 					    char const* inputStreamURL, // the "rtsp://" URL of the stream we'll be proxying
 					    char const* streamName = NULL,
 					    char const* username = NULL, char const* password = NULL,
 					    portNumBits tunnelOverHTTPPortNum = 0,
 					        // for streaming the *proxied* (i.e., back-end) stream
 					    int verbosityLevel = 0,
-					    int socketNumToServer = -1);
+					    int socketNumToServer = -1,
+					    MediaTranscodingTable* transcodingTable = NULL);
       // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
       // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
       // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
@@ -117,13 +121,16 @@ public:
     // This can be used - along with "describeCompletdFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
 
 protected:
-  ProxyServerMediaSession(UsageEnvironment& env, RTSPServer* ourRTSPServer,
+  ProxyServerMediaSession(UsageEnvironment& env, GenericMediaServer* ourMediaServer,
 			  char const* inputStreamURL, char const* streamName,
 			  char const* username, char const* password,
 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
 			  int socketNumToServer,
+			  MediaTranscodingTable* transcodingTable,
 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
-			  = defaultCreateNewProxyRTSPClientFunc);
+			  = defaultCreateNewProxyRTSPClientFunc,
+			  portNumBits initialPortNum = 6970,
+			  Boolean multiplexRTCPWithRTP = False);
 
   // If you subclass "ProxyRTSPClient", then you will also need to define your own function
   // - with signature "createNewProxyRTSPClientFunc" (see above) - that creates a new object
@@ -132,8 +139,14 @@ protected:
   // constructor by passing your new function as the "ourCreateNewProxyRTSPClientFunc"
   // parameter.
 
+  // Subclasses may redefine the following functions, if they want "ProxyServerSubsession"s
+  // to create subclassed "Groupsock" and/or "RTCPInstance" objects:
+  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
+				   unsigned char const* cname, RTPSink* sink);
+
 protected:
-  RTSPServer* fOurRTSPServer;
+  GenericMediaServer* fOurMediaServer;
   ProxyRTSPClient* fProxyRTSPClient;
   MediaSession* fClientMediaSession;
 
@@ -147,6 +160,9 @@ private:
   int fVerbosityLevel;
   class PresentationTimeSessionNormalizer* fPresentationTimeSessionNormalizer;
   createNewProxyRTSPClientFunc* fCreateNewProxyRTSPClientFunc;
+  MediaTranscodingTable* fTranscodingTable;
+  portNumBits fInitialPortNum;
+  Boolean fMultiplexRTCPWithRTP;
 };
 
 

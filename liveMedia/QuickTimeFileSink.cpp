@@ -2018,13 +2018,20 @@ addAtom(stss); // Sync-Sample
   unsigned numEntries = 0, numSamplesSoFar = 0;
   if (fCurrentIOState->fHeadSyncFrame != NULL) {
     SyncFrame* currentSyncFrame = fCurrentIOState->fHeadSyncFrame;
-    while(currentSyncFrame != NULL) {
+
+    while (currentSyncFrame != NULL &&
+	   (fCurrentIOState->fHeadSyncFrame == fCurrentIOState->fTailSyncFrame ||
+	    currentSyncFrame != fCurrentIOState->fTailSyncFrame)) {
+      // Note: The above condition should really just be "currentSyncFrame != NULL", but QuickTime
+      // has been known to complain about the frame number in the last 'sync frame' record being
+      // 'out of range'.  We try to work around this by omitting the last 'sync frame' record,
+      // if there's more than one:
       ++numEntries;
       size += addWord(currentSyncFrame->sfFrameNum);
       currentSyncFrame = currentSyncFrame->nextSyncFrame;
     }
   } else {
-    // Then, run through the chunk descriptors, counting up the total nuber of samples:
+    // First, run through the chunk descriptors, counting up the total number of samples:
     unsigned const samplesPerFrame = fCurrentIOState->fQTSamplesPerFrame;
     ChunkDescriptor* chunk = fCurrentIOState->fHeadChunk;
     while (chunk != NULL) {

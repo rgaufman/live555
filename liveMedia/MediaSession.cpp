@@ -639,7 +639,6 @@ MediaSubsession::~MediaSubsession() {
 }
 
 void MediaSubsession::addFilter(FramedFilter* filter){
-  if (filter == NULL || filter->inputSource() != fReadSource) return; // sanity check
   fReadSource = filter;
 }
 

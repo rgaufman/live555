@@ -387,7 +387,7 @@ Groupsock* OnDemandServerMediaSubsession
 RTCPInstance* OnDemandServerMediaSubsession
 ::createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
 	     unsigned char const* cname, RTPSink* sink) {
-  // Default implementation:
+  // Default implementation; may be redefined by subclasses:
   return RTCPInstance::createNew(envir(), RTCPgs, totSessionBW, cname, sink, NULL/*we're a server*/);
 }
 
