@@ -183,12 +183,18 @@ RTCPInstance::~RTCPInstance() {
 #ifdef DEBUG
   fprintf(stderr, "RTCPInstance[%p]::~RTCPInstance()\n", this);
 #endif
-  if (fSource != NULL) fSource->deregisterForMultiplexedRTCPPackets();
-
   // Begin by sending a BYE.  We have to do this immediately, without
   // 'reconsideration', because "this" is going away.
   fTypeOfEvent = EVENT_BYE; // not used, but...
   sendBYE();
+
+  if (fSource != NULL && fSource->RTPgs() == fRTCPInterface.gs()) {
+    // We were receiving RTCP reports that were multiplexed with RTP, so tell the RTP source
+    // to stop giving them to us:
+    fSource->deregisterForMultiplexedRTCPPackets();
+    fRTCPInterface.forgetOurGroupsock();
+      // so that the "fRTCPInterface" destructor doesn't turn off background read handling
+  }
 
   if (fSpecificRRHandlerTable != NULL) {
     AddressPortLookupTable::Iterator iter(*fSpecificRRHandlerTable);
@@ -928,7 +934,8 @@ Boolean RTCPInstance::addReport(Boolean alwaysAdd) {
     }
 
     addSR();
-  } else if (fSource != NULL) {
+  }
+  if (fSource != NULL) {
     if (!alwaysAdd) {
       if (!fSource->enableRTCPReports()) return False;
     }

@@ -76,6 +76,8 @@ public:
 		     Boolean& packetReadWasIncomplete);
   // Note: If "tcpSocketNum" < 0, then the packet was received over UDP, and "tcpStreamChannelId"
   //   is undefined (and irrelevant).
+
+
   // Otherwise (if "tcpSocketNum" >= 0), the packet was received (interleaved) over TCP, and
   //   "tcpStreamChannelId" will return the channel id.
 
@@ -88,6 +90,11 @@ public:
     fAuxReadHandlerFunc = handlerFunc;
     fAuxReadHandlerClientData = handlerClientData;
   }
+
+  void forgetOurGroupsock() { fGS = NULL; }
+    // This may be called - *only immediately prior* to deleting this - to prevent our destructor
+    // from turning off background reading on the 'groupsock'.  (This is in case the 'groupsock'
+    // is also being read from elsewhere.)
 
 private:
   // Helper functions for sending a RTP or RTCP packet over a TCP connection:

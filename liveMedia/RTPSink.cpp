@@ -69,6 +69,9 @@ RTPSink::RTPSink(UsageEnvironment& env,
 RTPSink::~RTPSink() {
   delete fTransmissionStatsDB;
   delete[] (char*)fRTPPayloadFormatName;
+  fRTPInterface.forgetOurGroupsock();
+    // so that the "fRTCPInterface" destructor doesn't turn off background read handling (in case
+    // its 'groupsock' is being shared with something else that does background read handling).
 }
 
 u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
