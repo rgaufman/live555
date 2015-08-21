@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Base64.hh"
 #include <GroupsockHelper.hh>
 
-#define ALLOW_RTSP_SERVER_PORT_REUSE 1
+#define ALLOW_RTSP_SERVER_PORT_REUSE
 
 ////////// RTSPServer implementation //////////
 

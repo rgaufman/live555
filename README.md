@@ -36,4 +36,4 @@ on different ports is crucial.
 
 When restarting live555ProxyServer, you are often greeted with a "Port Already in Use"
 error and forced to wait for the port to time out. Adding
-"define ALLOW_RTSP_SERVER_PORT_REUSE 1" to liveMedia/RTSPServer.cpp prevents this.
+"define ALLOW_RTSP_SERVER_PORT_REUSE" to liveMedia/RTSPServer.cpp prevents this.

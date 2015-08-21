@@ -40,7 +40,7 @@ diff -rupN live-orig/README.md live-new/README.md
 +
 +When restarting live555ProxyServer, you are often greeted with a "Port Already in Use"
 +error and forced to wait for the port to time out. Adding
-+"define ALLOW_RTSP_SERVER_PORT_REUSE 1" to liveMedia/RTSPServer.cpp prevents this.
++"define ALLOW_RTSP_SERVER_PORT_REUSE" to liveMedia/RTSPServer.cpp prevents this.
 diff -rupN live-orig/liveMedia/MultiFramedRTPSource.cpp live-new/liveMedia/MultiFramedRTPSource.cpp
 --- live-orig/liveMedia/MultiFramedRTPSource.cpp	2015-05-12 07:50:20.000000000 +0100
 +++ live-new/liveMedia/MultiFramedRTPSource.cpp	2015-05-22 21:33:47.000000000 +0100
@@ -60,7 +60,7 @@ diff -rupN live-orig/liveMedia/RTSPServer.cpp live-new/liveMedia/RTSPServer.cpp
  #include "Base64.hh"
  #include <GroupsockHelper.hh>
  
-+#define ALLOW_RTSP_SERVER_PORT_REUSE 1
++#define ALLOW_RTSP_SERVER_PORT_REUSE
 +
  ////////// RTSPServer implementation //////////
  
