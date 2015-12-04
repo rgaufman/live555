@@ -292,7 +292,7 @@ GenericMediaServer.$(CPP):	include/GenericMediaServer.hh
 include/GenericMediaServer.hh:	include/ServerMediaSession.hh
 RTSPServer.$(CPP):	include/RTSPServer.hh include/RTSPCommon.hh include/RTSPRegisterSender.hh include/ProxyServerMediaSession.hh include/Base64.hh
 include/RTSPServer.hh:		include/GenericMediaServer.hh include/DigestAuthentication.hh
-include/ServerMediaSession.hh:	include/Media.hh include/FramedSource.hh include/RTPInterface.hh
+include/ServerMediaSession.hh:	include/RTCP.hh
 RTSPClient.$(CPP):	include/RTSPClient.hh  include/RTSPCommon.hh include/Base64.hh include/Locale.hh include/ourMD5.hh
 include/RTSPClient.hh:		include/MediaSession.hh include/DigestAuthentication.hh
 RTSPCommon.$(CPP):	include/RTSPCommon.hh include/Locale.hh

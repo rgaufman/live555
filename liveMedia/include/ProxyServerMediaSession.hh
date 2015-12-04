@@ -75,7 +75,7 @@ private:
   class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
   unsigned fNumSetupsDone;
   unsigned fNextDESCRIBEDelay; // in seconds
-  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY;
+  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY, fResetOnNextLivenessTest;
   TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask;
 };
 

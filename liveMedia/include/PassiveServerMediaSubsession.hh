@@ -68,6 +68,8 @@ protected: // redefined virtual functions
 			   ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
                            void* serverRequestAlternativeByteHandlerClientData);
   virtual float getCurrentNPT(void* streamToken);
+  virtual void getRTPSinkandRTCP(void* streamToken,
+				 RTPSink const*& rtpSink, RTCPInstance const*& rtcp);
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
 protected:

@@ -348,10 +348,8 @@ void RTSPServer::stopTCPStreamingOnSocket(int socketNum) {
     = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)socketNum);
   if (sotcp != NULL) {
     do {
-      char sessionIdStr[9];
-      sprintf(sessionIdStr, "%08X", sotcp->fSessionId);
       RTSPClientSession* clientSession
-	= (RTSPServer::RTSPClientSession*)(fClientSessions->Lookup(sessionIdStr));
+	= (RTSPServer::RTSPClientSession*)lookupClientSession(sotcp->fSessionId);
       if (clientSession != NULL) {
 	clientSession->deleteStreamByTrack(sotcp->fTrackNum);
       }
@@ -897,7 +895,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
       // current ongoing, then use this command to indicate 'liveness' on that client session:
       Boolean const requestIncludedSessionId = sessionIdStr[0] != '\0';
       if (requestIncludedSessionId) {
-	clientSession = (RTSPServer::RTSPClientSession*)(fOurRTSPServer.fClientSessions->Lookup(sessionIdStr));
+	clientSession
+	  = (RTSPServer::RTSPClientSession*)(fOurRTSPServer.lookupClientSession(sessionIdStr));
 	if (clientSession != NULL) clientSession->noteLiveness();
       }
     
@@ -928,10 +927,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	Boolean areAuthenticated = True;
 
 	if (!requestIncludedSessionId) {
-	  // No session id was present in the request.  So create a new "RTSPClientSession" object
-	  // for this request.  Choose a random (unused) 32-bit integer for the session id
-	  // (it will be encoded as a 8-digit hex number).  (We avoid choosing session id 0,
-	  // because that has a special use (by "OnDemandServerMediaSubsession").)
+	  // No session id was present in the request.
+	  // So create a new "RTSPClientSession" object for this request.
 
 	  // But first, make sure that we're authenticated to perform this command:
 	  char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
@@ -943,13 +940,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	  }
 	  strcat(urlTotalSuffix, urlSuffix);
 	  if (authenticationOK("SETUP", urlTotalSuffix, (char const*)fRequestBuffer)) {
-	    u_int32_t sessionId;
-	    do {
-	      sessionId = (u_int32_t)our_random32();
-	      sprintf(sessionIdStr, "%08X", sessionId);
-	    } while (sessionId == 0 || fOurRTSPServer.fClientSessions->Lookup(sessionIdStr) != NULL);
-	    clientSession = (RTSPClientSession*)fOurRTSPServer.createNewClientSession(sessionId);
-	    fOurRTSPServer.fClientSessions->Add(sessionIdStr, clientSession);
+	    clientSession
+	      = (RTSPServer::RTSPClientSession*)fOurRTSPServer.createNewClientSessionWithId();
 	  } else {
 	    areAuthenticated = False;
 	  }
@@ -2049,62 +2041,6 @@ RTSPServer::createNewClientConnection(int clientSocket, struct sockaddr_in clien
 GenericMediaServer::ClientSession*
 RTSPServer::createNewClientSession(u_int32_t sessionId) {
   return new RTSPClientSession(*this, sessionId);
-}
-
-
-////////// ServerMediaSessionIterator implementation //////////
-
-RTSPServer::ServerMediaSessionIterator
-::ServerMediaSessionIterator(RTSPServer& server)
-  : fOurIterator((server.fServerMediaSessions == NULL)
-		 ? NULL : HashTable::Iterator::create(*server.fServerMediaSessions)) {
-}
-
-RTSPServer::ServerMediaSessionIterator::~ServerMediaSessionIterator() {
-  delete fOurIterator;
-}
-
-ServerMediaSession* RTSPServer::ServerMediaSessionIterator::next() {
-  if (fOurIterator == NULL) return NULL;
-  
-  char const* key; // dummy
-  return (ServerMediaSession*)(fOurIterator->next(key));
-}
-
-
-////////// UserAuthenticationDatabase implementation //////////
-
-UserAuthenticationDatabase::UserAuthenticationDatabase(char const* realm,
-						       Boolean passwordsAreMD5)
-  : fTable(HashTable::create(STRING_HASH_KEYS)),
-    fRealm(strDup(realm == NULL ? "LIVE555 Streaming Media" : realm)),
-    fPasswordsAreMD5(passwordsAreMD5) {
-}
-
-UserAuthenticationDatabase::~UserAuthenticationDatabase() {
-  delete[] fRealm;
-  
-  // Delete the allocated 'password' strings that we stored in the table, and then the table itself:
-  char* password;
-  while ((password = (char*)fTable->RemoveNext()) != NULL) {
-    delete[] password;
-  }
-  delete fTable;
-}
-
-void UserAuthenticationDatabase::addUserRecord(char const* username,
-					       char const* password) {
-  fTable->Add(username, (void*)(strDup(password)));
-}
-
-void UserAuthenticationDatabase::removeUserRecord(char const* username) {
-  char* password = (char*)(fTable->Lookup(username));
-  fTable->Remove(username);
-  delete[] password;
-}
-
-char const* UserAuthenticationDatabase::lookupPassword(char const* username) {
-  return (char const*)(fTable->Lookup(username));
 }
 
 

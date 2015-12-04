@@ -207,6 +207,13 @@ float PassiveServerMediaSubsession::getCurrentNPT(void* streamToken) {
   return (float)(timeNow.tv_sec - creationTime.tv_sec + (timeNow.tv_usec - creationTime.tv_usec)/1000000.0);
 }
 
+void PassiveServerMediaSubsession
+::getRTPSinkandRTCP(void* streamToken,
+		    RTPSink const*& rtpSink, RTCPInstance const*& rtcp) {
+  rtpSink = &fRTPSink;
+  rtcp = fRTCPInstance;
+}
+
 void PassiveServerMediaSubsession::deleteStream(unsigned clientSessionId, void*& /*streamToken*/) {
   // Lookup and remove the 'RTCPSourceRecord' for this client.  Also turn off RTCP "RR" handling:
   RTCPSourceRecord* source = (RTCPSourceRecord*)(fClientRTCPSourceRecords->Lookup((char const*)clientSessionId));

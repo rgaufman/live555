@@ -215,8 +215,8 @@ static void continueAfterOPTIONS(RTSPClient* rtspClient, int resultCode, char* r
   if (resultCode == 0) {
     // Note whether the server told us that it supports the "GET_PARAMETER" command:
     serverSupportsGetParameter = RTSPOptionIsSupported("GET_PARAMETER", resultString);
-  }
-  ((ProxyRTSPClient*)rtspClient)->continueAfterLivenessCommand(resultCode, serverSupportsGetParameter);
+  } 
+ ((ProxyRTSPClient*)rtspClient)->continueAfterLivenessCommand(resultCode, serverSupportsGetParameter);
   delete[] resultString;
 }
 
@@ -241,7 +241,7 @@ ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession,
 	       tunnelOverHTTPPortNum == (portNumBits)(~0) ? 0 : tunnelOverHTTPPortNum, socketNumToServer),
     fOurServerMediaSession(ourServerMediaSession), fOurURL(strDup(rtspURL)), fStreamRTPOverTCP(tunnelOverHTTPPortNum != 0),
     fSetupQueueHead(NULL), fSetupQueueTail(NULL), fNumSetupsDone(0), fNextDESCRIBEDelay(1),
-    fServerSupportsGetParameter(False), fLastCommandWasPLAY(False),
+    fServerSupportsGetParameter(False), fLastCommandWasPLAY(False), fResetOnNextLivenessTest(False),
     fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL) { 
   if (username != NULL && password != NULL) {
     fOurAuthenticator = new Authenticator(username, password);
@@ -288,6 +288,11 @@ void ProxyRTSPClient::continueAfterDESCRIBE(char const* sdpDescription) {
 }
 
 void ProxyRTSPClient::continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter) {
+  if (fResetOnNextLivenessTest) {
+    // Hack: We've arranged to reset the connection with the server (regardless of "resultCode"):
+    fResetOnNextLivenessTest = False;
+    resultCode = 2; // arbitrary > 0
+  }
   if (resultCode != 0) {
     // The periodic 'liveness' command failed, suggesting that the back-end stream is no longer alive.
     // We handle this by resetting our connection state with this server.  Any current clients will be closed, but
@@ -322,9 +327,11 @@ void ProxyRTSPClient::continueAfterLivenessCommand(int resultCode, Boolean serve
 
 void ProxyRTSPClient::continueAfterSETUP(int resultCode) {
   if (resultCode != 0) {
-    // The "SETUP" command failed, so reset the connection with the 'back-end' server and start over,
-    // just as if a periodic 'liveness' check with the 'back-end' server had failed:
-    continueAfterLivenessCommand(resultCode, fServerSupportsGetParameter);
+    // The "SETUP" command failed, so arrange to reset the state after the next RTSP 'liveness'
+    // command.  (We don't do this now, because it deletes the "ProxyServerMediaSubsession",
+    // and we can't do that during "ProxyServerMediaSubsession::createNewStreamSource()".)
+    fResetOnNextLivenessTest = True;
+    envir().taskScheduler().rescheduleDelayedTask(fLivenessCommandTask, 0, sendLivenessCommand, this);
     return;
   }
 
@@ -371,9 +378,12 @@ void ProxyRTSPClient::continueAfterSETUP(int resultCode) {
 
 void ProxyRTSPClient::continueAfterPLAY(int resultCode) {
   if (resultCode != 0) {
-    // The "PLAY" command failed, so reset the connection with the 'back-end' server and start over,
-    // just as if a periodic 'liveness' check with the 'back-end' server had failed:
-    continueAfterLivenessCommand(resultCode, fServerSupportsGetParameter);
+    // The "PLAY" command failed, so arrange to reset the state after the next RTSP 'liveness'
+    // command.  (We don't do this now, because it deletes the "ProxyServerMediaSubsession",
+    // and we can't do that during "ProxyServerMediaSubsession::createNewStreamSource()".)
+    fResetOnNextLivenessTest = True;
+    envir().taskScheduler().rescheduleDelayedTask(fLivenessCommandTask, 0, sendLivenessCommand, this);
+    return;
   }
 }
 
@@ -647,7 +657,7 @@ RTPSink* ProxyServerMediaSubsession
     newSink = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock,
 					     rtpPayloadTypeIfDynamic, fClientMediaSubsession.rtpTimestampFrequency(),
 					     fClientMediaSubsession.mediumName(),
-					     fClientMediaSubsession.attrVal_strToLower("mode"),
+					     fClientMediaSubsession.attrVal_str("mode"),
 					     fClientMediaSubsession.fmtp_config(), fClientMediaSubsession.numChannels());
   } else if (strcmp(fCodecName, "MPV") == 0) {
     newSink = MPEG1or2VideoRTPSink::createNew(envir(), rtpGroupsock);

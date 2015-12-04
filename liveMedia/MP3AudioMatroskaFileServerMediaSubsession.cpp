@@ -20,6 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // (Actually, MPEG-1 or MPEG-2 audio file should also work.)
 // Implementation
 
+#include "FileServerMediaSubsession.hh"
 #include "MP3AudioMatroskaFileServerMediaSubsession.hh"
 #include "MatroskaDemuxedTrack.hh"
 

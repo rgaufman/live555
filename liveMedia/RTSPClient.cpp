@@ -1808,7 +1808,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	
 	if (needToResendCommand) {
 	  resetResponseBuffer();
-	  if (!resendCommand(foundRequest)) break;
+	  (void)resendCommand(foundRequest);
 	  delete[] headerDataCopy;
 	  return; // without calling our response handler; the response to the resent command will do that
 	}

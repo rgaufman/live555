@@ -312,7 +312,7 @@ char* ServerMediaSession::generateSDPDescription() {
 }
 
 
-////////// ServerMediaSessionIterator //////////
+////////// ServerMediaSubsessionIterator //////////
 
 ServerMediaSubsessionIterator
 ::ServerMediaSubsessionIterator(ServerMediaSession& session)

@@ -125,16 +125,36 @@ public: // should be protected, but some old compilers complain otherwise
   };
 
 protected:
-  virtual ClientConnection*
-  createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr) = 0;
+  virtual ClientConnection* createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr) = 0;
+  virtual ClientSession* createNewClientSession(u_int32_t sessionId) = 0;
+
+  ClientSession* createNewClientSessionWithId();
+      // Generates a new (unused) random session id, and calls the "createNewClientSession()"
+      // virtual function with this session id as parameter.
+
+  // Lookup a "ClientSession" object by sessionId (integer, and string):
+  ClientSession* lookupClientSession(u_int32_t sessionId);
+  ClientSession* lookupClientSession(char const* sessionIdStr);
+
+  // An iterator over our "ServerMediaSession" objects:
+  class ServerMediaSessionIterator {
+  public:
+    ServerMediaSessionIterator(GenericMediaServer& server);
+    virtual ~ServerMediaSessionIterator();
+    ServerMediaSession* next();
+  private:
+    HashTable::Iterator* fOurIterator;
+  };
 
 protected:
   friend class ClientConnection;
   friend class ClientSession;	
+  friend class ServerMediaSessionIterator;
   int fServerSocket;
   Port fServerPort;
   unsigned fReclamationSeconds;
 
+private:
   HashTable* fServerMediaSessions; // maps 'stream name' strings to "ServerMediaSession" objects
   HashTable* fClientConnections; // the "ClientConnection" objects that we're using
   HashTable* fClientSessions; // maps 'session id' strings to "ClientSession" objects

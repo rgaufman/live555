@@ -125,6 +125,8 @@ protected:
   virtual void noteArrivingRR(struct sockaddr_in const& fromAddressAndPort,
 			      int tcpSocketNum, unsigned char tcpStreamChannelId);
 
+  void incomingReportHandler1();
+
 private:
   // redefined virtual functions:
   virtual Boolean isRTCPInstance() const;
@@ -146,7 +148,6 @@ private:
   void onExpire1();
 
   static void incomingReportHandler(RTCPInstance* instance, int /*mask*/);
-  void incomingReportHandler1();
   void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddressAndPort,
 			     int tcpSocketNum, unsigned char tcpStreamChannelId);
   void onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc);

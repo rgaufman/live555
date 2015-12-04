@@ -317,6 +317,20 @@ FramedSource* OnDemandServerMediaSubsession::getStreamSource(void* streamToken) 
   return streamState->mediaSource();
 }
 
+void OnDemandServerMediaSubsession
+::getRTPSinkandRTCP(void* streamToken,
+		    RTPSink const*& rtpSink, RTCPInstance const*& rtcp) {
+  if (streamToken == NULL) {
+    rtpSink = NULL;
+    rtcp = NULL;
+    return;
+  }
+
+  StreamState* streamState = (StreamState*)streamToken;
+  rtpSink = streamState->rtpSink();
+  rtcp = streamState->rtcpInstance();
+}
+
 void OnDemandServerMediaSubsession::deleteStream(unsigned clientSessionId,
 						 void*& streamToken) {
   StreamState* streamState = (StreamState*)streamToken;

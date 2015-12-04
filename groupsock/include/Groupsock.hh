@@ -41,8 +41,8 @@ public:
   OutputSocket(UsageEnvironment& env);
   virtual ~OutputSocket();
 
-  Boolean write(netAddressBits address, portNumBits portNum/*in network order*/, u_int8_t ttl,
-		unsigned char* buffer, unsigned bufferSize);
+  virtual Boolean write(netAddressBits address, portNumBits portNum/*in network order*/, u_int8_t ttl,
+			unsigned char* buffer, unsigned bufferSize);
   Boolean write(struct sockaddr_in& addressAndPort, u_int8_t ttl,
 		unsigned char* buffer, unsigned bufferSize) {
     return write(addressAndPort.sin_addr.s_addr, addressAndPort.sin_port, ttl, buffer, bufferSize);
@@ -155,6 +155,8 @@ protected:
   destRecord* lookupDestRecordFromDestination(struct sockaddr_in const& destAddrAndPort) const;
 
 private:
+  void removeDestinationFrom(destRecord*& dests, unsigned sessionId);
+    // used to implement (the public) "removeDestination()", and "changeDestinationParameters()"
   int outputToAllMembersExcept(DirectedNetInterface* exceptInterface,
 			       u_int8_t ttlToFwd,
 			       unsigned char* data, unsigned size,

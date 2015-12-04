@@ -24,17 +24,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _SERVER_MEDIA_SESSION_HH
 #define _SERVER_MEDIA_SESSION_HH
 
-#ifndef _MEDIA_HH
-#include "Media.hh"
-#endif
-#ifndef _FRAMED_SOURCE_HH
-#include "FramedSource.hh"
-#endif
-#ifndef _GROUPEID_HH
-#include "GroupEId.hh"
-#endif
-#ifndef _RTP_INTERFACE_HH
-#include "RTPInterface.hh" // for ServerRequestAlternativeByteHandler
+#ifndef _RTCP_HH
+#include "RTCP.hh"
 #endif
 
 class ServerMediaSubsession; // forward
@@ -164,6 +155,12 @@ public:
   virtual void setStreamScale(unsigned clientSessionId, void* streamToken, float scale);
   virtual float getCurrentNPT(void* streamToken);
   virtual FramedSource* getStreamSource(void* streamToken);
+  virtual void getRTPSinkandRTCP(void* streamToken,
+				 RTPSink const*& rtpSink, RTCPInstance const*& rtcp) = 0;
+     // Returns pointers to the "RTPSink" and "RTCPInstance" objects for "streamToken".
+     // (This can be useful if you want to get the associated 'Groupsock' objects, for example.)
+     // You must not delete these objects, or start/stop playing them; instead, that is done
+     // using the "startStream()" and "deleteStream()" functions.
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
   virtual void testScaleFactor(float& scale); // sets "scale" to the actual supported scale

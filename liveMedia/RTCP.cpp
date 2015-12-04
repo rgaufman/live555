@@ -102,7 +102,7 @@ void RTCPMemberDatabase::reapOldMembers(unsigned threshold) {
 #ifdef DEBUG
         fprintf(stderr, "reap: removing SSRC 0x%x\n", oldSSRC);
 #endif
-      fOurRTCPInstance.removeSSRC(oldSSRC, True);
+	fOurRTCPInstance.removeSSRC(oldSSRC, True);
     }
   } while (foundOldMember);
 }
@@ -537,6 +537,15 @@ void RTCPInstance
       // Assume that each RTCP subpacket begins with a 4-byte SSRC:
       if (length < 4) break; length -= 4;
       reportSenderSSRC = ntohl(*(u_int32_t*)pkt); ADVANCE(4);
+#ifdef HACK_FOR_CHROME_WEBRTC_BUG
+      if (reportSenderSSRC == 0x00000001 && pt == RTCP_PT_RR) {
+	// Chrome (and Opera) WebRTC receivers have a bug that causes them to always send
+	// SSRC 1 in their "RR"s.  To work around this (to help us distinguish between different
+	// receivers), we use a fake SSRC in this case consisting of the IP address, XORed with
+	// the port number:
+	reportSenderSSRC = fromAddressAndPort.sin_addr.s_addr^fromAddressAndPort.sin_port;
+      }
+#endif
 
       Boolean subPacketOK = False;
       switch (pt) {
