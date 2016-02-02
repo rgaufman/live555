@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // Implementation
 
@@ -102,8 +102,11 @@ u_int32_t RTPSink::presetNextTimestamp() {
   gettimeofday(&timeNow, NULL);
 
   u_int32_t tsNow = convertToRTPTimestamp(timeNow);
-  fTimestampBase = tsNow;
-  fNextTimestampHasBeenPreset = True;
+  if (!groupsockBeingUsed().hasMultipleDestinations()) {
+    // Don't adjust the timestamp stream if we already have another destination ongoing
+    fTimestampBase = tsNow;
+    fNextTimestampHasBeenPreset = True;
+  }
 
   return tsNow;
 }

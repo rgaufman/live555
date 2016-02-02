@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // Implementation
@@ -340,6 +340,7 @@ void ProxyRTSPClient::continueAfterSETUP(int resultCode) {
 	    << "; numSubsessions " << fSetupQueueHead->fParentSession->numSubsessions() << "\n\tqueue:";
     for (ProxyServerMediaSubsession* p = fSetupQueueHead; p != NULL; p = p->fNext) {
       envir() << "\t" << p->codecName();
+      if (p->fNext == fSetupQueueHead || p->fNext == p) { fprintf(stderr, "##### INTERNAL ERROR 1\n"); break; } //##### TEMP FOR DEBUGGING
     }
     envir() << "\n";
   }
@@ -347,6 +348,7 @@ void ProxyRTSPClient::continueAfterSETUP(int resultCode) {
 
   // Dequeue the first "ProxyServerMediaSubsession" from our 'SETUP queue'.  It will be the one for which this "SETUP" was done:
   ProxyServerMediaSubsession* smss = fSetupQueueHead; // Assert: != NULL
+  if (fSetupQueueHead == NULL) fprintf(stderr, "##### INTERNAL ERROR 2\n"); else //##### TEMP FOR DEBUGGING
   fSetupQueueHead = fSetupQueueHead->fNext;
   if (fSetupQueueHead == NULL) fSetupQueueTail = NULL;
 
@@ -554,8 +556,10 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
       //  "ProxyServerMediaSubsession" to handle the response.  (Note that responses come back in the same order as requests.))
       Boolean queueWasEmpty = proxyRTSPClient->fSetupQueueHead == NULL;
       if (queueWasEmpty) {
+	if (proxyRTSPClient->fSetupQueueTail != NULL) fprintf(stderr, "##### INTERNAL ERROR 3\n");
 	proxyRTSPClient->fSetupQueueHead = this;
       } else {
+	if (proxyRTSPClient->fSetupQueueTail == NULL) fprintf(stderr, "##### INTERNAL ERROR 4\n"); else //##### TEMP FOR DEBUGGING
 	proxyRTSPClient->fSetupQueueTail->fNext = this;
       }
       proxyRTSPClient->fSetupQueueTail = this;

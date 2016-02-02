@@ -1,4 +1,4 @@
-// Copyright (c) 1996-2015, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2016, Live Networks, Inc.  All rights reserved
 // Version information for the LIVE555 Media Server application
 // Header file
 
