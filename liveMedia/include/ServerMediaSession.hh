@@ -57,6 +57,11 @@ public:
     // a result < 0 means: subsession durations differ; the result is -(the largest).
     // a result > 0 means: this is the duration of a bounded session
 
+  virtual void noteLiveness();
+    // called whenever a client - accessing this media - notes liveness.
+    // The default implementation does nothing, but subclasses can redefine this - e.g., if you
+    // want to remove long-unused "ServerMediaSession"s from the server.
+
   unsigned referenceCount() const { return fReferenceCount; }
   void incrementReferenceCount() { ++fReferenceCount; }
   void decrementReferenceCount() { if (fReferenceCount > 0) --fReferenceCount; }

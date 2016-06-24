@@ -20,12 +20,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "GroupsockHelper.hh"
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if (defined(__WIN32__) || defined(_WIN32)) && !defined(__MINGW32__)
 #include <time.h>
 extern "C" int initializeWinsockIfNecessary();
 #else
 #include <stdarg.h>
 #include <time.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #define initializeWinsockIfNecessary() 1
 #endif
@@ -752,7 +753,7 @@ char const* timestampString() {
   return (char const*)&timeString;
 }
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if (defined(__WIN32__) || defined(_WIN32)) && !defined(__MINGW32__)
 // For Windoze, we need to implement our own gettimeofday()
 
 // used to make sure that static variables in gettimeofday() aren't initialized simultaneously by multiple threads

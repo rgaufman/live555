@@ -287,6 +287,8 @@ void GenericMediaServer::ClientSession::noteLiveness() {
   fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\"): Liveness indication\n",
 	  fOurSessionId, streamName);
 #endif
+  if (fOurServerMediaSession != NULL) fOurServerMediaSession->noteLiveness();
+
   if (fOurServer.fReclamationSeconds > 0) {
     envir().taskScheduler().rescheduleDelayedTask(fLivenessCheckTask,
 						  fOurServer.fReclamationSeconds*1000000,

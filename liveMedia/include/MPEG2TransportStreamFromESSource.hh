@@ -37,6 +37,8 @@ public:
       // is used as the stream's PID.  Otherwise (if "PID" is -1) the 'stream_id' is used as
       // the PID.
 
+  static unsigned maxInputESFrameSize;
+
 protected:
   MPEG2TransportStreamFromESSource(UsageEnvironment& env);
       // called only by createNew()

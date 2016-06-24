@@ -723,7 +723,7 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
       // Port numbers were not specified in advance, so we use ephemeral port numbers.
       // Create sockets until we get a port-number pair (even: RTP; even+1: RTCP).
       // (However, if we're multiplexing RTCP with RTP, then we create only one socket,
-      // and the port number  can be even or odd.)
+      // and the port number can be even or odd.)
       // We need to make sure that we don't keep trying to use the same bad port numbers over
       // and over again, so we store bad sockets in a table, and delete them all when we're done.
       HashTable* socketHashTable = HashTable::create(ONE_WORD_HASH_KEYS);

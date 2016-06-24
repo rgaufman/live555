@@ -319,4 +319,12 @@ private:
   UserAuthenticationDatabase* fAuthDBForREGISTER;
 }; 
 
+
+// A special version of "parseTransportHeader()", used just for parsing the "Transport:" header
+// in an incoming "REGISTER" command:
+void parseTransportHeaderForREGISTER(char const* buf, // in
+				     Boolean &reuseConnection, // out
+				     Boolean& deliverViaTCP, // out
+				     char*& proxyURLSuffix); // out
+
 #endif

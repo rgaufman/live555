@@ -30,8 +30,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _DIGEST_AUTHENTICATION_HH
 #include "DigestAuthentication.hh"
 #endif
+#ifndef OMIT_REGISTER_HANDLING
 #ifndef _RTSP_SERVER_HH
 #include "RTSPServer.hh" // For the optional "HandlerForREGISTERCommand" mini-server
+#endif
 #endif
 
 class RTSPClient: public Medium {
@@ -345,6 +347,7 @@ private:
 };
 
 
+#ifndef OMIT_REGISTER_HANDLING
 ////////// HandlerServerForREGISTERCommand /////////
 
 // A simple server that creates a new "RTSPClient" object whenever a "REGISTER" request arrives (specifying the "rtsp://" URL
@@ -382,5 +385,6 @@ private:
   int fVerbosityLevel;
   char* fApplicationName;
 };
+#endif
 
 #endif

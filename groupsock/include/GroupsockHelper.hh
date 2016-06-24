@@ -130,9 +130,11 @@ _groupsockPriv* groupsockPriv(UsageEnvironment& env); // allocates it if necessa
 void reclaimGroupsockPriv(UsageEnvironment& env);
 
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if (defined(__WIN32__) || defined(_WIN32)) && !defined(__MINGW32__)
 // For Windoze, we need to implement our own gettimeofday()
 extern int gettimeofday(struct timeval*, int*);
+#else
+#include <sys/time.h>
 #endif
 
 // The following are implemented in inet.c:

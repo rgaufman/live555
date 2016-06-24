@@ -184,7 +184,7 @@ Boolean H264or5VideoStreamParser::usuallyBeginsAccessUnit(u_int8_t nal_unit_type
 
 void H264or5VideoStreamParser
 ::removeEmulationBytes(u_int8_t* nalUnitCopy, unsigned maxSize, unsigned& nalUnitCopySize) {
-  u_int8_t* nalUnitOrig = fStartOfFrame + fOutputStartCodeSize;
+  u_int8_t const* nalUnitOrig = fStartOfFrame + fOutputStartCodeSize;
   unsigned const numBytesInNALunit = fTo - nalUnitOrig;
   nalUnitCopySize
     = removeH264or5EmulationBytes(nalUnitCopy, maxSize, nalUnitOrig, numBytesInNALunit);
@@ -1161,7 +1161,7 @@ unsigned H264or5VideoStreamParser::parse() {
 }
 
 unsigned removeH264or5EmulationBytes(u_int8_t* to, unsigned toMaxSize,
-                                     u_int8_t* from, unsigned fromSize) {
+                                     u_int8_t const* from, unsigned fromSize) {
   unsigned toSize = 0;
   unsigned i = 0;
   while (i < fromSize && toSize+1 < toMaxSize) {

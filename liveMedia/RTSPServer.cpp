@@ -25,8 +25,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Base64.hh"
 #include <GroupsockHelper.hh>
 
-#define ALLOW_RTSP_SERVER_PORT_REUSE
-
 ////////// RTSPServer implementation //////////
 
 RTSPServer*
@@ -739,10 +737,10 @@ void RTSPServer::RTSPClientConnection::handleAlternativeRequestByte1(u_int8_t re
 }
 
 // A special version of "parseTransportHeader()", used just for parsing the "Transport:" header in an incoming "REGISTER" command:
-static void parseTransportHeaderForREGISTER(char const* buf,
-					    Boolean &reuseConnection,
-					    Boolean& deliverViaTCP,
-					    char*& proxyURLSuffix) {
+void parseTransportHeaderForREGISTER(char const* buf,
+				     Boolean &reuseConnection,
+				     Boolean& deliverViaTCP,
+				     char*& proxyURLSuffix) {
   // Initialize the result parameters to default values:
   reuseConnection = False;
   deliverViaTCP = False;

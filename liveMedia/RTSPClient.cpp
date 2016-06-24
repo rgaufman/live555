@@ -1960,6 +1960,7 @@ RTSPClient::RequestRecord* RTSPClient::RequestQueue::findByCSeq(unsigned cseq) {
 }
 
 
+#ifndef OMIT_REGISTER_HANDLING
 ////////// HandlerServerForREGISTERCommand implementation /////////
 
 HandlerServerForREGISTERCommand* HandlerServerForREGISTERCommand
@@ -2004,3 +2005,4 @@ void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const* url, cha
 
   if (fCreationFunc != NULL) (*fCreationFunc)(newRTSPClient, deliverViaTCP);
 }
+#endif
