@@ -86,6 +86,9 @@ public:
   }
   unsigned& estimatedBitrate() { return fEstimatedBitrate; } // kbps; usually 0 (i.e., unset)
 
+  u_int32_t SSRC() const {return fSSRC;}
+     // later need a means of changing the SSRC if there's a collision #####
+
 protected:
   RTPSink(UsageEnvironment& env,
 	  Groupsock* rtpGS, unsigned char rtpPayloadType,
@@ -99,8 +102,6 @@ protected:
   // used by RTCP:
   friend class RTCPInstance;
   friend class RTPTransmissionStats;
-  u_int32_t SSRC() const {return fSSRC;}
-     // later need a means of changing the SSRC if there's a collision #####
   u_int32_t convertToRTPTimestamp(struct timeval tv);
   unsigned packetCount() const {return fPacketCount;}
   unsigned octetCount() const {return fOctetCount;}

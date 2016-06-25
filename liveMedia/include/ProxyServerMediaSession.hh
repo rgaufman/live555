@@ -145,6 +145,11 @@ protected:
   virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
 				   unsigned char const* cname, RTPSink* sink);
 
+  virtual Boolean allowProxyingForSubsession(MediaSubsession const& mss);
+  // By default, this function always returns True.  However, a subclass may redefine this
+  // if it wishes to restrict which subsessions of a stream get proxied - e.g., if it wishes
+  // to proxy only video tracks, but not audio (or other) tracks.
+
 protected:
   GenericMediaServer* fOurMediaServer;
   ProxyRTSPClient* fProxyRTSPClient;

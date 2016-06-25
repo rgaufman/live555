@@ -10,42 +10,16 @@ then
     usage $*
 fi
 
-cd liveMedia
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
+platform=$1
+subdirs="liveMedia groupsock UsageEnvironment BasicUsageEnvironment testProgs mediaServer proxyServer"
+    
+for subdir in $subdirs
+do
+    /bin/rm -f $subdir/Makefile
+    cat $subdir/Makefile.head config.$platform $subdir/Makefile.tail > $subdir/Makefile
+    chmod a-w $subdir/Makefile
+done
 
-cd ../groupsock
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
-
-cd ../UsageEnvironment
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
-
-cd ../BasicUsageEnvironment
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
-
-cd ../testProgs
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
-
-cd ../mediaServer
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
-
-cd ../proxyServer
-/bin/rm -f Makefile
-cat Makefile.head ../config.$1 Makefile.tail > Makefile
-chmod a-w Makefile
-
-cd ..
 /bin/rm -f Makefile
 cat Makefile.head config.$1 Makefile.tail > Makefile
 chmod a-w Makefile

@@ -22,6 +22,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _GENERIC_MEDIA_SERVER_HH
 #define _GENERIC_MEDIA_SERVER_HH
 
+#ifndef _MEDIA_HH
+#include "Media.hh"
+#endif
 #ifndef _SERVER_MEDIA_SESSION_HH
 #include "ServerMediaSession.hh"
 #endif

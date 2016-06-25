@@ -21,10 +21,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "MPEG2TransportStreamFromESSource.hh"
 
-#define MAX_INPUT_ES_FRAME_SIZE 100000
 #define SIMPLE_PES_HEADER_SIZE 14
-#define LOW_WATER_MARK 1000 // <= MAX_INPUT_ES_FRAME_SIZE
-#define INPUT_BUFFER_SIZE (SIMPLE_PES_HEADER_SIZE + 2*MAX_INPUT_ES_FRAME_SIZE)
+#define INPUT_BUFFER_SIZE (SIMPLE_PES_HEADER_SIZE + 2*MPEG2TransportStreamFromESSource::maxInputESFrameSize)
+#define LOW_WATER_MARK 1000 // <= MPEG2TransportStreamFromESSource::maxInputESFrameSize
 
 ////////// InputESSourceRecord definition //////////
 
@@ -73,6 +72,8 @@ private:
 
 
 ////////// MPEG2TransportStreamFromESSource implementation //////////
+
+unsigned MPEG2TransportStreamFromESSource::maxInputESFrameSize = 100000; // bytes
 
 MPEG2TransportStreamFromESSource* MPEG2TransportStreamFromESSource
 ::createNew(UsageEnvironment& env) {
@@ -236,7 +237,7 @@ void InputESSourceRecord
 ::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
 		     struct timeval presentationTime) {
   if (numTruncatedBytes > 0) {
-    fParent.envir() << "MPEG2TransportStreamFromESSource: input buffer too small; increase \"MAX_INPUT_ES_FRAME_SIZE\" in \"MPEG2TransportStreamFromESSource\" by at least "
+    fParent.envir() << "MPEG2TransportStreamFromESSource: input buffer too small; increase \"MPEG2TransportStreamFromESSource::maxInputESFrameSize\" by at least "
 		    << numTruncatedBytes << " bytes!\n";
   }
 

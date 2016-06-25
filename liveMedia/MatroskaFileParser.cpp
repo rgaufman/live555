@@ -435,7 +435,9 @@ Boolean MatroskaFileParser::parseTrack() {
 	    delete[] track->codecID; track->codecID = codecID;
 
 	    // Also set the track's "mimeType" field, if we can deduce it from the "codecID":
-	    if (strncmp(codecID, "A_MPEG", 6) == 0) {
+	    if (strcmp(codecID, "A_PCM/INT/BIG") == 0) {
+	      track->mimeType = "audio/L16";
+	    } else if (strncmp(codecID, "A_MPEG", 6) == 0) {
 	      track->mimeType = "audio/MPEG";
 	    } else if (strncmp(codecID, "A_AAC", 5) == 0) {
 	      track->mimeType = "audio/AAC";

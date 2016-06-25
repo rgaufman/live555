@@ -443,7 +443,7 @@ unsigned MPEG4VideoStreamParser::parseVideoObjectLayer() {
   // don't support:
   u_int32_t next4Bytes = get4Bytes();
   if (!isVideoObjectLayerStartCode(next4Bytes)) {
-    usingSource()->envir() << "MPEG4VideoStreamParser::parseVideoObjectLayer(): This appears to be a 'short video header', which we current don't support\n";
+    usingSource()->envir() << "MPEG4VideoStreamParser::parseVideoObjectLayer(): This appears to be a 'short video header', which we currently don't support\n";
   }
 
   // Now, copy all bytes that we see, up until we reach

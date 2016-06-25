@@ -83,6 +83,7 @@ double duration = 0;
 double durationSlop = -1.0; // extra seconds to play at the end
 double initialSeekTime = 0.0f;
 char* initialAbsoluteSeekTime = NULL;
+char* initialAbsoluteSeekEndTime = NULL;
 float scale = 1.0f;
 double endTime;
 unsigned interPacketGapMaxTime = 0;
@@ -138,7 +139,7 @@ void usage() {
        << " [-u <username> <password>"
 	   << (allowProxyServers ? " [<proxy-server> [<proxy-server-port>]]" : "")
        << "]" << (supportCodecSelection ? " [-A <audio-codec-rtp-payload-format-code>|-M <mime-subtype-name>]" : "")
-       << " [-s <initial-seek-time>]|[-U <absolute-seek-time>] [-z <scale>] [-g user-agent]"
+       << " [-s <initial-seek-time>]|[-U <absolute-seek-time>] [-E <absolute-seek-end-time>] [-z <scale>] [-g user-agent]"
        << " [-k <username-for-REGISTER> <password-for-REGISTER>]"
        << " [-P <interval-in-seconds>] [-K]"
        << " [-w <width> -h <height>] [-f <frames-per-second>] [-y] [-H] [-Q [<measurement-interval>]] [-F <filename-prefix>] [-b <file-sink-buffer-size>] [-B <input-socket-buffer-size>] [-I <input-interface-ip-address>] [-m] [<url>|-R [<port-num>]] (or " << progName << " -o [-V] <url>)\n";
@@ -493,6 +494,12 @@ int main(int argc, char** argv) {
       break;
     }
 
+    case 'E': {
+      // specify initial absolute seek END time (trick play), using a string of the form "YYYYMMDDTHHMMSSZ" or "YYYYMMDDTHHMMSS.<frac>Z"
+      initialAbsoluteSeekEndTime = argv[2];
+      ++argv; --argc;
+      break;
+    }
     case 'z': { // scale (trick play)
       float arg;
       if (sscanf(argv[2], "%g", &arg) != 1 || arg == 0.0f) {
@@ -568,6 +575,10 @@ int main(int argc, char** argv) {
   }
   if (initialAbsoluteSeekTime != NULL && initialSeekTime != 0.0f) {
     *env << "The -s and -U options cannot both be used!\n";
+    usage();
+  }
+  if (initialAbsoluteSeekTime == NULL && initialAbsoluteSeekEndTime != NULL) {
+    *env << "The -E option requires the -U option!\n";
     usage();
   }
   if (authDBForREGISTER != NULL && !createHandlerServerForREGISTERCommand) {
@@ -790,7 +801,7 @@ void continueAfterSETUP(RTSPClient* client, int resultCode, char* resultString) 
   }
   delete[] resultString;
 
-  sessionTimeoutParameter = client->sessionTimeoutParameter();
+  if (client != NULL) sessionTimeoutParameter = client->sessionTimeoutParameter();
 
   // Set up the next subsession, if any:
   setupStreams();
@@ -1006,9 +1017,10 @@ void setupStreams() {
   }
 
   char const* absStartTime = initialAbsoluteSeekTime != NULL ? initialAbsoluteSeekTime : session->absStartTime();
+  char const* absEndTime = initialAbsoluteSeekEndTime != NULL ? initialAbsoluteSeekEndTime : session->absEndTime();
   if (absStartTime != NULL) {
     // Either we or the server have specified that seeking should be done by 'absolute' time:
-    startPlayingSession(session, absStartTime, session->absEndTime(), scale, continueAfterPLAY);
+    startPlayingSession(session, absStartTime, absEndTime, scale, continueAfterPLAY);
   } else {
     // Normal case: Seek by relative time (NPT):
     startPlayingSession(session, initialSeekTime, endTime, scale, continueAfterPLAY);

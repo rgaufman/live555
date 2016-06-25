@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
-//#define HACK_FOR_CHROME_WEBRTC_BUG 1 //#####@@@@@
+#define HACK_FOR_CHROME_WEBRTC_BUG 1 //#####@@@@@
 
 ////////// RTCPMemberDatabase //////////
 
@@ -39,11 +39,11 @@ public:
 	delete fTable;
   }
 
-  Boolean isMember(unsigned ssrc) const {
+  Boolean isMember(u_int32_t ssrc) const {
     return fTable->Lookup((char*)(long)ssrc) != NULL;
   }
 
-  Boolean noteMembership(unsigned ssrc, unsigned curTimeCount) {
+  Boolean noteMembership(u_int32_t ssrc, unsigned curTimeCount) {
     Boolean isNew = !isMember(ssrc);
 
     if (isNew) {
@@ -56,7 +56,7 @@ public:
     return isNew;
   }
 
-  Boolean remove(unsigned ssrc) {
+  Boolean remove(u_int32_t ssrc) {
     Boolean wasPresent = fTable->Remove((char*)(long)ssrc);
     if (wasPresent) {
       --fNumMembers;
@@ -835,8 +835,7 @@ void RTCPInstance
   } while (0);
 }
 
-void RTCPInstance::onReceive(int typeOfPacket, int totPacketSize,
-			     unsigned ssrc) {
+void RTCPInstance::onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc) {
   fTypeOfPacket = typeOfPacket;
   fLastReceivedSize = totPacketSize;
   fLastReceivedSSRC = ssrc;
@@ -990,7 +989,7 @@ void RTCPInstance::addRR() {
 }
 
 void RTCPInstance::enqueueCommonReportPrefix(unsigned char packetType,
-					     unsigned SSRC,
+					     u_int32_t SSRC,
 					     unsigned numExtraWords) {
   unsigned numReportingSources;
   if (fSource == NULL) {

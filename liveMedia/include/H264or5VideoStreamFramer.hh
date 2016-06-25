@@ -81,7 +81,7 @@ protected:
 // A general routine for making a copy of a (H.264 or H.265) NAL unit,
 // removing 'emulation' bytes from the copy:
 unsigned removeH264or5EmulationBytes(u_int8_t* to, unsigned toMaxSize,
-				     u_int8_t* from, unsigned fromSize);
+				     u_int8_t const* from, unsigned fromSize);
     // returns the size of the copy; it will be <= min(toMaxSize,fromSize)
 
 #endif

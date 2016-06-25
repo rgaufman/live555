@@ -194,6 +194,10 @@ float ServerMediaSession::duration() const {
   }
 }
 
+void ServerMediaSession::noteLiveness() {
+  // default implementation: do nothing
+}
+
 void ServerMediaSession::deleteAllSubsessions() {
   Medium::close(fSubsessionsHead);
   fSubsessionsHead = fSubsessionsTail = NULL;

@@ -309,7 +309,9 @@ RTPSink* MatroskaFile
     MatroskaTrack* track = lookup(trackNumber);
     if (track == NULL) break;
 
-    if (strcmp(track->mimeType, "audio/MPEG") == 0) {
+    if (strcmp(track->mimeType, "audio/L16") == 0) {
+      result = SimpleRTPSink::createNew(envir(), rtpGroupsock,rtpPayloadTypeIfDynamic, track->samplingFrequency, "audio", "L16", track->numChannels);
+    } else if (strcmp(track->mimeType, "audio/MPEG") == 0) {
       result = MPEG1or2AudioRTPSink::createNew(envir(), rtpGroupsock);
     } else if (strcmp(track->mimeType, "audio/AAC") == 0) {
       // The Matroska file's 'Codec Private' data is assumed to be the AAC configuration
