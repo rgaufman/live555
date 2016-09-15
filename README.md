@@ -21,19 +21,9 @@ See modifications.patch to see exactly what was changed compared to vanilla.
 
 ### Buffer sizes
 
-increaseReceiveBufferTo is increased to 2,000,000 bytes (same as VLC default) and
-OutPacketBuffer::maxSize is increased 10 fold to 1000000 in the ProxyServer. These
-2 changes make live555 work a hell of a lot better out of box.
-
-### -p option for proxyServer - allows specifying a listening port on the command line
-
-This was rejected from the mailing list, but often RTSPProxy fails to run on
-more than a few cameras with bad corruption, frames seeking back and forth and
-many other adverse side effects. Being able to run multiple instances listening
-on different ports is crucial.
+OutPacketBuffer::maxSize is increased to 2,000,000 bytes which makes live555 work better with buggy IP cameras.
 
 ### Force port re-use
 
-When restarting live555ProxyServer, you are often greeted with a "Port Already in Use"
-error and forced to wait for the port to time out. Adding
-"define ALLOW_RTSP_SERVER_PORT_REUSE" to liveMedia/RTSPServer.cpp prevents this.
+Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure
+you never run multiple instances of the proxy on the same port!

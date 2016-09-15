@@ -170,6 +170,7 @@ void MultiFramedRTPSink::stopPlaying() {
 }
 
 void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
+  nextTask() = NULL;
   fIsFirstPacket = isFirstPacket;
 
   // Set up the RTP header:

@@ -83,7 +83,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
   if ((fOutgoingPacketCounter%10) == 0) {
     // To avoid excessive recursion (and stack overflow) caused by excessively large input frames,
     // occasionally return to the event loop to do this:
-    envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
+    nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
   } else {
     afterGetting(this);
   }

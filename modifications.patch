@@ -1,7 +1,7 @@
-diff -rupN live-orig/README.md live-new/README.md
---- live-orig/README.md	1970-01-01 01:00:00.000000000 +0100
-+++ live-new/README.md	2015-05-22 21:42:28.000000000 +0100
-@@ -0,0 +1,39 @@
+diff -Naur live/README.md live-modified/README.md
+--- live/README.md	1970-01-01 01:00:00.000000000 +0100
++++ live-modified/README.md	2016-09-15 16:28:13.000000000 +0100
+@@ -0,0 +1,29 @@
 +# Build Instructions
 +
 +For example:
@@ -25,112 +25,303 @@ diff -rupN live-orig/README.md live-new/README.md
 +
 +### Buffer sizes
 +
-+increaseReceiveBufferTo is increased to 2,000,000 bytes (same as VLC default) and
-+OutPacketBuffer::maxSize is increased 10 fold to 1000000 in the ProxyServer. These
-+2 changes make live555 work a hell of a lot better out of box.
-+
-+### -p option for proxyServer - allows specifying a listening port on the command line
-+
-+This was rejected from the mailing list, but often RTSPProxy fails to run on
-+more than a few cameras with bad corruption, frames seeking back and forth and
-+many other adverse side effects. Being able to run multiple instances listening
-+on different ports is crucial.
++OutPacketBuffer::maxSize is increased to 2,000,000 bytes which makes live555 work better with buggy IP cameras.
 +
 +### Force port re-use
 +
-+When restarting live555ProxyServer, you are often greeted with a "Port Already in Use"
-+error and forced to wait for the port to time out. Adding
-+"define ALLOW_RTSP_SERVER_PORT_REUSE" to liveMedia/RTSPServer.cpp prevents this.
-diff -rupN live-orig/liveMedia/MultiFramedRTPSource.cpp live-new/liveMedia/MultiFramedRTPSource.cpp
---- live-orig/liveMedia/MultiFramedRTPSource.cpp	2015-05-12 07:50:20.000000000 +0100
-+++ live-new/liveMedia/MultiFramedRTPSource.cpp	2015-05-22 21:33:47.000000000 +0100
-@@ -73,7 +73,7 @@ MultiFramedRTPSource
-   fReorderingBuffer = new ReorderingPacketBuffer(packetFactory);
++Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure
++you never run multiple instances of the proxy on the same port!
+\ No newline at end of file
+diff -Naur live/config.linux live-modified/config.linux
+--- live/config.linux	2016-09-12 14:43:33.000000000 +0100
++++ live-modified/config.linux	2016-09-15 16:31:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
++COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DALLOW_RTSP_SERVER_PORT_REUSE=1
+ C =			c
+ C_COMPILER =		cc
+ C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
+diff -Naur live/liveMedia/MediaSink.cpp live-modified/liveMedia/MediaSink.cpp
+--- live/liveMedia/MediaSink.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/liveMedia/MediaSink.cpp	2016-09-15 16:16:01.000000000 +0100
+@@ -110,7 +110,7 @@
  
-   // Try to use a big receive buffer for RTP:
--  increaseReceiveBufferTo(env, RTPgs->socketNum(), 50*1024);
-+  increaseReceiveBufferTo(env, RTPgs->socketNum(), 2000000);
- }
+ ////////// OutPacketBuffer //////////
  
- void MultiFramedRTPSource::reset() {
-diff -rupN live-orig/liveMedia/RTSPServer.cpp live-new/liveMedia/RTSPServer.cpp
---- live-orig/liveMedia/RTSPServer.cpp	2015-05-12 07:50:20.000000000 +0100
-+++ live-new/liveMedia/RTSPServer.cpp	2015-05-22 21:33:47.000000000 +0100
-@@ -25,6 +25,8 @@ along with this library; if not, write t
- #include "Base64.hh"
- #include <GroupsockHelper.hh>
+-unsigned OutPacketBuffer::maxSize = 60000; // by default
++unsigned OutPacketBuffer::maxSize = 2000000; // by default
  
-+#define ALLOW_RTSP_SERVER_PORT_REUSE
-+
- ////////// RTSPServer implementation //////////
+ OutPacketBuffer
+ ::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
+diff -Naur live/mediaServer/DynamicRTSPServer.cpp live-modified/mediaServer/DynamicRTSPServer.cpp
+--- live/mediaServer/DynamicRTSPServer.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/mediaServer/DynamicRTSPServer.cpp	2016-09-15 16:15:30.000000000 +0100
+@@ -64,15 +64,15 @@
  
- RTSPServer*
-diff -rupN live-orig/proxyServer/live555ProxyServer.cpp live-new/proxyServer/live555ProxyServer.cpp
---- live-orig/proxyServer/live555ProxyServer.cpp	2015-05-12 07:50:20.000000000 +0100
-+++ live-new/proxyServer/live555ProxyServer.cpp	2015-05-22 21:33:47.000000000 +0100
-@@ -29,6 +29,7 @@ UserAuthenticationDatabase* authDBForREG
- int verbosityLevel = 0;
- Boolean streamRTPOverTCP = False;
- portNumBits tunnelOverHTTPPortNum = 0;
-+portNumBits rtspServerPortNum = 554;
- char* username = NULL;
- char* password = NULL;
- Boolean proxyREGISTERRequests = False;
-@@ -47,6 +48,7 @@ void usage() {
-   *env << "Usage: " << progName
-        << " [-v|-V]"
-        << " [-t|-T <http-port>]"
-+       << " [-p <rtsp-port>]"
-        << " [-u <username> <password>]"
-        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
-        << " <rtsp-url-1> ... <rtsp-url-n>\n";
-@@ -56,7 +58,7 @@ void usage() {
+     return NULL;
+   } else {
+-    if (smsExists && isFirstLookupInSession) { 
++    if (smsExists && isFirstLookupInSession) {
+       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
+       // file has changed in some way:
+-      removeServerMediaSession(sms); 
++      removeServerMediaSession(sms);
+       sms = NULL;
+-    } 
++    }
+ 
+     if (sms == NULL) {
+-      sms = createNewSMS(envir(), streamName, fid); 
++      sms = createNewSMS(envir(), streamName, fid);
+       addServerMediaSession(sms);
+     }
+ 
+@@ -138,12 +138,12 @@
+   } else if (strcmp(extension, ".264") == 0) {
+     // Assumed to be a H.264 Video Elementary Stream file:
+     NEW_SMS("H.264 Video");
+-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.264 frames
++    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large H.264 frames
+     sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
+   } else if (strcmp(extension, ".265") == 0) {
+     // Assumed to be a H.265 Video Elementary Stream file:
+     NEW_SMS("H.265 Video");
+-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.265 frames
++    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large H.265 frames
+     sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
+   } else if (strcmp(extension, ".mp3") == 0) {
+     // Assumed to be a MPEG-1 or 2 Audio file:
+@@ -199,13 +199,13 @@
+   } else if (strcmp(extension, ".dv") == 0) {
+     // Assumed to be a DV Video file
+     // First, make sure that the RTPSinks' buffers will be large enough to handle the huge size of DV frames (as big as 288000).
+-    OutPacketBuffer::maxSize = 300000;
++    OutPacketBuffer::maxSize = 2000000;
+ 
+     NEW_SMS("DV Video");
+     sms->addSubsession(DVVideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
+   } else if (strcmp(extension, ".mkv") == 0 || strcmp(extension, ".webm") == 0) {
+     // Assumed to be a Matroska file (note that WebM ('.webm') files are also Matroska files)
+-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large VP8 or VP9 frames
++    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large VP8 or VP9 frames
+     NEW_SMS("Matroska video+audio+(optional)subtitles");
+ 
+     // Create a Matroska file server demultiplexor for the specified file.
+diff -Naur live/modifications.patch live-modified/modifications.patch
+--- live/modifications.patch	1970-01-01 01:00:00.000000000 +0100
++++ live-modified/modifications.patch	2016-09-15 16:35:09.000000000 +0100
+@@ -0,0 +1,109 @@
++diff -Naur live/README.md live-modified/README.md
++--- live/README.md	1970-01-01 01:00:00.000000000 +0100
+++++ live-modified/README.md	2016-09-15 16:28:13.000000000 +0100
++@@ -0,0 +1,29 @@
+++# Build Instructions
+++
+++For example:
+++
+++```bash
+++./genMakefiles linux
+++make -j4
+++```
+++
+++Replace "linux" with your platform, e.g. avr32-linux, cygwin, freebsd, iphoneos, linux, linux-64bit, macosx, openbsd, solaris-64bit, etc (see config.PLATFORM files)
+++
+++You will find various executables:
+++
+++ * ./testProgs - contain various programs such as testRTSPClient to receive an RTSP stream
+++ * ./proxyServer/live555ProxyServer - a great RTSP proxy server
+++ * ./mediaServer/live555MediaServer - an RTSP media server for serving static files over RTSP
+++
+++# Changes to Master
+++
+++See modifications.patch to see exactly what was changed compared to vanilla.
+++
+++### Buffer sizes
+++
+++OutPacketBuffer::maxSize is increased to 2,000,000 bytes which makes live555 work better with buggy IP cameras.
+++
+++### Force port re-use
+++
+++Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure
+++you never run multiple instances of the proxy on the same port!
++\ No newline at end of file
++diff -Naur live/config.linux live-modified/config.linux
++--- live/config.linux	2016-09-12 14:43:33.000000000 +0100
+++++ live-modified/config.linux	2016-09-15 16:31:49.000000000 +0100
++@@ -1,4 +1,4 @@
++-COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
+++COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DALLOW_RTSP_SERVER_PORT_REUSE=1
++ C =			c
++ C_COMPILER =		cc
++ C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
++diff -Naur live/liveMedia/MediaSink.cpp live-modified/liveMedia/MediaSink.cpp
++--- live/liveMedia/MediaSink.cpp	2016-09-12 14:36:59.000000000 +0100
+++++ live-modified/liveMedia/MediaSink.cpp	2016-09-15 16:16:01.000000000 +0100
++@@ -110,7 +110,7 @@
++ 
++ ////////// OutPacketBuffer //////////
++ 
++-unsigned OutPacketBuffer::maxSize = 60000; // by default
+++unsigned OutPacketBuffer::maxSize = 2000000; // by default
++ 
++ OutPacketBuffer
++ ::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
++diff -Naur live/mediaServer/DynamicRTSPServer.cpp live-modified/mediaServer/DynamicRTSPServer.cpp
++--- live/mediaServer/DynamicRTSPServer.cpp	2016-09-12 14:36:59.000000000 +0100
+++++ live-modified/mediaServer/DynamicRTSPServer.cpp	2016-09-15 16:15:30.000000000 +0100
++@@ -64,15 +64,15 @@
++ 
++     return NULL;
++   } else {
++-    if (smsExists && isFirstLookupInSession) { 
+++    if (smsExists && isFirstLookupInSession) {
++       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
++       // file has changed in some way:
++-      removeServerMediaSession(sms); 
+++      removeServerMediaSession(sms);
++       sms = NULL;
++-    } 
+++    }
++ 
++     if (sms == NULL) {
++-      sms = createNewSMS(envir(), streamName, fid); 
+++      sms = createNewSMS(envir(), streamName, fid);
++       addServerMediaSession(sms);
++     }
++ 
++@@ -138,12 +138,12 @@
++   } else if (strcmp(extension, ".264") == 0) {
++     // Assumed to be a H.264 Video Elementary Stream file:
++     NEW_SMS("H.264 Video");
++-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.264 frames
+++    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large H.264 frames
++     sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
++   } else if (strcmp(extension, ".265") == 0) {
++     // Assumed to be a H.265 Video Elementary Stream file:
++     NEW_SMS("H.265 Video");
++-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.265 frames
+++    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large H.265 frames
++     sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
++   } else if (strcmp(extension, ".mp3") == 0) {
++     // Assumed to be a MPEG-1 or 2 Audio file:
++@@ -199,13 +199,13 @@
++   } else if (strcmp(extension, ".dv") == 0) {
++     // Assumed to be a DV Video file
++     // First, make sure that the RTPSinks' buffers will be large enough to handle the huge size of DV frames (as big as 288000).
++-    OutPacketBuffer::maxSize = 300000;
+++    OutPacketBuffer::maxSize = 2000000;
++ 
++     NEW_SMS("DV Video");
++     sms->addSubsession(DVVideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
++   } else if (strcmp(extension, ".mkv") == 0 || strcmp(extension, ".webm") == 0) {
++     // Assumed to be a Matroska file (note that WebM ('.webm') files are also Matroska files)
++-    OutPacketBuffer::maxSize = 100000; // allow for some possibly large VP8 or VP9 frames
+++    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large VP8 or VP9 frames
++     NEW_SMS("Matroska video+audio+(optional)subtitles");
++ 
++     // Create a Matroska file server demultiplexor for the specified file.
+diff -Naur live/proxyServer/live555ProxyServer.cpp live-modified/proxyServer/live555ProxyServer.cpp
+--- live/proxyServer/live555ProxyServer.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/proxyServer/live555ProxyServer.cpp	2016-09-15 16:15:06.000000000 +0100
+@@ -58,7 +58,7 @@
  int main(int argc, char** argv) {
    // Increase the maximum size of video frames that we can 'proxy' without truncation.
    // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
 -  OutPacketBuffer::maxSize = 100000; // bytes
-+  OutPacketBuffer::maxSize = 1000000; // bytes
++  OutPacketBuffer::maxSize = 2000000; // bytes
  
    // Begin by setting up our usage environment:
    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-@@ -108,6 +110,22 @@ int main(int argc, char** argv) {
-       break;
+@@ -98,7 +98,7 @@
+     case 'T': {
+       // stream RTP and RTCP over a HTTP connection
+       if (argc > 2 && argv[2][0] != '-') {
+-	// The next argument is the HTTP server port number:                                                                       
++	// The next argument is the HTTP server port number:
+ 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
+ 	    && tunnelOverHTTPPortNum > 0) {
+ 	  ++argv; --argc;
+@@ -112,7 +112,7 @@
      }
  
-+    case 'p': {
-+      // set port
-+      if (argc > 3 && argv[2][0] != '-') {
-+        // The next argument is the RTSP server port number:
-+        if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-+          && rtspServerPortNum > 0) {
-+            ++argv; --argc;
-+            break;
-+        }
-+      }
-+
-+      // If we get here, the option was specified incorrectly:
-+      usage();
-+      break;
-+    }
+     case 'p': {
+-      // specify a rtsp server port number 
++      // specify a rtsp server port number
+       if (argc > 2 && argv[2][0] != '-') {
+         // The next argument is the rtsp server port number:
+         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
+@@ -126,7 +126,7 @@
+       usage();
+       break;
+     }
+-    
 +
      case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
        if (argc < 4) usage(); // there's no argv[3] (for the "password")
        username = argv[2];
-@@ -167,16 +185,10 @@ int main(int argc, char** argv) {
-       // Repeat this line with each <username>, <password> that you wish to allow access to the server.
- #endif
+@@ -159,7 +159,7 @@
  
--  // Create the RTSP server.  Try first with the default port number (554),
--  // and then with the alternative port number (8554):
-+  // Create the RTSP server with a specified port or the 554 default port
-   RTSPServer* rtspServer;
--  portNumBits rtspServerPortNum = 554;
-   rtspServer = createRTSPServer(rtspServerPortNum);
-   if (rtspServer == NULL) {
--    rtspServerPortNum = 8554;
--    rtspServer = createRTSPServer(rtspServerPortNum);
--  }
--  if (rtspServer == NULL) {
-     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
-     exit(1);
+     ++argv; --argc;
    }
+-  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end 
++  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end
+   // Make sure that the remaining arguments appear to be "rtsp://" URLs:
+   int i;
+   for (i = 1; i < argc; ++i) {
+diff -Naur live/testProgs/testDVVideoStreamer.cpp live-modified/testProgs/testDVVideoStreamer.cpp
+--- live/testProgs/testDVVideoStreamer.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/testProgs/testDVVideoStreamer.cpp	2016-09-15 16:14:59.000000000 +0100
+@@ -55,7 +55,7 @@
+ 
+   // Create a 'DV Video RTP' sink from the RTP 'groupsock':
+   // (But first, make sure that its buffers will be large enough to handle the huge size of DV frames (as big as 288000).)
+-  OutPacketBuffer::maxSize = 300000;
++  OutPacketBuffer::maxSize = 2000000;
+   videoSink = DVVideoRTPSink::createNew(*env, &rtpGroupsock, 96);
+ 
+   // Create (and start) a 'RTCP instance' for this RTP sink:
+diff -Naur live/testProgs/testH264VideoStreamer.cpp live-modified/testProgs/testH264VideoStreamer.cpp
+--- live/testProgs/testH264VideoStreamer.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/testProgs/testH264VideoStreamer.cpp	2016-09-15 16:14:51.000000000 +0100
+@@ -60,7 +60,7 @@
+   rtcpGroupsock.multicastSendOnly(); // we're a SSM source
+ 
+   // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
+-  OutPacketBuffer::maxSize = 100000;
++  OutPacketBuffer::maxSize = 2000000;
+   videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
+ 
+   // Create (and start) a 'RTCP instance' for this RTP sink:
+diff -Naur live/testProgs/testH265VideoStreamer.cpp live-modified/testProgs/testH265VideoStreamer.cpp
+--- live/testProgs/testH265VideoStreamer.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/testProgs/testH265VideoStreamer.cpp	2016-09-15 16:14:35.000000000 +0100
+@@ -61,7 +61,7 @@
+   rtcpGroupsock.multicastSendOnly(); // we're a SSM source
+ 
+   // Create a 'H265 Video RTP' sink from the RTP 'groupsock':
+-  OutPacketBuffer::maxSize = 100000;
++  OutPacketBuffer::maxSize = 2000000;
+   videoSink = H265VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
+ 
+   // Create (and start) a 'RTCP instance' for this RTP sink:
+diff -Naur live/testProgs/testOnDemandRTSPServer.cpp live-modified/testProgs/testOnDemandRTSPServer.cpp
+--- live/testProgs/testOnDemandRTSPServer.cpp	2016-09-12 14:36:59.000000000 +0100
++++ live-modified/testProgs/testOnDemandRTSPServer.cpp	2016-09-15 16:14:22.000000000 +0100
+@@ -265,7 +265,7 @@
+   // A DV video stream:
+   {
+     // First, make sure that the RTPSinks' buffers will be large enough to handle the huge size of DV frames (as big as 288000).
+-    OutPacketBuffer::maxSize = 300000;
++    OutPacketBuffer::maxSize = 2000000;
+ 
+     char const* streamName = "dvVideoTest";
+     char const* inputFileName = "test.dv";
+@@ -409,7 +409,7 @@
+         // (Note: If the input UDP source is unicast rather than multicast, then change this to NULL.)
+     portNumBits const inputPortNum = 1234;
+         // This causes the server to take its input from the stream sent by the "testMPEG2TransportStreamer" demo application.
+-    Boolean const inputStreamIsRawUDP = False; 
++    Boolean const inputStreamIsRawUDP = False;
+     ServerMediaSession* sms
+       = ServerMediaSession::createNew(*env, streamName, streamName,
+ 				      descriptionString);

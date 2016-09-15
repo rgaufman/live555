@@ -79,6 +79,7 @@ void FramedSource::getNextFrame(unsigned char* to, unsigned maxSize,
 }
 
 void FramedSource::afterGetting(FramedSource* source) {
+  source->nextTask() = NULL;
   source->fIsCurrentlyAwaitingData = False;
       // indicates that we can be read again
       // Note that this needs to be done here, in case the "fAfterFunc"

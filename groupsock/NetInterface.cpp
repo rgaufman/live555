@@ -91,7 +91,7 @@ Socket::Socket(UsageEnvironment& env, Port port)
 }
 
 void Socket::reset() {
-  closeSocket(fSocketNum);
+  if (fSocketNum >= 0) closeSocket(fSocketNum);
   fSocketNum = -1;
 }
 

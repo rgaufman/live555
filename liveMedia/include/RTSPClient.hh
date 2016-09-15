@@ -261,6 +261,7 @@ private:
     void putAtHead(RequestRecord* request); // "request" must not be NULL
     RequestRecord* findByCSeq(unsigned cseq);
     Boolean isEmpty() const { return fHead == NULL; }
+    void reset();
 
   private:
     RequestRecord* fHead;

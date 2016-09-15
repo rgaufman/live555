@@ -59,8 +59,9 @@ static void checkForAuxSDPLine(void* clientData) {
 }
 
 void H265VideoFileServerMediaSubsession::checkForAuxSDPLine1() {
-  char const* dasl;
+  nextTask() = NULL;
 
+  char const* dasl;
   if (fAuxSDPLine != NULL) {
     // Signal the event loop that we're done:
     setDoneFlag();

@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   rtcpGroupsock.multicastSendOnly(); // we're a SSM source
 
   // Create a 'H265 Video RTP' sink from the RTP 'groupsock':
-  OutPacketBuffer::maxSize = 100000;
+  OutPacketBuffer::maxSize = 2000000;
   videoSink = H265VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
 
   // Create (and start) a 'RTCP instance' for this RTP sink:

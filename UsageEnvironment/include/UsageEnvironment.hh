@@ -113,17 +113,20 @@ public:
 	// reach a scheduling point.
 	// (Does not delay if "microseconds" <= 0)
 	// Returns a token that can be used in a subsequent call to
-	// unscheduleDelayedTask()
+	// unscheduleDelayedTask() or rescheduleDelayedTask()
+        // (but only if the task has not yet occurred).
 
   virtual void unscheduleDelayedTask(TaskToken& prevTask) = 0;
 	// (Has no effect if "prevTask" == NULL)
         // Sets "prevTask" to NULL afterwards.
+        // Note: This MUST NOT be called if the scheduled task has already occurred.
 
   virtual void rescheduleDelayedTask(TaskToken& task,
 				     int64_t microseconds, TaskFunc* proc,
 				     void* clientData);
-  // Combines "unscheduleDelayedTask()" with "scheduleDelayedTask()"
-  // (setting "task" to the new task token).
+        // Combines "unscheduleDelayedTask()" with "scheduleDelayedTask()"
+        // (setting "task" to the new task token).
+        // Note: This MUST NOT be called if the scheduled task has already occurred.
 
   // For handling socket operations in the background (from the event loop):
   typedef void BackgroundHandlerProc(void* clientData, int mask);
@@ -150,7 +153,9 @@ public:
   virtual void triggerEvent(EventTriggerId eventTriggerId, void* clientData = NULL) = 0;
       // Causes the (previously-registered) handler function for the specified event to be handled (from the event loop).
       // The handler function is called with "clientData" as parameter.
-      // Note: This function (unlike other library functions) may be called from an external thread - to signal an external event.
+      // Note: This function (unlike other library functions) may be called from an external thread
+      // - to signal an external event.  (However, "triggerEvent()" should not be called with the
+      // same 'event trigger id' from different threads.)
 
   // The following two functions are deprecated, and are provided for backwards-compatibility only:
   void turnOnBackgroundReadHandling(int socketNum, BackgroundHandlerProc* handlerProc, void* clientData) {

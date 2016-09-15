@@ -109,7 +109,7 @@ GenericMediaServer::~GenericMediaServer() {
 
 void GenericMediaServer::cleanup() {
   // This member function must be called in the destructor of any subclass of
-  //"GenericMediaServer".  (We don't call this in the destructor of "GenericMediaServer" itself,
+  // "GenericMediaServer".  (We don't call this in the destructor of "GenericMediaServer" itself,
   // because by that time, the subclass destructor will already have been called, and this may
   // affect (break) the destruction of the "ClientSession" and "ClientConnection" objects, which
   // themselves will have been subclassed.)
@@ -229,7 +229,7 @@ GenericMediaServer::ClientConnection::~ClientConnection() {
 void GenericMediaServer::ClientConnection::closeSockets() {
   // Turn off background handling on our socket:
   envir().taskScheduler().disableBackgroundHandling(fOurSocket);
-  ::closeSocket(fOurSocket);
+  if (fOurSocket>= 0) ::closeSocket(fOurSocket);
 
   fOurSocket = -1;
 }
@@ -324,7 +324,7 @@ GenericMediaServer::ClientSession* GenericMediaServer::createNewClientSessionWit
   } while (sessionId == 0 || lookupClientSession(sessionIdStr) != NULL);
 
   ClientSession* clientSession = createNewClientSession(sessionId);
-  fClientSessions->Add(sessionIdStr, clientSession);
+  if (clientSession != NULL) fClientSessions->Add(sessionIdStr, clientSession);
 
   return clientSession;
 }

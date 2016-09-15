@@ -46,7 +46,7 @@ public:
     return NULL;
   }
 
-  virtual Boolean weWillTranscode(char const* mediumName, char const* codecName) {
+  virtual Boolean weWillTranscode(char const* /*mediumName*/, char const* /*codecName*/) {
     // Default implementation: Return False.
     // You would reimplement this in a subclass - returning True for each
     // <mediumName>/<codecName> for which you'll do transcoding.

@@ -32,6 +32,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define PID_TABLE_SIZE 256
 
 class MPEG2TransportStreamMultiplexor: public FramedSource {
+public:
+  Boolean canDeliverNewFrameImmediately() const { return fInputBufferBytesUsed < fInputBufferSize; }
+      // Can be used by a downstream reader to test whether the next call to "doGetNextFrame()"
+      // will deliver data immediately).
+
 protected:
   MPEG2TransportStreamMultiplexor(UsageEnvironment& env);
   virtual ~MPEG2TransportStreamMultiplexor();

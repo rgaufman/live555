@@ -1154,6 +1154,8 @@ void RTCPInstance::reschedule(double nextTime) {
 }
 
 void RTCPInstance::onExpire1() {
+  nextTask() = NULL;
+
   // Note: fTotSessionBW is kbits per second
   double rtcpBW = 0.05*fTotSessionBW*1024/8; // -> bytes per second
 
