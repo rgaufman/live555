@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // C++ header
@@ -43,24 +43,25 @@ class ProxyRTSPClient: public RTSPClient {
 public:
   ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
                   char const* username, char const* password,
-                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
-                  unsigned interPacketGapMaxTime = 0);
+                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
   virtual ~ProxyRTSPClient();
 
   void continueAfterDESCRIBE(char const* sdpDescription);
   void continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter);
   void continueAfterSETUP(int resultCode);
   void continueAfterPLAY(int resultCode);
+  void scheduleReset();
 
 private:
   void reset();
+  int connectToServer(int socketNum, portNumBits remotePortNum);
 
   Authenticator* auth() { return fOurAuthenticator; }
 
   void scheduleLivenessCommand();
   static void sendLivenessCommand(void* clientData);
-  void checkInterPacketGaps_();
-  static void checkInterPacketGaps(void* clientData);
+  void doReset();
+  static void doReset(void* clientData);
 
   void scheduleDESCRIBECommand();
   static void sendDESCRIBE(void* clientData);
@@ -78,10 +79,8 @@ private:
   class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
   unsigned fNumSetupsDone;
   unsigned fNextDESCRIBEDelay; // in seconds
-  unsigned fTotNumPacketsReceived;
-  unsigned fInterPacketGapMaxTime; // in seconds
-  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY, fResetOnNextLivenessTest;
-  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fInterPacketGapsTask;
+  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY, fDoneDESCRIBE;
+  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fResetTask;
 };
 
 
@@ -90,13 +89,13 @@ createNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSession,
 			     char const* rtspURL,
 			     char const* username, char const* password,
 			     portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
-			     int socketNumToServer, unsigned interPacketGapMaxTime);
+			     int socketNumToServer);
 ProxyRTSPClient*
 defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSession,
 				    char const* rtspURL,
 				    char const* username, char const* password,
 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
-				    int socketNumToServer, unsigned interPacketGapMaxTime);
+				    int socketNumToServer);
 
 class ProxyServerMediaSession: public ServerMediaSession {
 public:
@@ -109,8 +108,7 @@ public:
 					        // for streaming the *proxied* (i.e., back-end) stream
 					    int verbosityLevel = 0,
 					    int socketNumToServer = -1,
-					    MediaTranscodingTable* transcodingTable = NULL,
-					    unsigned interPacketGapMaxTime = 0);
+					    MediaTranscodingTable* transcodingTable = NULL);
       // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
       // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
       // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
@@ -133,7 +131,6 @@ protected:
 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
 			  int socketNumToServer,
 			  MediaTranscodingTable* transcodingTable,
-			  unsigned interPacketGapMaxTime = 0,
 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
 			  = defaultCreateNewProxyRTSPClientFunc,
 			  portNumBits initialPortNum = 6970,

@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A sink that generates a QuickTime file from a composite media session
 // Implementation
 
@@ -297,10 +297,10 @@ QuickTimeFileSink::QuickTimeFileSink(UsageEnvironment& env,
   }
 
   // Use the current time as the file's creation and modification
-  // time.  Use Apple's time format: seconds since January 1, 1904
+  // time.  Use Apple's time format: seconds (UTC) since January 1, 1904
 
   gettimeofday(&fStartTime, NULL);
-  fAppleCreationTime = fStartTime.tv_sec - 0x83dac000;
+  fAppleCreationTime = fStartTime.tv_sec - 0x83da4f80;
 
   // Begin by writing a "mdat" atom at the start of the file.
   // (Later, when we've finished copying data to the file, we'll come

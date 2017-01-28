@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // An class that can be used to create (possibly multiple) 'replicas' of an incoming stream.
 // Implementation.
 
@@ -108,10 +108,11 @@ void StreamReplicator::deactivateStreamReplica(StreamReplica* replicaBeingDeacti
   // Assert: fNumActiveReplicas > 0
   if (fNumActiveReplicas == 0) fprintf(stderr, "StreamReplicator::deactivateStreamReplica() Internal Error!\n"); // should not happen
   --fNumActiveReplicas;
-  replicaBeingDeactivated->fFrameIndex = -1;
 
   // Forget about any frame delivery that might have just been made to this replica:
   if (replicaBeingDeactivated->fFrameIndex != fFrameIndex && fNumDeliveriesMadeSoFar > 0) --fNumDeliveriesMadeSoFar;
+
+  replicaBeingDeactivated->fFrameIndex = -1;
 
   // Check whether the replica being deactivated is the 'master' replica, or is enqueued awaiting a frame:
   if (replicaBeingDeactivated == fMasterReplica) {

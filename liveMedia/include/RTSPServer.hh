@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // C++ header
 
@@ -61,6 +61,14 @@ public:
   // "proxyURLSuffix" (optional) is used only when the remote client is also a proxy server.
   //   It tells the proxy server the suffix that it should use in its "rtsp://" URL (when front-end clients access the stream)
 
+  typedef void (responseHandlerForDEREGISTER)(RTSPServer* rtspServer, unsigned requestId, int resultCode, char* resultString);
+  unsigned deregisterStream(ServerMediaSession* serverMediaSession,
+			    char const* remoteClientNameOrAddress, portNumBits remoteClientPortNum,
+			    responseHandlerForDEREGISTER* responseHandler,
+			    char const* username = NULL, char const* password = NULL,
+			    char const* proxyURLSuffix = NULL);
+  // Used to turn off a previous "registerStream()" - using our custom "DEREGISTER" RTSP command.
+  
   char* rtspURL(ServerMediaSession const* serverMediaSession, int clientSocket = -1) const;
       // returns a "rtsp://" URL that could be used to access the
       // specified session (which must already have been added to
@@ -84,7 +92,9 @@ public:
   Boolean setUpTunnelingOverHTTP(Port httpPort);
       // (Attempts to) enable RTSP-over-HTTP tunneling on the specified port.
       // Returns True iff the specified port can be used in this way (i.e., it's not already being used for a separate HTTP server).
-      // Note: RTSP-over-HTTP tunneling is described in http://developer.apple.com/quicktime/icefloe/dispatch028.html
+      // Note: RTSP-over-HTTP tunneling is described in
+      //  http://mirror.informatimago.com/next/developer.apple.com/quicktime/icefloe/dispatch028.html
+      //  and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
   portNumBits httpServerPortNum() const; // in host byte order.  (Returns 0 if not present.)
 
 protected:
@@ -96,10 +106,12 @@ protected:
   virtual ~RTSPServer();
 
   virtual char const* allowedCommandNames(); // used to implement "RTSPClientConnection::handleCmd_OPTIONS()"
-  virtual Boolean weImplementREGISTER(char const* proxyURLSuffix, char*& responseStr);
+  virtual Boolean weImplementREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				      char const* proxyURLSuffix, char*& responseStr);
       // used to implement "RTSPClientConnection::handleCmd_REGISTER()"
       // Note: "responseStr" is dynamically allocated (or NULL), and should be delete[]d after the call
-  virtual void implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer,
+  virtual void implementCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				     char const* url, char const* urlSuffix, int socketToRemoteServer,
 				     Boolean deliverViaTCP, char const* proxyURLSuffix);
       // used to implement "RTSPClientConnection::handleCmd_REGISTER()"
 
@@ -125,11 +137,13 @@ public: // should be protected, but some old compilers complain otherwise
     // A data structure that's used to implement the "REGISTER" command:
     class ParamsForREGISTER {
     public:
-      ParamsForREGISTER(RTSPClientConnection* ourConnection, char const* url, char const* urlSuffix,
+      ParamsForREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+			RTSPClientConnection* ourConnection, char const* url, char const* urlSuffix,
 			Boolean reuseConnection, Boolean deliverViaTCP, char const* proxyURLSuffix);
       virtual ~ParamsForREGISTER();
     private:
       friend class RTSPClientConnection;
+      char const* fCmd;
       RTSPClientConnection* fOurConnection;
       char* fURL;
       char* fURLSuffix;
@@ -152,7 +166,8 @@ public: // should be protected, but some old compilers complain otherwise
     virtual void handleCmd_GET_PARAMETER(char const* fullRequestStr); // when operating on the entire server
     virtual void handleCmd_SET_PARAMETER(char const* fullRequestStr); // when operating on the entire server
     virtual void handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr);
-    virtual void handleCmd_REGISTER(char const* url, char const* urlSuffix, char const* fullRequestStr,
+    virtual void handleCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				    char const* url, char const* urlSuffix, char const* fullRequestStr,
 				    Boolean reuseConnection, Boolean deliverViaTCP, char const* proxyURLSuffix);
         // You probably won't need to subclass/reimplement this function;
         //     reimplement "RTSPServer::weImplementREGISTER()" and "RTSPServer::implementCmd_REGISTER()" instead.
@@ -272,14 +287,15 @@ private:
   friend class RTSPClientConnection;
   friend class RTSPClientSession;
   friend class RegisterRequestRecord;
+  friend class DeregisterRequestRecord;
   int fHTTPServerSocket; // for optional RTSP-over-HTTP tunneling
   Port fHTTPServerPort; // ditto
   HashTable* fClientConnectionsForHTTPTunneling; // maps client-supplied 'session cookie' strings to "RTSPClientConnection"s
     // (used only for optional RTSP-over-HTTP tunneling)
   HashTable* fTCPStreamingDatabase;
     // maps TCP socket numbers to ids of sessions that are streaming over it (RTP/RTCP-over-TCP)
-  HashTable* fPendingRegisterRequests;
-  unsigned fRegisterRequestCounter;
+  HashTable* fPendingRegisterOrDeregisterRequests;
+  unsigned fRegisterOrDeregisterRequestCounter;
   UserAuthenticationDatabase* fAuthDB;
   Boolean fAllowStreamingRTPOverTCP; // by default, True
 };
@@ -306,8 +322,10 @@ protected:
 
 protected: // redefined virtual functions
   virtual char const* allowedCommandNames();
-  virtual Boolean weImplementREGISTER(char const* proxyURLSuffix, char*& responseStr);
-  virtual void implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer,
+  virtual Boolean weImplementREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				      char const* proxyURLSuffix, char*& responseStr);
+  virtual void implementCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				     char const* url, char const* urlSuffix, int socketToRemoteServer,
 				     Boolean deliverViaTCP, char const* proxyURLSuffix);
   virtual UserAuthenticationDatabase* getAuthenticationDatabaseForCommand(char const* cmdName);
 

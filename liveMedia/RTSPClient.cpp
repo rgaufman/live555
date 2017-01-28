@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client
 // Implementation
 
@@ -866,9 +866,10 @@ int RTSPClient::openConnection() {
     }
     
     // We don't yet have a TCP socket (or we used to have one, but it got closed).  Set it up now.
-    fInputSocketNum = fOutputSocketNum = setupStreamSocket(envir(), 0);
+    fInputSocketNum = setupStreamSocket(envir(), 0);
     if (fInputSocketNum < 0) break;
     ignoreSigPipeOnSocket(fInputSocketNum); // so that servers on the same host that get killed don't also kill us
+    if (fOutputSocketNum < 0) fOutputSocketNum = fInputSocketNum;
       
     // Connect to the remote endpoint:
     fServerAddress = *(netAddressBits*)(destAddress.data());
@@ -1192,6 +1193,7 @@ Boolean RTSPClient::handleSETUPResponse(MediaSubsession& subsession, char const*
 	  // So that we continue to receive & handle RTSP commands and responses from the server
 	subsession.rtpSource()->enableRTCPReports() = False;
 	  // To avoid confusing the server (which won't start handling RTP/RTCP-over-TCP until "PLAY"), don't send RTCP "RR"s yet
+	increaseReceiveBufferTo(envir(), fInputSocketNum, 50*1024);
       }
       if (subsession.rtcpInstance() != NULL) subsession.rtcpInstance()->setStreamSocket(fInputSocketNum, subsession.rtcpChannelId);
       RTPInterface::setServerRequestAlternativeByteHandler(envir(), fInputSocketNum, handleAlternativeRequestByte, this);
@@ -1439,7 +1441,8 @@ void RTSPClient::constructSubsessionURL(MediaSubsession const& subsession,
 
 Boolean RTSPClient::setupHTTPTunneling1() {
   // Set up RTSP-over-HTTP tunneling, as described in
-  //     http://developer.apple.com/quicktime/icefloe/dispatch028.html and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
+  //     http://mirror.informatimago.com/next/developer.apple.com/quicktime/icefloe/dispatch028.html
+  // and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
   if (fVerbosityLevel >= 1) {
     envir() << "Requesting RTSP-over-HTTP tunneling (on port " << fTunnelOverHTTPPortNum << ")\n\n";
   }
@@ -1746,7 +1749,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	    delete[] newBaseURL;
 	  }
 	} else if (checkForHeader(lineStart, "Connection:", 11, headerParamsStr)) {
-	  if (_strncasecmp(headerParamsStr, "Close", 5) == 0) {
+	  if (fTunnelOverHTTPPortNum == 0 && _strncasecmp(headerParamsStr, "Close", 5) == 0) {
 	    resetTCPSockets();
 	  }
 	}
@@ -2005,16 +2008,23 @@ char const* HandlerServerForREGISTERCommand::allowedCommandNames() {
   return "OPTIONS, REGISTER";
 }
 
-Boolean HandlerServerForREGISTERCommand::weImplementREGISTER(char const* proxyURLSuffix, char*& responseStr) {
+Boolean HandlerServerForREGISTERCommand
+::weImplementREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+		      char const* /*proxyURLSuffix*/, char*& responseStr) {
   responseStr = NULL;
-  return True;
+  // By default, we implement only "REGISTER"; not "DEREGISTER".  Subclass to implement "DEREGISTER"
+  return strcmp(cmd, "REGISTER") == 0;
 }
 
-void HandlerServerForREGISTERCommand::implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer,
-							    Boolean deliverViaTCP, char const* /*proxyURLSuffix*/) {
-  // Create a new "RTSPClient" object, and call our 'creation function' with it:
-  RTSPClient* newRTSPClient = createNewRTSPClient(url, fVerbosityLevel, fApplicationName, socketToRemoteServer);
+void HandlerServerForREGISTERCommand
+::implementCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+			char const* url, char const* urlSuffix, int socketToRemoteServer,
+			Boolean deliverViaTCP, char const* /*proxyURLSuffix*/) {
+  if (strcmp(cmd, "REGISTER") == 0) { // By default, we don't implement "DEREGISTER"
+    // Create a new "RTSPClient" object, and call our 'creation function' with it:
+    RTSPClient* newRTSPClient = createNewRTSPClient(url, fVerbosityLevel, fApplicationName, socketToRemoteServer);
 
-  if (fCreationFunc != NULL) (*fCreationFunc)(newRTSPClient, deliverViaTCP);
+    if (fCreationFunc != NULL) (*fCreationFunc)(newRTSPClient, deliverViaTCP);
+  }
 }
 #endif

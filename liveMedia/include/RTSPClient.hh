@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client - for a single "rtsp://" URL
 // C++ header
 
@@ -245,6 +245,7 @@ protected:
 				   char const*& protocolStr,
 				   char*& extraHeaders, Boolean& extraHeadersWereAllocated);
       // used to implement "sendRequest()"; subclasses may reimplement this (e.g., when implementing a new command name)
+  virtual int connectToServer(int socketNum, portNumBits remotePortNum); // used to implement "openConnection()"; result values: -1: failure; 0: pending; 1: success
 
 private: // redefined virtual functions
   virtual Boolean isRTSPClient() const;
@@ -270,8 +271,7 @@ private:
 
   void resetTCPSockets();
   void resetResponseBuffer();
-  int openConnection(); // -1: failure; 0: pending; 1: success
-  int connectToServer(int socketNum, portNumBits remotePortNum); // used to implement "openConnection()"; result values are the same
+  int openConnection(); // result values: -1: failure; 0: pending; 1: success
   char* createAuthenticatorString(char const* cmd, char const* url);
   char* createBlocksizeString(Boolean streamUsingTCP);
   void handleRequestError(RequestRecord* request);
@@ -376,9 +376,12 @@ protected:
       // of "RTSPClient" instead, then subclass this class, and redefine this virtual function.
 
 protected: // redefined virtual functions
-  virtual char const* allowedCommandNames(); // we support "OPTIONS" and "REGISTER" only
-  virtual Boolean weImplementREGISTER(char const* proxyURLSuffix, char*& responseStr); // redefined to return True
-  virtual void implementCmd_REGISTER(char const* url, char const* urlSuffix, int socketToRemoteServer,
+  virtual char const* allowedCommandNames(); // "OPTIONS", "REGISTER", and (perhaps) "DEREGISTER" only
+  virtual Boolean weImplementREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				      char const* proxyURLSuffix, char*& responseStr);
+      // redefined to return True (for cmd=="REGISTER")
+  virtual void implementCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				     char const* url, char const* urlSuffix, int socketToRemoteServer,
 				     Boolean deliverViaTCP, char const* proxyURLSuffix);
 
 private:
