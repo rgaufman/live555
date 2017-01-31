@@ -1,0 +1,256 @@
+diff -pru livemedia.2017.01.26_org/liveMedia/include/ProxyServerMediaSession.hh livemedia.2017.01.26_interpacketgaps/liveMedia/include/ProxyServerMediaSession.hh
+--- livemedia.2017.01.26_org/liveMedia/include/ProxyServerMediaSession.hh	2017-01-26 12:29:37.000000000 +0100
++++ livemedia.2017.01.26_interpacketgaps/liveMedia/include/ProxyServerMediaSession.hh	2017-01-28 23:35:38.757289163 +0100
+@@ -43,7 +43,8 @@ class ProxyRTSPClient: public RTSPClient
+ public:
+   ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
+                   char const* username, char const* password,
+-                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
++                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
++                  unsigned interPacketGapMaxTime = 0);
+   virtual ~ProxyRTSPClient();
+ 
+   void continueAfterDESCRIBE(char const* sdpDescription);
+@@ -60,6 +61,8 @@ private:
+ 
+   void scheduleLivenessCommand();
+   static void sendLivenessCommand(void* clientData);
++  void checkInterPacketGaps_(Boolean delayReset);
++  static void checkInterPacketGaps(void* clientData);
+   void doReset();
+   static void doReset(void* clientData);
+ 
+@@ -79,8 +82,10 @@ private:
+   class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
+   unsigned fNumSetupsDone;
+   unsigned fNextDESCRIBEDelay; // in seconds
++  unsigned fTotNumPacketsReceived;
++  unsigned fInterPacketGapMaxTime; // in seconds
+   Boolean fServerSupportsGetParameter, fLastCommandWasPLAY, fDoneDESCRIBE;
+-  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fResetTask;
++  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fResetTask, fInterPacketGapsTask;
+ };
+ 
+ 
+@@ -89,13 +94,13 @@ createNewProxyRTSPClientFunc(ProxyServer
+ 			     char const* rtspURL,
+ 			     char const* username, char const* password,
+ 			     portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+-			     int socketNumToServer);
++			     int socketNumToServer, unsigned interPacketGapMaxTime);
+ ProxyRTSPClient*
+ defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSession,
+ 				    char const* rtspURL,
+ 				    char const* username, char const* password,
+ 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+-				    int socketNumToServer);
++				    int socketNumToServer, unsigned interPacketGapMaxTime);
+ 
+ class ProxyServerMediaSession: public ServerMediaSession {
+ public:
+@@ -108,7 +113,8 @@ public:
+ 					        // for streaming the *proxied* (i.e., back-end) stream
+ 					    int verbosityLevel = 0,
+ 					    int socketNumToServer = -1,
+-					    MediaTranscodingTable* transcodingTable = NULL);
++					    MediaTranscodingTable* transcodingTable = NULL,
++					    unsigned interPacketGapMaxTime = 0);
+       // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
+       // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
+       // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
+@@ -131,6 +137,7 @@ protected:
+ 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+ 			  int socketNumToServer,
+ 			  MediaTranscodingTable* transcodingTable,
++			  unsigned interPacketGapMaxTime = 0,
+ 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
+ 			  = defaultCreateNewProxyRTSPClientFunc,
+ 			  portNumBits initialPortNum = 6970,
+diff -pru livemedia.2017.01.26_org/liveMedia/ProxyServerMediaSession.cpp livemedia.2017.01.26_interpacketgaps/liveMedia/ProxyServerMediaSession.cpp
+--- livemedia.2017.01.26_org/liveMedia/ProxyServerMediaSession.cpp	2017-01-26 12:29:37.000000000 +0100
++++ livemedia.2017.01.26_interpacketgaps/liveMedia/ProxyServerMediaSession.cpp	2017-01-29 09:12:58.039765158 +0100
+@@ -75,9 +75,9 @@ defaultCreateNewProxyRTSPClientFunc(Prox
+ 				    char const* rtspURL,
+ 				    char const* username, char const* password,
+ 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+-				    int socketNumToServer) {
++				    int socketNumToServer, unsigned interPacketGapMaxTime) {
+   return new ProxyRTSPClient(ourServerMediaSession, rtspURL, username, password,
+-			     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer);
++			     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer, interPacketGapMaxTime);
+ }
+ 
+ ProxyServerMediaSession* ProxyServerMediaSession
+@@ -85,10 +85,10 @@ ProxyServerMediaSession* ProxyServerMedi
+ 	    char const* inputStreamURL, char const* streamName,
+ 	    char const* username, char const* password,
+ 	    portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
+-	    MediaTranscodingTable* transcodingTable) {
++	    MediaTranscodingTable* transcodingTable, unsigned interPacketGapMaxTime) {
+   return new ProxyServerMediaSession(env, ourMediaServer, inputStreamURL, streamName, username, password,
+ 				     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer,
+-				     transcodingTable);
++				     transcodingTable, interPacketGapMaxTime);
+ }
+ 
+ 
+@@ -99,6 +99,7 @@ ProxyServerMediaSession
+ 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+ 			  int socketNumToServer,
+ 			  MediaTranscodingTable* transcodingTable,
++			  unsigned interPacketGapMaxTime,
+ 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc,
+ 			  portNumBits initialPortNum, Boolean multiplexRTCPWithRTP)
+   : ServerMediaSession(env, streamName, NULL, NULL, False, NULL),
+@@ -114,7 +115,7 @@ ProxyServerMediaSession
+     = (*fCreateNewProxyRTSPClientFunc)(*this, inputStreamURL, username, password,
+ 				       tunnelOverHTTPPortNum,
+ 				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
+-				       socketNumToServer);
++				       socketNumToServer, interPacketGapMaxTime);
+   ProxyRTSPClient::sendDESCRIBE(fProxyRTSPClient);
+ }
+ 
+@@ -243,13 +244,16 @@ UsageEnvironment& operator<<(UsageEnviro
+ 
+ ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
+ 				 char const* username, char const* password,
+-				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer)
++				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer, 
++				 unsigned interPacketGapMaxTime)
+   : RTSPClient(ourServerMediaSession.envir(), rtspURL, verbosityLevel, "ProxyRTSPClient",
+ 	       tunnelOverHTTPPortNum == (portNumBits)(~0) ? 0 : tunnelOverHTTPPortNum, socketNumToServer),
+     fOurServerMediaSession(ourServerMediaSession), fOurURL(strDup(rtspURL)), fStreamRTPOverTCP(tunnelOverHTTPPortNum != 0),
+     fSetupQueueHead(NULL), fSetupQueueTail(NULL), fNumSetupsDone(0), fNextDESCRIBEDelay(1),
++    fTotNumPacketsReceived(~0), fInterPacketGapMaxTime(interPacketGapMaxTime),
+     fServerSupportsGetParameter(False), fLastCommandWasPLAY(False), fDoneDESCRIBE(False),
+-    fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL), fResetTask(NULL) {
++    fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL), fResetTask(NULL),
++    fInterPacketGapsTask(NULL) { 
+   if (username != NULL && password != NULL) {
+     fOurAuthenticator = new Authenticator(username, password);
+   } else {
+@@ -262,11 +266,13 @@ void ProxyRTSPClient::reset() {
+   envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask); fDESCRIBECommandTask = NULL;
+   envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask); fSubsessionTimerTask = NULL;
+   envir().taskScheduler().unscheduleDelayedTask(fResetTask); fResetTask = NULL;
++  envir().taskScheduler().unscheduleDelayedTask(fInterPacketGapsTask); fInterPacketGapsTask = NULL;
+ 
+   fSetupQueueHead = fSetupQueueTail = NULL;
+   fNumSetupsDone = 0;
+   fNextDESCRIBEDelay = 1;
+   fLastCommandWasPLAY = False;
++  fTotNumPacketsReceived = ~0;
+   fDoneDESCRIBE = False;
+ 
+   RTSPClient::reset();
+@@ -397,6 +403,7 @@ void ProxyRTSPClient::continueAfterPLAY(
+     scheduleReset();
+     return;
+   }
++  if (fInterPacketGapsTask == NULL) checkInterPacketGaps_(True);
+ }
+ 
+ void ProxyRTSPClient::scheduleLivenessCommand() {
+@@ -437,6 +444,45 @@ void ProxyRTSPClient::sendLivenessComman
+ #endif
+ }
+ 
++void ProxyRTSPClient::checkInterPacketGaps_(Boolean delayReset) {
++  if (fInterPacketGapMaxTime == 0) return; // we're not checking
++
++  // Check each subsession, counting up how many packets have been received:
++  unsigned newTotNumPacketsReceived = 0;
++
++  MediaSubsessionIterator iter(*fOurServerMediaSession.fClientMediaSession);
++  MediaSubsession* subsession;
++  while ((subsession = iter.next()) != NULL) {
++    RTPSource* src = subsession->rtpSource();
++    if (src == NULL) continue;
++    newTotNumPacketsReceived += src->receptionStatsDB().totNumPacketsReceived();
++  }
++
++  //envir() << *this << "::doLivenessCheck fTotNumPacketsReceived: " << fTotNumPacketsReceived
++  //                   << ", newTotNumPacketsReceived: " << newTotNumPacketsReceived << "\n";
++
++  if (newTotNumPacketsReceived == fTotNumPacketsReceived) {
++    // No additional packets have been received since the last time we
++    // checked, so end this stream:
++    // *env << "Closing session, because we stopped receiving packets.\n";
++    if (fVerbosityLevel > 0) {
++      envir() << *this << "::doLivenessCheck last packet received: >" << fInterPacketGapMaxTime 
++                       << " seconds ago. Resetting session\n";
++    }
++    if (delayReset) scheduleReset();
++    else doReset();
++  } else {
++    fTotNumPacketsReceived = newTotNumPacketsReceived;
++    // Check again, after the specified delay:
++    fInterPacketGapsTask = envir().taskScheduler().scheduleDelayedTask(fInterPacketGapMaxTime*MILLION, checkInterPacketGaps, this);
++  }
++}
++
++void ProxyRTSPClient::checkInterPacketGaps(void* clientData) {
++  ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
++  rtspClient->checkInterPacketGaps_(False);
++}
++
+ void ProxyRTSPClient::scheduleReset() {
+   if (fVerbosityLevel > 0) {
+     envir() << "ProxyRTSPClient::scheduleReset\n";
+@@ -650,6 +696,7 @@ void ProxyServerMediaSubsession::closeSt
+ 	// Send a "PAUSE" for the whole stream.
+ 	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession.parentSession(), NULL, proxyRTSPClient->auth());
+ 	proxyRTSPClient->fLastCommandWasPLAY = False;
++	envir().taskScheduler().unscheduleDelayedTask(proxyRTSPClient->fInterPacketGapsTask); proxyRTSPClient->fInterPacketGapsTask = NULL;
+       }
+     }
+   }
+diff -pru livemedia.2017.01.26_org/proxyServer/live555ProxyServer.cpp livemedia.2017.01.26_interpacketgaps/proxyServer/live555ProxyServer.cpp
+--- livemedia.2017.01.26_org/proxyServer/live555ProxyServer.cpp	2017-01-26 12:29:37.000000000 +0100
++++ livemedia.2017.01.26_interpacketgaps/proxyServer/live555ProxyServer.cpp	2017-01-28 23:31:12.781300865 +0100
+@@ -35,6 +35,7 @@ char* password = NULL;
+ Boolean proxyREGISTERRequests = False;
+ char* usernameForREGISTER = NULL;
+ char* passwordForREGISTER = NULL;
++unsigned interPacketGapMaxTime = 0;
+ 
+ static RTSPServer* createRTSPServer(Port port) {
+   if (proxyREGISTERRequests) {
+@@ -51,6 +52,7 @@ void usage() {
+        << " [-p <rtspServer-port>]"
+        << " [-u <username> <password>]"
+        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
++       << " [-D <max-inter-packet-gap-time>]"
+        << " <rtsp-url-1> ... <rtsp-url-n>\n";
+   exit(1);
+ }
+@@ -151,6 +153,19 @@ int main(int argc, char** argv) {
+       break;
+     }
+ 
++    case 'D': { // specify maximum number of seconds to wait for packets:
++      if (argc > 2 && argv[2][0] != '-') {
++        if (sscanf(argv[2], "%u", &interPacketGapMaxTime) == 1) {
++          ++argv; --argc;
++          break;
++        }
++      }
++
++      // If we get here, the option was specified incorrectly:
++      usage();
++      break;
++    }
++
+     default: {
+       usage();
+       break;
+@@ -221,7 +236,7 @@ int main(int argc, char** argv) {
+     ServerMediaSession* sms
+       = ProxyServerMediaSession::createNew(*env, rtspServer,
+ 					   proxiedStreamURL, streamName,
+-					   username, password, tunnelOverHTTPPortNum, verbosityLevel);
++					   username, password, tunnelOverHTTPPortNum, verbosityLevel, -1, NULL, interPacketGapMaxTime);
+     rtspServer->addServerMediaSession(sms);
+ 
+     char* proxyStreamURL = rtspServer->rtspURL(sms);

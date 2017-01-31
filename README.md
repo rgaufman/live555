@@ -25,3 +25,7 @@ OutPacketBuffer::maxSize is increased to 2,000,000 bytes which makes live555 wor
 
 Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure
 you never run multiple instances of the proxy on the same port!
+
+### interPacketGap Patch (by Erik Montnemery)
+
+Adds a -D <max-inter-packet-gap-time> option, to automatically restart the connection to the camera if no data is received for X seconds.
