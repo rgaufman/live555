@@ -13,6 +13,9 @@ You will find various executables:
  * ./proxyServer/live555ProxyServer - a great RTSP proxy server
  * ./mediaServer/live555MediaServer - an RTSP media server for serving static files over RTSP
 
+Windows build:
+http://tdistler.com/2011/05/14/live555-compiling-with-vs2008
+
 # Changes to Master
 
 See modifications.patch to see exactly what was changed compared to vanilla.
