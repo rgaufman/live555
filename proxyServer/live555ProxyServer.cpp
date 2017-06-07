@@ -35,6 +35,7 @@ char* password = NULL;
 Boolean proxyREGISTERRequests = False;
 char* usernameForREGISTER = NULL;
 char* passwordForREGISTER = NULL;
+unsigned interPacketGapMaxTime = 0;
 
 static RTSPServer* createRTSPServer(Port port) {
   if (proxyREGISTERRequests) {
@@ -51,6 +52,7 @@ void usage() {
        << " [-p <rtspServer-port>]"
        << " [-u <username> <password>]"
        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
+       << " [-D <max-inter-packet-gap-time>]"
        << " <rtsp-url-1> ... <rtsp-url-n>\n";
   exit(1);
 }
@@ -151,6 +153,19 @@ int main(int argc, char** argv) {
       break;
     }
 
+    case 'D': { // specify maximum number of seconds to wait for packets:
+      if (argc > 2 && argv[2][0] != '-') {
+        if (sscanf(argv[2], "%u", &interPacketGapMaxTime) == 1) {
+          ++argv; --argc;
+          break;
+        }
+      }
+
+      // If we get here, the option was specified incorrectly:
+      usage();
+      break;
+    }
+
     default: {
       usage();
       break;
@@ -221,7 +236,7 @@ int main(int argc, char** argv) {
     ServerMediaSession* sms
       = ProxyServerMediaSession::createNew(*env, rtspServer,
 					   proxiedStreamURL, streamName,
-					   username, password, tunnelOverHTTPPortNum, verbosityLevel);
+					   username, password, tunnelOverHTTPPortNum, verbosityLevel, -1, NULL, interPacketGapMaxTime);
     rtspServer->addServerMediaSession(sms);
 
     char* proxyStreamURL = rtspServer->rtspURL(sms);
