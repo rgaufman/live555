@@ -65,6 +65,8 @@ public:
       // Equivalent to:
       //     "closeAllClientSessionsForServerMediaSession(streamName); removeServerMediaSession(streamName);
 
+  unsigned numClientSessions() const { return fClientSessions->numEntries(); }
+
 protected:
   GenericMediaServer(UsageEnvironment& env, int ourSocket, Port ourPort,
 		     unsigned reclamationSeconds);

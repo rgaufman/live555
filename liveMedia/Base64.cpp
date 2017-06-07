@@ -52,7 +52,7 @@ unsigned char* base64Decode(char const* in, unsigned inSize,
     haveInitializedBase64DecodeTable = True;
   }
 
-  unsigned char* out = (unsigned char*)strDupSize(in); // ensures we have enough space
+  unsigned char* out = new unsigned char[inSize+1]; // ensures we have enough space
   int k = 0;
   int paddingCount = 0;
   int const jMax = inSize - 3;

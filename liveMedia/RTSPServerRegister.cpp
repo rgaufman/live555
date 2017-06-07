@@ -213,7 +213,7 @@ RTSPServer::RTSPClientConnection::ParamsForREGISTER
 }
 
 RTSPServer::RTSPClientConnection::ParamsForREGISTER::~ParamsForREGISTER() {
-  delete[] fCmd; delete[] fURL; delete[] fURLSuffix; delete[] fProxyURLSuffix;
+  delete[] (char*)fCmd; delete[] fURL; delete[] fURLSuffix; delete[] fProxyURLSuffix;
 }
 
 void RTSPServer
