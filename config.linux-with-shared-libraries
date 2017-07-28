@@ -3,9 +3,9 @@
 # At least one interface changes, or is removed => CURRENT += 1; REVISION = 0; AGE = 0
 # One or more interfaces were added, but no existing interfaces were changed or removed => CURRENT += 1; REVISION = 0; AGE += 1
 
-libliveMedia_VERSION_CURRENT=59
-libliveMedia_VERSION_REVISION=2
-libliveMedia_VERSION_AGE=1
+libliveMedia_VERSION_CURRENT=60
+libliveMedia_VERSION_REVISION=0
+libliveMedia_VERSION_AGE=2
 libliveMedia_LIB_SUFFIX=so.$(shell expr $(libliveMedia_VERSION_CURRENT) - $(libliveMedia_VERSION_AGE)).$(libliveMedia_VERSION_AGE).$(libliveMedia_VERSION_REVISION)
 
 libBasicUsageEnvironment_VERSION_CURRENT=1
