@@ -21,7 +21,7 @@ UI_OPTS =		$(guilflags) $(guilibsdll)
 CONSOLE_UI_OPTS =		$(conlflags) $(conlibsdll)
 CPU=i386
 
-TOOLS32	=		I:\Program Files\DevStudio\Vc
+TOOLS32	=		c:\Program Files\DevStudio\Vc
 COMPILE_OPTS =		$(INCLUDES) $(cdebug) $(cflags) $(cvarsdll) -I. -I"$(TOOLS32)\include"
 C =			c
 C_COMPILER =		"$(TOOLS32)\bin\cl"

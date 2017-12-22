@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2015, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2017, Live Networks, Inc.  All rights reserved
 // LIVE555 Proxy Server
 // main program
 
@@ -38,7 +38,7 @@ char* passwordForREGISTER = NULL;
 
 static RTSPServer* createRTSPServer(Port port) {
   if (proxyREGISTERRequests) {
-    return RTSPServerWithREGISTERProxying::createNew(*env, port, authDB, authDBForREGISTER, 65, streamRTPOverTCP, verbosityLevel);
+    return RTSPServerWithREGISTERProxying::createNew(*env, port, authDB, authDBForREGISTER, 65, streamRTPOverTCP, verbosityLevel, username, password);
   } else {
     return RTSPServer::createNew(*env, port, authDB);
   }
@@ -48,7 +48,7 @@ void usage() {
   *env << "Usage: " << progName
        << " [-v|-V]"
        << " [-t|-T <http-port>]"
-       << " [-p <rtsp-port>]"
+       << " [-p <rtspServer-port>]"
        << " [-u <username> <password>]"
        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
        << " <rtsp-url-1> ... <rtsp-url-n>\n";
@@ -58,7 +58,7 @@ void usage() {
 int main(int argc, char** argv) {
   // Increase the maximum size of video frames that we can 'proxy' without truncation.
   // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
-  OutPacketBuffer::maxSize = 1000000; // bytes
+  OutPacketBuffer::maxSize = 100000; // bytes
 
   // Begin by setting up our usage environment:
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
@@ -66,7 +66,8 @@ int main(int argc, char** argv) {
 
   *env << "LIVE555 Proxy Server\n"
        << "\t(LIVE555 Streaming Media library version "
-       << LIVEMEDIA_LIBRARY_VERSION_STRING << ")\n\n";
+       << LIVEMEDIA_LIBRARY_VERSION_STRING
+       << "; licensed under the GNU LGPL)\n\n";
 
   // Check command-line arguments: optional parameters, then one or more rtsp:// URLs (of streams to be proxied):
   progName = argv[0];
@@ -96,8 +97,8 @@ int main(int argc, char** argv) {
 
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
-      if (argc > 3 && argv[2][0] != '-') {
-	// The next argument is the HTTP server port number:
+      if (argc > 2 && argv[2][0] != '-') {
+	// The next argument is the HTTP server port number:                                                                       
 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
 	    && tunnelOverHTTPPortNum > 0) {
 	  ++argv; --argc;
@@ -111,13 +112,13 @@ int main(int argc, char** argv) {
     }
 
     case 'p': {
-      // set port
-      if (argc > 3 && argv[2][0] != '-') {
-        // The next argument is the RTSP server port number:
+      // specify a rtsp server port number 
+      if (argc > 2 && argv[2][0] != '-') {
+        // The next argument is the rtsp server port number:
         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-          && rtspServerPortNum > 0) {
-            ++argv; --argc;
-            break;
+            && rtspServerPortNum > 0) {
+          ++argv; --argc;
+          break;
         }
       }
 
@@ -125,7 +126,7 @@ int main(int argc, char** argv) {
       usage();
       break;
     }
-
+    
     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
       if (argc < 4) usage(); // there's no argv[3] (for the "password")
       username = argv[2];
@@ -158,7 +159,7 @@ int main(int argc, char** argv) {
 
     ++argv; --argc;
   }
-  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end
+  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end 
   // Make sure that the remaining arguments appear to be "rtsp://" URLs:
   int i;
   for (i = 1; i < argc; ++i) {
@@ -185,9 +186,24 @@ int main(int argc, char** argv) {
       // Repeat this line with each <username>, <password> that you wish to allow access to the server.
 #endif
 
-  // Create the RTSP server with a specified port or the 554 default port
+  // Create the RTSP server. Try first with the configured port number,
+  // and then with the default port number (554) if different,
+  // and then with the alternative port number (8554):
   RTSPServer* rtspServer;
   rtspServer = createRTSPServer(rtspServerPortNum);
+  if (rtspServer == NULL) {
+    if (rtspServerPortNum != 554) {
+      *env << "Unable to create a RTSP server with port number " << rtspServerPortNum << ": " << env->getResultMsg() << "\n";
+      *env << "Trying instead with the standard port numbers (554 and 8554)...\n";
+
+      rtspServerPortNum = 554;
+      rtspServer = createRTSPServer(rtspServerPortNum);
+    }
+  }
+  if (rtspServer == NULL) {
+    rtspServerPortNum = 8554;
+    rtspServer = createRTSPServer(rtspServerPortNum);
+  }
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
