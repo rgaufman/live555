@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *streamers* - i.e., servers.
@@ -24,22 +24,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _SERVER_MEDIA_SESSION_HH
 #define _SERVER_MEDIA_SESSION_HH
 
-#ifndef _MEDIA_HH
-#include "Media.hh"
-#endif
-#ifndef _FRAMED_SOURCE_HH
-#include "FramedSource.hh"
-#endif
-#ifndef _GROUPEID_HH
-#include "GroupEId.hh"
-#endif
-#ifndef _RTP_INTERFACE_HH
-#include "RTPInterface.hh" // for ServerRequestAlternativeByteHandler
+#ifndef _RTCP_HH
+#include "RTCP.hh"
 #endif
 
 class ServerMediaSubsession; // forward
 
-class ServerMediaSession: public Medium {
+class LIVEMEDIA_API ServerMediaSession: public Medium {
 public:
   static ServerMediaSession* createNew(UsageEnvironment& env,
 				       char const* streamName = NULL,
@@ -65,6 +56,11 @@ public:
     // a result == 0 means an unbounded session (the default)
     // a result < 0 means: subsession durations differ; the result is -(the largest).
     // a result > 0 means: this is the duration of a bounded session
+
+  virtual void noteLiveness();
+    // called whenever a client - accessing this media - notes liveness.
+    // The default implementation does nothing, but subclasses can redefine this - e.g., if you
+    // want to remove long-unused "ServerMediaSession"s from the server.
 
   unsigned referenceCount() const { return fReferenceCount; }
   void incrementReferenceCount() { ++fReferenceCount; }
@@ -107,7 +103,7 @@ private:
 };
 
 
-class ServerMediaSubsessionIterator {
+class LIVEMEDIA_API ServerMediaSubsessionIterator {
 public:
   ServerMediaSubsessionIterator(ServerMediaSession& session);
   virtual ~ServerMediaSubsessionIterator();
@@ -121,7 +117,7 @@ private:
 };
 
 
-class ServerMediaSubsession: public Medium {
+class LIVEMEDIA_API ServerMediaSubsession: public Medium {
 public:
   unsigned trackNumber() const { return fTrackNumber; }
   char const* trackId();
@@ -164,6 +160,12 @@ public:
   virtual void setStreamScale(unsigned clientSessionId, void* streamToken, float scale);
   virtual float getCurrentNPT(void* streamToken);
   virtual FramedSource* getStreamSource(void* streamToken);
+  virtual void getRTPSinkandRTCP(void* streamToken,
+				 RTPSink const*& rtpSink, RTCPInstance const*& rtcp) = 0;
+     // Returns pointers to the "RTPSink" and "RTCPInstance" objects for "streamToken".
+     // (This can be useful if you want to get the associated 'Groupsock' objects, for example.)
+     // You must not delete these objects, or start/stop playing them; instead, that is done
+     // using the "startStream()" and "deleteStream()" functions.
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
   virtual void testScaleFactor(float& scale); // sets "scale" to the actual supported scale

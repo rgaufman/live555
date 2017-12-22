@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // Bit Vector data structure
 // C++ header
 
@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Boolean.hh"
 #endif
 
-class BitVector {
+class LIVEMEDIA_API BitVector {
 public:
   BitVector(unsigned char* baseBytePtr,
 	    unsigned baseBitOffset,
@@ -50,6 +50,7 @@ public:
 
   unsigned get_expGolomb();
       // Returns the value of the next bits, assuming that they were encoded using an exponential-Golomb code of order 0
+  int get_expGolombSigned(); // signed version of the above
 
 private:
   unsigned char* fBaseBytePtr;

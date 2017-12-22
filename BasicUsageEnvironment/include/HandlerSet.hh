@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // Basic Usage Environment: for a simple, non-scripted, console application
 // C++ header
 
@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// HandlerSet (etc.) definition //////////
 
-class HandlerDescriptor {
+class LIVEMEDIA_API HandlerDescriptor {
   HandlerDescriptor(HandlerDescriptor* nextHandler);
   virtual ~HandlerDescriptor();
 
@@ -44,7 +44,7 @@ private:
   HandlerDescriptor* fPrevHandler;
 };
 
-class HandlerSet {
+class LIVEMEDIA_API HandlerSet {
 public:
   HandlerSet();
   virtual ~HandlerSet();
@@ -61,7 +61,7 @@ private:
   HandlerDescriptor fHandlers;
 };
 
-class HandlerIterator {
+class LIVEMEDIA_API HandlerIterator {
 public:
   HandlerIterator(HandlerSet& handlerSet);
   virtual ~HandlerIterator();

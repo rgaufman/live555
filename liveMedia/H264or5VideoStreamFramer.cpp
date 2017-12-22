@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up a H.264 or H.265 Video Elementary Stream into NAL units.
 // Implementation
 
@@ -184,7 +184,7 @@ Boolean H264or5VideoStreamParser::usuallyBeginsAccessUnit(u_int8_t nal_unit_type
 
 void H264or5VideoStreamParser
 ::removeEmulationBytes(u_int8_t* nalUnitCopy, unsigned maxSize, unsigned& nalUnitCopySize) {
-  u_int8_t* nalUnitOrig = fStartOfFrame + fOutputStartCodeSize;
+  u_int8_t const* nalUnitOrig = fStartOfFrame + fOutputStartCodeSize;
   unsigned const numBytesInNALunit = fTo - nalUnitOrig;
   nalUnitCopySize
     = removeH264or5EmulationBytes(nalUnitCopy, maxSize, nalUnitOrig, numBytesInNALunit);
@@ -551,7 +551,7 @@ void H264or5VideoStreamParser
 	      DEBUG_PRINT(nextScale);
 	      if (nextScale != 0) {
 		DEBUG_TAB;
-		unsigned delta_scale = bv.get_expGolomb();
+		int delta_scale = bv.get_expGolombSigned();
 		DEBUG_PRINT(delta_scale);
 		nextScale = (lastScale + delta_scale + 256) % 256;
 	      }
@@ -573,12 +573,12 @@ void H264or5VideoStreamParser
     } else if (pic_order_cnt_type == 1) {
       DEBUG_TAB;
       bv.skipBits(1); // delta_pic_order_always_zero_flag
-      (void)bv.get_expGolomb(); // offset_for_non_ref_pic
-      (void)bv.get_expGolomb(); // offset_for_top_to_bottom_field
+      (void)bv.get_expGolombSigned(); // offset_for_non_ref_pic
+      (void)bv.get_expGolombSigned(); // offset_for_top_to_bottom_field
       unsigned num_ref_frames_in_pic_order_cnt_cycle = bv.get_expGolomb();
       DEBUG_PRINT(num_ref_frames_in_pic_order_cnt_cycle);
       for (unsigned i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; ++i) {
-	(void)bv.get_expGolomb(); // offset_for_ref_frame[i]
+	(void)bv.get_expGolombSigned(); // offset_for_ref_frame[i]
       }
     }
     unsigned max_num_ref_frames = bv.get_expGolomb();
@@ -1161,7 +1161,7 @@ unsigned H264or5VideoStreamParser::parse() {
 }
 
 unsigned removeH264or5EmulationBytes(u_int8_t* to, unsigned toMaxSize,
-                                     u_int8_t* from, unsigned fromSize) {
+                                     u_int8_t const* from, unsigned fromSize) {
   unsigned toSize = 0;
   unsigned i = 0;
   while (i < fromSize && toSize+1 < toMaxSize) {

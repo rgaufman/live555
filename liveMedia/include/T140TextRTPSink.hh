@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // RTP sink for T.140 text (RFC 2793)
 // C++ header
 
@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class T140IdleFilter;
 
-class T140TextRTPSink: public TextRTPSink {
+class LIVEMEDIA_API T140TextRTPSink: public TextRTPSink {
 public:
   static T140TextRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
 
@@ -63,7 +63,7 @@ protected:
 // -  that delivers, to the "T140TextRTPSink", a continuous sequence of (possibly) empty frames.
 // (Note: This class should be used only by "T140TextRTPSink", or a subclass.)
 
-class T140IdleFilter: public FramedFilter {
+class LIVEMEDIA_API T140IdleFilter: public FramedFilter {
 public:
   T140IdleFilter(UsageEnvironment& env, FramedSource* inputSource);
   virtual ~T140IdleFilter();

@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -52,7 +52,7 @@ public:
   unsigned char fStreamChannelId;
 };
 
-class RTPInterface {
+class LIVEMEDIA_API RTPInterface {
 public:
   RTPInterface(Medium* owner, Groupsock* gs);
   virtual ~RTPInterface();
@@ -76,6 +76,8 @@ public:
 		     Boolean& packetReadWasIncomplete);
   // Note: If "tcpSocketNum" < 0, then the packet was received over UDP, and "tcpStreamChannelId"
   //   is undefined (and irrelevant).
+
+
   // Otherwise (if "tcpSocketNum" >= 0), the packet was received (interleaved) over TCP, and
   //   "tcpStreamChannelId" will return the channel id.
 
@@ -88,6 +90,11 @@ public:
     fAuxReadHandlerFunc = handlerFunc;
     fAuxReadHandlerClientData = handlerClientData;
   }
+
+  void forgetOurGroupsock() { fGS = NULL; }
+    // This may be called - *only immediately prior* to deleting this - to prevent our destructor
+    // from turning off background reading on the 'groupsock'.  (This is in case the 'groupsock'
+    // is also being read from elsewhere.)
 
 private:
   // Helper functions for sending a RTP or RTCP packet over a TCP connection:

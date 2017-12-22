@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // Implementation
@@ -61,8 +61,8 @@ MediaSession::MediaSession(UsageEnvironment& env)
     fSubsessionsHead(NULL), fSubsessionsTail(NULL),
     fConnectionEndpointName(NULL),
     fMaxPlayStartTime(0.0f), fMaxPlayEndTime(0.0f), fAbsStartTime(NULL), fAbsEndTime(NULL),
-    fScale(1.0f), fMediaSessionType(NULL), fSessionName(NULL), fSessionDescription(NULL),
-    fControlPath(NULL) {
+    fScale(1.0f), fSpeed(1.0f),
+    fMediaSessionType(NULL), fSessionName(NULL), fSessionDescription(NULL), fControlPath(NULL) {
   fSourceFilterAddr.s_addr = 0;
 
   // Get our host name, and use this for the RTCP CNAME:
@@ -639,7 +639,6 @@ MediaSubsession::~MediaSubsession() {
 }
 
 void MediaSubsession::addFilter(FramedFilter* filter){
-  if (filter == NULL || filter->inputSource() != fReadSource) return; // sanity check
   fReadSource = filter;
 }
 
@@ -724,7 +723,7 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
       // Port numbers were not specified in advance, so we use ephemeral port numbers.
       // Create sockets until we get a port-number pair (even: RTP; even+1: RTCP).
       // (However, if we're multiplexing RTCP with RTP, then we create only one socket,
-      // and the port number  can be even or odd.)
+      // and the port number can be even or odd.)
       // We need to make sure that we don't keep trying to use the same bad port numbers over
       // and over again, so we store bad sockets in a table, and delete them all when we're done.
       HashTable* socketHashTable = HashTable::create(ONE_WORD_HASH_KEYS);

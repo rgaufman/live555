@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // Network Addresses
 // C++ header
 
@@ -38,7 +38,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // to allow for IPv6.
 typedef u_int32_t netAddressBits;
 
-class NetAddress {
+class LIVEMEDIA_API NetAddress {
 public:
   NetAddress(u_int8_t const* data,
 	     unsigned length = 4 /* default: 32 bits */);
@@ -59,7 +59,7 @@ private:
   u_int8_t* fData;
 };
 
-class NetAddressList {
+class LIVEMEDIA_API NetAddressList {
 public:
   NetAddressList(char const* hostname);
   NetAddressList(NetAddressList const& orig);
@@ -91,7 +91,7 @@ private:
 
 typedef u_int16_t portNumBits;
 
-class Port {
+class LIVEMEDIA_API Port {
 public:
   Port(portNumBits num /* in host byte order */);
   
@@ -108,7 +108,7 @@ UsageEnvironment& operator<<(UsageEnvironment& s, const Port& p);
 
 
 // A generic table for looking up objects by (address1, address2, port)
-class AddressPortLookupTable {
+class LIVEMEDIA_API AddressPortLookupTable {
 public:
   AddressPortLookupTable();
   virtual ~AddressPortLookupTable();
@@ -142,7 +142,7 @@ Boolean IsMulticastAddress(netAddressBits address);
 
 
 // A mechanism for displaying an IPv4 address in ASCII.  This is intended to replace "inet_ntoa()", which is not thread-safe.
-class AddressString {
+class LIVEMEDIA_API AddressString {
 public:
   AddressString(struct sockaddr_in const& addr);
   AddressString(struct in_addr const& addr);

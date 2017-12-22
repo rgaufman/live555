@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // Common routines used by both RTSP clients and servers
 // C++ header
 
@@ -38,7 +38,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define RTSP_PARAM_STRING_MAX 200
 
-Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
+LIVEMEDIA_API Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
 			       char *resultCmdName,
 			       unsigned resultCmdNameMaxSize,
 			       char* resultURLPreSuffix,
@@ -51,17 +51,15 @@ Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
 			       unsigned resultSessionIdMaxSize,
 			       unsigned& contentLength);
 
-Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
-Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
+LIVEMEDIA_API Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
+LIVEMEDIA_API Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
 
-Boolean parseScaleHeader(char const* buf, float& scale);
+LIVEMEDIA_API Boolean parseScaleHeader(char const* buf, float& scale);
 
-Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
+LIVEMEDIA_API Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
     // Returns True iff the RTSP command "commandName" is mentioned as one of the commands supported in "optionsResponseString"
     // (which should be the 'resultString' from a previous RTSP "OPTIONS" request).
 
-char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
-
-void ignoreSigPipeOnSocket(int socketNum);
+LIVEMEDIA_API char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
 
 #endif

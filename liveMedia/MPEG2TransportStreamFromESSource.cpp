@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,17 +14,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A filter for converting one or more MPEG Elementary Streams
 // to a MPEG-2 Transport Stream
 // Implementation
 
 #include "MPEG2TransportStreamFromESSource.hh"
 
-#define MAX_INPUT_ES_FRAME_SIZE 100000
 #define SIMPLE_PES_HEADER_SIZE 14
-#define LOW_WATER_MARK 1000 // <= MAX_INPUT_ES_FRAME_SIZE
-#define INPUT_BUFFER_SIZE (SIMPLE_PES_HEADER_SIZE + 2*MAX_INPUT_ES_FRAME_SIZE)
+#define INPUT_BUFFER_SIZE (SIMPLE_PES_HEADER_SIZE + 2*MPEG2TransportStreamFromESSource::maxInputESFrameSize)
+#define LOW_WATER_MARK 1000 // <= MPEG2TransportStreamFromESSource::maxInputESFrameSize
 
 ////////// InputESSourceRecord definition //////////
 
@@ -73,6 +72,8 @@ private:
 
 
 ////////// MPEG2TransportStreamFromESSource implementation //////////
+
+unsigned MPEG2TransportStreamFromESSource::maxInputESFrameSize = 100000; // bytes
 
 MPEG2TransportStreamFromESSource* MPEG2TransportStreamFromESSource
 ::createNew(UsageEnvironment& env) {
@@ -236,7 +237,7 @@ void InputESSourceRecord
 ::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedBytes,
 		     struct timeval presentationTime) {
   if (numTruncatedBytes > 0) {
-    fParent.envir() << "MPEG2TransportStreamFromESSource: input buffer too small; increase \"MAX_INPUT_ES_FRAME_SIZE\" in \"MPEG2TransportStreamFromESSource\" by at least "
+    fParent.envir() << "MPEG2TransportStreamFromESSource: input buffer too small; increase \"MPEG2TransportStreamFromESSource::maxInputESFrameSize\" by at least "
 		    << numTruncatedBytes << " bytes!\n";
   }
 

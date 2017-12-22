@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates an Ogg file
 // C++ header
 
@@ -31,7 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class OggTrack; // forward
 class OggDemux; // forward
 
-class OggFile: public Medium {
+class LIVEMEDIA_API OggFile: public Medium {
 public:
   typedef void (onCreationFunc)(OggFile* newFile, void* clientData);
   static void createNew(UsageEnvironment& env, char const* fileName,
@@ -87,7 +87,7 @@ private:
   class OggFileParser* fParserForInitialization;
 };
 
-class OggTrack {
+class LIVEMEDIA_API OggTrack {
 public:
   OggTrack();
   virtual ~OggTrack();
@@ -126,7 +126,7 @@ public:
     }
 };
 
-class OggTrackTableIterator {
+class LIVEMEDIA_API OggTrackTableIterator {
 public:
   OggTrackTableIterator(class OggTrackTable& ourTable);
   virtual ~OggTrackTableIterator();
@@ -137,7 +137,7 @@ private:
   HashTable::Iterator* fIter;
 };
 
-class OggDemux: public Medium {
+class LIVEMEDIA_API OggDemux: public Medium {
 public:
   FramedSource* newDemuxedTrack(u_int32_t& resultTrackNumber);
     // Returns a new stream ("FramedSource" subclass) that represents the next media track

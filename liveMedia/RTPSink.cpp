@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // Implementation
 
@@ -69,6 +69,9 @@ RTPSink::RTPSink(UsageEnvironment& env,
 RTPSink::~RTPSink() {
   delete fTransmissionStatsDB;
   delete[] (char*)fRTPPayloadFormatName;
+  fRTPInterface.forgetOurGroupsock();
+    // so that the "fRTCPInterface" destructor doesn't turn off background read handling (in case
+    // its 'groupsock' is being shared with something else that does background read handling).
 }
 
 u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
@@ -99,8 +102,11 @@ u_int32_t RTPSink::presetNextTimestamp() {
   gettimeofday(&timeNow, NULL);
 
   u_int32_t tsNow = convertToRTPTimestamp(timeNow);
-  fTimestampBase = tsNow;
-  fNextTimestampHasBeenPreset = True;
+  if (!groupsockBeingUsed().hasMultipleDestinations()) {
+    // Don't adjust the timestamp stream if we already have another destination ongoing
+    fTimestampBase = tsNow;
+    fNextTimestampHasBeenPreset = True;
+  }
 
   return tsNow;
 }

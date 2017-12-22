@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand, from a MPEG-2 Transport Stream file.
 // C++ header
@@ -40,7 +40,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class ClientTrickPlayState; // forward
 
-class MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession{
+class LIVEMEDIA_API MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession {
 public:
   static MPEG2TransportFileServerMediaSubsession*
   createNew(UsageEnvironment& env,
@@ -74,7 +74,7 @@ private: // redefined virtual functions
   virtual void setStreamScale(unsigned clientSessionId, void* streamToken, float scale);
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
-  // The virtual functions thare are usually implemented by "ServerMediaSubsession"s:
+  // The virtual functions that are usually implemented by "ServerMediaSubsession"s:
   virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
 					      unsigned& estBitrate);
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
@@ -99,7 +99,7 @@ private:
 // It is used only within the implementation of "MPEG2TransportFileServerMediaSubsession", but is included here,
 // in case subclasses of "MPEG2TransportFileServerMediaSubsession" want to use it.
 
-class ClientTrickPlayState {
+class LIVEMEDIA_API ClientTrickPlayState {
 public:
   ClientTrickPlayState(MPEG2TransportStreamIndexFile* indexFile);
 

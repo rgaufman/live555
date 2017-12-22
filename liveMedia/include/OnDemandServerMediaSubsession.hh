@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand.
 // C++ header
@@ -35,7 +35,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTCP.hh"
 #endif
 
-class OnDemandServerMediaSubsession: public ServerMediaSubsession {
+class LIVEMEDIA_API OnDemandServerMediaSubsession: public ServerMediaSubsession {
 protected: // we're a virtual base class
   OnDemandServerMediaSubsession(UsageEnvironment& env, Boolean reuseFirstSource,
 				portNumBits initialPortNum = 6970,
@@ -72,6 +72,8 @@ protected: // redefined virtual functions
   virtual void setStreamScale(unsigned clientSessionId, void* streamToken, float scale);
   virtual float getCurrentNPT(void* streamToken);
   virtual FramedSource* getStreamSource(void* streamToken);
+  virtual void getRTPSinkandRTCP(void* streamToken,
+				 RTPSink const*& rtpSink, RTCPInstance const*& rtcp);
   virtual void deleteStream(unsigned clientSessionId, void*& streamToken);
 
 protected: // new virtual functions, possibly redefined by subclasses
@@ -97,6 +99,11 @@ protected: // new virtual functions, defined by all subclasses
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
 				    unsigned char rtpPayloadTypeIfDynamic,
 				    FramedSource* inputSource) = 0;
+
+protected: // new virtual functions, may be redefined by a subclass:
+  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
+				   unsigned char const* cname, RTPSink* sink);
 
 public:
   void multiplexRTCPWithRTP() { fMultiplexRTCPWithRTP = True; }
@@ -143,7 +150,7 @@ private:
 // "OnDemandServerMediaSubsession", but we expose the definition here, in case subclasses of "OnDemandServerMediaSubsession"
 // want to access it.
 
-class Destinations {
+class LIVEMEDIA_API Destinations {
 public:
   Destinations(struct in_addr const& destAddr,
                Port const& rtpDestPort,
@@ -164,7 +171,7 @@ public:
   unsigned char rtpChannelId, rtcpChannelId;
 };
 
-class StreamState {
+class LIVEMEDIA_API StreamState {
 public:
   StreamState(OnDemandServerMediaSubsession& master,
               Port const& serverRTPPort, Port const& serverRTCPPort,
@@ -173,14 +180,14 @@ public:
 	      Groupsock* rtpGS, Groupsock* rtcpGS);
   virtual ~StreamState();
 
-  void startPlaying(Destinations* destinations,
+  void startPlaying(Destinations* destinations, unsigned clientSessionId,
 		    TaskFunc* rtcpRRHandler, void* rtcpRRHandlerClientData,
 		    ServerRequestAlternativeByteHandler* serverRequestAlternativeByteHandler,
                     void* serverRequestAlternativeByteHandlerClientData);
   void pause();
   void sendRTCPAppPacket(u_int8_t subtype, char const* name,
 			 u_int8_t* appDependentData, unsigned appDependentDataSize);
-  void endPlaying(Destinations* destinations);
+  void endPlaying(Destinations* destinations, unsigned clientSessionId);
   void reclaim();
 
   unsigned& referenceCount() { return fReferenceCount; }
@@ -189,6 +196,7 @@ public:
   Port const& serverRTCPPort() const { return fServerRTCPPort; }
 
   RTPSink* rtpSink() const { return fRTPSink; }
+  RTCPInstance* rtcpInstance() const { return fRTCPInstance; }
 
   float streamDuration() const { return fStreamDuration; }
 

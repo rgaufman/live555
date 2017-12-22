@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A class for generating MPEG-2 Transport Stream from one or more input
 // Elementary Stream data sources
 // C++ header
@@ -31,7 +31,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define PID_TABLE_SIZE 256
 
-class MPEG2TransportStreamMultiplexor: public FramedSource {
+class LIVEMEDIA_API MPEG2TransportStreamMultiplexor: public FramedSource {
+public:
+  Boolean canDeliverNewFrameImmediately() const { return fInputBufferBytesUsed < fInputBufferSize; }
+      // Can be used by a downstream reader to test whether the next call to "doGetNextFrame()"
+      // will deliver data immediately).
+
 protected:
   MPEG2TransportStreamMultiplexor(UsageEnvironment& env);
   virtual ~MPEG2TransportStreamMultiplexor();
@@ -42,7 +47,9 @@ protected:
   void handleNewBuffer(unsigned char* buffer, unsigned bufferSize,
 		       int mpegVersion, MPEG1or2Demux::SCR scr, int16_t PID = -1);
       // called by "awaitNewBuffer()"
-      // Note: For MPEG-4 video, set "mpegVersion" to 4; for H.264 video, set "mpegVersion" to 5. 
+      // Note: For MPEG-4 video, set "mpegVersion" to 4; for H.264 video, set "mpegVersion" to 5;
+      //     for H.265 video, set "mpegVersion" to 6.
+      //     For Opus audio, set "mpegVersion" to 3.
       // The buffer is assumed to be a PES packet, with a proper PES header.
       // If "PID" is not -1, then it (currently, only the low 8 bits) is used as the stream's PID,
       // otherwise the "stream_id" in the PES header is reused to be the stream's PID.

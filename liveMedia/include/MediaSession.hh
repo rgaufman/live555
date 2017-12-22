@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *receivers* - i.e., clients.
@@ -57,7 +57,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MediaSubsession; // forward
 
-class MediaSession: public Medium {
+class LIVEMEDIA_API MediaSession: public Medium {
 public:
   static MediaSession* createNew(UsageEnvironment& env,
 				 char const* sdpDescription);
@@ -71,6 +71,7 @@ public:
   char const* CNAME() const { return fCNAME; }
   struct in_addr const& sourceFilterAddr() const { return fSourceFilterAddr; }
   float& scale() { return fScale; }
+  float& speed() { return fSpeed; }
   char* mediaSessionType() const { return fMediaSessionType; }
   char* sessionName() const { return fSessionName; }
   char* sessionDescription() const { return fSessionDescription; }
@@ -132,6 +133,7 @@ protected:
   char* fAbsEndTime;
   struct in_addr fSourceFilterAddr; // used for SSM
   float fScale; // set from a RTSP "Scale:" header
+  float fSpeed;
   char* fMediaSessionType; // holds a=type value
   char* fSessionName; // holds s=<session name> value
   char* fSessionDescription; // holds i=<session description> value
@@ -139,7 +141,7 @@ protected:
 };
 
 
-class MediaSubsessionIterator {
+class LIVEMEDIA_API MediaSubsessionIterator {
 public:
   MediaSubsessionIterator(MediaSession const& session);
   virtual ~MediaSubsessionIterator();
@@ -153,7 +155,7 @@ private:
 };
 
 
-class MediaSubsession {
+class LIVEMEDIA_API MediaSubsession {
 public:
   MediaSession& parentSession() { return fParent; }
   MediaSession const& parentSession() const { return fParent; }
@@ -172,6 +174,7 @@ public:
   unsigned videoFPS() const { return fVideoFPS; }
   unsigned numChannels() const { return fNumChannels; }
   float& scale() { return fScale; }
+  float& speed() { return fSpeed; }
 
   RTPSource* rtpSource() { return fRTPSource; }
   RTCPInstance* rtcpInstance() { return fRTCPInstance; }
@@ -321,6 +324,7 @@ protected:
   unsigned fNumChannels;
      // optionally set by "a=rtpmap:" lines for audio sessions.  Default: 1
   float fScale; // set from a RTSP "Scale:" header
+  float fSpeed;
   double fNPT_PTS_Offset; // set by "getNormalPlayTime()"; add this to a PTS to get NPT
   HashTable* fAttributeTable; // for "a=fmtp:" attributes.  (Later an array by payload type #####)
 

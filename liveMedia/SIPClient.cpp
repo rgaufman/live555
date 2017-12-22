@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A generic SIP client
 // Implementation
 
@@ -86,7 +86,7 @@ SIPClient::SIPClient(UsageEnvironment& env,
 
   // Now, find out our source port number.  Hack: Do this by first trying to
   // send a 0-length packet, so that the "getSourcePort()" call will work.
-  fOurSocket->output(envir(), 255, (unsigned char*)"", 0);
+  fOurSocket->output(envir(), (unsigned char*)"", 0);
   Port srcPort(0);
   getSourcePort(env, fOurSocket->socketNum(), srcPort);
   if (srcPort.num() != 0) {
@@ -482,7 +482,7 @@ unsigned SIPClient::getResponseCode() {
 	  && fWorkingAuthenticator != NULL) {
 	// We have an authentication failure, so fill in
 	// "*fWorkingAuthenticator" using the contents of a following
-	// "Proxy-Authenticate:" line.  (Once we compute a 'response' for
+	// "Proxy-Authenticate:" or "WWW_Authenticate:" line.  (Once we compute a 'response' for
 	// "fWorkingAuthenticator", it can be used in a subsequent request
 	// - that will hopefully succeed.)
 	char* lineStart;
@@ -502,6 +502,8 @@ unsigned SIPClient::getResponseCode() {
 	  if (
 	      // Asterisk #####
 	      sscanf(lineStart, "Proxy-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"",
+		     realm, nonce) == 2 ||
+	      sscanf(lineStart, "WWW-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"",
 		     realm, nonce) == 2 ||
 	      // Cisco ATA #####
 	      sscanf(lineStart, "Proxy-Authenticate: Digest algorithm=MD5,domain=\"%*[^\"]\",nonce=\"%[^\"]\", realm=\"%[^\"]\"",
@@ -868,7 +870,7 @@ SIPClient::createAuthenticatorString(Authenticator const* authenticator,
       && authenticator->password() != NULL) {
     // We've been provided a filled-in authenticator, so use it:
     char const* const authFmt
-      = "Proxy-Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", response=\"%s\", uri=\"%s\"\r\n";
+      = "Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", response=\"%s\", uri=\"%s\"\r\n";
     char const* response = authenticator->computeDigestResponse(cmd, url);
     unsigned authBufSize = strlen(authFmt)
       + strlen(authenticator->username()) + strlen(authenticator->realm())
@@ -892,8 +894,7 @@ Boolean SIPClient::sendRequest(char const* requestString,
   }
   // NOTE: We should really check that "requestLength" is not #####
   // too large for UDP (see RFC 3261, section 18.1.1) #####
-  return fOurSocket->output(envir(), 255, (unsigned char*)requestString,
-			    requestLength);
+  return fOurSocket->output(envir(), (unsigned char*)requestString, requestLength);
 }
 
 unsigned SIPClient::getResponse(char*& responseBuffer,

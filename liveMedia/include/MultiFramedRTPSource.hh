@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // RTP source for a common kind of payload format: Those which pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // C++ header
@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class BufferedPacket; // forward
 class BufferedPacketFactory; // forward
 
-class MultiFramedRTPSource: public RTPSource {
+class LIVEMEDIA_API MultiFramedRTPSource: public RTPSource {
 protected:
   MultiFramedRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		       unsigned char rtpPayloadFormat,
@@ -83,7 +83,7 @@ private:
 // Note that this can be subclassed - if desired - to redefine
 // "nextEnclosedFrameSize()".
 
-class BufferedPacket {
+class LIVEMEDIA_API BufferedPacket {
 public:
   BufferedPacket();
   virtual ~BufferedPacket();
@@ -148,7 +148,7 @@ private:
 // If you want to subclass "BufferedPacket", then you'll also
 // want to subclass this, to redefine createNewPacket()
 
-class BufferedPacketFactory {
+class LIVEMEDIA_API BufferedPacketFactory {
 public:
   BufferedPacketFactory();
   virtual ~BufferedPacketFactory();

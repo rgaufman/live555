@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up a H.264 or H.265 Video Elementary Stream into NAL units.
 // C++ header
 
@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class H264or5VideoStreamFramer: public MPEGVideoStreamFramer {
+class LIVEMEDIA_API H264or5VideoStreamFramer: public MPEGVideoStreamFramer {
 public:
   void getVPSandSPSandPPS(u_int8_t*& vps, unsigned& vpsSize,
 			  u_int8_t*& sps, unsigned& spsSize,
@@ -81,7 +81,7 @@ protected:
 // A general routine for making a copy of a (H.264 or H.265) NAL unit,
 // removing 'emulation' bytes from the copy:
 unsigned removeH264or5EmulationBytes(u_int8_t* to, unsigned toMaxSize,
-				     u_int8_t* from, unsigned fromSize);
+				     u_int8_t const* from, unsigned fromSize);
     // returns the size of the copy; it will be <= min(toMaxSize,fromSize)
 
 #endif

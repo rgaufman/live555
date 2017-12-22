@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // Basic Usage Environment: for a simple, non-scripted, console application
 // C++ header
 
@@ -36,7 +36,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 // An abstract base class, useful for subclassing
 // (e.g., to redefine the implementation of "operator<<")
-class BasicUsageEnvironment0: public UsageEnvironment {
+class LIVEMEDIA_API BasicUsageEnvironment0: public UsageEnvironment {
 public:
   // redefined virtual functions:
   virtual MsgString getResultMsg() const;
@@ -71,7 +71,7 @@ class HandlerSet; // forward
 
 // An abstract base class, useful for subclassing
 // (e.g., to redefine the implementation of socket event handling)
-class BasicTaskScheduler0: public TaskScheduler {
+class LIVEMEDIA_API BasicTaskScheduler0: public TaskScheduler {
 public:
   virtual ~BasicTaskScheduler0();
 
@@ -86,7 +86,7 @@ public:
 				void* clientData);
   virtual void unscheduleDelayedTask(TaskToken& prevTask);
 
-  virtual void doEventLoop(char* watchVariable);
+  virtual void doEventLoop(char volatile* watchVariable);
 
   virtual EventTriggerId createEventTrigger(TaskFunc* eventHandlerProc);
   virtual void deleteEventTrigger(EventTriggerId eventTriggerId);
@@ -104,7 +104,8 @@ protected:
   int fLastHandledSocketNum;
 
   // To implement event triggers:
-  EventTriggerId fTriggersAwaitingHandling, fLastUsedTriggerMask; // implemented as 32-bit bitmaps
+  EventTriggerId volatile fTriggersAwaitingHandling; // implemented as a 32-bit bitmap
+  EventTriggerId fLastUsedTriggerMask; // implemented as a 32-bit bitmap
   TaskFunc* fTriggeredEventHandlers[MAX_NUM_EVENT_TRIGGERS];
   void* fTriggeredEventClientDatas[MAX_NUM_EVENT_TRIGGERS];
   unsigned fLastUsedTriggerNum; // in the range [0,MAX_NUM_EVENT_TRIGGERS)

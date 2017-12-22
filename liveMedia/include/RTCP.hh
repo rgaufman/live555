@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTPSource.hh"
 #endif
 
-class SDESItem {
+class LIVEMEDIA_API SDESItem {
 public:
   SDESItem(unsigned char tag, unsigned char const* value);
 
@@ -45,7 +45,7 @@ typedef void RTCPAppHandlerFunc(void* clientData,
 
 class RTCPMemberDatabase; // forward
 
-class RTCPInstance: public Medium {
+class LIVEMEDIA_API RTCPInstance: public Medium {
 public:
   static RTCPInstance* createNew(UsageEnvironment& env, Groupsock* RTCPgs,
 				 unsigned totSessionBW, /* in kbps */
@@ -122,6 +122,11 @@ protected:
       // called only by createNew()
   virtual ~RTCPInstance();
 
+  virtual void noteArrivingRR(struct sockaddr_in const& fromAddressAndPort,
+			      int tcpSocketNum, unsigned char tcpStreamChannelId);
+
+  void incomingReportHandler1();
+
 private:
   // redefined virtual functions:
   virtual Boolean isRTCPInstance() const;
@@ -143,8 +148,7 @@ private:
   void onExpire1();
 
   static void incomingReportHandler(RTCPInstance* instance, int /*mask*/);
-  void incomingReportHandler1();
-  void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddress,
+  void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddressAndPort,
 			     int tcpSocketNum, unsigned char tcpStreamChannelId);
   void onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc);
 

@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // RTP sink for a common kind of payload format: Those which pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // Implementation
@@ -34,6 +34,15 @@ void MultiFramedRTPSink::setPacketSizes(unsigned preferredPacketSize,
   fOurMaxPacketSize = maxPacketSize; // save value, in case subclasses need it
 }
 
+#ifndef RTP_PAYLOAD_MAX_SIZE
+#define RTP_PAYLOAD_MAX_SIZE 1456
+      // Default max packet size (1500, minus allowance for IP, UDP, UMTP headers)
+      // (Also, make it a multiple of 4 bytes, just in case that matters.)
+#endif
+#ifndef RTP_PAYLOAD_PREFERRED_SIZE
+#define RTP_PAYLOAD_PREFERRED_SIZE ((RTP_PAYLOAD_MAX_SIZE) < 1000 ? (RTP_PAYLOAD_MAX_SIZE) : 1000)
+#endif
+
 MultiFramedRTPSink::MultiFramedRTPSink(UsageEnvironment& env,
 				       Groupsock* rtpGS,
 				       unsigned char rtpPayloadType,
@@ -44,9 +53,7 @@ MultiFramedRTPSink::MultiFramedRTPSink(UsageEnvironment& env,
 	    rtpPayloadFormatName, numChannels),
     fOutBuf(NULL), fCurFragmentationOffset(0), fPreviousFrameEndedFragmentation(False),
     fOnSendErrorFunc(NULL), fOnSendErrorData(NULL) {
-  setPacketSizes(1000, 1456);
-      // Default max packet size (1500, minus allowance for IP, UDP, UMTP headers)
-      // (Also, make it a multiple of 4 bytes, just in case that matters.)
+  setPacketSizes((RTP_PAYLOAD_PREFERRED_SIZE), (RTP_PAYLOAD_MAX_SIZE));
 }
 
 MultiFramedRTPSink::~MultiFramedRTPSink() {
@@ -163,6 +170,7 @@ void MultiFramedRTPSink::stopPlaying() {
 }
 
 void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
+  nextTask() = NULL;
   fIsFirstPacket = isFirstPacket;
 
   // Set up the RTP header:
@@ -194,7 +202,13 @@ void MultiFramedRTPSink::buildAndSendPacket(Boolean isFirstPacket) {
 void MultiFramedRTPSink::packFrame() {
   // Get the next frame.
 
-  // First, see if we have an overflow frame that was too big for the last pkt
+  // First, skip over the space we'll use for any frame-specific header:
+  fCurFrameSpecificHeaderPosition = fOutBuf->curPacketSize();
+  fCurFrameSpecificHeaderSize = frameSpecificHeaderSize();
+  fOutBuf->skipBytes(fCurFrameSpecificHeaderSize);
+  fTotalFrameSpecificHeaderSizes += fCurFrameSpecificHeaderSize;
+
+  // See if we have an overflow frame that was too big for the last pkt
   if (fOutBuf->haveOverflowData()) {
     // Use this frame before reading a new one from the source
     unsigned frameSize = fOutBuf->overflowDataSize();
@@ -206,12 +220,6 @@ void MultiFramedRTPSink::packFrame() {
   } else {
     // Normal case: we need to read a new frame from the source
     if (fSource == NULL) return;
-
-    fCurFrameSpecificHeaderPosition = fOutBuf->curPacketSize();
-    fCurFrameSpecificHeaderSize = frameSpecificHeaderSize();
-    fOutBuf->skipBytes(fCurFrameSpecificHeaderSize);
-    fTotalFrameSpecificHeaderSizes += fCurFrameSpecificHeaderSize;
-
     fSource->getNextFrame(fOutBuf->curPtr(), fOutBuf->totalBytesAvailable(),
 			  afterGettingFrame, this, ourHandleClosure, this);
   }

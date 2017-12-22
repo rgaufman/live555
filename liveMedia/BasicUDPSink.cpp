@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A simple UDP sink (i.e., without RTP or other headers added); one frame per packet
 // Implementation
 
@@ -48,6 +48,7 @@ Boolean BasicUDPSink::continuePlaying() {
 }
 
 void BasicUDPSink::continuePlaying1() {
+  nextTask() = NULL;
   if (fSource != NULL) {
     fSource->getNextFrame(fOutputBuffer, fMaxPayloadSize,
 			  afterGettingFrame, this,
@@ -72,7 +73,7 @@ void BasicUDPSink::afterGettingFrame1(unsigned frameSize, unsigned numTruncatedB
   }
 
   // Send the packet:
-  fGS->output(envir(), fGS->ttl(), fOutputBuffer, frameSize);
+  fGS->output(envir(), fOutputBuffer, frameSize);
 
   // Figure out the time at which the next packet should be sent, based
   // on the duration of the payload that we just read:

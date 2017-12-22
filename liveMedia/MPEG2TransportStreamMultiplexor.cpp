@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A class for generating MPEG-2 Transport Stream from one or more input
 // Elementary Stream data sources
 // Implementation
@@ -83,7 +83,7 @@ void MPEG2TransportStreamMultiplexor::doGetNextFrame() {
   if ((fOutgoingPacketCounter%10) == 0) {
     // To avoid excessive recursion (and stack overflow) caused by excessively large input frames,
     // occasionally return to the event loop to do this:
-    envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
+    nextTask() = envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)FramedSource::afterGetting, this);
   } else {
     afterGetting(this);
   }
@@ -121,16 +121,16 @@ void MPEG2TransportStreamMultiplexor
 	streamType = mpegVersion == 1 ? 1 : mpegVersion == 2 ? 2 : mpegVersion == 4 ? 0x10 :
 	  mpegVersion == 5/*H.264*/ ? 0x1B : 0x24/*assume H.265*/;
       } else if ((stream_id&0xE0) == 0xC0) { // audio
-	streamType = mpegVersion == 1 ? 3 : mpegVersion == 2 ? 4 : 0xF;
-      } else if (stream_id == 0xBD) { // private_stream1 (usually AC-3)
-	streamType = 0x06; // for DVB; for ATSC, use 0x81
-      } else { // something else, e.g., AC-3 uses private_stream1 (0xBD)
+	streamType = mpegVersion == 1 ? 3 : mpegVersion == 2 ? 4 : mpegVersion == 3 ? 6 : 0xF;
+      } else if (stream_id == 0xBD) { // private_stream1 (usually AC-3 or Opus)
+	streamType = 0x06; // for DVB or Opus; for ATSC, use 0x81
+      } else { // something else
 	streamType = 0x81; // private
       }
     }
 
     if (fPCR_PID == 0) { // set it to this stream, if it's appropriate:
-      if ((!fHaveVideoStreams && (streamType == 3 || streamType == 4 || streamType == 0xF))/* audio stream */ ||
+      if ((!fHaveVideoStreams && (streamType == 3 || streamType == 4 || streamType == 6 || streamType == 0xF))/* audio stream */ ||
 	  (streamType == 1 || streamType == 2 || streamType == 0x10 || streamType == 0x1B || streamType == 0x24)/* video stream */) {
 	fPCR_PID = fCurrentPID; // use this stream's SCR for PCR
       }

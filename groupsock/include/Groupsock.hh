@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // 'Group sockets'
 // C++ header
 
@@ -36,13 +36,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // An "OutputSocket" is (by default) used only to send packets.
 // No packets are received on it (unless a subclass arranges this)
 
-class OutputSocket: public Socket {
+class LIVEMEDIA_API OutputSocket: public Socket {
 public:
   OutputSocket(UsageEnvironment& env);
   virtual ~OutputSocket();
 
-  Boolean write(netAddressBits address, Port port, u_int8_t ttl,
-		unsigned char* buffer, unsigned bufferSize);
+  virtual Boolean write(netAddressBits address, portNumBits portNum/*in network order*/, u_int8_t ttl,
+			unsigned char* buffer, unsigned bufferSize);
+  Boolean write(struct sockaddr_in& addressAndPort, u_int8_t ttl,
+		unsigned char* buffer, unsigned bufferSize) {
+    return write(addressAndPort.sin_addr.s_addr, addressAndPort.sin_port, ttl, buffer, bufferSize);
+  }
 
 protected:
   OutputSocket(UsageEnvironment& env, Port port);
@@ -52,7 +56,7 @@ protected:
 private: // redefined virtual function
   virtual Boolean handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			     unsigned& bytesRead,
-			     struct sockaddr_in& fromAddress);
+			     struct sockaddr_in& fromAddressAndPort);
 
 private:
   Port fSourcePort;
@@ -61,21 +65,21 @@ private:
 
 class destRecord {
 public:
-  destRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl,
+  destRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl, unsigned sessionId,
 	     destRecord* next);
   virtual ~destRecord();
 
 public:
   destRecord* fNext;
   GroupEId fGroupEId;
-  Port fPort;
+  unsigned fSessionId;
 };
 
 // A "Groupsock" is used to both send and receive packets.
 // As the name suggests, it was originally designed to send/receive
 // multicast, but it can send/receive unicast as well.
 
-class Groupsock: public OutputSocket {
+class LIVEMEDIA_API Groupsock: public OutputSocket {
 public:
   Groupsock(UsageEnvironment& env, struct in_addr const& groupAddr,
 	    Port port, u_int8_t ttl);
@@ -86,20 +90,28 @@ public:
       // used for a 'source-specific multicast' group
   virtual ~Groupsock();
 
+  virtual destRecord* createNewDestRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl, unsigned sessionId, destRecord* next);
+      // Can be redefined by subclasses that also subclass "destRecord"
+
   void changeDestinationParameters(struct in_addr const& newDestAddr,
-				   Port newDestPort, int newDestTTL);
+				   Port newDestPort, int newDestTTL,
+				   unsigned sessionId = 0);
       // By default, the destination address, port and ttl for
       // outgoing packets are those that were specified in
       // the constructor.  This works OK for multicast sockets,
       // but for unicast we usually want the destination port
       // number, at least, to be different from the source port.
-      // (If a parameter is 0 (or ~0 for ttl), then no change made.)
+      // (If a parameter is 0 (or ~0 for ttl), then no change is made to that parameter.)
+      // (If no existing "destRecord" exists with this "sessionId", then we add a new "destRecord".)
+  unsigned lookupSessionIdFromDestination(struct sockaddr_in const& destAddrAndPort) const;
+      // returns 0 if not found
 
   // As a special case, we also allow multiple destinations (addresses & ports)
   // (This can be used to implement multi-unicast.)
-  void addDestination(struct in_addr const& addr, Port const& port);
-  void removeDestination(struct in_addr const& addr, Port const& port);
+  virtual void addDestination(struct in_addr const& addr, Port const& port, unsigned sessionId);
+  virtual void removeDestination(unsigned sessionId);
   void removeAllDestinations();
+  Boolean hasMultipleDestinations() const { return fDests != NULL && fDests->fNext != NULL; }
 
   struct in_addr const& groupAddress() const {
     return fIncomingGroupEId.groupAddress();
@@ -112,12 +124,11 @@ public:
     return fIncomingGroupEId.isSSM();
   }
 
-  u_int8_t ttl() const { return fTTL; }
+  u_int8_t ttl() const { return fIncomingGroupEId.ttl(); }
 
   void multicastSendOnly(); // send, but don't receive any multicast packets
 
-  virtual Boolean output(UsageEnvironment& env, u_int8_t ttl,
-			 unsigned char* buffer, unsigned bufferSize,
+  virtual Boolean output(UsageEnvironment& env, unsigned char* buffer, unsigned bufferSize,
 			 DirectedNetInterface* interfaceNotToFwdBackTo = NULL);
 
   DirectedNetInterfaceSet& members() { return fMembers; }
@@ -134,24 +145,28 @@ public:
   NetInterfaceTrafficStats statsGroupRelayedIncoming; // *not* static
   NetInterfaceTrafficStats statsGroupRelayedOutgoing; // *not* static
 
-  Boolean wasLoopedBackFromUs(UsageEnvironment& env,
-			      struct sockaddr_in& fromAddress);
+  Boolean wasLoopedBackFromUs(UsageEnvironment& env, struct sockaddr_in& fromAddressAndPort);
 
 public: // redefined virtual functions
   virtual Boolean handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 			     unsigned& bytesRead,
-			     struct sockaddr_in& fromAddress);
+			     struct sockaddr_in& fromAddressAndPort);
+
+protected:
+  destRecord* lookupDestRecordFromDestination(struct sockaddr_in const& destAddrAndPort) const;
 
 private:
+  void removeDestinationFrom(destRecord*& dests, unsigned sessionId);
+    // used to implement (the public) "removeDestination()", and "changeDestinationParameters()"
   int outputToAllMembersExcept(DirectedNetInterface* exceptInterface,
 			       u_int8_t ttlToFwd,
 			       unsigned char* data, unsigned size,
 			       netAddressBits sourceAddr);
 
+protected:
+  destRecord* fDests;
 private:
   GroupEId fIncomingGroupEId;
-  destRecord* fDests;
-  u_int8_t fTTL;
   DirectedNetInterfaceSet fMembers;
 };
 
@@ -159,7 +174,7 @@ UsageEnvironment& operator<<(UsageEnvironment& s, const Groupsock& g);
 
 // A data structure for looking up a 'groupsock'
 // by (multicast address, port), or by socket number
-class GroupsockLookupTable {
+class LIVEMEDIA_API GroupsockLookupTable {
 public:
   Groupsock* Fetch(UsageEnvironment& env, netAddressBits groupAddress,
 		   Port port, u_int8_t ttl, Boolean& isNew);

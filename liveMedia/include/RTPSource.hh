@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // RTP Sources
 // C++ header
 
@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class RTPReceptionStatsDB; // forward
 
-class RTPSource: public FramedSource {
+class LIVEMEDIA_API RTPSource: public FramedSource {
 public:
   static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
 			      RTPSource*& resultSource);
@@ -116,7 +116,7 @@ private:
 
 class RTPReceptionStats; // forward
 
-class RTPReceptionStatsDB {
+class LIVEMEDIA_API RTPReceptionStatsDB {
 public:
   unsigned totNumPacketsReceived() const { return fTotNumPacketsReceived; }
   unsigned numActiveSourcesSinceLastReset() const {
@@ -127,7 +127,7 @@ public:
       // resets periodic stats (called each time they're used to
       // generate a reception report)
 
-  class Iterator {
+  class LIVEMEDIA_API Iterator {
   public:
     Iterator(RTPReceptionStatsDB& receptionStatsDB);
     virtual ~Iterator();
@@ -175,7 +175,7 @@ private:
   unsigned fTotNumPacketsReceived; // for all SSRCs
 };
 
-class RTPReceptionStats {
+class LIVEMEDIA_API RTPReceptionStats {
 public:
   u_int32_t SSRC() const { return fSSRC; }
   unsigned numPacketsReceivedSinceLastReset() const {
@@ -260,7 +260,7 @@ private:
 };
 
 
-Boolean seqNumLT(u_int16_t s1, u_int16_t s2);
+LIVEMEDIA_API Boolean seqNumLT(u_int16_t s1, u_int16_t s2);
   // a 'less-than' on 16-bit sequence numbers
 
 #endif

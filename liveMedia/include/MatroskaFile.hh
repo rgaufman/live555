@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates a Matroska file.
 // C++ header
 
@@ -31,7 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class MatroskaTrack; // forward
 class MatroskaDemux; // forward
 
-class MatroskaFile: public Medium {
+class LIVEMEDIA_API MatroskaFile: public Medium {
 public:
   typedef void (onCreationFunc)(MatroskaFile* newFile, void* clientData);
   static void createNew(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData,
@@ -109,7 +109,7 @@ private:
 #define MATROSKA_TRACK_TYPE_SUBTITLE 0x04
 #define MATROSKA_TRACK_TYPE_OTHER 0x08
 
-class MatroskaTrack {
+class LIVEMEDIA_API MatroskaTrack {
 public:
   MatroskaTrack();
   virtual ~MatroskaTrack();
@@ -135,7 +135,7 @@ public:
   Boolean haveSubframes() const { return subframeSizeSize > 0; }
 };
 
-class MatroskaDemux: public Medium {
+class LIVEMEDIA_API MatroskaDemux: public Medium {
 public:
   FramedSource* newDemuxedTrack();
   FramedSource* newDemuxedTrack(unsigned& resultTrackNumber);

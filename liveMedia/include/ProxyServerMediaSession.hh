@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // C++ header
@@ -31,12 +31,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _RTSP_CLIENT_HH
 #include "RTSPClient.hh"
 #endif
+#ifndef _MEDIA_TRANSCODING_TABLE_HH
+#include "MediaTranscodingTable.hh"
+#endif
 
 // A subclass of "RTSPClient", used to refer to the particular "ProxyServerMediaSession" object being used.
 // It is used only within the implementation of "ProxyServerMediaSession", but is defined here, in case developers wish to
 // subclass it.
 
-class ProxyRTSPClient: public RTSPClient {
+class LIVEMEDIA_API ProxyRTSPClient: public RTSPClient {
 public:
   ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
                   char const* username, char const* password,
@@ -45,15 +48,20 @@ public:
 
   void continueAfterDESCRIBE(char const* sdpDescription);
   void continueAfterLivenessCommand(int resultCode, Boolean serverSupportsGetParameter);
-  void continueAfterSETUP();
+  void continueAfterSETUP(int resultCode);
+  void continueAfterPLAY(int resultCode);
+  void scheduleReset();
 
 private:
   void reset();
+  int connectToServer(int socketNum, portNumBits remotePortNum);
 
   Authenticator* auth() { return fOurAuthenticator; }
 
   void scheduleLivenessCommand();
   static void sendLivenessCommand(void* clientData);
+  void doReset();
+  static void doReset(void* clientData);
 
   void scheduleDESCRIBECommand();
   static void sendDESCRIBE(void* clientData);
@@ -71,8 +79,8 @@ private:
   class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
   unsigned fNumSetupsDone;
   unsigned fNextDESCRIBEDelay; // in seconds
-  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY;
-  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask;
+  Boolean fServerSupportsGetParameter, fLastCommandWasPLAY, fDoneDESCRIBE;
+  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fResetTask;
 };
 
 
@@ -89,17 +97,18 @@ defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSessi
 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
 				    int socketNumToServer);
 
-class ProxyServerMediaSession: public ServerMediaSession {
+class LIVEMEDIA_API ProxyServerMediaSession: public ServerMediaSession {
 public:
   static ProxyServerMediaSession* createNew(UsageEnvironment& env,
-					    RTSPServer* ourRTSPServer, // Note: We can be used by just one "RTSPServer"
+					    GenericMediaServer* ourMediaServer, // Note: We can be used by just one server
 					    char const* inputStreamURL, // the "rtsp://" URL of the stream we'll be proxying
 					    char const* streamName = NULL,
 					    char const* username = NULL, char const* password = NULL,
 					    portNumBits tunnelOverHTTPPortNum = 0,
 					        // for streaming the *proxied* (i.e., back-end) stream
 					    int verbosityLevel = 0,
-					    int socketNumToServer = -1);
+					    int socketNumToServer = -1,
+					    MediaTranscodingTable* transcodingTable = NULL);
       // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
       // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
       // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
@@ -116,13 +125,16 @@ public:
     // This can be used - along with "describeCompletdFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
 
 protected:
-  ProxyServerMediaSession(UsageEnvironment& env, RTSPServer* ourRTSPServer,
+  ProxyServerMediaSession(UsageEnvironment& env, GenericMediaServer* ourMediaServer,
 			  char const* inputStreamURL, char const* streamName,
 			  char const* username, char const* password,
 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
 			  int socketNumToServer,
+			  MediaTranscodingTable* transcodingTable,
 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
-			  = defaultCreateNewProxyRTSPClientFunc);
+			  = defaultCreateNewProxyRTSPClientFunc,
+			  portNumBits initialPortNum = 6970,
+			  Boolean multiplexRTCPWithRTP = False);
 
   // If you subclass "ProxyRTSPClient", then you will also need to define your own function
   // - with signature "createNewProxyRTSPClientFunc" (see above) - that creates a new object
@@ -131,8 +143,19 @@ protected:
   // constructor by passing your new function as the "ourCreateNewProxyRTSPClientFunc"
   // parameter.
 
+  // Subclasses may redefine the following functions, if they want "ProxyServerSubsession"s
+  // to create subclassed "Groupsock" and/or "RTCPInstance" objects:
+  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
+				   unsigned char const* cname, RTPSink* sink);
+
+  virtual Boolean allowProxyingForSubsession(MediaSubsession const& mss);
+  // By default, this function always returns True.  However, a subclass may redefine this
+  // if it wishes to restrict which subsessions of a stream get proxied - e.g., if it wishes
+  // to proxy only video tracks, but not audio (or other) tracks.
+
 protected:
-  RTSPServer* fOurRTSPServer;
+  GenericMediaServer* fOurMediaServer;
   ProxyRTSPClient* fProxyRTSPClient;
   MediaSession* fClientMediaSession;
 
@@ -146,6 +169,9 @@ private:
   int fVerbosityLevel;
   class PresentationTimeSessionNormalizer* fPresentationTimeSessionNormalizer;
   createNewProxyRTSPClientFunc* fCreateNewProxyRTSPClientFunc;
+  MediaTranscodingTable* fTranscodingTable;
+  portNumBits fInitialPortNum;
+  Boolean fMultiplexRTCPWithRTP;
 };
 
 
@@ -156,7 +182,7 @@ private:
 // (For multi-subsession (i.e., audio+video) sessions, the outgoing streams' presentation times retain the same relative
 //  separation as those of the incoming streams.)
 
-class PresentationTimeSubsessionNormalizer: public FramedFilter {
+class LIVEMEDIA_API PresentationTimeSubsessionNormalizer: public FramedFilter {
 public:
   void setRTPSink(RTPSink* rtpSink) { fRTPSink = rtpSink; }
 
@@ -187,7 +213,7 @@ private:
   PresentationTimeSubsessionNormalizer* fNext;
 };
 
-class PresentationTimeSessionNormalizer: public Medium {
+class LIVEMEDIA_API PresentationTimeSessionNormalizer: public Medium {
 public:
   PresentationTimeSessionNormalizer(UsageEnvironment& env);
   virtual ~PresentationTimeSessionNormalizer();

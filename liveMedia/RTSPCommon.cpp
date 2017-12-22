@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2015 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
 // Common routines used by both RTSP clients and servers
 // Implementation
 
@@ -24,12 +24,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <stdio.h>
 #include <ctype.h> // for "isxdigit()
 #include <time.h> // for "strftime()" and "gmtime()"
-
-#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
-#else
-#include <signal.h>
-#define USE_SIGNALS 1
-#endif
 
 static void decodeURL(char* url) {
   // Replace (in place) any %<hex><hex> sequences with the appropriate 8-bit character.
@@ -366,15 +360,4 @@ char const* dateHeader() {
   wcstombs(buf, inBuf, wcslen(inBuf));
 #endif
   return buf;
-}
-
-void ignoreSigPipeOnSocket(int socketNum) {
-#ifdef USE_SIGNALS
-#ifdef SO_NOSIGPIPE
-  int set_option = 1;
-  setsockopt(socketNum, SOL_SOCKET, SO_NOSIGPIPE, &set_option, sizeof set_option);
-#else
-  signal(SIGPIPE, SIG_IGN);
-#endif
-#endif
 }

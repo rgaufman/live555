@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 2.1 of the License, or (at your
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
- // Copyright (c) 1996-2015, Live Networks, Inc.  All rights reserved
+ // Copyright (c) 1996-2017, Live Networks, Inc.  All rights reserved
 // Delay queue
 // C++ header
 
@@ -32,7 +32,7 @@ typedef long time_base_seconds;
 
 ///// A "Timeval" can be either an absolute time, or a time interval /////
 
-class Timeval {
+class LIVEMEDIA_API Timeval {
 public:
   time_base_seconds seconds() const {
     return fTv.tv_sec;
@@ -101,7 +101,7 @@ class DelayInterval operator-(Timeval const& arg1, Timeval const& arg2);
 
 ///// DelayInterval /////
 
-class DelayInterval: public Timeval {
+class LIVEMEDIA_API DelayInterval: public Timeval {
 public:
   DelayInterval(time_base_seconds seconds, time_base_seconds useconds)
     : Timeval(seconds, useconds) {}
@@ -117,7 +117,7 @@ extern DelayInterval const DELAY_DAY;
 
 ///// _EventTime /////
 
-class _EventTime: public Timeval {
+class LIVEMEDIA_API _EventTime: public Timeval {
 public:
   _EventTime(unsigned secondsSinceEpoch = 0,
 	    unsigned usecondsSinceEpoch = 0)
@@ -132,7 +132,7 @@ extern _EventTime const THE_END_OF_TIME;
 
 ///// DelayQueueEntry /////
 
-class DelayQueueEntry {
+class LIVEMEDIA_API DelayQueueEntry {
 public:
   virtual ~DelayQueueEntry();
 
@@ -157,7 +157,7 @@ private:
 
 ///// DelayQueue /////
 
-class DelayQueue: public DelayQueueEntry {
+class LIVEMEDIA_API DelayQueue: public DelayQueueEntry {
 public:
   DelayQueue();
   virtual ~DelayQueue();
