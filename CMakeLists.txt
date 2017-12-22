@@ -498,6 +498,13 @@ else ()
    set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug" )
 endif ()
 
+if(MSVC)
+    add_definitions(/FI"export.h")
+else()
+    # GCC or Clang
+    add_definitions(-include export.h)
+endif()
+
 # Disable warnings
 if ( WIN32 AND NOT CMAKE_COMPILER_IS_GNUCXX )
    list ( APPEND ${PROJECT_NAME}_DISABLE_WARNINGS
