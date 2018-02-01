@@ -17,6 +17,10 @@ if ( NOT DEFINED BUILD_SHARED_LIBS )
    set ( BUILD_SHARED_LIBS TRUE )
 endif ()
 
+if ( NOT DEFINED BUILD_EXAMPLES )
+   set ( BUILD_EXAMPLES FALSE )
+endif ()
+
 set ( ${PROJECT_NAME}_HOME ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories ( ${${PROJECT_NAME}_HOME}/UsageEnvironment/include )
 include_directories ( ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include )
@@ -49,7 +53,6 @@ else ()
    )
 endif ()
 add_definitions ( ${${PROJECT_NAME}_DEFINITIONS} )
-
 
 list ( APPEND ${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT
    ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/Boolean.hh
@@ -504,6 +507,37 @@ else()
     # GCC or Clang
     add_definitions(-include export.h)
 endif()
+
+if ( BUILD_EXAMPLES )
+	include_directories(${PROJECT_NAME}_HEADERS)
+
+	if(MSVC)
+		add_definitions(/FI"export.h")
+	else()
+		# GCC or Clang
+		add_definitions(-include export.h)
+	endif()
+	
+	if( BUILD_SHARED_LIBS )
+		#For the shared library:
+		set ( PROJECT_LINK_LIBS ${PROJECT_NAME}.so )
+	else()
+		#For the shared library:
+		set ( PROJECT_LINK_LIBS ${PROJECT_NAME}.a )
+	endif()
+	
+	link_directories( ${CMAKE_BINARY_DIR} )
+	
+	file(GLOB SOURCES "testProgs/*.cpp")
+	
+	# add execute testRTSPClient
+	add_executable(testRTSPClient testProgs/testRTSPClient.cpp)
+	target_link_libraries(testRTSPClient ${PROJECT_LINK_LIBS})
+	
+	# add execute testRTSPClient
+	add_executable(testOnDemandRTSPServer testProgs/testOnDemandRTSPServer.cpp)
+	target_link_libraries(testOnDemandRTSPServer ${PROJECT_LINK_LIBS})	
+endif ()
 
 # Disable warnings
 if ( WIN32 AND NOT CMAKE_COMPILER_IS_GNUCXX )
