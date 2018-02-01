@@ -17,7 +17,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _STRDUP_HH
 #define _STRDUP_HH
 
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // A C++ equivalent to the standard C routine "strdup()".
 // This generates a char* that can be deleted using "delete[]"
 // Header
