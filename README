@@ -1,2 +1,72 @@
+##Live555
+You can check new version from Live555.
+
 For documentation and instructions for building this software,
 see <http://www.live555.com/liveMedia/>
+
+###Generate build project using cmake
+
+Actually, This command makes the shared library.
+If you do not want shared library, you should remove BUILD_SHARED_LIBS from this command.
+
+For 32 bit Windows from dos prompt
+```shell
+# cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON
+```
+
+For 64 bit Windows from dos prompt
+```shell
+# cmake .. -G "Visual Studio 15 2017 Win64" -DBUILD_SHARED_LIBS=ON
+```
+
+For ARM from from dos prompt
+```shell
+# cmake .. -G "Visual Studio 15 2017 ARM" -DBUILD_SHARED_LIBS=ON
+```
+
+For Xcode
+```shell
+# cmake .. -G "XCode" \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_BUILD_TYPE=release \
+  -DCMAKE_C_FLAGS="-fstack-protector-strong -Wa,--noexecstack" \
+  -DCMAKE_CXX_FLAGS="-std=c++11 -std=c++0x -fstack-protector-strong -Wa,--noexecstack" \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+```
+
+For Linux
+```shell
+# export OUT_PATH=/usr/local
+# export CROSS_COMPILE=${TOOLCHAIN_PATH}/arm-linux-gnueabihf-
+# cmake .. -G "Unix Makefiles" \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_BUILD_TYPE=release \
+  -DCMAKE_C_FLAGS="-fstack-protector-strong -Wa,--noexecstack" \
+  -DCMAKE_CXX_FLAGS="-std=c++11 -std=c++0x -fstack-protector-strong -Wa,--noexecstack" \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+```
+
+For Linux for arm with toolchain
+```shell
+# export OUT_PATH={INSTALL_PATH} 
+# export CROSS_COMPILE=${TOOLCHAIN_PATH}/arm-linux-gnueabihf-
+# cmake .. -G "Unix Makefiles" \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_BUILD_TYPE=release \
+  -DCMAKE_C_COMPILER=${CROSS_COMPILE}gcc \
+  -DCMAKE_C_FLAGS="-fstack-protector-strong -Wa,--noexecstack" \
+  -DCMAKE_CXX_COMPILER=${CROSS_COMPILE}g++ \
+  -DCMAKE_CXX_FLAGS="-std=c++11 -std=c++0x -fstack-protector-strong -Wa,--noexecstack" \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
+  -DCMAKE_STRIP=${CROSS_COMPILE}strip \
+  -DCMAKE_AR=${CROSS_COMPILE}ar \
+  -DCMAKE_LD=${CROSS_COMPILE}ld \
+  -DCMAKE_RANLIB=${CROSS_COMPILE}ranlib  \
+  -DCMAKE_NM=${CROSS_COMPILE}nm \
+  -DCMAKE_OBJCOPY=${CROSS_COMPILE}objcopy \
+  -DCMAKE_OBJDUMP=${CROSS_COMPILE}objdump \
+  -DCMAKE_LINKER=${CROSS_COMPILE}ld
+```

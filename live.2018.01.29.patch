@@ -1,0 +1,3494 @@
+diff -Naru a/live/BasicUsageEnvironment/include/BasicHashTable.hh b/live/BasicUsageEnvironment/include/BasicHashTable.hh
+--- a/live/BasicUsageEnvironment/include/BasicHashTable.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/BasicUsageEnvironment/include/BasicHashTable.hh	2018-02-01 16:46:49.073618700 +0900
+@@ -32,7 +32,7 @@
+ 
+ #define SMALL_HASH_TABLE_SIZE 4
+ 
+-class BasicHashTable: public HashTable {
++class LIVEMEDIA_API BasicHashTable: public HashTable {
+ private:
+ 	class TableEntry; // forward
+ 
+diff -Naru a/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh b/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh
+--- a/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh	2018-02-01 16:47:13.423580400 +0900
+@@ -36,7 +36,7 @@
+ 
+ // An abstract base class, useful for subclassing
+ // (e.g., to redefine the implementation of "operator<<")
+-class BasicUsageEnvironment0: public UsageEnvironment {
++class LIVEMEDIA_API BasicUsageEnvironment0: public UsageEnvironment {
+ public:
+   // redefined virtual functions:
+   virtual MsgString getResultMsg() const;
+@@ -71,7 +71,7 @@
+ 
+ // An abstract base class, useful for subclassing
+ // (e.g., to redefine the implementation of socket event handling)
+-class BasicTaskScheduler0: public TaskScheduler {
++class LIVEMEDIA_API BasicTaskScheduler0: public TaskScheduler {
+ public:
+   virtual ~BasicTaskScheduler0();
+ 
+diff -Naru a/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh b/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh
+--- a/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh	2018-02-01 16:47:01.860590700 +0900
+@@ -24,7 +24,7 @@
+ #include "BasicUsageEnvironment0.hh"
+ #endif
+ 
+-class BasicUsageEnvironment: public BasicUsageEnvironment0 {
++class LIVEMEDIA_API BasicUsageEnvironment: public BasicUsageEnvironment0 {
+ public:
+   static BasicUsageEnvironment* createNew(TaskScheduler& taskScheduler);
+ 
+@@ -44,7 +44,7 @@
+ };
+ 
+ 
+-class BasicTaskScheduler: public BasicTaskScheduler0 {
++class LIVEMEDIA_API BasicTaskScheduler: public BasicTaskScheduler0 {
+ public:
+   static BasicTaskScheduler* createNew(unsigned maxSchedulerGranularity = 10000/*microseconds*/);
+     // "maxSchedulerGranularity" (default value: 10 ms) specifies the maximum time that we wait (in "select()") before
+diff -Naru a/live/BasicUsageEnvironment/include/DelayQueue.hh b/live/BasicUsageEnvironment/include/DelayQueue.hh
+--- a/live/BasicUsageEnvironment/include/DelayQueue.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/BasicUsageEnvironment/include/DelayQueue.hh	2018-02-01 16:47:41.986565100 +0900
+@@ -32,7 +32,7 @@
+ 
+ ///// A "Timeval" can be either an absolute time, or a time interval /////
+ 
+-class Timeval {
++class LIVEMEDIA_API Timeval {
+ public:
+   time_base_seconds seconds() const {
+     return fTv.tv_sec;
+@@ -101,7 +101,7 @@
+ 
+ ///// DelayInterval /////
+ 
+-class DelayInterval: public Timeval {
++class LIVEMEDIA_API DelayInterval: public Timeval {
+ public:
+   DelayInterval(time_base_seconds seconds, time_base_seconds useconds)
+     : Timeval(seconds, useconds) {}
+@@ -117,7 +117,7 @@
+ 
+ ///// _EventTime /////
+ 
+-class _EventTime: public Timeval {
++class LIVEMEDIA_API _EventTime: public Timeval {
+ public:
+   _EventTime(unsigned secondsSinceEpoch = 0,
+ 	    unsigned usecondsSinceEpoch = 0)
+@@ -132,7 +132,7 @@
+ 
+ ///// DelayQueueEntry /////
+ 
+-class DelayQueueEntry {
++class LIVEMEDIA_API DelayQueueEntry {
+ public:
+   virtual ~DelayQueueEntry();
+ 
+@@ -157,7 +157,7 @@
+ 
+ ///// DelayQueue /////
+ 
+-class DelayQueue: public DelayQueueEntry {
++class LIVEMEDIA_API DelayQueue: public DelayQueueEntry {
+ public:
+   DelayQueue();
+   virtual ~DelayQueue();
+diff -Naru a/live/BasicUsageEnvironment/include/HandlerSet.hh b/live/BasicUsageEnvironment/include/HandlerSet.hh
+--- a/live/BasicUsageEnvironment/include/HandlerSet.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/BasicUsageEnvironment/include/HandlerSet.hh	2018-02-01 16:47:53.607072900 +0900
+@@ -26,7 +26,7 @@
+ 
+ ////////// HandlerSet (etc.) definition //////////
+ 
+-class HandlerDescriptor {
++class LIVEMEDIA_API HandlerDescriptor {
+   HandlerDescriptor(HandlerDescriptor* nextHandler);
+   virtual ~HandlerDescriptor();
+ 
+@@ -44,7 +44,7 @@
+   HandlerDescriptor* fPrevHandler;
+ };
+ 
+-class HandlerSet {
++class LIVEMEDIA_API HandlerSet {
+ public:
+   HandlerSet();
+   virtual ~HandlerSet();
+@@ -61,7 +61,7 @@
+   HandlerDescriptor fHandlers;
+ };
+ 
+-class HandlerIterator {
++class LIVEMEDIA_API HandlerIterator {
+ public:
+   HandlerIterator(HandlerSet& handlerSet);
+   virtual ~HandlerIterator();
+diff -Naru a/live/CMakeLists.txt b/live/CMakeLists.txt
+--- a/live/CMakeLists.txt	1970-01-01 09:00:00.000000000 +0900
++++ b/live/CMakeLists.txt	2017-12-22 17:42:59.652149200 +0900
+@@ -0,0 +1,570 @@
++cmake_minimum_required ( VERSION 3.0 )
++
++set ( PROJECT_NAME live555 )
++
++project ( ${PROJECT_NAME} )
++
++set ( ${PROJECT_NAME}_VERSION_MAJOR "2017" )
++set ( ${PROJECT_NAME}_VERSION_MINOR "10" )
++set ( ${PROJECT_NAME}_VERSION_PATCH "28" )
++set ( ${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
++
++if ( CMAKE_COMPILER_IS_GNUCXX )
++   set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive" )
++endif ()
++
++if ( NOT DEFINED BUILD_SHARED_LIBS )
++   set ( BUILD_SHARED_LIBS TRUE )
++endif ()
++
++set ( ${PROJECT_NAME}_HOME ${CMAKE_CURRENT_SOURCE_DIR} )
++include_directories ( ${${PROJECT_NAME}_HOME}/UsageEnvironment/include )
++include_directories ( ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include )
++include_directories ( ${${PROJECT_NAME}_HOME}/groupsock/include )
++include_directories ( ${${PROJECT_NAME}_HOME}/liveMedia/include )
++
++if ( WIN32 )
++   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
++      -DWINNT
++   )
++else ()
++   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
++      -DSOCKLEN_T=socklen_t
++   )
++   if ( APPLE )
++      list ( APPEND ${PROJECT_NAME}_DEFINITIONS
++         -DHAVE_SOCKADDR_LEN=1
++         -DTIME_BASE=int
++      )
++   endif ()
++endif ()
++
++if ( BUILD_SHARED_LIBS )
++   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
++      -DLIVEMEDIA_EXPORTS
++   )
++else ()
++   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
++      -DLIVEMEDIA_STATIC
++   )
++endif ()
++add_definitions ( ${${PROJECT_NAME}_DEFINITIONS} )
++
++
++list ( APPEND ${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/Boolean.hh
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/HashTable.hh
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/strDup.hh
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/UsageEnvironment.hh
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/UsageEnvironment_version.hh
++)
++# Group (Filter) source files
++source_group ( "Header Files\\UsageEnvironment" FILES ${${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT} )
++
++list ( APPEND ${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicHashTable.hh
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicUsageEnvironment.hh
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicUsageEnvironment_version.hh
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/DelayQueue.hh
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/HandlerSet.hh
++)
++# Group (Filter) source files
++source_group ( "Header Files\\BasicUsageEnvironment" FILES ${${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT} )
++
++list ( APPEND ${PROJECT_NAME}_HEADERS_GROUPSOCK
++   ${${PROJECT_NAME}_HOME}/groupsock/include/GroupEId.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/Groupsock.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/groupsock_version.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/GroupsockHelper.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/IOHandlers.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/NetAddress.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/NetCommon.h
++   ${${PROJECT_NAME}_HOME}/groupsock/include/NetInterface.hh
++   ${${PROJECT_NAME}_HOME}/groupsock/include/TunnelEncaps.hh
++)
++# Group (Filter) source files
++source_group ( "Header Files\\groupsock" FILES ${${PROJECT_NAME}_HEADERS_GROUPSOCK} )
++
++list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ADTSAudioFileSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioFileSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AudioInputDevice.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/AVIFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/Base64.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/BasicUDPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/BasicUDPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/BitVector.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ByteStreamFileSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ByteStreamMemoryBufferSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ByteStreamMultiFileSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/DeviceSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/DigestAuthentication.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/export.h
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/FileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/FileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/FramedFileSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/FramedFilter.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/FramedSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/GenericMediaServer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/GSMAudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H261VideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoStreamDiscreteFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamDiscreteFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/InputFile.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/liveMedia.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/liveMedia_version.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/Locale.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MatroskaFile.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MatroskaFileServerDemux.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/Media.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaSession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaTranscodingTable.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADU.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADUinterleaving.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADURTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADURTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADUTranscoder.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3AudioFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3FileSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3Transcoder.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2AudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2AudioRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2AudioStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2Demux.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2FileServerDemux.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2IndexFromTransportStream.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamAccumulator.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFromESSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFromPESSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamIndexFile.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamMultiplexor.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4ESVideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4ESVideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4GenericRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4GenericRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4LATMAudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4LATMAudioRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4VideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEGVideoStreamFramer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MultiFramedRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/MultiFramedRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/OggFile.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/OggFileServerDemux.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/OggFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/OnDemandServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ourMD5.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/OutputFile.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/PassiveServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ProxyServerMediaSession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/QCELPAudioRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/QuickTimeFileSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/QuickTimeGenericRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTCP.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPInterface.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPClient.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPCommon.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPRegisterSender.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPServer.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/ServerMediaSession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/SimpleRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/SimpleRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/SIPClient.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/StreamReplicator.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/T140TextRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/TCPStreamSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/TextRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/TheoraVideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/TheoraVideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/uLawAudioFilter.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VorbisAudioRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VorbisAudioRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP8VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP8VideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP9VideoRTPSink.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP9VideoRTPSource.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/WAVAudioFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/include/WAVAudioFileSource.hh
++)
++# Group (Filter) source files
++source_group ( "Header Files\\liveMedia" FILES ${${PROJECT_NAME}_HEADERS_LIVEMEDIA} )
++
++list ( APPEND ${PROJECT_NAME}_HEADERS
++   ${${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT}
++   ${${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT}
++   ${${PROJECT_NAME}_HEADERS_GROUPSOCK}
++   ${${PROJECT_NAME}_HEADERS_LIVEMEDIA}
++)
++
++
++# C/C++-Sources
++list ( APPEND ${PROJECT_NAME}_SOURCES_USAGEENVIRONMENT
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/HashTable.cpp
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/strDup.cpp
++   ${${PROJECT_NAME}_HOME}/UsageEnvironment/UsageEnvironment.cpp
++)
++# Group (Filter) source files
++source_group ( "Source Files\\UsageEnvironment" FILES ${${PROJECT_NAME}_SOURCES_USAGEENVIRONMENT} )
++
++# C/C++-Sources
++list ( APPEND ${PROJECT_NAME}_SOURCES_BASICUSAGEENVIRONMENT
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicHashTable.cpp
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicTaskScheduler.cpp
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicTaskScheduler0.cpp
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicUsageEnvironment.cpp
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicUsageEnvironment0.cpp
++   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/DelayQueue.cpp
++)
++# Group (Filter) source files
++source_group ( "Source Files\\BasicUsageEnvironment" FILES ${${PROJECT_NAME}_SOURCES_BASICUSAGEENVIRONMENT} )
++
++# C/C++-Sources
++list ( APPEND ${PROJECT_NAME}_SOURCES_GROUPSOCK
++   ${${PROJECT_NAME}_HOME}/groupsock/GroupEId.cpp
++   ${${PROJECT_NAME}_HOME}/groupsock/Groupsock.cpp
++   ${${PROJECT_NAME}_HOME}/groupsock/GroupsockHelper.cpp
++   ${${PROJECT_NAME}_HOME}/groupsock/inet.c
++   ${${PROJECT_NAME}_HOME}/groupsock/IOHandlers.cpp
++   ${${PROJECT_NAME}_HOME}/groupsock/NetAddress.cpp
++   ${${PROJECT_NAME}_HOME}/groupsock/NetInterface.cpp
++)
++# Group (Filter) source files
++source_group ( "Source Files\\groupsock" FILES ${${PROJECT_NAME}_SOURCES_GROUPSOCK} )
++
++# C/C++-Sources
++list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
++   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioFileSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AudioInputDevice.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/AVIFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/Base64.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/BasicUDPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/BasicUDPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/BitVector.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ByteStreamFileSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ByteStreamMemoryBufferSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ByteStreamMultiFileSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/DeviceSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/DigestAuthentication.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/EBMLNumber.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/EBMLNumber.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/FileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/FileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/FramedFileSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/FramedFilter.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/FramedSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/GenericMediaServer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/GSMAudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H261VideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoStreamParser.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoStreamParser.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoStreamDiscreteFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoStreamDiscreteFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamDiscreteFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/InputFile.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/Locale.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaDemuxedTrack.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaDemuxedTrack.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFile.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileParser.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileParser.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileServerDemux.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/Media.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MediaSession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MediaSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MediaSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADU.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUdescriptor.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUdescriptor.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUinterleaving.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADURTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADURTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUTranscoder.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3AudioFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3AudioMatroskaFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3AudioMatroskaFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3FileSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3Internals.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3Internals.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3InternalsHuffman.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3InternalsHuffman.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3InternalsHuffmanTable.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3StreamState.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3StreamState.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MP3Transcoder.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2AudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2AudioRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2AudioStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2Demux.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2DemuxedElementaryStream.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2DemuxedServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2FileServerDemux.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoStreamDiscreteFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2IndexFromTransportStream.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamAccumulator.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromESSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromPESSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamIndexFile.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamMultiplexor.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamTrickModeFilter.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportUDPServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4ESVideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4ESVideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4GenericRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4GenericRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4LATMAudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4LATMAudioRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4VideoFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4VideoStreamDiscreteFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4VideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEGVideoStreamFramer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEGVideoStreamParser.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MPEGVideoStreamParser.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/MultiFramedRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/MultiFramedRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggDemuxedTrack.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggDemuxedTrack.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFile.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileParser.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileParser.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileServerDemux.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileServerMediaSubsession.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OnDemandServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ourMD5.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/OutputFile.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/PassiveServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ProxyServerMediaSession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/QCELPAudioRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/QuickTimeFileSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/QuickTimeGenericRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTCP.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/rtcp_from_spec.c
++   ${${PROJECT_NAME}_HOME}/liveMedia/rtcp_from_spec.h
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTPInterface.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPClient.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPCommon.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPRegisterSender.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPServer.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPServerRegister.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPServerSupportingHTTPStreaming.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/ServerMediaSession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/SimpleRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/SimpleRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/SIPClient.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/StreamParser.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/StreamParser.hh
++   ${${PROJECT_NAME}_HOME}/liveMedia/StreamReplicator.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/T140TextRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/TCPStreamSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/TextRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/TheoraVideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/TheoraVideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/uLawAudioFilter.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VorbisAudioRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VorbisAudioRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VP8VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VP8VideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VP9VideoRTPSink.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/VP9VideoRTPSource.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/WAVAudioFileServerMediaSubsession.cpp
++   ${${PROJECT_NAME}_HOME}/liveMedia/WAVAudioFileSource.cpp
++)
++# Group (Filter) source files
++source_group ( "Source Files\\liveMedia" FILES ${${PROJECT_NAME}_SOURCES_LIVEMEDIA} )
++
++list ( APPEND ${PROJECT_NAME}_SOURCES
++   ${${PROJECT_NAME}_SOURCES_USAGEENVIRONMENT}
++   ${${PROJECT_NAME}_SOURCES_BASICUSAGEENVIRONMENT}
++   ${${PROJECT_NAME}_SOURCES_GROUPSOCK}
++   ${${PROJECT_NAME}_SOURCES_LIVEMEDIA}
++)
++
++add_library ( ${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} )
++
++set ( ${PROJECT_NAME}_LINK_LIBRARIES "" )
++if ( WIN32 )
++   list ( APPEND ${PROJECT_NAME}_LINK_LIBRARIES
++      ws2_32
++   )
++endif ()
++target_link_libraries ( ${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_LINK_LIBRARIES} )
++
++if ( WIN32 )
++   set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d" )
++else ()
++   set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug" )
++endif ()
++
++if(MSVC)
++    add_definitions(/FI"export.h")
++else()
++    # GCC or Clang
++    add_definitions(-include export.h)
++endif()
++
++# Disable warnings
++if ( WIN32 AND NOT CMAKE_COMPILER_IS_GNUCXX )
++   list ( APPEND ${PROJECT_NAME}_DISABLE_WARNINGS
++      "/wd4018" # 'expression' : signed/unsigned mismatch
++      "/wd4244" # 'conversion' conversion from 'type1' to 'type2', possible loss of data
++      "/wd4267" # 'var' : conversion from 'size_t' to 'type', possible loss of data
++      "/wd4312" # 'operation' : conversion from 'type1' to 'type2' of greater size
++      "/wd4334" # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
++      "/wd4477" # <function> : format string <format-string> requires an argument of type <type>, but variadic argument <position> has type <type> 
++      "/wd4996" # 'function': was declared deprecated also 'std::<function name>': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct.To disable this warning, use -D_SCL_SECURE_NO_WARNINGS.See documentation on how to use Visual C++ 'Checked Iterators'
++   )
++else ()
++   list ( APPEND ${PROJECT_NAME}_DISABLE_WARNINGS
++      "-Wno-unused-private-field"            # private field 'identifier' is not used
++      "-Wno-self-assign"                     # explicitly assigning a variable of type %0 to itself
++      "-Wno-self-assign-field"               # assigning field to itself
++      "-Wno-format"                          # format specifies type %0 but the argument has type %1
++      "-Wno-int-to-pointer-cast"             # cast to %1 from smaller integer type %0
++      "-Wno-array-bounds"                    # array index %0 is before the beginning of the array
++      "-Wno-tautological-undefined-compare"  # Reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to true
++   )
++endif ()
++foreach ( warning IN LISTS ${PROJECT_NAME}_DISABLE_WARNINGS )
++   set ( CMAKE_COMMON_COMPILER_FLAGS "${CMAKE_COMMON_COMPILER_FLAGS} ${warning}" )
++endforeach ()
++set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_COMMON_COMPILER_FLAGS}" )
++set ( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_COMMON_COMPILER_FLAGS_RELEASE}" )
++set ( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CMAKE_COMMON_COMPILER_FLAGS_DEBUG}" )
++
++set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_COMMON_COMPILER_FLAGS}" )
++set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_COMMON_COMPILER_FLAGS_RELEASE}" )
++set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_COMMON_COMPILER_FLAGS_DEBUG}" )
++
++install ( FILES
++	${${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT}
++	DESTINATION
++	"${CMAKE_INSTALL_PREFIX}/include/live555/UsageEnvironment"
++)
++
++install ( FILES
++	${${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT}
++	DESTINATION
++	"${CMAKE_INSTALL_PREFIX}/include/live555/BasicUsageEnvironment"
++)
++
++install ( FILES
++	${${PROJECT_NAME}_HEADERS_GROUPSOCK}
++	DESTINATION
++	"${CMAKE_INSTALL_PREFIX}/include/live555/groupsock"
++)
++
++install ( FILES
++	${${PROJECT_NAME}_HEADERS_LIVEMEDIA}
++	DESTINATION
++	"${CMAKE_INSTALL_PREFIX}/include/live555/liveMedia"
++)
++
++install ( TARGETS
++	${PROJECT_NAME}
++	RUNTIME DESTINATION bin
++	LIBRARY DESTINATION lib
++	ARCHIVE DESTINATION lib
++)
+diff -Naru a/live/CMakeSettings.json b/live/CMakeSettings.json
+--- a/live/CMakeSettings.json	1970-01-01 09:00:00.000000000 +0900
++++ b/live/CMakeSettings.json	2017-12-22 17:30:11.445311600 +0900
+@@ -0,0 +1,105 @@
++{
++    // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
++    "configurations": [
++        {
++            "name": "x86-Debug",
++            "generator": "Ninja",
++            "configurationType": "Debug",
++            "inheritEnvironments": [ "msvc_x86" ],
++            "buildRoot": "${projectDir}\\build\\Debug_x86",
++            "installRoot": "${env.ProgramFiles(x86)}\\${name}",
++            "cmakeCommandArgs": "",
++            "buildCommandArgs": "",
++            "ctestCommandArgs": "",
++            "variables": [
++                {
++                    "name": "CMAKE_C_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_CXX_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_SYSTEM_NAME",
++                    "value": "Windows"
++                }
++            ]
++        },
++        {
++            "name": "x86-Release",
++            "generator": "Ninja",
++            "configurationType": "RelWithDebInfo",
++            "inheritEnvironments": [ "msvc_x86" ],
++            "buildRoot": "${projectDir}\\build\\Release_x86",
++            "installRoot": "${env.ProgramFiles(x86)}\\${name}",
++            "cmakeCommandArgs": "",
++            "buildCommandArgs": "",
++            "ctestCommandArgs": "",
++            "variables": [
++                {
++                    "name": "CMAKE_C_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_CXX_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_SYSTEM_NAME",
++                    "value": "Windows"
++                }
++            ]
++        },
++        {
++            "name": "x64-Debug",
++            "generator": "Ninja",
++            "configurationType": "Debug",
++            "inheritEnvironments": [ "msvc_x64" ],
++            "buildRoot": "${projectDir}\\build\\Release_x64",
++            "installRoot": "${env.ProgramFiles}\\${name}",
++            "cmakeCommandArgs": "",
++            "buildCommandArgs": "",
++            "ctestCommandArgs": "",
++            "variables": [
++                {
++                    "name": "CMAKE_C_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_CXX_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_SYSTEM_NAME",
++                    "value": "Windows"
++                }
++            ]
++        },
++        {
++            "name": "x64-Release",
++            "generator": "Ninja",
++            "configurationType": "RelWithDebInfo",
++            "inheritEnvironments": [ "msvc_x64" ],
++            "buildRoot": "${projectDir}\\build\\Release_x64",
++            "installRoot": "${env.ProgramFiles}\\${name}",
++            "cmakeCommandArgs": "",
++            "buildCommandArgs": "",
++            "ctestCommandArgs": "",
++            "variables": [
++                {
++                    "name": "CMAKE_C_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_CXX_COMPILER",
++                    "value": "cl.exe"
++                },
++                {
++                    "name": "CMAKE_SYSTEM_NAME",
++                    "value": "Windows"
++                }
++            ]
++        }
++    ]
++}
+\ No newline at end of file
+diff -Naru a/live/.gitignore b/live/.gitignore
+--- a/live/.gitignore	1970-01-01 09:00:00.000000000 +0900
++++ b/live/.gitignore	2017-12-22 14:34:24.482900300 +0900
+@@ -0,0 +1 @@
++.DS_Store
+diff -Naru a/live/groupsock/include/GroupEId.hh b/live/groupsock/include/GroupEId.hh
+--- a/live/groupsock/include/GroupEId.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/GroupEId.hh	2018-02-01 16:48:50.103035900 +0900
+@@ -29,7 +29,7 @@
+ #include "NetAddress.hh"
+ #endif
+ 
+-class GroupEId {
++class LIVEMEDIA_API GroupEId {
+ public:
+   GroupEId(struct in_addr const& groupAddr,
+ 	   portNumBits portNum, u_int8_t ttl);
+diff -Naru a/live/groupsock/include/GroupsockHelper.hh b/live/groupsock/include/GroupsockHelper.hh
+--- a/live/groupsock/include/GroupsockHelper.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/GroupsockHelper.hh	2018-02-01 16:49:56.738007400 +0900
+@@ -25,68 +25,68 @@
+ #include "NetAddress.hh"
+ #endif
+ 
+-int setupDatagramSocket(UsageEnvironment& env, Port port);
+-int setupStreamSocket(UsageEnvironment& env,
++LIVEMEDIA_API int setupDatagramSocket(UsageEnvironment& env, Port port);
++LIVEMEDIA_API int setupStreamSocket(UsageEnvironment& env,
+ 		      Port port, Boolean makeNonBlocking = True);
+ 
+-int readSocket(UsageEnvironment& env,
++LIVEMEDIA_API  int readSocket(UsageEnvironment& env,
+ 	       int socket, unsigned char* buffer, unsigned bufferSize,
+ 	       struct sockaddr_in& fromAddress);
+ 
+-Boolean writeSocket(UsageEnvironment& env,
++LIVEMEDIA_API  Boolean writeSocket(UsageEnvironment& env,
+ 		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
+ 		    u_int8_t ttlArg,
+ 		    unsigned char* buffer, unsigned bufferSize);
+ 
+-Boolean writeSocket(UsageEnvironment& env,
++LIVEMEDIA_API  Boolean writeSocket(UsageEnvironment& env,
+ 		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
+ 		    unsigned char* buffer, unsigned bufferSize);
+     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
+ 
+-void ignoreSigPipeOnSocket(int socketNum);
++LIVEMEDIA_API  void ignoreSigPipeOnSocket(int socketNum);
+ 
+-unsigned getSendBufferSize(UsageEnvironment& env, int socket);
+-unsigned getReceiveBufferSize(UsageEnvironment& env, int socket);
+-unsigned setSendBufferTo(UsageEnvironment& env,
++LIVEMEDIA_API unsigned getSendBufferSize(UsageEnvironment& env, int socket);
++LIVEMEDIA_API unsigned getReceiveBufferSize(UsageEnvironment& env, int socket);
++LIVEMEDIA_API unsigned setSendBufferTo(UsageEnvironment& env,
+ 			 int socket, unsigned requestedSize);
+-unsigned setReceiveBufferTo(UsageEnvironment& env,
++LIVEMEDIA_API unsigned setReceiveBufferTo(UsageEnvironment& env,
+ 			    int socket, unsigned requestedSize);
+-unsigned increaseSendBufferTo(UsageEnvironment& env,
++LIVEMEDIA_API unsigned increaseSendBufferTo(UsageEnvironment& env,
+ 			      int socket, unsigned requestedSize);
+-unsigned increaseReceiveBufferTo(UsageEnvironment& env,
++LIVEMEDIA_API unsigned increaseReceiveBufferTo(UsageEnvironment& env,
+ 				 int socket, unsigned requestedSize);
+ 
+-Boolean makeSocketNonBlocking(int sock);
+-Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
++LIVEMEDIA_API Boolean makeSocketNonBlocking(int sock);
++LIVEMEDIA_API Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
+   // A "writeTimeoutInMilliseconds" value of 0 means: Don't timeout
+ 
+-Boolean socketJoinGroup(UsageEnvironment& env, int socket,
++LIVEMEDIA_API Boolean socketJoinGroup(UsageEnvironment& env, int socket,
+ 			netAddressBits groupAddress);
+-Boolean socketLeaveGroup(UsageEnvironment&, int socket,
++LIVEMEDIA_API Boolean socketLeaveGroup(UsageEnvironment&, int socket,
+ 			 netAddressBits groupAddress);
+ 
+ // source-specific multicast join/leave
+-Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
++LIVEMEDIA_API Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
+ 			   netAddressBits groupAddress,
+ 			   netAddressBits sourceFilterAddr);
+-Boolean socketLeaveGroupSSM(UsageEnvironment&, int socket,
++LIVEMEDIA_API Boolean socketLeaveGroupSSM(UsageEnvironment&, int socket,
+ 			    netAddressBits groupAddress,
+ 			    netAddressBits sourceFilterAddr);
+ 
+-Boolean getSourcePort(UsageEnvironment& env, int socket, Port& port);
++LIVEMEDIA_API Boolean getSourcePort(UsageEnvironment& env, int socket, Port& port);
+ 
+-netAddressBits ourIPAddress(UsageEnvironment& env); // in network order
++LIVEMEDIA_API netAddressBits ourIPAddress(UsageEnvironment& env); // in network order
+ 
+ // IP addresses of our sending and receiving interfaces.  (By default, these
+ // are INADDR_ANY (i.e., 0), specifying the default interface.)
+-extern netAddressBits SendingInterfaceAddr;
+-extern netAddressBits ReceivingInterfaceAddr;
++extern LIVEMEDIA_API netAddressBits SendingInterfaceAddr;
++extern LIVEMEDIA_API netAddressBits ReceivingInterfaceAddr;
+ 
+ // Allocates a randomly-chosen IPv4 SSM (multicast) address:
+-netAddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
++LIVEMEDIA_API netAddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
+ 
+ // Returns a simple "hh:mm:ss" string, for use in debugging output (e.g.)
+-char const* timestampString();
++LIVEMEDIA_API char const* timestampString();
+ 
+ 
+ #ifdef HAVE_SOCKADDR_LEN
+@@ -110,7 +110,7 @@
+ //            NoReuse dummy;
+ //            ...
+ //          }
+-class NoReuse {
++class LIVEMEDIA_API NoReuse {
+ public:
+   NoReuse(UsageEnvironment& env);
+   ~NoReuse();
+@@ -122,25 +122,25 @@
+ 
+ // Define the "UsageEnvironment"-specific "groupsockPriv" structure:
+ 
+-struct _groupsockPriv { // There should be only one of these allocated
++struct LIVEMEDIA_API _groupsockPriv { // There should be only one of these allocated
+   HashTable* socketTable;
+   int reuseFlag;
+ };
+-_groupsockPriv* groupsockPriv(UsageEnvironment& env); // allocates it if necessary
+-void reclaimGroupsockPriv(UsageEnvironment& env);
++LIVEMEDIA_API _groupsockPriv* groupsockPriv(UsageEnvironment& env); // allocates it if necessary
++LIVEMEDIA_API void reclaimGroupsockPriv(UsageEnvironment& env);
+ 
+ 
+ #if (defined(__WIN32__) || defined(_WIN32)) && !defined(__MINGW32__)
+ // For Windoze, we need to implement our own gettimeofday()
+-extern int gettimeofday(struct timeval*, int*);
++extern LIVEMEDIA_API int gettimeofday(struct timeval*, int*);
+ #else
+ #include <sys/time.h>
+ #endif
+ 
+ // The following are implemented in inet.c:
+-extern "C" netAddressBits our_inet_addr(char const*);
+-extern "C" void our_srandom(int x);
+-extern "C" long our_random();
+-extern "C" u_int32_t our_random32(); // because "our_random()" returns a 31-bit number
++extern "C" LIVEMEDIA_API netAddressBits our_inet_addr(char const*);
++extern "C" LIVEMEDIA_API void our_srandom(int x);
++extern "C" LIVEMEDIA_API long our_random();
++extern "C" LIVEMEDIA_API u_int32_t our_random32(); // because "our_random()" returns a 31-bit number
+ 
+ #endif
+diff -Naru a/live/groupsock/include/Groupsock.hh b/live/groupsock/include/Groupsock.hh
+--- a/live/groupsock/include/Groupsock.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/Groupsock.hh	2018-02-01 16:49:07.497023700 +0900
+@@ -36,7 +36,7 @@
+ // An "OutputSocket" is (by default) used only to send packets.
+ // No packets are received on it (unless a subclass arranges this)
+ 
+-class OutputSocket: public Socket {
++class LIVEMEDIA_API OutputSocket: public Socket {
+ public:
+   OutputSocket(UsageEnvironment& env);
+   virtual ~OutputSocket();
+@@ -79,7 +79,7 @@
+ // As the name suggests, it was originally designed to send/receive
+ // multicast, but it can send/receive unicast as well.
+ 
+-class Groupsock: public OutputSocket {
++class LIVEMEDIA_API Groupsock: public OutputSocket {
+ public:
+   Groupsock(UsageEnvironment& env, struct in_addr const& groupAddr,
+ 	    Port port, u_int8_t ttl);
+@@ -174,7 +174,7 @@
+ 
+ // A data structure for looking up a 'groupsock'
+ // by (multicast address, port), or by socket number
+-class GroupsockLookupTable {
++class LIVEMEDIA_API GroupsockLookupTable {
+ public:
+   Groupsock* Fetch(UsageEnvironment& env, netAddressBits groupAddress,
+ 		   Port port, u_int8_t ttl, Boolean& isNew);
+diff -Naru a/live/groupsock/include/IOHandlers.hh b/live/groupsock/include/IOHandlers.hh
+--- a/live/groupsock/include/IOHandlers.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/IOHandlers.hh	2018-02-01 16:50:09.118983400 +0900
+@@ -26,6 +26,6 @@
+ #endif
+ 
+ // Handles incoming data on sockets:
+-void socketReadHandler(Socket* sock, int mask);
++LIVEMEDIA_API void socketReadHandler(Socket* sock, int mask);
+ 
+ #endif
+diff -Naru a/live/groupsock/include/NetAddress.hh b/live/groupsock/include/NetAddress.hh
+--- a/live/groupsock/include/NetAddress.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/NetAddress.hh	2018-02-01 16:50:25.439973000 +0900
+@@ -38,7 +38,7 @@
+ // to allow for IPv6.
+ typedef u_int32_t netAddressBits;
+ 
+-class NetAddress {
++class LIVEMEDIA_API NetAddress {
+ public:
+   NetAddress(u_int8_t const* data,
+ 	     unsigned length = 4 /* default: 32 bits */);
+@@ -59,7 +59,7 @@
+   u_int8_t* fData;
+ };
+ 
+-class NetAddressList {
++class LIVEMEDIA_API NetAddressList {
+ public:
+   NetAddressList(char const* hostname);
+   NetAddressList(NetAddressList const& orig);
+@@ -91,7 +91,7 @@
+ 
+ typedef u_int16_t portNumBits;
+ 
+-class Port {
++class LIVEMEDIA_API Port {
+ public:
+   Port(portNumBits num /* in host byte order */);
+   
+@@ -108,7 +108,7 @@
+ 
+ 
+ // A generic table for looking up objects by (address1, address2, port)
+-class AddressPortLookupTable {
++class LIVEMEDIA_API AddressPortLookupTable {
+ public:
+   AddressPortLookupTable();
+   virtual ~AddressPortLookupTable();
+@@ -142,7 +142,7 @@
+ 
+ 
+ // A mechanism for displaying an IPv4 address in ASCII.  This is intended to replace "inet_ntoa()", which is not thread-safe.
+-class AddressString {
++class LIVEMEDIA_API AddressString {
+ public:
+   AddressString(struct sockaddr_in const& addr);
+   AddressString(struct in_addr const& addr);
+diff -Naru a/live/groupsock/include/NetInterface.hh b/live/groupsock/include/NetInterface.hh
+--- a/live/groupsock/include/NetInterface.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/NetInterface.hh	2018-02-01 16:50:48.663972600 +0900
+@@ -25,7 +25,7 @@
+ #include "NetAddress.hh"
+ #endif
+ 
+-class NetInterface {
++class LIVEMEDIA_API NetInterface {
+ public:
+   virtual ~NetInterface();
+ 
+@@ -36,7 +36,7 @@
+   NetInterface(); // virtual base class
+ };
+ 
+-class DirectedNetInterface: public NetInterface {
++class LIVEMEDIA_API DirectedNetInterface: public NetInterface {
+ public:
+   virtual ~DirectedNetInterface();
+ 
+@@ -49,7 +49,7 @@
+   DirectedNetInterface(); // virtual base class
+ };
+ 
+-class DirectedNetInterfaceSet {
++class LIVEMEDIA_API DirectedNetInterfaceSet {
+ public:
+   DirectedNetInterfaceSet();
+   virtual ~DirectedNetInterfaceSet();
+@@ -77,7 +77,7 @@
+   HashTable* fTable;
+ };
+ 
+-class Socket: public NetInterface {
++class LIVEMEDIA_API Socket: public NetInterface {
+ public:
+   virtual ~Socket();
+   void reset(); // closes the socket, and sets "fSocketNum" to -1
+@@ -112,7 +112,7 @@
+ 
+ // A data structure for looking up a Socket by port:
+ 
+-class SocketLookupTable {
++class LIVEMEDIA_API SocketLookupTable {
+ public:
+   virtual ~SocketLookupTable();
+ 
+@@ -130,7 +130,7 @@
+ 
+ // A data structure for counting traffic:
+ 
+-class NetInterfaceTrafficStats {
++class LIVEMEDIA_API NetInterfaceTrafficStats {
+ public:
+   NetInterfaceTrafficStats();
+ 
+diff -Naru a/live/groupsock/include/TunnelEncaps.hh b/live/groupsock/include/TunnelEncaps.hh
+--- a/live/groupsock/include/TunnelEncaps.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/groupsock/include/TunnelEncaps.hh	2018-02-01 16:50:57.864947800 +0900
+@@ -27,7 +27,7 @@
+ 
+ typedef u_int16_t Cookie;
+ 
+-class TunnelEncapsulationTrailer {
++class LIVEMEDIA_API TunnelEncapsulationTrailer {
+ 	// The trailer is layed out as follows:
+ 	// bytes 0-1:	source 'cookie'
+ 	// bytes 2-3:	destination 'cookie'
+diff -Naru a/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh b/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh	2018-02-01 16:51:28.791946400 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class AC3AudioFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API AC3AudioFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static AC3AudioFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/AC3AudioRTPSink.hh b/live/liveMedia/include/AC3AudioRTPSink.hh
+--- a/live/liveMedia/include/AC3AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AC3AudioRTPSink.hh	2018-02-01 16:51:35.368943400 +0900
+@@ -25,7 +25,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class AC3AudioRTPSink: public AudioRTPSink {
++class LIVEMEDIA_API AC3AudioRTPSink: public AudioRTPSink {
+ public:
+   static AC3AudioRTPSink* createNew(UsageEnvironment& env,
+ 				    Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/AC3AudioRTPSource.hh b/live/liveMedia/include/AC3AudioRTPSource.hh
+--- a/live/liveMedia/include/AC3AudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AC3AudioRTPSource.hh	2018-02-01 16:51:43.446921800 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class AC3AudioRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API AC3AudioRTPSource: public MultiFramedRTPSource {
+ public:
+   static AC3AudioRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/AC3AudioStreamFramer.hh b/live/liveMedia/include/AC3AudioStreamFramer.hh
+--- a/live/liveMedia/include/AC3AudioStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AC3AudioStreamFramer.hh	2018-02-01 16:51:49.224933300 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class AC3AudioStreamFramer: public FramedFilter {
++class LIVEMEDIA_API AC3AudioStreamFramer: public FramedFilter {
+ public:
+   static AC3AudioStreamFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh b/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh	2018-02-01 16:51:55.630913800 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class ADTSAudioFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API ADTSAudioFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static ADTSAudioFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/ADTSAudioFileSource.hh b/live/liveMedia/include/ADTSAudioFileSource.hh
+--- a/live/liveMedia/include/ADTSAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ADTSAudioFileSource.hh	2018-02-01 16:52:01.003925700 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedFileSource.hh"
+ #endif
+ 
+-class ADTSAudioFileSource: public FramedFileSource {
++class LIVEMEDIA_API ADTSAudioFileSource: public FramedFileSource {
+ public:
+   static ADTSAudioFileSource* createNew(UsageEnvironment& env,
+ 				       char const* fileName);
+diff -Naru a/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh b/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh	2018-02-01 16:52:09.382896800 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class AMRAudioFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API AMRAudioFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static AMRAudioFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/AMRAudioFileSink.hh b/live/liveMedia/include/AMRAudioFileSink.hh
+--- a/live/liveMedia/include/AMRAudioFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AMRAudioFileSink.hh	2018-02-01 16:52:15.874900600 +0900
+@@ -25,7 +25,7 @@
+ #include "FileSink.hh"
+ #endif
+ 
+-class AMRAudioFileSink: public FileSink {
++class LIVEMEDIA_API AMRAudioFileSink: public FileSink {
+ public:
+   static AMRAudioFileSink* createNew(UsageEnvironment& env, char const* fileName,
+ 				     unsigned bufferSize = 10000,
+diff -Naru a/live/liveMedia/include/AMRAudioFileSource.hh b/live/liveMedia/include/AMRAudioFileSource.hh
+--- a/live/liveMedia/include/AMRAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AMRAudioFileSource.hh	2018-02-01 16:52:22.873888000 +0900
+@@ -25,7 +25,7 @@
+ #include "AMRAudioSource.hh"
+ #endif
+ 
+-class AMRAudioFileSource: public AMRAudioSource {
++class LIVEMEDIA_API AMRAudioFileSource: public AMRAudioSource {
+ public:
+   static AMRAudioFileSource* createNew(UsageEnvironment& env,
+ 				       char const* fileName);
+diff -Naru a/live/liveMedia/include/AMRAudioRTPSink.hh b/live/liveMedia/include/AMRAudioRTPSink.hh
+--- a/live/liveMedia/include/AMRAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AMRAudioRTPSink.hh	2018-02-01 16:52:28.857887800 +0900
+@@ -25,7 +25,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class AMRAudioRTPSink: public AudioRTPSink {
++class LIVEMEDIA_API AMRAudioRTPSink: public AudioRTPSink {
+ public:
+   static AMRAudioRTPSink* createNew(UsageEnvironment& env,
+ 				    Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/AMRAudioRTPSource.hh b/live/liveMedia/include/AMRAudioRTPSource.hh
+--- a/live/liveMedia/include/AMRAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AMRAudioRTPSource.hh	2018-02-01 16:52:43.895874700 +0900
+@@ -28,7 +28,7 @@
+ #include "AMRAudioSource.hh"
+ #endif
+ 
+-class AMRAudioRTPSource {
++class LIVEMEDIA_API AMRAudioRTPSource {
+ public:
+   static AMRAudioSource* createNew(UsageEnvironment& env,
+ 				   Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/AMRAudioSource.hh b/live/liveMedia/include/AMRAudioSource.hh
+--- a/live/liveMedia/include/AMRAudioSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AMRAudioSource.hh	2018-02-01 16:52:50.384892900 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class AMRAudioSource: public FramedSource {
++class LIVEMEDIA_API AMRAudioSource: public FramedSource {
+ public:
+   Boolean isWideband() const { return fIsWideband; }
+   unsigned numChannels() const { return fNumChannels; }
+diff -Naru a/live/liveMedia/include/AudioInputDevice.hh b/live/liveMedia/include/AudioInputDevice.hh
+--- a/live/liveMedia/include/AudioInputDevice.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AudioInputDevice.hh	2018-02-01 16:52:59.646871800 +0900
+@@ -24,7 +24,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class AudioPortNames {
++class LIVEMEDIA_API AudioPortNames {
+ public:
+   AudioPortNames();
+   virtual ~AudioPortNames();
+@@ -33,7 +33,7 @@
+   char** portName;
+ };
+ 
+-class AudioInputDevice: public FramedSource {
++class LIVEMEDIA_API AudioInputDevice: public FramedSource {
+ public:
+   unsigned char bitsPerSample() const { return fBitsPerSample; }
+   unsigned char numChannels() const { return fNumChannels; }
+diff -Naru a/live/liveMedia/include/AudioRTPSink.hh b/live/liveMedia/include/AudioRTPSink.hh
+--- a/live/liveMedia/include/AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AudioRTPSink.hh	2018-02-01 16:53:05.271867800 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSink.hh"
+ #endif
+ 
+-class AudioRTPSink: public MultiFramedRTPSink {
++class LIVEMEDIA_API AudioRTPSink: public MultiFramedRTPSink {
+ protected:
+   AudioRTPSink(UsageEnvironment& env,
+ 	       Groupsock* rtpgs, unsigned char rtpPayloadType,
+diff -Naru a/live/liveMedia/include/AVIFileSink.hh b/live/liveMedia/include/AVIFileSink.hh
+--- a/live/liveMedia/include/AVIFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/AVIFileSink.hh	2018-02-01 16:53:13.784877300 +0900
+@@ -25,7 +25,7 @@
+ #include "MediaSession.hh"
+ #endif
+ 
+-class AVIFileSink: public Medium {
++class LIVEMEDIA_API AVIFileSink: public Medium {
+ public:
+   static AVIFileSink* createNew(UsageEnvironment& env,
+ 				MediaSession& inputSession,
+diff -Naru a/live/liveMedia/include/Base64.hh b/live/liveMedia/include/Base64.hh
+--- a/live/liveMedia/include/Base64.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/Base64.hh	2018-02-01 16:53:25.856847300 +0900
+@@ -25,18 +25,18 @@
+ #include "Boolean.hh"
+ #endif
+ 
+-unsigned char* base64Decode(char const* in, unsigned& resultSize,
++LIVEMEDIA_API unsigned char* base64Decode(char const* in, unsigned& resultSize,
+ 			    Boolean trimTrailingZeros = True);
+     // returns a newly allocated array - of size "resultSize" - that
+     // the caller is responsible for delete[]ing.
+ 
+-unsigned char* base64Decode(char const* in, unsigned inSize,
++LIVEMEDIA_API unsigned char* base64Decode(char const* in, unsigned inSize,
+ 			    unsigned& resultSize,
+ 			    Boolean trimTrailingZeros = True);
+     // As above, but includes the size of the input string (i.e., the number of bytes to decode) as a parameter.
+     // This saves an extra call to "strlen()" if we already know the length of the input string.
+ 
+-char* base64Encode(char const* orig, unsigned origLength);
++LIVEMEDIA_API char* base64Encode(char const* orig, unsigned origLength);
+     // returns a 0-terminated string that
+     // the caller is responsible for delete[]ing.
+ 
+diff -Naru a/live/liveMedia/include/BasicUDPSink.hh b/live/liveMedia/include/BasicUDPSink.hh
+--- a/live/liveMedia/include/BasicUDPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/BasicUDPSink.hh	2018-02-01 16:53:33.614866000 +0900
+@@ -28,7 +28,7 @@
+ #include <Groupsock.hh>
+ #endif
+ 
+-class BasicUDPSink: public MediaSink {
++class LIVEMEDIA_API BasicUDPSink: public MediaSink {
+ public:
+   static BasicUDPSink* createNew(UsageEnvironment& env, Groupsock* gs,
+ 				  unsigned maxPayloadSize = 1450);
+diff -Naru a/live/liveMedia/include/BasicUDPSource.hh b/live/liveMedia/include/BasicUDPSource.hh
+--- a/live/liveMedia/include/BasicUDPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/BasicUDPSource.hh	2018-02-01 16:53:39.446859600 +0900
+@@ -28,7 +28,7 @@
+ #include "Groupsock.hh"
+ #endif
+ 
+-class BasicUDPSource: public FramedSource {
++class LIVEMEDIA_API BasicUDPSource: public FramedSource {
+ public:
+   static BasicUDPSource* createNew(UsageEnvironment& env, Groupsock* inputGS);
+ 
+diff -Naru a/live/liveMedia/include/BitVector.hh b/live/liveMedia/include/BitVector.hh
+--- a/live/liveMedia/include/BitVector.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/BitVector.hh	2018-02-01 16:53:45.894857400 +0900
+@@ -25,7 +25,7 @@
+ #include "Boolean.hh"
+ #endif
+ 
+-class BitVector {
++class LIVEMEDIA_API BitVector {
+ public:
+   BitVector(unsigned char* baseBytePtr,
+ 	    unsigned baseBitOffset,
+diff -Naru a/live/liveMedia/include/ByteStreamFileSource.hh b/live/liveMedia/include/ByteStreamFileSource.hh
+--- a/live/liveMedia/include/ByteStreamFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ByteStreamFileSource.hh	2018-02-01 16:53:54.335834400 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedFileSource.hh"
+ #endif
+ 
+-class ByteStreamFileSource: public FramedFileSource {
++class LIVEMEDIA_API ByteStreamFileSource: public FramedFileSource {
+ public:
+   static ByteStreamFileSource* createNew(UsageEnvironment& env,
+ 					 char const* fileName,
+diff -Naru a/live/liveMedia/include/ByteStreamMemoryBufferSource.hh b/live/liveMedia/include/ByteStreamMemoryBufferSource.hh
+--- a/live/liveMedia/include/ByteStreamMemoryBufferSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ByteStreamMemoryBufferSource.hh	2018-02-01 16:54:00.656826100 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class ByteStreamMemoryBufferSource: public FramedSource {
++class LIVEMEDIA_API ByteStreamMemoryBufferSource: public FramedSource {
+ public:
+   static ByteStreamMemoryBufferSource* createNew(UsageEnvironment& env,
+ 						 u_int8_t* buffer, u_int64_t bufferSize,
+diff -Naru a/live/liveMedia/include/ByteStreamMultiFileSource.hh b/live/liveMedia/include/ByteStreamMultiFileSource.hh
+--- a/live/liveMedia/include/ByteStreamMultiFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ByteStreamMultiFileSource.hh	2018-02-01 16:54:06.647827200 +0900
+@@ -25,7 +25,7 @@
+ #include "ByteStreamFileSource.hh"
+ #endif
+ 
+-class ByteStreamMultiFileSource: public FramedSource {
++class LIVEMEDIA_API ByteStreamMultiFileSource: public FramedSource {
+ public:
+   static ByteStreamMultiFileSource*
+   createNew(UsageEnvironment& env, char const** fileNameArray,
+diff -Naru a/live/liveMedia/include/DeviceSource.hh b/live/liveMedia/include/DeviceSource.hh
+--- a/live/liveMedia/include/DeviceSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/DeviceSource.hh	2018-02-01 16:54:12.856816800 +0900
+@@ -33,7 +33,7 @@
+   //%%% TO BE WRITTEN %%%
+ };
+ 
+-class DeviceSource: public FramedSource {
++class LIVEMEDIA_API DeviceSource: public FramedSource {
+ public:
+   static DeviceSource* createNew(UsageEnvironment& env,
+ 				 DeviceParameters params);
+diff -Naru a/live/liveMedia/include/DigestAuthentication.hh b/live/liveMedia/include/DigestAuthentication.hh
+--- a/live/liveMedia/include/DigestAuthentication.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/DigestAuthentication.hh	2018-02-01 16:54:21.158818600 +0900
+@@ -29,7 +29,7 @@
+ // The "realm", and "nonce" fields are supplied by the server
+ // (in a "401 Unauthorized" response).
+ // The "username" and "password" fields are supplied by the client.
+-class Authenticator {
++class LIVEMEDIA_API Authenticator {
+ public:
+   Authenticator();
+   Authenticator(char const* username, char const* password, Boolean passwordIsMD5 = False);
+diff -Naru a/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh b/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh	2018-02-01 16:54:27.285829400 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class DVVideoFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API DVVideoFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static DVVideoFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/DVVideoRTPSink.hh b/live/liveMedia/include/DVVideoRTPSink.hh
+--- a/live/liveMedia/include/DVVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/DVVideoRTPSink.hh	2018-02-01 16:54:32.454810500 +0900
+@@ -29,7 +29,7 @@
+ #include "DVVideoStreamFramer.hh"
+ #endif
+ 
+-class DVVideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API DVVideoRTPSink: public VideoRTPSink {
+ public:
+   static DVVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+   char const* auxSDPLineFromFramer(DVVideoStreamFramer* framerSource);
+diff -Naru a/live/liveMedia/include/DVVideoRTPSource.hh b/live/liveMedia/include/DVVideoRTPSource.hh
+--- a/live/liveMedia/include/DVVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/DVVideoRTPSource.hh	2018-02-01 16:54:37.478807000 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class DVVideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API DVVideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static DVVideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/DVVideoStreamFramer.hh b/live/liveMedia/include/DVVideoStreamFramer.hh
+--- a/live/liveMedia/include/DVVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/DVVideoStreamFramer.hh	2018-02-01 16:54:42.671800300 +0900
+@@ -30,7 +30,7 @@
+ #define DV_SAVED_INITIAL_BLOCKS_SIZE ((DV_NUM_BLOCKS_PER_SEQUENCE+6-1)*DV_DIF_BLOCK_SIZE)
+     /* enough data to ensure that it contains an intact 6-block header (which occurs at the start of a 150-block sequence) */
+ 
+-class DVVideoStreamFramer: public FramedFilter {
++class LIVEMEDIA_API DVVideoStreamFramer: public FramedFilter {
+ public:
+   static DVVideoStreamFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/export.h b/live/liveMedia/include/export.h
+--- a/live/liveMedia/include/export.h	1970-01-01 09:00:00.000000000 +0900
++++ b/live/liveMedia/include/export.h	2017-12-22 12:50:44.848427400 +0900
+@@ -0,0 +1,30 @@
++#pragma once
++
++#ifdef __cplusplus
++extern "C" {
++#endif // #ifdef __cplusplus
++
++
++#if _WIN32
++#  define LIVEMEDIA_EXPORT_API __declspec (dllexport)
++#  define LIVEMEDIA_IMPORT_API __declspec (dllimport)
++#else // #if _WIN32
++#  define LIVEMEDIA_EXPORT_API __attribute__ ((visibility("default")))
++#  define LIVEMEDIA_IMPORT_API __attribute__ ((visibility("default")))
++#endif // #if _WIN32
++
++
++#ifndef LIVEMEDIA_STATIC
++#  ifdef LIVEMEDIA_EXPORTS
++#     define LIVEMEDIA_API LIVEMEDIA_EXPORT_API
++#  else
++#     define LIVEMEDIA_API LIVEMEDIA_IMPORT_API
++#  endif // #ifdef LIVEMEDIA_EXPORTS
++#else // #ifndef LIVEMEDIA_STATIC
++#  define LIVEMEDIA_API
++#endif // #ifndef LIVEMEDIA_STATIC
++
++
++#ifdef __cplusplus
++} // extern "C" {
++#endif // #ifdef __cplusplus
+diff -Naru a/live/liveMedia/include/FileServerMediaSubsession.hh b/live/liveMedia/include/FileServerMediaSubsession.hh
+--- a/live/liveMedia/include/FileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/FileServerMediaSubsession.hh	2018-02-01 16:55:09.914778400 +0900
+@@ -29,7 +29,7 @@
+ #include "OnDemandServerMediaSubsession.hh"
+ #endif
+ 
+-class FileServerMediaSubsession: public OnDemandServerMediaSubsession {
++class LIVEMEDIA_API FileServerMediaSubsession: public OnDemandServerMediaSubsession {
+ protected: // we're a virtual base class
+   FileServerMediaSubsession(UsageEnvironment& env, char const* fileName,
+ 			    Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/FileSink.hh b/live/liveMedia/include/FileSink.hh
+--- a/live/liveMedia/include/FileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/FileSink.hh	2018-02-01 16:55:16.072797300 +0900
+@@ -25,7 +25,7 @@
+ #include "MediaSink.hh"
+ #endif
+ 
+-class FileSink: public MediaSink {
++class LIVEMEDIA_API FileSink: public MediaSink {
+ public:
+   static FileSink* createNew(UsageEnvironment& env, char const* fileName,
+ 			     unsigned bufferSize = 20000,
+diff -Naru a/live/liveMedia/include/FramedFileSource.hh b/live/liveMedia/include/FramedFileSource.hh
+--- a/live/liveMedia/include/FramedFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/FramedFileSource.hh	2018-02-01 16:55:22.575776200 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class FramedFileSource: public FramedSource {
++class LIVEMEDIA_API FramedFileSource: public FramedSource {
+ protected:
+   FramedFileSource(UsageEnvironment& env, FILE* fid); // abstract base class
+   virtual ~FramedFileSource();
+diff -Naru a/live/liveMedia/include/FramedFilter.hh b/live/liveMedia/include/FramedFilter.hh
+--- a/live/liveMedia/include/FramedFilter.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/FramedFilter.hh	2018-02-01 16:55:29.049769900 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class FramedFilter: public FramedSource {
++class LIVEMEDIA_API FramedFilter: public FramedSource {
+ public:
+   FramedSource* inputSource() const { return fInputSource; }
+ 
+diff -Naru a/live/liveMedia/include/FramedSource.hh b/live/liveMedia/include/FramedSource.hh
+--- a/live/liveMedia/include/FramedSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/FramedSource.hh	2018-02-01 16:55:35.099763000 +0900
+@@ -28,7 +28,7 @@
+ #include "MediaSource.hh"
+ #endif
+ 
+-class FramedSource: public MediaSource {
++class LIVEMEDIA_API FramedSource: public MediaSource {
+ public:
+   static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
+ 			      FramedSource*& resultSource);
+diff -Naru a/live/liveMedia/include/GenericMediaServer.hh b/live/liveMedia/include/GenericMediaServer.hh
+--- a/live/liveMedia/include/GenericMediaServer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/GenericMediaServer.hh	2018-02-01 16:55:44.784777900 +0900
+@@ -36,7 +36,7 @@
+ #define RESPONSE_BUFFER_SIZE 20000
+ #endif
+ 
+-class GenericMediaServer: public Medium {
++class LIVEMEDIA_API GenericMediaServer: public Medium {
+ public:
+   void addServerMediaSession(ServerMediaSession* serverMediaSession);
+ 
+@@ -167,7 +167,7 @@
+ 
+ // A data structure used for optional user/password authentication:
+ 
+-class UserAuthenticationDatabase {
++class LIVEMEDIA_API UserAuthenticationDatabase {
+ public:
+   UserAuthenticationDatabase(char const* realm = NULL,
+ 			     Boolean passwordsAreMD5 = False);
+diff -Naru a/live/liveMedia/include/GSMAudioRTPSink.hh b/live/liveMedia/include/GSMAudioRTPSink.hh
+--- a/live/liveMedia/include/GSMAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/GSMAudioRTPSink.hh	2018-02-01 16:55:50.840759100 +0900
+@@ -25,7 +25,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class GSMAudioRTPSink: public AudioRTPSink {
++class LIVEMEDIA_API GSMAudioRTPSink: public AudioRTPSink {
+ public:
+   static GSMAudioRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
+ 
+diff -Naru a/live/liveMedia/include/H261VideoRTPSource.hh b/live/liveMedia/include/H261VideoRTPSource.hh
+--- a/live/liveMedia/include/H261VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H261VideoRTPSource.hh	2018-02-01 16:55:58.432746700 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class H261VideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API H261VideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static H261VideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh b/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh	2018-02-01 16:56:04.072750000 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class H263plusVideoFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API H263plusVideoFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static H263plusVideoFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/H263plusVideoRTPSink.hh b/live/liveMedia/include/H263plusVideoRTPSink.hh
+--- a/live/liveMedia/include/H263plusVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H263plusVideoRTPSink.hh	2018-02-01 16:56:10.041762700 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class H263plusVideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API H263plusVideoRTPSink: public VideoRTPSink {
+ public:
+   static H263plusVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs,
+ 					 unsigned char rtpPayloadFormat,
+diff -Naru a/live/liveMedia/include/H263plusVideoRTPSource.hh b/live/liveMedia/include/H263plusVideoRTPSource.hh
+--- a/live/liveMedia/include/H263plusVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H263plusVideoRTPSource.hh	2018-02-01 16:56:16.137759200 +0900
+@@ -27,7 +27,7 @@
+ 
+ #define SPECIAL_HEADER_BUFFER_SIZE 1000
+ 
+-class H263plusVideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API H263plusVideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static H263plusVideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/H263plusVideoStreamFramer.hh b/live/liveMedia/include/H263plusVideoStreamFramer.hh
+--- a/live/liveMedia/include/H263plusVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H263plusVideoStreamFramer.hh	2018-02-01 16:56:23.640732000 +0900
+@@ -26,7 +26,7 @@
+ #endif
+ 
+ 
+-class H263plusVideoStreamFramer: public FramedFilter {
++class LIVEMEDIA_API H263plusVideoStreamFramer: public FramedFilter {
+ public:
+ 
+   static H263plusVideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/H264or5VideoFileSink.hh b/live/liveMedia/include/H264or5VideoFileSink.hh
+--- a/live/liveMedia/include/H264or5VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264or5VideoFileSink.hh	2018-02-01 16:56:29.518731400 +0900
+@@ -25,7 +25,7 @@
+ #include "FileSink.hh"
+ #endif
+ 
+-class H264or5VideoFileSink: public FileSink {
++class LIVEMEDIA_API H264or5VideoFileSink: public FileSink {
+ protected:
+   H264or5VideoFileSink(UsageEnvironment& env, FILE* fid,
+ 		       unsigned bufferSize, char const* perFrameFileNamePrefix,
+diff -Naru a/live/liveMedia/include/H264or5VideoRTPSink.hh b/live/liveMedia/include/H264or5VideoRTPSink.hh
+--- a/live/liveMedia/include/H264or5VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264or5VideoRTPSink.hh	2018-02-01 16:56:35.057747100 +0900
+@@ -28,7 +28,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class H264or5VideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API H264or5VideoRTPSink: public VideoRTPSink {
+ protected:
+   H264or5VideoRTPSink(int hNumber, // 264 or 265
+ 		      UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
+diff -Naru a/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh b/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh
+--- a/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh	2018-02-01 16:56:40.063726500 +0900
+@@ -28,7 +28,7 @@
+ #include "H264or5VideoStreamFramer.hh"
+ #endif
+ 
+-class H264or5VideoStreamDiscreteFramer: public H264or5VideoStreamFramer {
++class LIVEMEDIA_API H264or5VideoStreamDiscreteFramer: public H264or5VideoStreamFramer {
+ protected:
+   H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource);
+       // we're an abstract base class
+diff -Naru a/live/liveMedia/include/H264or5VideoStreamFramer.hh b/live/liveMedia/include/H264or5VideoStreamFramer.hh
+--- a/live/liveMedia/include/H264or5VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264or5VideoStreamFramer.hh	2018-02-01 16:56:46.026716700 +0900
+@@ -25,7 +25,7 @@
+ #include "MPEGVideoStreamFramer.hh"
+ #endif
+ 
+-class H264or5VideoStreamFramer: public MPEGVideoStreamFramer {
++class LIVEMEDIA_API H264or5VideoStreamFramer: public MPEGVideoStreamFramer {
+ public:
+   void getVPSandSPSandPPS(u_int8_t*& vps, unsigned& vpsSize,
+ 			  u_int8_t*& sps, unsigned& spsSize,
+diff -Naru a/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh b/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh	2018-02-01 16:56:51.841734800 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class H264VideoFileServerMediaSubsession: public FileServerMediaSubsession {
++class LIVEMEDIA_API H264VideoFileServerMediaSubsession: public FileServerMediaSubsession {
+ public:
+   static H264VideoFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/H264VideoFileSink.hh b/live/liveMedia/include/H264VideoFileSink.hh
+--- a/live/liveMedia/include/H264VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264VideoFileSink.hh	2018-02-01 16:56:58.375714800 +0900
+@@ -25,7 +25,7 @@
+ #include "H264or5VideoFileSink.hh"
+ #endif
+ 
+-class H264VideoFileSink: public H264or5VideoFileSink {
++class LIVEMEDIA_API H264VideoFileSink: public H264or5VideoFileSink {
+ public:
+   static H264VideoFileSink* createNew(UsageEnvironment& env, char const* fileName,
+ 				      char const* sPropParameterSetsStr = NULL,
+diff -Naru a/live/liveMedia/include/H264VideoRTPSink.hh b/live/liveMedia/include/H264VideoRTPSink.hh
+--- a/live/liveMedia/include/H264VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264VideoRTPSink.hh	2018-02-01 16:57:03.688704300 +0900
+@@ -25,7 +25,7 @@
+ #include "H264or5VideoRTPSink.hh"
+ #endif
+ 
+-class H264VideoRTPSink: public H264or5VideoRTPSink {
++class LIVEMEDIA_API H264VideoRTPSink: public H264or5VideoRTPSink {
+ public:
+   static H264VideoRTPSink*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+diff -Naru a/live/liveMedia/include/H264VideoRTPSource.hh b/live/liveMedia/include/H264VideoRTPSource.hh
+--- a/live/liveMedia/include/H264VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264VideoRTPSource.hh	2018-02-01 16:57:14.775704200 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class H264VideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API H264VideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static H264VideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+@@ -51,7 +51,7 @@
+   unsigned char fCurPacketNALUnitType;
+ };
+ 
+-class SPropRecord {
++class LIVEMEDIA_API SPropRecord {
+ public:
+   ~SPropRecord() { delete[] sPropBytes; }
+ 
+@@ -59,7 +59,7 @@
+   unsigned char* sPropBytes;
+ };
+ 
+-SPropRecord* parseSPropParameterSets(char const* sPropParameterSetsStr,
++LIVEMEDIA_API SPropRecord* parseSPropParameterSets(char const* sPropParameterSetsStr,
+ 				     // result parameter:
+ 				     unsigned& numSPropRecords);
+     // Returns the binary value of each 'parameter set' specified in a
+diff -Naru a/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh b/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh
+--- a/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh	2018-02-01 16:57:20.169716000 +0900
+@@ -28,7 +28,7 @@
+ #include "H264or5VideoStreamDiscreteFramer.hh"
+ #endif
+ 
+-class H264VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
++class LIVEMEDIA_API H264VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
+ public:
+   static H264VideoStreamDiscreteFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/H264VideoStreamFramer.hh b/live/liveMedia/include/H264VideoStreamFramer.hh
+--- a/live/liveMedia/include/H264VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H264VideoStreamFramer.hh	2018-02-01 16:57:25.673692600 +0900
+@@ -25,7 +25,7 @@
+ #include "H264or5VideoStreamFramer.hh"
+ #endif
+ 
+-class H264VideoStreamFramer: public H264or5VideoStreamFramer {
++class LIVEMEDIA_API H264VideoStreamFramer: public H264or5VideoStreamFramer {
+ public:
+   static H264VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
+ 					  Boolean includeStartCodeInOutput = False);
+diff -Naru a/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh b/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh	2018-02-01 16:57:31.415708400 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class H265VideoFileServerMediaSubsession: public FileServerMediaSubsession {
++class LIVEMEDIA_API H265VideoFileServerMediaSubsession: public FileServerMediaSubsession {
+ public:
+   static H265VideoFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/H265VideoFileSink.hh b/live/liveMedia/include/H265VideoFileSink.hh
+--- a/live/liveMedia/include/H265VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H265VideoFileSink.hh	2018-02-01 16:57:37.751681000 +0900
+@@ -25,7 +25,7 @@
+ #include "H264or5VideoFileSink.hh"
+ #endif
+ 
+-class H265VideoFileSink: public H264or5VideoFileSink {
++class LIVEMEDIA_API H265VideoFileSink: public H264or5VideoFileSink {
+ public:
+   static H265VideoFileSink* createNew(UsageEnvironment& env, char const* fileName,
+ 				      char const* sPropVPSStr = NULL,
+diff -Naru a/live/liveMedia/include/H265VideoRTPSink.hh b/live/liveMedia/include/H265VideoRTPSink.hh
+--- a/live/liveMedia/include/H265VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H265VideoRTPSink.hh	2018-02-01 16:57:43.391679600 +0900
+@@ -25,7 +25,7 @@
+ #include "H264or5VideoRTPSink.hh"
+ #endif
+ 
+-class H265VideoRTPSink: public H264or5VideoRTPSink {
++class LIVEMEDIA_API H265VideoRTPSink: public H264or5VideoRTPSink {
+ public:
+   static H265VideoRTPSink*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+diff -Naru a/live/liveMedia/include/H265VideoRTPSource.hh b/live/liveMedia/include/H265VideoRTPSource.hh
+--- a/live/liveMedia/include/H265VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H265VideoRTPSource.hh	2018-02-01 16:57:48.936697800 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class H265VideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API H265VideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static H265VideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh b/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh
+--- a/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh	2018-02-01 16:57:54.007672000 +0900
+@@ -28,7 +28,7 @@
+ #include "H264or5VideoStreamDiscreteFramer.hh"
+ #endif
+ 
+-class H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
++class LIVEMEDIA_API H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
+ public:
+   static H265VideoStreamDiscreteFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/H265VideoStreamFramer.hh b/live/liveMedia/include/H265VideoStreamFramer.hh
+--- a/live/liveMedia/include/H265VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/H265VideoStreamFramer.hh	2018-02-01 16:57:58.840670900 +0900
+@@ -25,7 +25,7 @@
+ #include "H264or5VideoStreamFramer.hh"
+ #endif
+ 
+-class H265VideoStreamFramer: public H264or5VideoStreamFramer {
++class LIVEMEDIA_API H265VideoStreamFramer: public H264or5VideoStreamFramer {
+ public:
+   static H265VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
+ 					  Boolean includeStartCodeInOutput = False);
+diff -Naru a/live/liveMedia/include/InputFile.hh b/live/liveMedia/include/InputFile.hh
+--- a/live/liveMedia/include/InputFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/InputFile.hh	2018-02-01 16:58:42.522639800 +0900
+@@ -46,22 +46,22 @@
+ #include <sys/stat.h>
+ #endif
+ 
+-FILE* OpenInputFile(UsageEnvironment& env, char const* fileName);
++LIVEMEDIA_API FILE* OpenInputFile(UsageEnvironment& env, char const* fileName);
+ 
+-void CloseInputFile(FILE* fid);
++LIVEMEDIA_API void CloseInputFile(FILE* fid);
+ 
+ #undef GetFileSize // because some platforms already define this as a macro
+-u_int64_t GetFileSize(char const* fileName, FILE* fid);
++LIVEMEDIA_API u_int64_t GetFileSize(char const* fileName, FILE* fid);
+     // 0 means zero-length, unbounded, or unknown
+ 
+-int64_t SeekFile64(FILE *fid, int64_t offset, int whence);
++LIVEMEDIA_API int64_t SeekFile64(FILE *fid, int64_t offset, int whence);
+     // A platform-independent routine for seeking within (possibly) large files
+ 
+-int64_t TellFile64(FILE *fid);
++LIVEMEDIA_API int64_t TellFile64(FILE *fid);
+     // A platform-independent routine for reporting the position within
+     // (possibly) large files
+ 
+-Boolean FileIsSeekable(FILE *fid);
++LIVEMEDIA_API Boolean FileIsSeekable(FILE *fid);
+     // Tests whether "fid" is seekable, by trying to seek within it.
+ 
+ #endif
+diff -Naru a/live/liveMedia/include/JPEGVideoRTPSink.hh b/live/liveMedia/include/JPEGVideoRTPSink.hh
+--- a/live/liveMedia/include/JPEGVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/JPEGVideoRTPSink.hh	2018-02-01 16:58:58.813629500 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class JPEGVideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API JPEGVideoRTPSink: public VideoRTPSink {
+ public:
+   static JPEGVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
+ 
+diff -Naru a/live/liveMedia/include/JPEGVideoRTPSource.hh b/live/liveMedia/include/JPEGVideoRTPSource.hh
+--- a/live/liveMedia/include/JPEGVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/JPEGVideoRTPSource.hh	2018-02-01 16:59:06.197624200 +0900
+@@ -27,7 +27,7 @@
+ 
+ #define MAX_JPEG_HEADER_SIZE 1024
+ 
+-class JPEGVideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API JPEGVideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static JPEGVideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/JPEGVideoSource.hh b/live/liveMedia/include/JPEGVideoSource.hh
+--- a/live/liveMedia/include/JPEGVideoSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/JPEGVideoSource.hh	2018-02-01 16:59:12.991619200 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class JPEGVideoSource: public FramedSource {
++class LIVEMEDIA_API JPEGVideoSource: public FramedSource {
+ public:
+   virtual u_int8_t type() = 0;
+   virtual u_int8_t qFactor() = 0;
+diff -Naru a/live/liveMedia/include/Locale.hh b/live/liveMedia/include/Locale.hh
+--- a/live/liveMedia/include/Locale.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/Locale.hh	2018-02-01 16:59:33.767612900 +0900
+@@ -51,7 +51,7 @@
+ 
+ enum LocaleCategory { All, Numeric }; // define and implement more categories later, as needed
+ 
+-class Locale {
++class LIVEMEDIA_API Locale {
+ public:
+   Locale(char const* newLocale, LocaleCategory category = All);
+   virtual ~Locale();
+diff -Naru a/live/liveMedia/include/MatroskaFile.hh b/live/liveMedia/include/MatroskaFile.hh
+--- a/live/liveMedia/include/MatroskaFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MatroskaFile.hh	2018-02-01 16:59:46.651599800 +0900
+@@ -31,7 +31,7 @@
+ class MatroskaTrack; // forward
+ class MatroskaDemux; // forward
+ 
+-class MatroskaFile: public Medium {
++class LIVEMEDIA_API MatroskaFile: public Medium {
+ public:
+   typedef void (onCreationFunc)(MatroskaFile* newFile, void* clientData);
+   static void createNew(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData,
+@@ -109,7 +109,7 @@
+ #define MATROSKA_TRACK_TYPE_SUBTITLE 0x04
+ #define MATROSKA_TRACK_TYPE_OTHER 0x08
+ 
+-class MatroskaTrack {
++class LIVEMEDIA_API MatroskaTrack {
+ public:
+   MatroskaTrack();
+   virtual ~MatroskaTrack();
+@@ -135,7 +135,7 @@
+   Boolean haveSubframes() const { return subframeSizeSize > 0; }
+ };
+ 
+-class MatroskaDemux: public Medium {
++class LIVEMEDIA_API MatroskaDemux: public Medium {
+ public:
+   FramedSource* newDemuxedTrack();
+   FramedSource* newDemuxedTrack(unsigned& resultTrackNumber);
+diff -Naru a/live/liveMedia/include/MatroskaFileServerDemux.hh b/live/liveMedia/include/MatroskaFileServerDemux.hh
+--- a/live/liveMedia/include/MatroskaFileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MatroskaFileServerDemux.hh	2018-02-01 16:59:54.000598800 +0900
+@@ -29,7 +29,7 @@
+ #include "MatroskaFile.hh"
+ #endif
+ 
+-class MatroskaFileServerDemux: public Medium {
++class LIVEMEDIA_API MatroskaFileServerDemux: public Medium {
+ public:
+   typedef void (onCreationFunc)(MatroskaFileServerDemux* newDemux, void* clientData);
+   static void createNew(UsageEnvironment& env, char const* fileName,
+diff -Naru a/live/liveMedia/include/Media.hh b/live/liveMedia/include/Media.hh
+--- a/live/liveMedia/include/Media.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/Media.hh	2018-02-01 17:00:06.176607900 +0900
+@@ -47,7 +47,7 @@
+ 
+ #define mediumNameMaxLen 30
+ 
+-class Medium {
++class LIVEMEDIA_API Medium {
+ public:
+   static Boolean lookupByName(UsageEnvironment& env,
+ 			      char const* mediumName,
+@@ -88,7 +88,7 @@
+ // A data structure for looking up a Medium by its string name.
+ // (It is used only to implement "Medium", but we make it visible here, in case developers want to use it to iterate over
+ //  the whole set of "Medium" objects that we've created.)
+-class MediaLookupTable {
++class LIVEMEDIA_API MediaLookupTable {
+ public:
+   static MediaLookupTable* ourMedia(UsageEnvironment& env);
+   HashTable const& getTable() { return *fTable; }
+diff -Naru a/live/liveMedia/include/MediaSession.hh b/live/liveMedia/include/MediaSession.hh
+--- a/live/liveMedia/include/MediaSession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MediaSession.hh	2018-02-01 17:00:24.491575400 +0900
+@@ -57,7 +57,7 @@
+ 
+ class MediaSubsession; // forward
+ 
+-class MediaSession: public Medium {
++class LIVEMEDIA_API MediaSession: public Medium {
+ public:
+   static MediaSession* createNew(UsageEnvironment& env,
+ 				 char const* sdpDescription);
+@@ -141,7 +141,7 @@
+ };
+ 
+ 
+-class MediaSubsessionIterator {
++class LIVEMEDIA_API MediaSubsessionIterator {
+ public:
+   MediaSubsessionIterator(MediaSession const& session);
+   virtual ~MediaSubsessionIterator();
+@@ -155,7 +155,7 @@
+ };
+ 
+ 
+-class MediaSubsession {
++class LIVEMEDIA_API MediaSubsession {
+ public:
+   MediaSession& parentSession() { return fParent; }
+   MediaSession const& parentSession() const { return fParent; }
+diff -Naru a/live/liveMedia/include/MediaSink.hh b/live/liveMedia/include/MediaSink.hh
+--- a/live/liveMedia/include/MediaSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MediaSink.hh	2018-02-01 17:00:34.314566600 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedSource.hh"
+ #endif
+ 
+-class MediaSink: public Medium {
++class LIVEMEDIA_API MediaSink: public Medium {
+ public:
+   static Boolean lookupByName(UsageEnvironment& env, char const* sinkName,
+ 			      MediaSink*& resultSink);
+@@ -68,7 +68,7 @@
+ };
+ 
+ // A data structure that a sink may use for an output packet:
+-class OutPacketBuffer {
++class LIVEMEDIA_API OutPacketBuffer {
+ public:
+   OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize,
+ 		  unsigned maxBufferSize = 0);
+diff -Naru a/live/liveMedia/include/MediaSource.hh b/live/liveMedia/include/MediaSource.hh
+--- a/live/liveMedia/include/MediaSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MediaSource.hh	2018-02-01 17:00:39.823585000 +0900
+@@ -25,7 +25,7 @@
+ #include "Media.hh"
+ #endif
+ 
+-class MediaSource: public Medium {
++class LIVEMEDIA_API MediaSource: public Medium {
+ public:
+   static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
+ 			      MediaSource*& resultSource);
+diff -Naru a/live/liveMedia/include/MediaTranscodingTable.hh b/live/liveMedia/include/MediaTranscodingTable.hh
+--- a/live/liveMedia/include/MediaTranscodingTable.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MediaTranscodingTable.hh	2018-02-01 17:00:46.336563800 +0900
+@@ -31,7 +31,7 @@
+ #include "MediaSession.hh"
+ #endif
+ 
+-class MediaTranscodingTable: public Medium {
++class LIVEMEDIA_API MediaTranscodingTable: public Medium {
+ public:
+   virtual FramedFilter*
+   lookupTranscoder(MediaSubsession& /*inputCodecDescription*/, // in
+diff -Naru a/live/liveMedia/include/MP3ADU.hh b/live/liveMedia/include/MP3ADU.hh
+--- a/live/liveMedia/include/MP3ADU.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3ADU.hh	2018-02-01 17:00:55.423573000 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class ADUFromMP3Source: public FramedFilter {
++class LIVEMEDIA_API ADUFromMP3Source: public FramedFilter {
+ public:
+   static ADUFromMP3Source* createNew(UsageEnvironment& env,
+ 				     FramedSource* inputSource,
+@@ -63,7 +63,7 @@
+   unsigned fFrameCounter;
+ };
+ 
+-class MP3FromADUSource: public FramedFilter {
++class LIVEMEDIA_API MP3FromADUSource: public FramedFilter {
+ public:
+   static MP3FromADUSource* createNew(UsageEnvironment& env,
+ 				     FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/MP3ADUinterleaving.hh b/live/liveMedia/include/MP3ADUinterleaving.hh
+--- a/live/liveMedia/include/MP3ADUinterleaving.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3ADUinterleaving.hh	2018-02-01 17:01:10.435565400 +0900
+@@ -27,7 +27,7 @@
+ 
+ // A data structure used to represent an interleaving
+ #define MAX_CYCLE_SIZE 256
+-class Interleaving {
++class LIVEMEDIA_API Interleaving {
+ public:
+   Interleaving(unsigned cycleSize, unsigned char const* cycleArray);
+   virtual ~Interleaving();
+@@ -44,7 +44,7 @@
+ 
+ // This class is used only as a base for the following two:
+ 
+-class MP3ADUinterleaverBase: public FramedFilter {
++class LIVEMEDIA_API MP3ADUinterleaverBase: public FramedFilter {
+ protected:
+   MP3ADUinterleaverBase(UsageEnvironment& env,
+ 			FramedSource* inputSource);
+@@ -66,7 +66,7 @@
+ // This class is used to convert an ADU sequence from non-interleaved
+ // to interleaved form:
+ 
+-class MP3ADUinterleaver: public MP3ADUinterleaverBase {
++class LIVEMEDIA_API MP3ADUinterleaver: public MP3ADUinterleaverBase {
+ public:
+   static MP3ADUinterleaver* createNew(UsageEnvironment& env,
+ 				      Interleaving const& interleaving,
+@@ -99,7 +99,7 @@
+ // This class is used to convert an ADU sequence from interleaved
+ // to non-interleaved form:
+ 
+-class MP3ADUdeinterleaver: public MP3ADUinterleaverBase {
++class LIVEMEDIA_API MP3ADUdeinterleaver: public MP3ADUinterleaverBase {
+ public:
+   static MP3ADUdeinterleaver* createNew(UsageEnvironment& env,
+ 					FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/MP3ADURTPSink.hh b/live/liveMedia/include/MP3ADURTPSink.hh
+--- a/live/liveMedia/include/MP3ADURTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3ADURTPSink.hh	2018-02-01 17:01:19.232561000 +0900
+@@ -25,7 +25,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class MP3ADURTPSink: public AudioRTPSink {
++class LIVEMEDIA_API MP3ADURTPSink: public AudioRTPSink {
+ public:
+   static MP3ADURTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs,
+ 				  unsigned char RTPPayloadType);
+diff -Naru a/live/liveMedia/include/MP3ADURTPSource.hh b/live/liveMedia/include/MP3ADURTPSource.hh
+--- a/live/liveMedia/include/MP3ADURTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3ADURTPSource.hh	2018-02-01 17:01:26.336538200 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class MP3ADURTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API MP3ADURTPSource: public MultiFramedRTPSource {
+ public:
+   static MP3ADURTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MP3ADUTranscoder.hh b/live/liveMedia/include/MP3ADUTranscoder.hh
+--- a/live/liveMedia/include/MP3ADUTranscoder.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3ADUTranscoder.hh	2018-02-01 17:01:32.191550400 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class MP3ADUTranscoder: public FramedFilter {
++class LIVEMEDIA_API MP3ADUTranscoder: public FramedFilter {
+ public:
+   static MP3ADUTranscoder* createNew(UsageEnvironment& env,
+ 				  unsigned outBitrate /* in kbps */,
+diff -Naru a/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh b/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh	2018-02-01 17:01:37.615525800 +0900
+@@ -33,7 +33,7 @@
+ #include "MP3ADU.hh"
+ #endif
+ 
+-class MP3AudioFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API MP3AudioFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static MP3AudioFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource,
+diff -Naru a/live/liveMedia/include/MP3FileSource.hh b/live/liveMedia/include/MP3FileSource.hh
+--- a/live/liveMedia/include/MP3FileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3FileSource.hh	2018-02-01 17:01:43.480541300 +0900
+@@ -27,7 +27,7 @@
+ 
+ class MP3StreamState; // forward
+ 
+-class MP3FileSource: public FramedFileSource {
++class LIVEMEDIA_API MP3FileSource: public FramedFileSource {
+ public:
+   static MP3FileSource* createNew(UsageEnvironment& env, char const* fileName);
+ 
+diff -Naru a/live/liveMedia/include/MP3Transcoder.hh b/live/liveMedia/include/MP3Transcoder.hh
+--- a/live/liveMedia/include/MP3Transcoder.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MP3Transcoder.hh	2018-02-01 17:01:50.824519300 +0900
+@@ -28,7 +28,7 @@
+ #include "MP3ADUTranscoder.hh"
+ #endif
+ 
+-class MP3Transcoder: public MP3FromADUSource {
++class LIVEMEDIA_API MP3Transcoder: public MP3FromADUSource {
+ public:
+   static MP3Transcoder* createNew(UsageEnvironment& env,
+ 				  unsigned outBitrate /* in kbps */,
+diff -Naru a/live/liveMedia/include/MPEG1or2AudioRTPSink.hh b/live/liveMedia/include/MPEG1or2AudioRTPSink.hh
+--- a/live/liveMedia/include/MPEG1or2AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2AudioRTPSink.hh	2018-02-01 17:01:56.455534200 +0900
+@@ -25,7 +25,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class MPEG1or2AudioRTPSink: public AudioRTPSink {
++class LIVEMEDIA_API MPEG1or2AudioRTPSink: public AudioRTPSink {
+ public:
+   static MPEG1or2AudioRTPSink* createNew(UsageEnvironment& env,
+ 				     Groupsock* RTPgs);
+diff -Naru a/live/liveMedia/include/MPEG1or2AudioRTPSource.hh b/live/liveMedia/include/MPEG1or2AudioRTPSource.hh
+--- a/live/liveMedia/include/MPEG1or2AudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2AudioRTPSource.hh	2018-02-01 17:02:01.688511400 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class MPEG1or2AudioRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API MPEG1or2AudioRTPSource: public MultiFramedRTPSource {
+ public:
+   static MPEG1or2AudioRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh b/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh
+--- a/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh	2018-02-01 17:02:07.159511500 +0900
+@@ -25,7 +25,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class MPEG1or2AudioStreamFramer: public FramedFilter {
++class LIVEMEDIA_API MPEG1or2AudioStreamFramer: public FramedFilter {
+ public:
+   static MPEG1or2AudioStreamFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh b/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh
+--- a/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh	2018-02-01 17:02:17.849496800 +0900
+@@ -25,7 +25,7 @@
+ #include "MPEG1or2Demux.hh"
+ #endif
+ 
+-class MPEG1or2DemuxedElementaryStream: public FramedSource {
++class LIVEMEDIA_API MPEG1or2DemuxedElementaryStream: public FramedSource {
+ public:
+   MPEG1or2Demux::SCR lastSeenSCR() const { return fLastSeenSCR; }
+ 
+diff -Naru a/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh b/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh
+--- a/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh	2018-02-01 17:02:23.073516000 +0900
+@@ -29,7 +29,7 @@
+ #include "MPEG1or2FileServerDemux.hh"
+ #endif
+ 
+-class MPEG1or2DemuxedServerMediaSubsession: public OnDemandServerMediaSubsession{
++class LIVEMEDIA_API MPEG1or2DemuxedServerMediaSubsession: public OnDemandServerMediaSubsession{
+ public:
+   static MPEG1or2DemuxedServerMediaSubsession*
+   createNew(MPEG1or2FileServerDemux& demux, u_int8_t streamIdTag,
+diff -Naru a/live/liveMedia/include/MPEG1or2Demux.hh b/live/liveMedia/include/MPEG1or2Demux.hh
+--- a/live/liveMedia/include/MPEG1or2Demux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2Demux.hh	2018-02-01 17:29:46.012420300 +0900
+@@ -27,7 +27,7 @@
+ 
+ class MPEG1or2DemuxedElementaryStream; // forward
+ 
+-class MPEG1or2Demux: public Medium {
++class LIVEMEDIA_API MPEG1or2Demux: public Medium {
+ public:
+   static MPEG1or2Demux* createNew(UsageEnvironment& env,
+ 				  FramedSource* inputSource,
+@@ -63,7 +63,7 @@
+ 
+   FramedSource* inputSource() const { return fInputSource; }
+ 
+-  class SCR {
++  class LIVEMEDIA_API SCR {
+   public:
+     SCR();
+ 
+diff -Naru a/live/liveMedia/include/MPEG1or2FileServerDemux.hh b/live/liveMedia/include/MPEG1or2FileServerDemux.hh
+--- a/live/liveMedia/include/MPEG1or2FileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2FileServerDemux.hh	2018-02-01 17:02:29.255512400 +0900
+@@ -28,7 +28,7 @@
+ #include "MPEG1or2DemuxedElementaryStream.hh"
+ #endif
+ 
+-class MPEG1or2FileServerDemux: public Medium {
++class LIVEMEDIA_API MPEG1or2FileServerDemux: public Medium {
+ public:
+   static MPEG1or2FileServerDemux*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh b/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh	2018-02-01 17:02:34.505507600 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class MPEG1or2VideoFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API MPEG1or2VideoFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static MPEG1or2VideoFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource,
+diff -Naru a/live/liveMedia/include/MPEG1or2VideoRTPSink.hh b/live/liveMedia/include/MPEG1or2VideoRTPSink.hh
+--- a/live/liveMedia/include/MPEG1or2VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2VideoRTPSink.hh	2018-02-01 17:02:40.441505500 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class MPEG1or2VideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API MPEG1or2VideoRTPSink: public VideoRTPSink {
+ public:
+   static MPEG1or2VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
+ 
+diff -Naru a/live/liveMedia/include/MPEG1or2VideoRTPSource.hh b/live/liveMedia/include/MPEG1or2VideoRTPSource.hh
+--- a/live/liveMedia/include/MPEG1or2VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2VideoRTPSource.hh	2018-02-01 17:02:45.840485200 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class MPEG1or2VideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API MPEG1or2VideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static MPEG1or2VideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh b/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh
+--- a/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh	2018-02-01 17:02:52.184481700 +0900
+@@ -30,7 +30,7 @@
+ 
+ #define VSH_MAX_SIZE 1000
+ 
+-class MPEG1or2VideoStreamDiscreteFramer: public MPEG1or2VideoStreamFramer {
++class LIVEMEDIA_API MPEG1or2VideoStreamDiscreteFramer: public MPEG1or2VideoStreamFramer {
+ public:
+   static MPEG1or2VideoStreamDiscreteFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh b/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh
+--- a/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh	2018-02-01 17:02:57.967478100 +0900
+@@ -26,7 +26,7 @@
+ #include "MPEGVideoStreamFramer.hh"
+ #endif
+ 
+-class MPEG1or2VideoStreamFramer: public MPEGVideoStreamFramer {
++class LIVEMEDIA_API MPEG1or2VideoStreamFramer: public MPEGVideoStreamFramer {
+ public:
+   static MPEG1or2VideoStreamFramer*
+       createNew(UsageEnvironment& env, FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/MPEG2IndexFromTransportStream.hh b/live/liveMedia/include/MPEG2IndexFromTransportStream.hh
+--- a/live/liveMedia/include/MPEG2IndexFromTransportStream.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2IndexFromTransportStream.hh	2018-02-01 17:03:04.217473300 +0900
+@@ -35,7 +35,7 @@
+ 
+ class IndexRecord; // forward
+ 
+-class MPEG2IFrameIndexFromTransportStream: public FramedFilter {
++class LIVEMEDIA_API MPEG2IFrameIndexFromTransportStream: public FramedFilter {
+ public:
+   static MPEG2IFrameIndexFromTransportStream*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh b/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh	2018-02-01 17:03:18.552464700 +0900
+@@ -40,7 +40,7 @@
+ 
+ class ClientTrickPlayState; // forward
+ 
+-class MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession {
++class LIVEMEDIA_API MPEG2TransportFileServerMediaSubsession: public FileServerMediaSubsession {
+ public:
+   static MPEG2TransportFileServerMediaSubsession*
+   createNew(UsageEnvironment& env,
+@@ -99,7 +99,7 @@
+ // It is used only within the implementation of "MPEG2TransportFileServerMediaSubsession", but is included here,
+ // in case subclasses of "MPEG2TransportFileServerMediaSubsession" want to use it.
+ 
+-class ClientTrickPlayState {
++class LIVEMEDIA_API ClientTrickPlayState {
+ public:
+   ClientTrickPlayState(MPEG2TransportStreamIndexFile* indexFile);
+ 
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh b/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh	2018-02-01 17:03:30.603472100 +0900
+@@ -26,7 +26,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class MPEG2TransportStreamAccumulator: public FramedFilter {
++class LIVEMEDIA_API MPEG2TransportStreamAccumulator: public FramedFilter {
+ public:
+   static MPEG2TransportStreamAccumulator* createNew(UsageEnvironment& env,
+ 						    FramedSource* inputSource,
+@@ -69,7 +69,7 @@
+ #include "MP3ADUTranscoder.hh"
+ #endif
+ 
+-class MP3Transcoder: public MP3FromADUSource {
++class LIVEMEDIA_API MP3Transcoder: public MP3FromADUSource {
+ public:
+   static MP3Transcoder* createNew(UsageEnvironment& env,
+ 				  unsigned outBitrate /* in kbps */,
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFramer.hh b/live/liveMedia/include/MPEG2TransportStreamFramer.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamFramer.hh	2018-02-01 17:03:39.713468600 +0900
+@@ -31,7 +31,7 @@
+ #include "HashTable.hh"
+ #endif
+ 
+-class MPEG2TransportStreamFramer: public FramedFilter {
++class LIVEMEDIA_API MPEG2TransportStreamFramer: public FramedFilter {
+ public:
+   static MPEG2TransportStreamFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh b/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh	2018-02-01 17:03:46.824446000 +0900
+@@ -26,7 +26,7 @@
+ #include "MPEG2TransportStreamMultiplexor.hh"
+ #endif
+ 
+-class MPEG2TransportStreamFromESSource: public MPEG2TransportStreamMultiplexor {
++class LIVEMEDIA_API MPEG2TransportStreamFromESSource: public MPEG2TransportStreamMultiplexor {
+ public:
+   static MPEG2TransportStreamFromESSource* createNew(UsageEnvironment& env);
+ 
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh b/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh	2018-02-01 17:03:52.882436500 +0900
+@@ -28,7 +28,7 @@
+ #include "MPEG1or2DemuxedElementaryStream.hh"
+ #endif
+ 
+-class MPEG2TransportStreamFromPESSource: public MPEG2TransportStreamMultiplexor {
++class LIVEMEDIA_API MPEG2TransportStreamFromPESSource: public MPEG2TransportStreamMultiplexor {
+ public:
+   static MPEG2TransportStreamFromPESSource*
+   createNew(UsageEnvironment& env, MPEG1or2DemuxedElementaryStream* inputSource);
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh b/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh	2018-02-01 17:03:59.944438700 +0900
+@@ -30,7 +30,7 @@
+ 
+ #define INDEX_RECORD_SIZE 11
+ 
+-class MPEG2TransportStreamIndexFile: public Medium {
++class LIVEMEDIA_API MPEG2TransportStreamIndexFile: public Medium {
+ public:
+   static MPEG2TransportStreamIndexFile* createNew(UsageEnvironment& env,
+ 						  char const* indexFileName);
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh b/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh	2018-02-01 17:04:06.113428900 +0900
+@@ -31,7 +31,7 @@
+ 
+ #define PID_TABLE_SIZE 256
+ 
+-class MPEG2TransportStreamMultiplexor: public FramedSource {
++class LIVEMEDIA_API MPEG2TransportStreamMultiplexor: public FramedSource {
+ public:
+   Boolean canDeliverNewFrameImmediately() const { return fInputBufferBytesUsed < fInputBufferSize; }
+       // Can be used by a downstream reader to test whether the next call to "doGetNextFrame()"
+diff -Naru a/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh b/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh
+--- a/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh	2018-02-01 17:04:13.272425000 +0900
+@@ -35,7 +35,7 @@
+ #define TRANSPORT_PACKET_SIZE 188
+ #endif
+ 
+-class MPEG2TransportStreamTrickModeFilter: public FramedFilter {
++class LIVEMEDIA_API MPEG2TransportStreamTrickModeFilter: public FramedFilter {
+ public:
+   static MPEG2TransportStreamTrickModeFilter*
+   createNew(UsageEnvironment& env, FramedSource* inputSource,
+diff -Naru a/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh b/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh
+--- a/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh	2018-02-01 17:04:18.849417600 +0900
+@@ -26,7 +26,7 @@
+ #include "OnDemandServerMediaSubsession.hh"
+ #endif
+ 
+-class MPEG2TransportUDPServerMediaSubsession: public OnDemandServerMediaSubsession {
++class LIVEMEDIA_API MPEG2TransportUDPServerMediaSubsession: public OnDemandServerMediaSubsession {
+ public:
+   static MPEG2TransportUDPServerMediaSubsession*
+   createNew(UsageEnvironment& env,
+diff -Naru a/live/liveMedia/include/MPEG4ESVideoRTPSink.hh b/live/liveMedia/include/MPEG4ESVideoRTPSink.hh
+--- a/live/liveMedia/include/MPEG4ESVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4ESVideoRTPSink.hh	2018-02-01 17:04:24.520413500 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class MPEG4ESVideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API MPEG4ESVideoRTPSink: public VideoRTPSink {
+ public:
+   static MPEG4ESVideoRTPSink* createNew(UsageEnvironment& env,
+ 					Groupsock* RTPgs, unsigned char rtpPayloadFormat,
+diff -Naru a/live/liveMedia/include/MPEG4ESVideoRTPSource.hh b/live/liveMedia/include/MPEG4ESVideoRTPSource.hh
+--- a/live/liveMedia/include/MPEG4ESVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4ESVideoRTPSource.hh	2018-02-01 17:04:30.287417300 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class MPEG4ESVideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API MPEG4ESVideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static MPEG4ESVideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG4GenericRTPSink.hh b/live/liveMedia/include/MPEG4GenericRTPSink.hh
+--- a/live/liveMedia/include/MPEG4GenericRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4GenericRTPSink.hh	2018-02-01 17:04:35.704408700 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSink.hh"
+ #endif
+ 
+-class MPEG4GenericRTPSink: public MultiFramedRTPSink {
++class LIVEMEDIA_API MPEG4GenericRTPSink: public MultiFramedRTPSink {
+ public:
+   static MPEG4GenericRTPSink*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG4GenericRTPSource.hh b/live/liveMedia/include/MPEG4GenericRTPSource.hh
+--- a/live/liveMedia/include/MPEG4GenericRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4GenericRTPSource.hh	2018-02-01 17:04:43.016405500 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class MPEG4GenericRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API MPEG4GenericRTPSource: public MultiFramedRTPSource {
+ public:
+   static MPEG4GenericRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh b/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh
+--- a/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh	2018-02-01 17:04:49.842398700 +0900
+@@ -27,7 +27,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class MPEG4LATMAudioRTPSink: public AudioRTPSink {
++class LIVEMEDIA_API MPEG4LATMAudioRTPSink: public AudioRTPSink {
+ public:
+   static MPEG4LATMAudioRTPSink* createNew(UsageEnvironment& env,
+ 					  Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh b/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh
+--- a/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh	2018-02-01 17:05:00.216413800 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class MPEG4LATMAudioRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API MPEG4LATMAudioRTPSource: public MultiFramedRTPSource {
+ public:
+   static MPEG4LATMAudioRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh b/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh	2018-02-01 17:05:07.368407900 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class MPEG4VideoFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API MPEG4VideoFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static MPEG4VideoFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
+diff -Naru a/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh b/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh
+--- a/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh	2018-02-01 17:05:13.656402700 +0900
+@@ -28,7 +28,7 @@
+ #include "MPEG4VideoStreamFramer.hh"
+ #endif
+ 
+-class MPEG4VideoStreamDiscreteFramer: public MPEG4VideoStreamFramer {
++class LIVEMEDIA_API MPEG4VideoStreamDiscreteFramer: public MPEG4VideoStreamFramer {
+ public:
+   static MPEG4VideoStreamDiscreteFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean leavePresentationTimesUnmodified = False);
+diff -Naru a/live/liveMedia/include/MPEG4VideoStreamFramer.hh b/live/liveMedia/include/MPEG4VideoStreamFramer.hh
+--- a/live/liveMedia/include/MPEG4VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEG4VideoStreamFramer.hh	2018-02-01 17:05:20.192377400 +0900
+@@ -30,7 +30,7 @@
+ #include "MPEGVideoStreamFramer.hh"
+ #endif
+ 
+-class MPEG4VideoStreamFramer: public MPEGVideoStreamFramer {
++class LIVEMEDIA_API MPEG4VideoStreamFramer: public MPEGVideoStreamFramer {
+ public:
+   static MPEG4VideoStreamFramer*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+diff -Naru a/live/liveMedia/include/MPEGVideoStreamFramer.hh b/live/liveMedia/include/MPEGVideoStreamFramer.hh
+--- a/live/liveMedia/include/MPEGVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MPEGVideoStreamFramer.hh	2018-02-01 17:05:29.859378400 +0900
+@@ -26,7 +26,7 @@
+ #include "FramedFilter.hh"
+ #endif
+ 
+-class TimeCode {
++class LIVEMEDIA_API TimeCode {
+ public:
+   TimeCode();
+   virtual ~TimeCode();
+@@ -35,7 +35,7 @@
+   unsigned days, hours, minutes, seconds, pictures;
+ };
+ 
+-class MPEGVideoStreamFramer: public FramedFilter {
++class LIVEMEDIA_API MPEGVideoStreamFramer: public FramedFilter {
+ public:
+   Boolean& pictureEndMarker() { return fPictureEndMarker; }
+       // a hack for implementing the RTP 'M' bit
+diff -Naru a/live/liveMedia/include/MultiFramedRTPSink.hh b/live/liveMedia/include/MultiFramedRTPSink.hh
+--- a/live/liveMedia/include/MultiFramedRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MultiFramedRTPSink.hh	2018-02-01 17:05:36.344373600 +0900
+@@ -26,7 +26,7 @@
+ #include "RTPSink.hh"
+ #endif
+ 
+-class MultiFramedRTPSink: public RTPSink {
++class LIVEMEDIA_API MultiFramedRTPSink: public RTPSink {
+ public:
+   void setPacketSizes(unsigned preferredPacketSize, unsigned maxPacketSize);
+ 
+diff -Naru a/live/liveMedia/include/MultiFramedRTPSource.hh b/live/liveMedia/include/MultiFramedRTPSource.hh
+--- a/live/liveMedia/include/MultiFramedRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/MultiFramedRTPSource.hh	2018-02-01 17:30:10.833404100 +0900
+@@ -29,7 +29,7 @@
+ class BufferedPacket; // forward
+ class BufferedPacketFactory; // forward
+ 
+-class MultiFramedRTPSource: public RTPSource {
++class LIVEMEDIA_API MultiFramedRTPSource: public RTPSource {
+ protected:
+   MultiFramedRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
+ 		       unsigned char rtpPayloadFormat,
+@@ -83,7 +83,7 @@
+ // Note that this can be subclassed - if desired - to redefine
+ // "nextEnclosedFrameSize()".
+ 
+-class BufferedPacket {
++class LIVEMEDIA_API BufferedPacket {
+ public:
+   BufferedPacket();
+   virtual ~BufferedPacket();
+@@ -148,7 +148,7 @@
+ // If you want to subclass "BufferedPacket", then you'll also
+ // want to subclass this, to redefine createNewPacket()
+ 
+-class BufferedPacketFactory {
++class LIVEMEDIA_API BufferedPacketFactory {
+ public:
+   BufferedPacketFactory();
+   virtual ~BufferedPacketFactory();
+diff -Naru a/live/liveMedia/include/OggFile.hh b/live/liveMedia/include/OggFile.hh
+--- a/live/liveMedia/include/OggFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/OggFile.hh	2018-02-01 17:05:56.489377200 +0900
+@@ -31,7 +31,7 @@
+ class OggTrack; // forward
+ class OggDemux; // forward
+ 
+-class OggFile: public Medium {
++class LIVEMEDIA_API OggFile: public Medium {
+ public:
+   typedef void (onCreationFunc)(OggFile* newFile, void* clientData);
+   static void createNew(UsageEnvironment& env, char const* fileName,
+@@ -87,7 +87,7 @@
+   class OggFileParser* fParserForInitialization;
+ };
+ 
+-class OggTrack {
++class LIVEMEDIA_API OggTrack {
+ public:
+   OggTrack();
+   virtual ~OggTrack();
+@@ -126,7 +126,7 @@
+     }
+ };
+ 
+-class OggTrackTableIterator {
++class LIVEMEDIA_API OggTrackTableIterator {
+ public:
+   OggTrackTableIterator(class OggTrackTable& ourTable);
+   virtual ~OggTrackTableIterator();
+@@ -137,7 +137,7 @@
+   HashTable::Iterator* fIter;
+ };
+ 
+-class OggDemux: public Medium {
++class LIVEMEDIA_API OggDemux: public Medium {
+ public:
+   FramedSource* newDemuxedTrack(u_int32_t& resultTrackNumber);
+     // Returns a new stream ("FramedSource" subclass) that represents the next media track
+diff -Naru a/live/liveMedia/include/OggFileServerDemux.hh b/live/liveMedia/include/OggFileServerDemux.hh
+--- a/live/liveMedia/include/OggFileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/OggFileServerDemux.hh	2018-02-01 17:06:03.988372100 +0900
+@@ -29,7 +29,7 @@
+ #include "OggFile.hh"
+ #endif
+ 
+-class OggFileServerDemux: public Medium {
++class LIVEMEDIA_API OggFileServerDemux: public Medium {
+ public:
+   typedef void (onCreationFunc)(OggFileServerDemux* newDemux, void* clientData);
+   static void createNew(UsageEnvironment& env, char const* fileName,
+diff -Naru a/live/liveMedia/include/OggFileSink.hh b/live/liveMedia/include/OggFileSink.hh
+--- a/live/liveMedia/include/OggFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/OggFileSink.hh	2018-02-01 17:06:11.688367400 +0900
+@@ -25,7 +25,7 @@
+ #include "FileSink.hh"
+ #endif
+ 
+-class OggFileSink: public FileSink {
++class LIVEMEDIA_API OggFileSink: public FileSink {
+ public:
+   static OggFileSink* createNew(UsageEnvironment& env, char const* fileName,
+ 				unsigned samplingFrequency = 0, // used for granule_position
+diff -Naru a/live/liveMedia/include/OnDemandServerMediaSubsession.hh b/live/liveMedia/include/OnDemandServerMediaSubsession.hh
+--- a/live/liveMedia/include/OnDemandServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/OnDemandServerMediaSubsession.hh	2018-02-01 17:06:24.529357000 +0900
+@@ -35,7 +35,7 @@
+ #include "RTCP.hh"
+ #endif
+ 
+-class OnDemandServerMediaSubsession: public ServerMediaSubsession {
++class LIVEMEDIA_API OnDemandServerMediaSubsession: public ServerMediaSubsession {
+ protected: // we're a virtual base class
+   OnDemandServerMediaSubsession(UsageEnvironment& env, Boolean reuseFirstSource,
+ 				portNumBits initialPortNum = 6970,
+@@ -150,7 +150,7 @@
+ // "OnDemandServerMediaSubsession", but we expose the definition here, in case subclasses of "OnDemandServerMediaSubsession"
+ // want to access it.
+ 
+-class Destinations {
++class LIVEMEDIA_API Destinations {
+ public:
+   Destinations(struct in_addr const& destAddr,
+                Port const& rtpDestPort,
+@@ -171,7 +171,7 @@
+   unsigned char rtpChannelId, rtcpChannelId;
+ };
+ 
+-class StreamState {
++class LIVEMEDIA_API StreamState {
+ public:
+   StreamState(OnDemandServerMediaSubsession& master,
+               Port const& serverRTPPort, Port const& serverRTCPPort,
+diff -Naru a/live/liveMedia/include/OutputFile.hh b/live/liveMedia/include/OutputFile.hh
+--- a/live/liveMedia/include/OutputFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/OutputFile.hh	2018-02-01 17:06:39.873347300 +0900
+@@ -24,8 +24,8 @@
+ #include <UsageEnvironment.hh>
+ #include <stdio.h>
+ 
+-FILE* OpenOutputFile(UsageEnvironment& env, char const* fileName);
++LIVEMEDIA_API FILE* OpenOutputFile(UsageEnvironment& env, char const* fileName);
+ 
+-void CloseOutputFile(FILE* fid);
++LIVEMEDIA_API void CloseOutputFile(FILE* fid);
+ 
+ #endif
+diff -Naru a/live/liveMedia/include/PassiveServerMediaSubsession.hh b/live/liveMedia/include/PassiveServerMediaSubsession.hh
+--- a/live/liveMedia/include/PassiveServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/PassiveServerMediaSubsession.hh	2018-02-01 17:06:48.889321100 +0900
+@@ -33,7 +33,7 @@
+ #include "RTCP.hh"
+ #endif
+ 
+-class PassiveServerMediaSubsession: public ServerMediaSubsession {
++class LIVEMEDIA_API PassiveServerMediaSubsession: public ServerMediaSubsession {
+ public:
+   static PassiveServerMediaSubsession* createNew(RTPSink& rtpSink,
+ 						 RTCPInstance* rtcpInstance = NULL);
+diff -Naru a/live/liveMedia/include/ProxyServerMediaSession.hh b/live/liveMedia/include/ProxyServerMediaSession.hh
+--- a/live/liveMedia/include/ProxyServerMediaSession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ProxyServerMediaSession.hh	2018-02-01 17:07:03.753329300 +0900
+@@ -39,7 +39,7 @@
+ // It is used only within the implementation of "ProxyServerMediaSession", but is defined here, in case developers wish to
+ // subclass it.
+ 
+-class ProxyRTSPClient: public RTSPClient {
++class LIVEMEDIA_API ProxyRTSPClient: public RTSPClient {
+ public:
+   ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
+                   char const* username, char const* password,
+@@ -97,7 +97,7 @@
+ 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+ 				    int socketNumToServer);
+ 
+-class ProxyServerMediaSession: public ServerMediaSession {
++class LIVEMEDIA_API ProxyServerMediaSession: public ServerMediaSession {
+ public:
+   static ProxyServerMediaSession* createNew(UsageEnvironment& env,
+ 					    GenericMediaServer* ourMediaServer, // Note: We can be used by just one server
+@@ -182,7 +182,7 @@
+ // (For multi-subsession (i.e., audio+video) sessions, the outgoing streams' presentation times retain the same relative
+ //  separation as those of the incoming streams.)
+ 
+-class PresentationTimeSubsessionNormalizer: public FramedFilter {
++class LIVEMEDIA_API PresentationTimeSubsessionNormalizer: public FramedFilter {
+ public:
+   void setRTPSink(RTPSink* rtpSink) { fRTPSink = rtpSink; }
+ 
+@@ -213,7 +213,7 @@
+   PresentationTimeSubsessionNormalizer* fNext;
+ };
+ 
+-class PresentationTimeSessionNormalizer: public Medium {
++class LIVEMEDIA_API PresentationTimeSessionNormalizer: public Medium {
+ public:
+   PresentationTimeSessionNormalizer(UsageEnvironment& env);
+   virtual ~PresentationTimeSessionNormalizer();
+diff -Naru a/live/liveMedia/include/QCELPAudioRTPSource.hh b/live/liveMedia/include/QCELPAudioRTPSource.hh
+--- a/live/liveMedia/include/QCELPAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/QCELPAudioRTPSource.hh	2018-02-01 17:07:16.439302000 +0900
+@@ -25,7 +25,7 @@
+ #include "RTPSource.hh"
+ #endif
+ 
+-class QCELPAudioRTPSource {
++class LIVEMEDIA_API QCELPAudioRTPSource {
+ public:
+   static FramedSource* createNew(UsageEnvironment& env,
+ 				 Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/QuickTimeFileSink.hh b/live/liveMedia/include/QuickTimeFileSink.hh
+--- a/live/liveMedia/include/QuickTimeFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/QuickTimeFileSink.hh	2018-02-01 17:07:27.263301100 +0900
+@@ -25,7 +25,7 @@
+ #include "MediaSession.hh"
+ #endif
+ 
+-class QuickTimeFileSink: public Medium {
++class LIVEMEDIA_API QuickTimeFileSink: public Medium {
+ public:
+   static QuickTimeFileSink* createNew(UsageEnvironment& env,
+ 				      MediaSession& inputSession,
+diff -Naru a/live/liveMedia/include/QuickTimeGenericRTPSource.hh b/live/liveMedia/include/QuickTimeGenericRTPSource.hh
+--- a/live/liveMedia/include/QuickTimeGenericRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/QuickTimeGenericRTPSource.hh	2018-02-01 17:07:33.185293700 +0900
+@@ -26,7 +26,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class QuickTimeGenericRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API QuickTimeGenericRTPSource: public MultiFramedRTPSource {
+ public:
+   static QuickTimeGenericRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/RTCP.hh b/live/liveMedia/include/RTCP.hh
+--- a/live/liveMedia/include/RTCP.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTCP.hh	2018-02-01 17:07:41.361293100 +0900
+@@ -28,7 +28,7 @@
+ #include "RTPSource.hh"
+ #endif
+ 
+-class SDESItem {
++class LIVEMEDIA_API SDESItem {
+ public:
+   SDESItem(unsigned char tag, unsigned char const* value);
+ 
+@@ -45,7 +45,7 @@
+ 
+ class RTCPMemberDatabase; // forward
+ 
+-class RTCPInstance: public Medium {
++class LIVEMEDIA_API RTCPInstance: public Medium {
+ public:
+   static RTCPInstance* createNew(UsageEnvironment& env, Groupsock* RTCPgs,
+ 				 unsigned totSessionBW, /* in kbps */
+diff -Naru a/live/liveMedia/include/RTPInterface.hh b/live/liveMedia/include/RTPInterface.hh
+--- a/live/liveMedia/include/RTPInterface.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTPInterface.hh	2018-02-01 17:08:05.313276000 +0900
+@@ -40,7 +40,7 @@
+ // the same TCP connection.  A RTSP server implementation would supply a function like this - as a parameter to
+ // "ServerMediaSubsession::startStream()".
+ 
+-class tcpStreamRecord {
++class LIVEMEDIA_API tcpStreamRecord {
+ public:
+   tcpStreamRecord(int streamSocketNum, unsigned char streamChannelId,
+ 		  tcpStreamRecord* next);
+@@ -52,7 +52,7 @@
+   unsigned char fStreamChannelId;
+ };
+ 
+-class RTPInterface {
++class LIVEMEDIA_API RTPInterface {
+ public:
+   RTPInterface(Medium* owner, Groupsock* gs);
+   virtual ~RTPInterface();
+diff -Naru a/live/liveMedia/include/RTPSink.hh b/live/liveMedia/include/RTPSink.hh
+--- a/live/liveMedia/include/RTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTPSink.hh	2018-02-01 17:08:37.369252800 +0900
+@@ -30,7 +30,7 @@
+ 
+ class RTPTransmissionStatsDB; // forward
+ 
+-class RTPSink: public MediaSink {
++class LIVEMEDIA_API RTPSink: public MediaSink {
+ public:
+   static Boolean lookupByName(UsageEnvironment& env, char const* sinkName,
+ 			      RTPSink*& resultSink);
+@@ -134,7 +134,7 @@
+ 
+ class RTPTransmissionStats; // forward
+ 
+-class RTPTransmissionStatsDB {
++class LIVEMEDIA_API RTPTransmissionStatsDB {
+ public:
+   unsigned numReceivers() const { return fNumReceivers; }
+ 
+@@ -175,7 +175,7 @@
+   HashTable* fTable;
+ };
+ 
+-class RTPTransmissionStats {
++class LIVEMEDIA_API RTPTransmissionStats {
+ public:
+   u_int32_t SSRC() const {return fSSRC;}
+   struct sockaddr_in const& lastFromAddress() const {return fLastFromAddress;}
+diff -Naru a/live/liveMedia/include/RTPSource.hh b/live/liveMedia/include/RTPSource.hh
+--- a/live/liveMedia/include/RTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTPSource.hh	2018-02-01 17:09:00.889235500 +0900
+@@ -30,7 +30,7 @@
+ 
+ class RTPReceptionStatsDB; // forward
+ 
+-class RTPSource: public FramedSource {
++class LIVEMEDIA_API RTPSource: public FramedSource {
+ public:
+   static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
+ 			      RTPSource*& resultSource);
+@@ -116,7 +116,7 @@
+ 
+ class RTPReceptionStats; // forward
+ 
+-class RTPReceptionStatsDB {
++class LIVEMEDIA_API RTPReceptionStatsDB {
+ public:
+   unsigned totNumPacketsReceived() const { return fTotNumPacketsReceived; }
+   unsigned numActiveSourcesSinceLastReset() const {
+@@ -127,7 +127,7 @@
+       // resets periodic stats (called each time they're used to
+       // generate a reception report)
+ 
+-  class Iterator {
++  class LIVEMEDIA_API Iterator {
+   public:
+     Iterator(RTPReceptionStatsDB& receptionStatsDB);
+     virtual ~Iterator();
+@@ -175,7 +175,7 @@
+   unsigned fTotNumPacketsReceived; // for all SSRCs
+ };
+ 
+-class RTPReceptionStats {
++class LIVEMEDIA_API RTPReceptionStats {
+ public:
+   u_int32_t SSRC() const { return fSSRC; }
+   unsigned numPacketsReceivedSinceLastReset() const {
+@@ -260,7 +260,7 @@
+ };
+ 
+ 
+-Boolean seqNumLT(u_int16_t s1, u_int16_t s2);
++LIVEMEDIA_API Boolean seqNumLT(u_int16_t s1, u_int16_t s2);
+   // a 'less-than' on 16-bit sequence numbers
+ 
+ #endif
+diff -Naru a/live/liveMedia/include/RTSPClient.hh b/live/liveMedia/include/RTSPClient.hh
+--- a/live/liveMedia/include/RTSPClient.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTSPClient.hh	2018-02-01 17:09:33.820211200 +0900
+@@ -36,7 +36,7 @@
+ #endif
+ #endif
+ 
+-class RTSPClient: public Medium {
++class LIVEMEDIA_API RTSPClient: public Medium {
+ public:
+   static RTSPClient* createNew(UsageEnvironment& env, char const* rtspURL,
+ 			       int verbosityLevel = 0,
+@@ -251,7 +251,7 @@
+   virtual Boolean isRTSPClient() const;
+ 
+ private:
+-  class RequestQueue {
++  class LIVEMEDIA_API RequestQueue {
+   public:
+     RequestQueue();
+     RequestQueue(RequestQueue& origQueue); // moves the queue contents to the new queue
+diff -Naru a/live/liveMedia/include/RTSPCommon.hh b/live/liveMedia/include/RTSPCommon.hh
+--- a/live/liveMedia/include/RTSPCommon.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTSPCommon.hh	2018-02-01 17:09:52.448220900 +0900
+@@ -38,7 +38,7 @@
+ 
+ #define RTSP_PARAM_STRING_MAX 200
+ 
+-Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
++LIVEMEDIA_API Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
+ 			       char *resultCmdName,
+ 			       unsigned resultCmdNameMaxSize,
+ 			       char* resultURLPreSuffix,
+@@ -51,15 +51,15 @@
+ 			       unsigned resultSessionIdMaxSize,
+ 			       unsigned& contentLength);
+ 
+-Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
+-Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
++LIVEMEDIA_API Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
++LIVEMEDIA_API Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
+ 
+-Boolean parseScaleHeader(char const* buf, float& scale);
++LIVEMEDIA_API Boolean parseScaleHeader(char const* buf, float& scale);
+ 
+-Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
++LIVEMEDIA_API Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
+     // Returns True iff the RTSP command "commandName" is mentioned as one of the commands supported in "optionsResponseString"
+     // (which should be the 'resultString' from a previous RTSP "OPTIONS" request).
+ 
+-char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
++LIVEMEDIA_API char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
+ 
+ #endif
+diff -Naru a/live/liveMedia/include/RTSPRegisterSender.hh b/live/liveMedia/include/RTSPRegisterSender.hh
+--- a/live/liveMedia/include/RTSPRegisterSender.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTSPRegisterSender.hh	2018-02-01 17:10:04.225213600 +0900
+@@ -26,7 +26,7 @@
+ #include "RTSPClient.hh"
+ #endif
+ 
+-class RTSPRegisterOrDeregisterSender: public RTSPClient {
++class LIVEMEDIA_API RTSPRegisterOrDeregisterSender: public RTSPClient {
+ public:
+   virtual ~RTSPRegisterOrDeregisterSender();
+ protected: // we're a virtual base class
+@@ -55,7 +55,7 @@
+ 
+ //////////
+ 
+-class RTSPRegisterSender: public RTSPRegisterOrDeregisterSender {
++class LIVEMEDIA_API RTSPRegisterSender: public RTSPRegisterOrDeregisterSender {
+ public:
+   static RTSPRegisterSender*
+   createNew(UsageEnvironment& env,
+@@ -100,7 +100,7 @@
+ 
+ //////////
+ 
+-class RTSPDeregisterSender: public RTSPRegisterOrDeregisterSender {
++class LIVEMEDIA_API RTSPDeregisterSender: public RTSPRegisterOrDeregisterSender {
+ public:
+   static RTSPDeregisterSender*
+   createNew(UsageEnvironment& env,
+diff -Naru a/live/liveMedia/include/RTSPServer.hh b/live/liveMedia/include/RTSPServer.hh
+--- a/live/liveMedia/include/RTSPServer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTSPServer.hh	2018-02-01 17:10:15.781184400 +0900
+@@ -28,7 +28,7 @@
+ #include "DigestAuthentication.hh"
+ #endif
+ 
+-class RTSPServer: public GenericMediaServer {
++class LIVEMEDIA_API RTSPServer: public GenericMediaServer {
+ public:
+   static RTSPServer* createNew(UsageEnvironment& env, Port ourPort = 554,
+ 			       UserAuthenticationDatabase* authDatabase = NULL,
+@@ -303,7 +303,7 @@
+ 
+ ////////// A subclass of "RTSPServer" that implements the "REGISTER" command to set up proxying on the specified URL //////////
+ 
+-class RTSPServerWithREGISTERProxying: public RTSPServer {
++class LIVEMEDIA_API RTSPServerWithREGISTERProxying: public RTSPServer {
+ public:
+   static RTSPServerWithREGISTERProxying* createNew(UsageEnvironment& env, Port ourPort = 554,
+ 						   UserAuthenticationDatabase* authDatabase = NULL,
+diff -Naru a/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh b/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh
+--- a/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh	2018-02-01 17:10:24.138180600 +0900
+@@ -31,7 +31,7 @@
+ #include "TCPStreamSink.hh"
+ #endif
+ 
+-class RTSPServerSupportingHTTPStreaming: public RTSPServer {
++class LIVEMEDIA_API RTSPServerSupportingHTTPStreaming: public RTSPServer {
+ public:
+   static RTSPServerSupportingHTTPStreaming* createNew(UsageEnvironment& env, Port rtspPort = 554,
+ 						      UserAuthenticationDatabase* authDatabase = NULL,
+diff -Naru a/live/liveMedia/include/ServerMediaSession.hh b/live/liveMedia/include/ServerMediaSession.hh
+--- a/live/liveMedia/include/ServerMediaSession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/ServerMediaSession.hh	2018-02-01 17:10:34.473195400 +0900
+@@ -30,7 +30,7 @@
+ 
+ class ServerMediaSubsession; // forward
+ 
+-class ServerMediaSession: public Medium {
++class LIVEMEDIA_API ServerMediaSession: public Medium {
+ public:
+   static ServerMediaSession* createNew(UsageEnvironment& env,
+ 				       char const* streamName = NULL,
+@@ -103,7 +103,7 @@
+ };
+ 
+ 
+-class ServerMediaSubsessionIterator {
++class LIVEMEDIA_API ServerMediaSubsessionIterator {
+ public:
+   ServerMediaSubsessionIterator(ServerMediaSession& session);
+   virtual ~ServerMediaSubsessionIterator();
+@@ -117,7 +117,7 @@
+ };
+ 
+ 
+-class ServerMediaSubsession: public Medium {
++class LIVEMEDIA_API ServerMediaSubsession: public Medium {
+ public:
+   unsigned trackNumber() const { return fTrackNumber; }
+   char const* trackId();
+diff -Naru a/live/liveMedia/include/SimpleRTPSink.hh b/live/liveMedia/include/SimpleRTPSink.hh
+--- a/live/liveMedia/include/SimpleRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/SimpleRTPSink.hh	2018-02-01 17:10:41.436170100 +0900
+@@ -26,7 +26,7 @@
+ #include "MultiFramedRTPSink.hh"
+ #endif
+ 
+-class SimpleRTPSink: public MultiFramedRTPSink {
++class LIVEMEDIA_API SimpleRTPSink: public MultiFramedRTPSink {
+ public:
+   static SimpleRTPSink*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/SimpleRTPSource.hh b/live/liveMedia/include/SimpleRTPSource.hh
+--- a/live/liveMedia/include/SimpleRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/SimpleRTPSource.hh	2018-02-01 17:10:49.113162400 +0900
+@@ -29,7 +29,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class SimpleRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API SimpleRTPSource: public MultiFramedRTPSource {
+ public:
+   static SimpleRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
+ 				    unsigned char rtpPayloadFormat,
+diff -Naru a/live/liveMedia/include/SIPClient.hh b/live/liveMedia/include/SIPClient.hh
+--- a/live/liveMedia/include/SIPClient.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/SIPClient.hh	2018-02-01 17:10:56.209179100 +0900
+@@ -34,7 +34,7 @@
+ // Possible states in the "INVITE" transition diagram (RFC 3261, Figure 5)
+ enum inviteClientState { Calling, Proceeding, Completed, Terminated };
+ 
+-class SIPClient: public Medium {
++class LIVEMEDIA_API SIPClient: public Medium {
+ public:
+   static SIPClient* createNew(UsageEnvironment& env,
+ 			      unsigned char desiredAudioRTPPayloadFormat,
+diff -Naru a/live/liveMedia/include/StreamReplicator.hh b/live/liveMedia/include/StreamReplicator.hh
+--- a/live/liveMedia/include/StreamReplicator.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/StreamReplicator.hh	2018-02-01 17:11:03.844152000 +0900
+@@ -27,7 +27,7 @@
+ 
+ class StreamReplica; // forward
+ 
+-class StreamReplicator: public Medium {
++class LIVEMEDIA_API StreamReplicator: public Medium {
+ public:
+   static StreamReplicator* createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean deleteWhenLastReplicaDies = True);
+     // If "deleteWhenLastReplicaDies" is True (the default), then the "StreamReplicator" object is deleted when (and only when)
+diff -Naru a/live/liveMedia/include/T140TextRTPSink.hh b/live/liveMedia/include/T140TextRTPSink.hh
+--- a/live/liveMedia/include/T140TextRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/T140TextRTPSink.hh	2018-02-01 17:11:15.347152100 +0900
+@@ -30,7 +30,7 @@
+ 
+ class T140IdleFilter;
+ 
+-class T140TextRTPSink: public TextRTPSink {
++class LIVEMEDIA_API T140TextRTPSink: public TextRTPSink {
+ public:
+   static T140TextRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+ 
+@@ -63,7 +63,7 @@
+ // -  that delivers, to the "T140TextRTPSink", a continuous sequence of (possibly) empty frames.
+ // (Note: This class should be used only by "T140TextRTPSink", or a subclass.)
+ 
+-class T140IdleFilter: public FramedFilter {
++class LIVEMEDIA_API T140IdleFilter: public FramedFilter {
+ public:
+   T140IdleFilter(UsageEnvironment& env, FramedSource* inputSource);
+   virtual ~T140IdleFilter();
+diff -Naru a/live/liveMedia/include/TCPStreamSink.hh b/live/liveMedia/include/TCPStreamSink.hh
+--- a/live/liveMedia/include/TCPStreamSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/TCPStreamSink.hh	2018-02-01 17:11:23.005140900 +0900
+@@ -27,7 +27,7 @@
+ 
+ #define TCP_STREAM_SINK_BUFFER_SIZE 10000
+ 
+-class TCPStreamSink: public MediaSink {
++class LIVEMEDIA_API TCPStreamSink: public MediaSink {
+ public:
+   static TCPStreamSink* createNew(UsageEnvironment& env, int socketNum);
+   // "socketNum" is the socket number of an existing, writable TCP socket (which should be non-blocking).
+diff -Naru a/live/liveMedia/include/TextRTPSink.hh b/live/liveMedia/include/TextRTPSink.hh
+--- a/live/liveMedia/include/TextRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/TextRTPSink.hh	2018-02-01 17:11:29.623158200 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSink.hh"
+ #endif
+ 
+-class TextRTPSink: public MultiFramedRTPSink {
++class LIVEMEDIA_API TextRTPSink: public MultiFramedRTPSink {
+ protected:
+   TextRTPSink(UsageEnvironment& env,
+ 	      Groupsock* rtpgs, unsigned char rtpPayloadType,
+diff -Naru a/live/liveMedia/include/TheoraVideoRTPSink.hh b/live/liveMedia/include/TheoraVideoRTPSink.hh
+--- a/live/liveMedia/include/TheoraVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/TheoraVideoRTPSink.hh	2018-02-01 17:11:37.016160600 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class TheoraVideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API TheoraVideoRTPSink: public VideoRTPSink {
+ public:
+   static TheoraVideoRTPSink*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,
+diff -Naru a/live/liveMedia/include/TheoraVideoRTPSource.hh b/live/liveMedia/include/TheoraVideoRTPSource.hh
+--- a/live/liveMedia/include/TheoraVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/TheoraVideoRTPSource.hh	2018-02-01 17:11:42.983128200 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class TheoraVideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API TheoraVideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static TheoraVideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/uLawAudioFilter.hh b/live/liveMedia/include/uLawAudioFilter.hh
+--- a/live/liveMedia/include/uLawAudioFilter.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/uLawAudioFilter.hh	2018-02-01 17:12:02.473116300 +0900
+@@ -27,7 +27,7 @@
+ 
+ ////////// 16-bit PCM (in various byte orderings) -> 8-bit u-Law //////////
+ 
+-class uLawFromPCMAudioSource: public FramedFilter {
++class LIVEMEDIA_API uLawFromPCMAudioSource: public FramedFilter {
+ public:
+   static uLawFromPCMAudioSource*
+   createNew(UsageEnvironment& env, FramedSource* inputSource,
+@@ -65,7 +65,7 @@
+ 
+ ////////// u-Law -> 16-bit PCM (in host order) //////////
+ 
+-class PCMFromuLawAudioSource: public FramedFilter {
++class LIVEMEDIA_API PCMFromuLawAudioSource: public FramedFilter {
+ public:
+   static PCMFromuLawAudioSource*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+@@ -98,7 +98,7 @@
+ 
+ ////////// 16-bit values (in host order) -> 16-bit network order //////////
+ 
+-class NetworkFromHostOrder16: public FramedFilter {
++class LIVEMEDIA_API NetworkFromHostOrder16: public FramedFilter {
+ public:
+   static NetworkFromHostOrder16*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+@@ -126,7 +126,7 @@
+ 
+ ////////// 16-bit values (in network order) -> 16-bit host order //////////
+ 
+-class HostFromNetworkOrder16: public FramedFilter {
++class LIVEMEDIA_API HostFromNetworkOrder16: public FramedFilter {
+ public:
+   static HostFromNetworkOrder16*
+   createNew(UsageEnvironment& env, FramedSource* inputSource);
+@@ -154,7 +154,7 @@
+ 
+ ////////// 16-bit values: little-endian <-> big-endian //////////
+ 
+-class EndianSwap16: public FramedFilter {
++class LIVEMEDIA_API EndianSwap16: public FramedFilter {
+ public:
+   static EndianSwap16* createNew(UsageEnvironment& env, FramedSource* inputSource);
+ 
+@@ -181,7 +181,7 @@
+ 
+ ////////// 24-bit values: little-endian <-> big-endian //////////
+ 
+-class EndianSwap24: public FramedFilter {
++class LIVEMEDIA_API EndianSwap24: public FramedFilter {
+ public:
+   static EndianSwap24* createNew(UsageEnvironment& env, FramedSource* inputSource);
+ 
+diff -Naru a/live/liveMedia/include/VideoRTPSink.hh b/live/liveMedia/include/VideoRTPSink.hh
+--- a/live/liveMedia/include/VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VideoRTPSink.hh	2018-02-01 17:12:09.143116600 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSink.hh"
+ #endif
+ 
+-class VideoRTPSink: public MultiFramedRTPSink {
++class LIVEMEDIA_API VideoRTPSink: public MultiFramedRTPSink {
+ protected:
+   VideoRTPSink(UsageEnvironment& env,
+ 	       Groupsock* rtpgs, unsigned char rtpPayloadType,
+diff -Naru a/live/liveMedia/include/VorbisAudioRTPSink.hh b/live/liveMedia/include/VorbisAudioRTPSink.hh
+--- a/live/liveMedia/include/VorbisAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VorbisAudioRTPSink.hh	2018-02-01 17:12:15.852104900 +0900
+@@ -25,7 +25,7 @@
+ #include "AudioRTPSink.hh"
+ #endif
+ 
+-class VorbisAudioRTPSink: public AudioRTPSink {
++class LIVEMEDIA_API VorbisAudioRTPSink: public AudioRTPSink {
+ public:
+   static VorbisAudioRTPSink*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,
+diff -Naru a/live/liveMedia/include/VorbisAudioRTPSource.hh b/live/liveMedia/include/VorbisAudioRTPSource.hh
+--- a/live/liveMedia/include/VorbisAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VorbisAudioRTPSource.hh	2018-02-01 17:12:21.656106800 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class VorbisAudioRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API VorbisAudioRTPSource: public MultiFramedRTPSource {
+ public:
+   static VorbisAudioRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/VP8VideoRTPSink.hh b/live/liveMedia/include/VP8VideoRTPSink.hh
+--- a/live/liveMedia/include/VP8VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VP8VideoRTPSink.hh	2018-02-01 17:12:29.552116300 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class VP8VideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API VP8VideoRTPSink: public VideoRTPSink {
+ public:
+   static VP8VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+ 
+diff -Naru a/live/liveMedia/include/VP8VideoRTPSource.hh b/live/liveMedia/include/VP8VideoRTPSource.hh
+--- a/live/liveMedia/include/VP8VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VP8VideoRTPSource.hh	2018-02-01 17:12:35.352098600 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class VP8VideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API VP8VideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static VP8VideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/VP9VideoRTPSink.hh b/live/liveMedia/include/VP9VideoRTPSink.hh
+--- a/live/liveMedia/include/VP9VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VP9VideoRTPSink.hh	2018-02-01 17:12:42.016093200 +0900
+@@ -25,7 +25,7 @@
+ #include "VideoRTPSink.hh"
+ #endif
+ 
+-class VP9VideoRTPSink: public VideoRTPSink {
++class LIVEMEDIA_API VP9VideoRTPSink: public VideoRTPSink {
+ public:
+   static VP9VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
+ 
+diff -Naru a/live/liveMedia/include/VP9VideoRTPSource.hh b/live/liveMedia/include/VP9VideoRTPSource.hh
+--- a/live/liveMedia/include/VP9VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/VP9VideoRTPSource.hh	2018-02-01 17:12:48.056081500 +0900
+@@ -25,7 +25,7 @@
+ #include "MultiFramedRTPSource.hh"
+ #endif
+ 
+-class VP9VideoRTPSource: public MultiFramedRTPSource {
++class LIVEMEDIA_API VP9VideoRTPSource: public MultiFramedRTPSource {
+ public:
+   static VP9VideoRTPSource*
+   createNew(UsageEnvironment& env, Groupsock* RTPgs,
+diff -Naru a/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh b/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh
+--- a/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh	2018-02-01 17:12:53.824101700 +0900
+@@ -26,7 +26,7 @@
+ #include "FileServerMediaSubsession.hh"
+ #endif
+ 
+-class WAVAudioFileServerMediaSubsession: public FileServerMediaSubsession{
++class LIVEMEDIA_API WAVAudioFileServerMediaSubsession: public FileServerMediaSubsession{
+ public:
+   static WAVAudioFileServerMediaSubsession*
+   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource,
+diff -Naru a/live/liveMedia/include/WAVAudioFileSource.hh b/live/liveMedia/include/WAVAudioFileSource.hh
+--- a/live/liveMedia/include/WAVAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/live/liveMedia/include/WAVAudioFileSource.hh	2018-02-01 17:12:59.888082400 +0900
+@@ -36,7 +36,7 @@
+ } WAV_AUDIO_FORMAT;
+ 
+ 
+-class WAVAudioFileSource: public AudioInputDevice {
++class LIVEMEDIA_API WAVAudioFileSource: public AudioInputDevice {
+ public:
+ 
+   static WAVAudioFileSource* createNew(UsageEnvironment& env,
+diff -Naru a/live/UsageEnvironment/include/HashTable.hh b/live/UsageEnvironment/include/HashTable.hh
+--- a/live/UsageEnvironment/include/HashTable.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/UsageEnvironment/include/HashTable.hh	2018-02-01 17:27:16.267534700 +0900
+@@ -24,7 +24,7 @@
+ #include "Boolean.hh"
+ #endif
+ 
+-class HashTable {
++class LIVEMEDIA_API HashTable {
+ public:
+   virtual ~HashTable();
+   
+diff -Naru a/live/UsageEnvironment/include/strDup.hh b/live/UsageEnvironment/include/strDup.hh
+--- a/live/UsageEnvironment/include/strDup.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/UsageEnvironment/include/strDup.hh	2018-02-01 17:27:25.999511700 +0900
+@@ -24,14 +24,14 @@
+ 
+ #include <string.h>
+ 
+-char* strDup(char const* str);
++LIVEMEDIA_API char* strDup(char const* str);
+ // Note: strDup(NULL) returns NULL
+ 
+-char* strDupSize(char const* str);
++LIVEMEDIA_API char* strDupSize(char const* str);
+ // Like "strDup()", except that it *doesn't* copy the original.
+ // (Instead, it just allocates a string of the same size as the original.)
+ 
+-char* strDupSize(char const* str, size_t& resultBufSize);
++LIVEMEDIA_API char* strDupSize(char const* str, size_t& resultBufSize);
+ // An alternative form of "strDupSize()" that also returns the size of the allocated buffer.
+ 
+ #endif
+diff -Naru a/live/UsageEnvironment/include/UsageEnvironment.hh b/live/UsageEnvironment/include/UsageEnvironment.hh
+--- a/live/UsageEnvironment/include/UsageEnvironment.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/live/UsageEnvironment/include/UsageEnvironment.hh	2018-02-01 17:27:36.226522100 +0900
+@@ -50,7 +50,7 @@
+ 
+ // An abstract base class, subclassed for each use of the library
+ 
+-class UsageEnvironment {
++class LIVEMEDIA_API UsageEnvironment {
+ public:
+   Boolean reclaim();
+       // returns True iff we were actually able to delete our object
+@@ -103,7 +103,7 @@
+ typedef void* TaskToken;
+ typedef u_int32_t EventTriggerId;
+ 
+-class TaskScheduler {
++class LIVEMEDIA_API TaskScheduler {
+ public:
+   virtual ~TaskScheduler();
+ 
