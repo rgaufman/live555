@@ -7,59 +7,75 @@ see <http://www.live555.com/liveMedia/>
 ###Generate build project using cmake
 
 Actually, This command makes the shared library.
-If you do not want shared library, you should remove BUILD_SHARED_LIBS from this command.
+If you do not want shared library, you should modify value to BUILD_SHARED_LIBS from ON to OFF.
 
 For 32 bit Windows from dos prompt
 ```shell
+# mkdir build
+# cd build
 # cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON
 ```
 
 For 64 bit Windows from dos prompt
 ```shell
+# mkdir build
+# cd build
 # cmake .. -G "Visual Studio 15 2017 Win64" -DBUILD_SHARED_LIBS=ON
 ```
 
 For ARM from from dos prompt
 ```shell
+# mkdir build
+# cd build
 # cmake .. -G "Visual Studio 15 2017 ARM" -DBUILD_SHARED_LIBS=ON
 ```
 
 For Xcode
 ```shell
+# mkdir build
+# cd build
 # cmake .. -G "XCode" \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
-  -DCMAKE_C_FLAGS="-fstack-protector-strong -Wa,--noexecstack" \
-  -DCMAKE_CXX_FLAGS="-std=c++11 -std=c++0x -fstack-protector-strong -Wa,--noexecstack" \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+# make; make install
 ```
 
 For Linux
 ```shell
-# export OUT_PATH=/usr/local
-# export CROSS_COMPILE=${TOOLCHAIN_PATH}/arm-linux-gnueabihf-
+# mkdir build
+# cd build
+# export OUT_PATH=./install
 # cmake .. -G "Unix Makefiles" \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
-  -DCMAKE_C_FLAGS="-fstack-protector-strong -Wa,--noexecstack" \
-  -DCMAKE_CXX_FLAGS="-std=c++11 -std=c++0x -fstack-protector-strong -Wa,--noexecstack" \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+# make; make install  
 ```
 
 For Linux for arm with toolchain
+{TOOLCHAIN_PATH} is toolchain path for ARM CPU from manufacture. 
+
+For example, If you use the Raspberry PI 3 Model B arm board,
+If you installed the toolchain by referring to https://goo.gl/TtcjGb, you are installed toolchain path is pri.
+
+ref: http://www.hertaville.com/development-environment-raspberry-pi-cross-compiler.html.
+
+TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin.
+
 ```shell
-# export OUT_PATH={INSTALL_PATH} 
+# mkdir build
+# cd build
+# export OUT_PATH=./install
 # export CROSS_COMPILE=${TOOLCHAIN_PATH}/arm-linux-gnueabihf-
 # cmake .. -G "Unix Makefiles" \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_C_COMPILER=${CROSS_COMPILE}gcc \
-  -DCMAKE_C_FLAGS="-fstack-protector-strong -Wa,--noexecstack" \
   -DCMAKE_CXX_COMPILER=${CROSS_COMPILE}g++ \
-  -DCMAKE_CXX_FLAGS="-std=c++11 -std=c++0x -fstack-protector-strong -Wa,--noexecstack" \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
   -DCMAKE_STRIP=${CROSS_COMPILE}strip \
   -DCMAKE_AR=${CROSS_COMPILE}ar \
@@ -69,4 +85,5 @@ For Linux for arm with toolchain
   -DCMAKE_OBJCOPY=${CROSS_COMPILE}objcopy \
   -DCMAKE_OBJDUMP=${CROSS_COMPILE}objdump \
   -DCMAKE_LINKER=${CROSS_COMPILE}ld
+# make; make install  
 ```
