@@ -1,10 +1,10 @@
-{{{Live555}}}
+##Live555
 You can check new version from Live555.
 
 For documentation and instructions for building this software,
 see <http://www.live555.com/liveMedia/>
 
-{{{Generate build project using cmake}}}
+##Generate build project using cmake
 
 Actually, This command makes the shared library.
 If you do not want shared library, you should modify value to BUILD_SHARED_LIBS from ON to OFF.
@@ -88,8 +88,8 @@ TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbia
 # make; make install  
 ```
 
-{{{Build with examples}}}
-## If you want to build with RTSP Example from testProgs, you have to insert BUILD_EXAMPLES=ON option from cmake command like this:
+##Build with examples
+If you want to build with RTSP Example from testProgs, you have to insert BUILD_EXAMPLES=ON option from cmake command like this:
 ```shell
 # cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=ON
 ```
