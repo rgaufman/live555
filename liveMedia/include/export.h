@@ -22,7 +22,7 @@ extern "C" {
 #  endif // #ifdef LIVEMEDIA_EXPORTS
 #else // #ifndef LIVEMEDIA_STATIC
 #  define LIVEMEDIA_API
-#endif // #ifndef LIVEMEDIA_STATIC
+#endif // #endif LIVEMEDIA_STATIC
 
 
 #ifdef __cplusplus

@@ -1,6 +1,9 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 set ( PROJECT_NAME live555 )
+set ( TEST_PROGS testProgs )
+set ( TEST_RTSP_CLIENT testRTSPClient )
+set ( TEST_ONDEMAND_RTSP_SERVER testOnDemandRTSPServer )
 
 project ( ${PROJECT_NAME} )
 
@@ -20,6 +23,8 @@ endif ()
 if ( NOT DEFINED BUILD_EXAMPLES )
    set ( BUILD_EXAMPLES FALSE )
 endif ()
+
+set ( ${TEST_PROGS}_HOME ${CMAKE_CURRENT_SOURCE_DIR}/testProgs )
 
 set ( ${PROJECT_NAME}_HOME ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories ( ${${PROJECT_NAME}_HOME}/UsageEnvironment/include )
@@ -43,15 +48,6 @@ else ()
    endif ()
 endif ()
 
-if ( BUILD_SHARED_LIBS )
-   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-      -DLIVEMEDIA_EXPORTS
-   )
-else ()
-   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-      -DLIVEMEDIA_STATIC
-   )
-endif ()
 add_definitions ( ${${PROJECT_NAME}_DEFINITIONS} )
 
 list ( APPEND ${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT
@@ -494,6 +490,12 @@ if ( WIN32 )
    )
 endif ()
 target_link_libraries ( ${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_LINK_LIBRARIES} )
+if ( BUILD_SHARED_LIBS )
+	target_compile_definitions(${PROJECT_NAME} PRIVATE LIVEMEDIA_EXPORTS=1)
+else ()
+	target_compile_definitions(${PROJECT_NAME} PRIVATE LIVEMEDIA_STATIC=1)
+endif ()
+
 
 if ( WIN32 )
    set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d" )
@@ -503,6 +505,7 @@ endif ()
 
 if(MSVC)
     add_definitions(/FI"export.h")
+	add_definitions(-DWITH_OPENCV2)
 else()
     # GCC or Clang
     add_definitions(-include export.h)
@@ -513,30 +516,44 @@ if ( BUILD_EXAMPLES )
 
 	if(MSVC)
 		add_definitions(/FI"export.h")
+		#remove_definitions(-DLIVEMEDIA_EXPORTS)
+		#add_definitions(-DLIVEMEDIA_IMPORTS)
 	else()
 		# GCC or Clang
 		add_definitions(-include export.h)
 	endif()
 	
-	if( BUILD_SHARED_LIBS )
-		#For the shared library:
-		set ( PROJECT_LINK_LIBS ${PROJECT_NAME}.so )
+	if ( WIN32 )
+		set ( LIB_EXTENSION lib )
+	else ()
+		if( BUILD_SHARED_LIBS )
+			#For the shared library:
+			set ( LIB_EXTENSION so )
+		else()
+			#For the static library:
+			set ( LIB_EXTENSION a )
+		endif()
+	endif()	
+	
+	# add library path	
+	if ( WIN32 )
+		link_directories ( ${CMAKE_BINARY_DIR}\\${CMAKE_BUILD_TYPE} )
 	else()
-		#For the shared library:
-		set ( PROJECT_LINK_LIBS ${PROJECT_NAME}.a )
+		link_directories( ${CMAKE_BINARY_DIR} )
 	endif()
 	
-	link_directories( ${CMAKE_BINARY_DIR} )
-	
-	file(GLOB SOURCES "testProgs/*.cpp")
+	#file(GLOB SOURCES ${${TEST_PROGS}_HOME}"/*.cpp")
 	
 	# add execute testRTSPClient
-	add_executable(testRTSPClient testProgs/testRTSPClient.cpp)
-	target_link_libraries(testRTSPClient ${PROJECT_LINK_LIBS})
+	add_executable(${TEST_RTSP_CLIENT} ${${TEST_PROGS}_HOME}/testRTSPClient.cpp)
+	target_link_libraries(${TEST_RTSP_CLIENT} ${PROJECT_NAME})
+	target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
 	
 	# add execute testRTSPClient
-	add_executable(testOnDemandRTSPServer testProgs/testOnDemandRTSPServer.cpp)
-	target_link_libraries(testOnDemandRTSPServer ${PROJECT_LINK_LIBS})	
+	add_executable(${TEST_ONDEMAND_RTSP_SERVER} ${${TEST_PROGS}_HOME}/testOnDemandRTSPServer.cpp)
+	target_link_libraries(${TEST_ONDEMAND_RTSP_SERVER} ${PROJECT_NAME})
+	target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
+	
 endif ()
 
 # Disable warnings
