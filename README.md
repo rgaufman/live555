@@ -88,5 +88,5 @@ TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbia
 # make; make install  
 ```
 
-If you want to build with RTSP Example from testProgs, you have to insert examples option from cmake command like this:
-cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON BUILD_EXAMPLES=ON
+If you want to build with RTSP Example from testProgs, you have to insert BUILD_EXAMPLES=ON option from cmake command like this:
+cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=ON
