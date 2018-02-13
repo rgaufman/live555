@@ -1,0 +1,105 @@
+{
+    // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
+    "configurations": [
+        {
+            "name": "x86-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "buildRoot": "${projectDir}\\build\\Debug_x86",
+            "installRoot": "${env.ProgramFiles(x86)}\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "CMAKE_C_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_CXX_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_SYSTEM_NAME",
+                    "value": "Windows"
+                }
+            ]
+        },
+        {
+            "name": "x86-Release",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "buildRoot": "${projectDir}\\build\\Release_x86",
+            "installRoot": "${env.ProgramFiles(x86)}\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "CMAKE_C_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_CXX_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_SYSTEM_NAME",
+                    "value": "Windows"
+                }
+            ]
+        },
+        {
+            "name": "x64-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x64" ],
+            "buildRoot": "${projectDir}\\build\\Release_x64",
+            "installRoot": "${env.ProgramFiles}\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "CMAKE_C_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_CXX_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_SYSTEM_NAME",
+                    "value": "Windows"
+                }
+            ]
+        },
+        {
+            "name": "x64-Release",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "inheritEnvironments": [ "msvc_x64" ],
+            "buildRoot": "${projectDir}\\build\\Release_x64",
+            "installRoot": "${env.ProgramFiles}\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "CMAKE_C_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_CXX_COMPILER",
+                    "value": "cl.exe"
+                },
+                {
+                    "name": "CMAKE_SYSTEM_NAME",
+                    "value": "Windows"
+                }
+            ]
+        }
+    ]
+}

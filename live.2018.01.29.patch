@@ -1,6 +1,6 @@
-diff -Naru a/live/BasicUsageEnvironment/include/BasicHashTable.hh b/live/BasicUsageEnvironment/include/BasicHashTable.hh
---- a/live/BasicUsageEnvironment/include/BasicHashTable.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/BasicUsageEnvironment/include/BasicHashTable.hh	2018-02-01 16:46:49.073618700 +0900
+diff -Naru a/BasicUsageEnvironment/include/BasicHashTable.hh b/BasicUsageEnvironment/include/BasicHashTable.hh
+--- a/BasicUsageEnvironment/include/BasicHashTable.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/BasicUsageEnvironment/include/BasicHashTable.hh	2018-02-01 16:46:49.073618700 +0900
 @@ -32,7 +32,7 @@
  
  #define SMALL_HASH_TABLE_SIZE 4
@@ -10,9 +10,9 @@ diff -Naru a/live/BasicUsageEnvironment/include/BasicHashTable.hh b/live/BasicUs
  private:
  	class TableEntry; // forward
  
-diff -Naru a/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh b/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh
---- a/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh	2018-02-01 16:47:13.423580400 +0900
+diff -Naru a/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh b/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh
+--- a/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh	2018-02-01 16:47:13.423580400 +0900
 @@ -36,7 +36,7 @@
  
  // An abstract base class, useful for subclassing
@@ -31,9 +31,9 @@ diff -Naru a/live/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh b/live
  public:
    virtual ~BasicTaskScheduler0();
  
-diff -Naru a/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh b/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh
---- a/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh	2018-02-01 16:47:01.860590700 +0900
+diff -Naru a/BasicUsageEnvironment/include/BasicUsageEnvironment.hh b/BasicUsageEnvironment/include/BasicUsageEnvironment.hh
+--- a/BasicUsageEnvironment/include/BasicUsageEnvironment.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/BasicUsageEnvironment/include/BasicUsageEnvironment.hh	2018-02-01 16:47:01.860590700 +0900
 @@ -24,7 +24,7 @@
  #include "BasicUsageEnvironment0.hh"
  #endif
@@ -52,9 +52,9 @@ diff -Naru a/live/BasicUsageEnvironment/include/BasicUsageEnvironment.hh b/live/
  public:
    static BasicTaskScheduler* createNew(unsigned maxSchedulerGranularity = 10000/*microseconds*/);
      // "maxSchedulerGranularity" (default value: 10 ms) specifies the maximum time that we wait (in "select()") before
-diff -Naru a/live/BasicUsageEnvironment/include/DelayQueue.hh b/live/BasicUsageEnvironment/include/DelayQueue.hh
---- a/live/BasicUsageEnvironment/include/DelayQueue.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/BasicUsageEnvironment/include/DelayQueue.hh	2018-02-01 16:47:41.986565100 +0900
+diff -Naru a/BasicUsageEnvironment/include/DelayQueue.hh b/BasicUsageEnvironment/include/DelayQueue.hh
+--- a/BasicUsageEnvironment/include/DelayQueue.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/BasicUsageEnvironment/include/DelayQueue.hh	2018-02-01 16:47:41.986565100 +0900
 @@ -32,7 +32,7 @@
  
  ///// A "Timeval" can be either an absolute time, or a time interval /////
@@ -100,9 +100,9 @@ diff -Naru a/live/BasicUsageEnvironment/include/DelayQueue.hh b/live/BasicUsageE
  public:
    DelayQueue();
    virtual ~DelayQueue();
-diff -Naru a/live/BasicUsageEnvironment/include/HandlerSet.hh b/live/BasicUsageEnvironment/include/HandlerSet.hh
---- a/live/BasicUsageEnvironment/include/HandlerSet.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/BasicUsageEnvironment/include/HandlerSet.hh	2018-02-01 16:47:53.607072900 +0900
+diff -Naru a/BasicUsageEnvironment/include/HandlerSet.hh b/BasicUsageEnvironment/include/HandlerSet.hh
+--- a/BasicUsageEnvironment/include/HandlerSet.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/BasicUsageEnvironment/include/HandlerSet.hh	2018-02-01 16:47:53.607072900 +0900
 @@ -26,7 +26,7 @@
  
  ////////// HandlerSet (etc.) definition //////////
@@ -130,698 +130,9 @@ diff -Naru a/live/BasicUsageEnvironment/include/HandlerSet.hh b/live/BasicUsageE
  public:
    HandlerIterator(HandlerSet& handlerSet);
    virtual ~HandlerIterator();
-diff -Naru a/live/CMakeLists.txt b/live/CMakeLists.txt
---- a/live/CMakeLists.txt	1970-01-01 09:00:00.000000000 +0900
-+++ b/live/CMakeLists.txt	2017-12-22 17:42:59.652149200 +0900
-@@ -0,0 +1,570 @@
-+cmake_minimum_required ( VERSION 3.0 )
-+
-+set ( PROJECT_NAME live555 )
-+
-+project ( ${PROJECT_NAME} )
-+
-+set ( ${PROJECT_NAME}_VERSION_MAJOR "2017" )
-+set ( ${PROJECT_NAME}_VERSION_MINOR "10" )
-+set ( ${PROJECT_NAME}_VERSION_PATCH "28" )
-+set ( ${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
-+
-+if ( CMAKE_COMPILER_IS_GNUCXX )
-+   set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive" )
-+endif ()
-+
-+if ( NOT DEFINED BUILD_SHARED_LIBS )
-+   set ( BUILD_SHARED_LIBS TRUE )
-+endif ()
-+
-+set ( ${PROJECT_NAME}_HOME ${CMAKE_CURRENT_SOURCE_DIR} )
-+include_directories ( ${${PROJECT_NAME}_HOME}/UsageEnvironment/include )
-+include_directories ( ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include )
-+include_directories ( ${${PROJECT_NAME}_HOME}/groupsock/include )
-+include_directories ( ${${PROJECT_NAME}_HOME}/liveMedia/include )
-+
-+if ( WIN32 )
-+   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-+      -DWINNT
-+   )
-+else ()
-+   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-+      -DSOCKLEN_T=socklen_t
-+   )
-+   if ( APPLE )
-+      list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-+         -DHAVE_SOCKADDR_LEN=1
-+         -DTIME_BASE=int
-+      )
-+   endif ()
-+endif ()
-+
-+if ( BUILD_SHARED_LIBS )
-+   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-+      -DLIVEMEDIA_EXPORTS
-+   )
-+else ()
-+   list ( APPEND ${PROJECT_NAME}_DEFINITIONS
-+      -DLIVEMEDIA_STATIC
-+   )
-+endif ()
-+add_definitions ( ${${PROJECT_NAME}_DEFINITIONS} )
-+
-+
-+list ( APPEND ${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/Boolean.hh
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/HashTable.hh
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/strDup.hh
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/UsageEnvironment.hh
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/include/UsageEnvironment_version.hh
-+)
-+# Group (Filter) source files
-+source_group ( "Header Files\\UsageEnvironment" FILES ${${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT} )
-+
-+list ( APPEND ${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicHashTable.hh
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicUsageEnvironment.hh
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicUsageEnvironment_version.hh
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/BasicUsageEnvironment0.hh
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/DelayQueue.hh
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/include/HandlerSet.hh
-+)
-+# Group (Filter) source files
-+source_group ( "Header Files\\BasicUsageEnvironment" FILES ${${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT} )
-+
-+list ( APPEND ${PROJECT_NAME}_HEADERS_GROUPSOCK
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/GroupEId.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/Groupsock.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/groupsock_version.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/GroupsockHelper.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/IOHandlers.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/NetAddress.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/NetCommon.h
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/NetInterface.hh
-+   ${${PROJECT_NAME}_HOME}/groupsock/include/TunnelEncaps.hh
-+)
-+# Group (Filter) source files
-+source_group ( "Header Files\\groupsock" FILES ${${PROJECT_NAME}_HEADERS_GROUPSOCK} )
-+
-+list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AC3AudioStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ADTSAudioFileSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioFileSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AMRAudioSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AudioInputDevice.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/AVIFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/Base64.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/BasicUDPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/BasicUDPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/BitVector.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ByteStreamFileSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ByteStreamMemoryBufferSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ByteStreamMultiFileSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/DeviceSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/DigestAuthentication.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/DVVideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/export.h
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/FileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/FileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/FramedFileSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/FramedFilter.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/FramedSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/GenericMediaServer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/GSMAudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H261VideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H263plusVideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264or5VideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoStreamDiscreteFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H264VideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamDiscreteFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/InputFile.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/liveMedia.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/liveMedia_version.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/Locale.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MatroskaFile.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MatroskaFileServerDemux.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/Media.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaSession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MediaTranscodingTable.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADU.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADUinterleaving.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADURTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADURTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3ADUTranscoder.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3AudioFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3FileSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MP3Transcoder.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2AudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2AudioRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2AudioStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2Demux.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2FileServerDemux.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG1or2VideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2IndexFromTransportStream.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamAccumulator.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFromESSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFromPESSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamIndexFile.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamMultiplexor.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4ESVideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4ESVideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4GenericRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4GenericRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4LATMAudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4LATMAudioRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG4VideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEGVideoStreamFramer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MultiFramedRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MultiFramedRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/OggFile.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/OggFileServerDemux.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/OggFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/OnDemandServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ourMD5.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/OutputFile.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/PassiveServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ProxyServerMediaSession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/QCELPAudioRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/QuickTimeFileSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/QuickTimeGenericRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTCP.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPInterface.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPClient.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPCommon.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPRegisterSender.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPServer.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/ServerMediaSession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/SimpleRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/SimpleRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/SIPClient.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/StreamReplicator.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/T140TextRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/TCPStreamSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/TextRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/TheoraVideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/TheoraVideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/uLawAudioFilter.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VorbisAudioRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VorbisAudioRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP8VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP8VideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP9VideoRTPSink.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/VP9VideoRTPSource.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/WAVAudioFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/include/WAVAudioFileSource.hh
-+)
-+# Group (Filter) source files
-+source_group ( "Header Files\\liveMedia" FILES ${${PROJECT_NAME}_HEADERS_LIVEMEDIA} )
-+
-+list ( APPEND ${PROJECT_NAME}_HEADERS
-+   ${${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT}
-+   ${${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT}
-+   ${${PROJECT_NAME}_HEADERS_GROUPSOCK}
-+   ${${PROJECT_NAME}_HEADERS_LIVEMEDIA}
-+)
-+
-+
-+# C/C++-Sources
-+list ( APPEND ${PROJECT_NAME}_SOURCES_USAGEENVIRONMENT
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/HashTable.cpp
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/strDup.cpp
-+   ${${PROJECT_NAME}_HOME}/UsageEnvironment/UsageEnvironment.cpp
-+)
-+# Group (Filter) source files
-+source_group ( "Source Files\\UsageEnvironment" FILES ${${PROJECT_NAME}_SOURCES_USAGEENVIRONMENT} )
-+
-+# C/C++-Sources
-+list ( APPEND ${PROJECT_NAME}_SOURCES_BASICUSAGEENVIRONMENT
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicHashTable.cpp
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicTaskScheduler.cpp
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicTaskScheduler0.cpp
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicUsageEnvironment.cpp
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/BasicUsageEnvironment0.cpp
-+   ${${PROJECT_NAME}_HOME}/BasicUsageEnvironment/DelayQueue.cpp
-+)
-+# Group (Filter) source files
-+source_group ( "Source Files\\BasicUsageEnvironment" FILES ${${PROJECT_NAME}_SOURCES_BASICUSAGEENVIRONMENT} )
-+
-+# C/C++-Sources
-+list ( APPEND ${PROJECT_NAME}_SOURCES_GROUPSOCK
-+   ${${PROJECT_NAME}_HOME}/groupsock/GroupEId.cpp
-+   ${${PROJECT_NAME}_HOME}/groupsock/Groupsock.cpp
-+   ${${PROJECT_NAME}_HOME}/groupsock/GroupsockHelper.cpp
-+   ${${PROJECT_NAME}_HOME}/groupsock/inet.c
-+   ${${PROJECT_NAME}_HOME}/groupsock/IOHandlers.cpp
-+   ${${PROJECT_NAME}_HOME}/groupsock/NetAddress.cpp
-+   ${${PROJECT_NAME}_HOME}/groupsock/NetInterface.cpp
-+)
-+# Group (Filter) source files
-+source_group ( "Source Files\\groupsock" FILES ${${PROJECT_NAME}_SOURCES_GROUPSOCK} )
-+
-+# C/C++-Sources
-+list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioFileSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AudioInputDevice.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/AVIFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/Base64.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/BasicUDPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/BasicUDPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/BitVector.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ByteStreamFileSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ByteStreamMemoryBufferSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ByteStreamMultiFileSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/DeviceSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/DigestAuthentication.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/DVVideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/EBMLNumber.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/EBMLNumber.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/FileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/FileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/FramedFileSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/FramedFilter.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/FramedSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/GenericMediaServer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/GSMAudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H261VideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoStreamParser.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H263plusVideoStreamParser.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoStreamDiscreteFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264or5VideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoStreamDiscreteFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H264VideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamDiscreteFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/InputFile.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/Locale.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaDemuxedTrack.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaDemuxedTrack.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFile.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileParser.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileParser.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileServerDemux.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MatroskaFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/Media.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MediaSession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MediaSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MediaSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADU.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUdescriptor.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUdescriptor.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUinterleaving.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADURTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADURTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3ADUTranscoder.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3AudioFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3AudioMatroskaFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3AudioMatroskaFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3FileSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3Internals.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3Internals.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3InternalsHuffman.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3InternalsHuffman.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3InternalsHuffmanTable.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3StreamState.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3StreamState.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MP3Transcoder.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2AudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2AudioRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2AudioStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2Demux.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2DemuxedElementaryStream.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2DemuxedServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2FileServerDemux.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoStreamDiscreteFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG1or2VideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2IndexFromTransportStream.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamAccumulator.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromESSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromPESSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamIndexFile.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamMultiplexor.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamTrickModeFilter.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportUDPServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4ESVideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4ESVideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4GenericRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4GenericRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4LATMAudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4LATMAudioRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4VideoFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4VideoStreamDiscreteFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4VideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEGVideoStreamFramer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEGVideoStreamParser.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEGVideoStreamParser.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MultiFramedRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/MultiFramedRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggDemuxedTrack.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggDemuxedTrack.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFile.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileParser.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileParser.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileServerDemux.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileServerMediaSubsession.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OggFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OnDemandServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ourMD5.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/OutputFile.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/PassiveServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ProxyServerMediaSession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/QCELPAudioRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/QuickTimeFileSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/QuickTimeGenericRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTCP.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/rtcp_from_spec.c
-+   ${${PROJECT_NAME}_HOME}/liveMedia/rtcp_from_spec.h
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTPInterface.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPClient.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPCommon.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPRegisterSender.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPServer.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPServerRegister.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/RTSPServerSupportingHTTPStreaming.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/ServerMediaSession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/SimpleRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/SimpleRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/SIPClient.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/StreamParser.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/StreamParser.hh
-+   ${${PROJECT_NAME}_HOME}/liveMedia/StreamReplicator.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/T140TextRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/TCPStreamSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/TextRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/TheoraVideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/TheoraVideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/uLawAudioFilter.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VorbisAudioRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VorbisAudioRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VP8VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VP8VideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VP9VideoRTPSink.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/VP9VideoRTPSource.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/WAVAudioFileServerMediaSubsession.cpp
-+   ${${PROJECT_NAME}_HOME}/liveMedia/WAVAudioFileSource.cpp
-+)
-+# Group (Filter) source files
-+source_group ( "Source Files\\liveMedia" FILES ${${PROJECT_NAME}_SOURCES_LIVEMEDIA} )
-+
-+list ( APPEND ${PROJECT_NAME}_SOURCES
-+   ${${PROJECT_NAME}_SOURCES_USAGEENVIRONMENT}
-+   ${${PROJECT_NAME}_SOURCES_BASICUSAGEENVIRONMENT}
-+   ${${PROJECT_NAME}_SOURCES_GROUPSOCK}
-+   ${${PROJECT_NAME}_SOURCES_LIVEMEDIA}
-+)
-+
-+add_library ( ${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} )
-+
-+set ( ${PROJECT_NAME}_LINK_LIBRARIES "" )
-+if ( WIN32 )
-+   list ( APPEND ${PROJECT_NAME}_LINK_LIBRARIES
-+      ws2_32
-+   )
-+endif ()
-+target_link_libraries ( ${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_LINK_LIBRARIES} )
-+
-+if ( WIN32 )
-+   set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d" )
-+else ()
-+   set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug" )
-+endif ()
-+
-+if(MSVC)
-+    add_definitions(/FI"export.h")
-+else()
-+    # GCC or Clang
-+    add_definitions(-include export.h)
-+endif()
-+
-+# Disable warnings
-+if ( WIN32 AND NOT CMAKE_COMPILER_IS_GNUCXX )
-+   list ( APPEND ${PROJECT_NAME}_DISABLE_WARNINGS
-+      "/wd4018" # 'expression' : signed/unsigned mismatch
-+      "/wd4244" # 'conversion' conversion from 'type1' to 'type2', possible loss of data
-+      "/wd4267" # 'var' : conversion from 'size_t' to 'type', possible loss of data
-+      "/wd4312" # 'operation' : conversion from 'type1' to 'type2' of greater size
-+      "/wd4334" # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
-+      "/wd4477" # <function> : format string <format-string> requires an argument of type <type>, but variadic argument <position> has type <type> 
-+      "/wd4996" # 'function': was declared deprecated also 'std::<function name>': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct.To disable this warning, use -D_SCL_SECURE_NO_WARNINGS.See documentation on how to use Visual C++ 'Checked Iterators'
-+   )
-+else ()
-+   list ( APPEND ${PROJECT_NAME}_DISABLE_WARNINGS
-+      "-Wno-unused-private-field"            # private field 'identifier' is not used
-+      "-Wno-self-assign"                     # explicitly assigning a variable of type %0 to itself
-+      "-Wno-self-assign-field"               # assigning field to itself
-+      "-Wno-format"                          # format specifies type %0 but the argument has type %1
-+      "-Wno-int-to-pointer-cast"             # cast to %1 from smaller integer type %0
-+      "-Wno-array-bounds"                    # array index %0 is before the beginning of the array
-+      "-Wno-tautological-undefined-compare"  # Reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to true
-+   )
-+endif ()
-+foreach ( warning IN LISTS ${PROJECT_NAME}_DISABLE_WARNINGS )
-+   set ( CMAKE_COMMON_COMPILER_FLAGS "${CMAKE_COMMON_COMPILER_FLAGS} ${warning}" )
-+endforeach ()
-+set ( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_COMMON_COMPILER_FLAGS}" )
-+set ( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_COMMON_COMPILER_FLAGS_RELEASE}" )
-+set ( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CMAKE_COMMON_COMPILER_FLAGS_DEBUG}" )
-+
-+set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_COMMON_COMPILER_FLAGS}" )
-+set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_COMMON_COMPILER_FLAGS_RELEASE}" )
-+set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_COMMON_COMPILER_FLAGS_DEBUG}" )
-+
-+install ( FILES
-+	${${PROJECT_NAME}_HEADERS_USAGEENVIRONMENT}
-+	DESTINATION
-+	"${CMAKE_INSTALL_PREFIX}/include/live555/UsageEnvironment"
-+)
-+
-+install ( FILES
-+	${${PROJECT_NAME}_HEADERS_BASICUSAGEENVIRONMENT}
-+	DESTINATION
-+	"${CMAKE_INSTALL_PREFIX}/include/live555/BasicUsageEnvironment"
-+)
-+
-+install ( FILES
-+	${${PROJECT_NAME}_HEADERS_GROUPSOCK}
-+	DESTINATION
-+	"${CMAKE_INSTALL_PREFIX}/include/live555/groupsock"
-+)
-+
-+install ( FILES
-+	${${PROJECT_NAME}_HEADERS_LIVEMEDIA}
-+	DESTINATION
-+	"${CMAKE_INSTALL_PREFIX}/include/live555/liveMedia"
-+)
-+
-+install ( TARGETS
-+	${PROJECT_NAME}
-+	RUNTIME DESTINATION bin
-+	LIBRARY DESTINATION lib
-+	ARCHIVE DESTINATION lib
-+)
-diff -Naru a/live/CMakeSettings.json b/live/CMakeSettings.json
---- a/live/CMakeSettings.json	1970-01-01 09:00:00.000000000 +0900
-+++ b/live/CMakeSettings.json	2017-12-22 17:30:11.445311600 +0900
-@@ -0,0 +1,105 @@
-+{
-+    // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
-+    "configurations": [
-+        {
-+            "name": "x86-Debug",
-+            "generator": "Ninja",
-+            "configurationType": "Debug",
-+            "inheritEnvironments": [ "msvc_x86" ],
-+            "buildRoot": "${projectDir}\\build\\Debug_x86",
-+            "installRoot": "${env.ProgramFiles(x86)}\\${name}",
-+            "cmakeCommandArgs": "",
-+            "buildCommandArgs": "",
-+            "ctestCommandArgs": "",
-+            "variables": [
-+                {
-+                    "name": "CMAKE_C_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_CXX_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_SYSTEM_NAME",
-+                    "value": "Windows"
-+                }
-+            ]
-+        },
-+        {
-+            "name": "x86-Release",
-+            "generator": "Ninja",
-+            "configurationType": "RelWithDebInfo",
-+            "inheritEnvironments": [ "msvc_x86" ],
-+            "buildRoot": "${projectDir}\\build\\Release_x86",
-+            "installRoot": "${env.ProgramFiles(x86)}\\${name}",
-+            "cmakeCommandArgs": "",
-+            "buildCommandArgs": "",
-+            "ctestCommandArgs": "",
-+            "variables": [
-+                {
-+                    "name": "CMAKE_C_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_CXX_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_SYSTEM_NAME",
-+                    "value": "Windows"
-+                }
-+            ]
-+        },
-+        {
-+            "name": "x64-Debug",
-+            "generator": "Ninja",
-+            "configurationType": "Debug",
-+            "inheritEnvironments": [ "msvc_x64" ],
-+            "buildRoot": "${projectDir}\\build\\Release_x64",
-+            "installRoot": "${env.ProgramFiles}\\${name}",
-+            "cmakeCommandArgs": "",
-+            "buildCommandArgs": "",
-+            "ctestCommandArgs": "",
-+            "variables": [
-+                {
-+                    "name": "CMAKE_C_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_CXX_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_SYSTEM_NAME",
-+                    "value": "Windows"
-+                }
-+            ]
-+        },
-+        {
-+            "name": "x64-Release",
-+            "generator": "Ninja",
-+            "configurationType": "RelWithDebInfo",
-+            "inheritEnvironments": [ "msvc_x64" ],
-+            "buildRoot": "${projectDir}\\build\\Release_x64",
-+            "installRoot": "${env.ProgramFiles}\\${name}",
-+            "cmakeCommandArgs": "",
-+            "buildCommandArgs": "",
-+            "ctestCommandArgs": "",
-+            "variables": [
-+                {
-+                    "name": "CMAKE_C_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_CXX_COMPILER",
-+                    "value": "cl.exe"
-+                },
-+                {
-+                    "name": "CMAKE_SYSTEM_NAME",
-+                    "value": "Windows"
-+                }
-+            ]
-+        }
-+    ]
-+}
-\ No newline at end of file
-diff -Naru a/live/.gitignore b/live/.gitignore
---- a/live/.gitignore	1970-01-01 09:00:00.000000000 +0900
-+++ b/live/.gitignore	2017-12-22 14:34:24.482900300 +0900
-@@ -0,0 +1 @@
-+.DS_Store
-diff -Naru a/live/groupsock/include/GroupEId.hh b/live/groupsock/include/GroupEId.hh
---- a/live/groupsock/include/GroupEId.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/GroupEId.hh	2018-02-01 16:48:50.103035900 +0900
+diff -Naru a/groupsock/include/GroupEId.hh b/groupsock/include/GroupEId.hh
+--- a/groupsock/include/GroupEId.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/GroupEId.hh	2018-02-01 16:48:50.103035900 +0900
 @@ -29,7 +29,7 @@
  #include "NetAddress.hh"
  #endif
@@ -831,9 +142,9 @@ diff -Naru a/live/groupsock/include/GroupEId.hh b/live/groupsock/include/GroupEI
  public:
    GroupEId(struct in_addr const& groupAddr,
  	   portNumBits portNum, u_int8_t ttl);
-diff -Naru a/live/groupsock/include/GroupsockHelper.hh b/live/groupsock/include/GroupsockHelper.hh
---- a/live/groupsock/include/GroupsockHelper.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/GroupsockHelper.hh	2018-02-01 16:49:56.738007400 +0900
+diff -Naru a/groupsock/include/GroupsockHelper.hh b/groupsock/include/GroupsockHelper.hh
+--- a/groupsock/include/GroupsockHelper.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/GroupsockHelper.hh	2018-02-01 16:49:56.738007400 +0900
 @@ -25,68 +25,68 @@
  #include "NetAddress.hh"
  #endif
@@ -970,9 +281,9 @@ diff -Naru a/live/groupsock/include/GroupsockHelper.hh b/live/groupsock/include/
 +extern "C" LIVEMEDIA_API u_int32_t our_random32(); // because "our_random()" returns a 31-bit number
  
  #endif
-diff -Naru a/live/groupsock/include/Groupsock.hh b/live/groupsock/include/Groupsock.hh
---- a/live/groupsock/include/Groupsock.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/Groupsock.hh	2018-02-01 16:49:07.497023700 +0900
+diff -Naru a/groupsock/include/Groupsock.hh b/groupsock/include/Groupsock.hh
+--- a/groupsock/include/Groupsock.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/Groupsock.hh	2018-02-01 16:49:07.497023700 +0900
 @@ -36,7 +36,7 @@
  // An "OutputSocket" is (by default) used only to send packets.
  // No packets are received on it (unless a subclass arranges this)
@@ -1000,9 +311,9 @@ diff -Naru a/live/groupsock/include/Groupsock.hh b/live/groupsock/include/Groups
  public:
    Groupsock* Fetch(UsageEnvironment& env, netAddressBits groupAddress,
  		   Port port, u_int8_t ttl, Boolean& isNew);
-diff -Naru a/live/groupsock/include/IOHandlers.hh b/live/groupsock/include/IOHandlers.hh
---- a/live/groupsock/include/IOHandlers.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/IOHandlers.hh	2018-02-01 16:50:09.118983400 +0900
+diff -Naru a/groupsock/include/IOHandlers.hh b/groupsock/include/IOHandlers.hh
+--- a/groupsock/include/IOHandlers.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/IOHandlers.hh	2018-02-01 16:50:09.118983400 +0900
 @@ -26,6 +26,6 @@
  #endif
  
@@ -1011,9 +322,9 @@ diff -Naru a/live/groupsock/include/IOHandlers.hh b/live/groupsock/include/IOHan
 +LIVEMEDIA_API void socketReadHandler(Socket* sock, int mask);
  
  #endif
-diff -Naru a/live/groupsock/include/NetAddress.hh b/live/groupsock/include/NetAddress.hh
---- a/live/groupsock/include/NetAddress.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/NetAddress.hh	2018-02-01 16:50:25.439973000 +0900
+diff -Naru a/groupsock/include/NetAddress.hh b/groupsock/include/NetAddress.hh
+--- a/groupsock/include/NetAddress.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/NetAddress.hh	2018-02-01 16:50:25.439973000 +0900
 @@ -38,7 +38,7 @@
  // to allow for IPv6.
  typedef u_int32_t netAddressBits;
@@ -1059,9 +370,9 @@ diff -Naru a/live/groupsock/include/NetAddress.hh b/live/groupsock/include/NetAd
  public:
    AddressString(struct sockaddr_in const& addr);
    AddressString(struct in_addr const& addr);
-diff -Naru a/live/groupsock/include/NetInterface.hh b/live/groupsock/include/NetInterface.hh
---- a/live/groupsock/include/NetInterface.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/NetInterface.hh	2018-02-01 16:50:48.663972600 +0900
+diff -Naru a/groupsock/include/NetInterface.hh b/groupsock/include/NetInterface.hh
+--- a/groupsock/include/NetInterface.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/NetInterface.hh	2018-02-01 16:50:48.663972600 +0900
 @@ -25,7 +25,7 @@
  #include "NetAddress.hh"
  #endif
@@ -1116,9 +427,9 @@ diff -Naru a/live/groupsock/include/NetInterface.hh b/live/groupsock/include/Net
  public:
    NetInterfaceTrafficStats();
  
-diff -Naru a/live/groupsock/include/TunnelEncaps.hh b/live/groupsock/include/TunnelEncaps.hh
---- a/live/groupsock/include/TunnelEncaps.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/groupsock/include/TunnelEncaps.hh	2018-02-01 16:50:57.864947800 +0900
+diff -Naru a/groupsock/include/TunnelEncaps.hh b/groupsock/include/TunnelEncaps.hh
+--- a/groupsock/include/TunnelEncaps.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/groupsock/include/TunnelEncaps.hh	2018-02-01 16:50:57.864947800 +0900
 @@ -27,7 +27,7 @@
  
  typedef u_int16_t Cookie;
@@ -1128,9 +439,9 @@ diff -Naru a/live/groupsock/include/TunnelEncaps.hh b/live/groupsock/include/Tun
  	// The trailer is layed out as follows:
  	// bytes 0-1:	source 'cookie'
  	// bytes 2-3:	destination 'cookie'
-diff -Naru a/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh b/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh
---- a/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh	2018-02-01 16:51:28.791946400 +0900
+diff -Naru a/liveMedia/include/AC3AudioFileServerMediaSubsession.hh b/liveMedia/include/AC3AudioFileServerMediaSubsession.hh
+--- a/liveMedia/include/AC3AudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AC3AudioFileServerMediaSubsession.hh	2018-02-01 16:51:28.791946400 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1140,9 +451,9 @@ diff -Naru a/live/liveMedia/include/AC3AudioFileServerMediaSubsession.hh b/live/
  public:
    static AC3AudioFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/AC3AudioRTPSink.hh b/live/liveMedia/include/AC3AudioRTPSink.hh
---- a/live/liveMedia/include/AC3AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AC3AudioRTPSink.hh	2018-02-01 16:51:35.368943400 +0900
+diff -Naru a/liveMedia/include/AC3AudioRTPSink.hh b/liveMedia/include/AC3AudioRTPSink.hh
+--- a/liveMedia/include/AC3AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AC3AudioRTPSink.hh	2018-02-01 16:51:35.368943400 +0900
 @@ -25,7 +25,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -1152,9 +463,9 @@ diff -Naru a/live/liveMedia/include/AC3AudioRTPSink.hh b/live/liveMedia/include/
  public:
    static AC3AudioRTPSink* createNew(UsageEnvironment& env,
  				    Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/AC3AudioRTPSource.hh b/live/liveMedia/include/AC3AudioRTPSource.hh
---- a/live/liveMedia/include/AC3AudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AC3AudioRTPSource.hh	2018-02-01 16:51:43.446921800 +0900
+diff -Naru a/liveMedia/include/AC3AudioRTPSource.hh b/liveMedia/include/AC3AudioRTPSource.hh
+--- a/liveMedia/include/AC3AudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AC3AudioRTPSource.hh	2018-02-01 16:51:43.446921800 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -1164,9 +475,9 @@ diff -Naru a/live/liveMedia/include/AC3AudioRTPSource.hh b/live/liveMedia/includ
  public:
    static AC3AudioRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/AC3AudioStreamFramer.hh b/live/liveMedia/include/AC3AudioStreamFramer.hh
---- a/live/liveMedia/include/AC3AudioStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AC3AudioStreamFramer.hh	2018-02-01 16:51:49.224933300 +0900
+diff -Naru a/liveMedia/include/AC3AudioStreamFramer.hh b/liveMedia/include/AC3AudioStreamFramer.hh
+--- a/liveMedia/include/AC3AudioStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AC3AudioStreamFramer.hh	2018-02-01 16:51:49.224933300 +0900
 @@ -25,7 +25,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -1176,9 +487,9 @@ diff -Naru a/live/liveMedia/include/AC3AudioStreamFramer.hh b/live/liveMedia/inc
  public:
    static AC3AudioStreamFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh b/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh
---- a/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh	2018-02-01 16:51:55.630913800 +0900
+diff -Naru a/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh b/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh
+--- a/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh	2018-02-01 16:51:55.630913800 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1188,9 +499,9 @@ diff -Naru a/live/liveMedia/include/ADTSAudioFileServerMediaSubsession.hh b/live
  public:
    static ADTSAudioFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/ADTSAudioFileSource.hh b/live/liveMedia/include/ADTSAudioFileSource.hh
---- a/live/liveMedia/include/ADTSAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ADTSAudioFileSource.hh	2018-02-01 16:52:01.003925700 +0900
+diff -Naru a/liveMedia/include/ADTSAudioFileSource.hh b/liveMedia/include/ADTSAudioFileSource.hh
+--- a/liveMedia/include/ADTSAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ADTSAudioFileSource.hh	2018-02-01 16:52:01.003925700 +0900
 @@ -25,7 +25,7 @@
  #include "FramedFileSource.hh"
  #endif
@@ -1200,9 +511,9 @@ diff -Naru a/live/liveMedia/include/ADTSAudioFileSource.hh b/live/liveMedia/incl
  public:
    static ADTSAudioFileSource* createNew(UsageEnvironment& env,
  				       char const* fileName);
-diff -Naru a/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh b/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh
---- a/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh	2018-02-01 16:52:09.382896800 +0900
+diff -Naru a/liveMedia/include/AMRAudioFileServerMediaSubsession.hh b/liveMedia/include/AMRAudioFileServerMediaSubsession.hh
+--- a/liveMedia/include/AMRAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AMRAudioFileServerMediaSubsession.hh	2018-02-01 16:52:09.382896800 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1212,9 +523,9 @@ diff -Naru a/live/liveMedia/include/AMRAudioFileServerMediaSubsession.hh b/live/
  public:
    static AMRAudioFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/AMRAudioFileSink.hh b/live/liveMedia/include/AMRAudioFileSink.hh
---- a/live/liveMedia/include/AMRAudioFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AMRAudioFileSink.hh	2018-02-01 16:52:15.874900600 +0900
+diff -Naru a/liveMedia/include/AMRAudioFileSink.hh b/liveMedia/include/AMRAudioFileSink.hh
+--- a/liveMedia/include/AMRAudioFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AMRAudioFileSink.hh	2018-02-01 16:52:15.874900600 +0900
 @@ -25,7 +25,7 @@
  #include "FileSink.hh"
  #endif
@@ -1224,9 +535,9 @@ diff -Naru a/live/liveMedia/include/AMRAudioFileSink.hh b/live/liveMedia/include
  public:
    static AMRAudioFileSink* createNew(UsageEnvironment& env, char const* fileName,
  				     unsigned bufferSize = 10000,
-diff -Naru a/live/liveMedia/include/AMRAudioFileSource.hh b/live/liveMedia/include/AMRAudioFileSource.hh
---- a/live/liveMedia/include/AMRAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AMRAudioFileSource.hh	2018-02-01 16:52:22.873888000 +0900
+diff -Naru a/liveMedia/include/AMRAudioFileSource.hh b/liveMedia/include/AMRAudioFileSource.hh
+--- a/liveMedia/include/AMRAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AMRAudioFileSource.hh	2018-02-01 16:52:22.873888000 +0900
 @@ -25,7 +25,7 @@
  #include "AMRAudioSource.hh"
  #endif
@@ -1236,9 +547,9 @@ diff -Naru a/live/liveMedia/include/AMRAudioFileSource.hh b/live/liveMedia/inclu
  public:
    static AMRAudioFileSource* createNew(UsageEnvironment& env,
  				       char const* fileName);
-diff -Naru a/live/liveMedia/include/AMRAudioRTPSink.hh b/live/liveMedia/include/AMRAudioRTPSink.hh
---- a/live/liveMedia/include/AMRAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AMRAudioRTPSink.hh	2018-02-01 16:52:28.857887800 +0900
+diff -Naru a/liveMedia/include/AMRAudioRTPSink.hh b/liveMedia/include/AMRAudioRTPSink.hh
+--- a/liveMedia/include/AMRAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AMRAudioRTPSink.hh	2018-02-01 16:52:28.857887800 +0900
 @@ -25,7 +25,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -1248,9 +559,9 @@ diff -Naru a/live/liveMedia/include/AMRAudioRTPSink.hh b/live/liveMedia/include/
  public:
    static AMRAudioRTPSink* createNew(UsageEnvironment& env,
  				    Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/AMRAudioRTPSource.hh b/live/liveMedia/include/AMRAudioRTPSource.hh
---- a/live/liveMedia/include/AMRAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AMRAudioRTPSource.hh	2018-02-01 16:52:43.895874700 +0900
+diff -Naru a/liveMedia/include/AMRAudioRTPSource.hh b/liveMedia/include/AMRAudioRTPSource.hh
+--- a/liveMedia/include/AMRAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AMRAudioRTPSource.hh	2018-02-01 16:52:43.895874700 +0900
 @@ -28,7 +28,7 @@
  #include "AMRAudioSource.hh"
  #endif
@@ -1260,9 +571,9 @@ diff -Naru a/live/liveMedia/include/AMRAudioRTPSource.hh b/live/liveMedia/includ
  public:
    static AMRAudioSource* createNew(UsageEnvironment& env,
  				   Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/AMRAudioSource.hh b/live/liveMedia/include/AMRAudioSource.hh
---- a/live/liveMedia/include/AMRAudioSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AMRAudioSource.hh	2018-02-01 16:52:50.384892900 +0900
+diff -Naru a/liveMedia/include/AMRAudioSource.hh b/liveMedia/include/AMRAudioSource.hh
+--- a/liveMedia/include/AMRAudioSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AMRAudioSource.hh	2018-02-01 16:52:50.384892900 +0900
 @@ -25,7 +25,7 @@
  #include "FramedSource.hh"
  #endif
@@ -1272,9 +583,9 @@ diff -Naru a/live/liveMedia/include/AMRAudioSource.hh b/live/liveMedia/include/A
  public:
    Boolean isWideband() const { return fIsWideband; }
    unsigned numChannels() const { return fNumChannels; }
-diff -Naru a/live/liveMedia/include/AudioInputDevice.hh b/live/liveMedia/include/AudioInputDevice.hh
---- a/live/liveMedia/include/AudioInputDevice.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AudioInputDevice.hh	2018-02-01 16:52:59.646871800 +0900
+diff -Naru a/liveMedia/include/AudioInputDevice.hh b/liveMedia/include/AudioInputDevice.hh
+--- a/liveMedia/include/AudioInputDevice.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AudioInputDevice.hh	2018-02-01 16:52:59.646871800 +0900
 @@ -24,7 +24,7 @@
  #include "FramedSource.hh"
  #endif
@@ -1293,9 +604,9 @@ diff -Naru a/live/liveMedia/include/AudioInputDevice.hh b/live/liveMedia/include
  public:
    unsigned char bitsPerSample() const { return fBitsPerSample; }
    unsigned char numChannels() const { return fNumChannels; }
-diff -Naru a/live/liveMedia/include/AudioRTPSink.hh b/live/liveMedia/include/AudioRTPSink.hh
---- a/live/liveMedia/include/AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AudioRTPSink.hh	2018-02-01 16:53:05.271867800 +0900
+diff -Naru a/liveMedia/include/AudioRTPSink.hh b/liveMedia/include/AudioRTPSink.hh
+--- a/liveMedia/include/AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AudioRTPSink.hh	2018-02-01 16:53:05.271867800 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSink.hh"
  #endif
@@ -1305,9 +616,9 @@ diff -Naru a/live/liveMedia/include/AudioRTPSink.hh b/live/liveMedia/include/Aud
  protected:
    AudioRTPSink(UsageEnvironment& env,
  	       Groupsock* rtpgs, unsigned char rtpPayloadType,
-diff -Naru a/live/liveMedia/include/AVIFileSink.hh b/live/liveMedia/include/AVIFileSink.hh
---- a/live/liveMedia/include/AVIFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/AVIFileSink.hh	2018-02-01 16:53:13.784877300 +0900
+diff -Naru a/liveMedia/include/AVIFileSink.hh b/liveMedia/include/AVIFileSink.hh
+--- a/liveMedia/include/AVIFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/AVIFileSink.hh	2018-02-01 16:53:13.784877300 +0900
 @@ -25,7 +25,7 @@
  #include "MediaSession.hh"
  #endif
@@ -1317,9 +628,9 @@ diff -Naru a/live/liveMedia/include/AVIFileSink.hh b/live/liveMedia/include/AVIF
  public:
    static AVIFileSink* createNew(UsageEnvironment& env,
  				MediaSession& inputSession,
-diff -Naru a/live/liveMedia/include/Base64.hh b/live/liveMedia/include/Base64.hh
---- a/live/liveMedia/include/Base64.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/Base64.hh	2018-02-01 16:53:25.856847300 +0900
+diff -Naru a/liveMedia/include/Base64.hh b/liveMedia/include/Base64.hh
+--- a/liveMedia/include/Base64.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/Base64.hh	2018-02-01 16:53:25.856847300 +0900
 @@ -25,18 +25,18 @@
  #include "Boolean.hh"
  #endif
@@ -1342,9 +653,9 @@ diff -Naru a/live/liveMedia/include/Base64.hh b/live/liveMedia/include/Base64.hh
      // returns a 0-terminated string that
      // the caller is responsible for delete[]ing.
  
-diff -Naru a/live/liveMedia/include/BasicUDPSink.hh b/live/liveMedia/include/BasicUDPSink.hh
---- a/live/liveMedia/include/BasicUDPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/BasicUDPSink.hh	2018-02-01 16:53:33.614866000 +0900
+diff -Naru a/liveMedia/include/BasicUDPSink.hh b/liveMedia/include/BasicUDPSink.hh
+--- a/liveMedia/include/BasicUDPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/BasicUDPSink.hh	2018-02-01 16:53:33.614866000 +0900
 @@ -28,7 +28,7 @@
  #include <Groupsock.hh>
  #endif
@@ -1354,9 +665,9 @@ diff -Naru a/live/liveMedia/include/BasicUDPSink.hh b/live/liveMedia/include/Bas
  public:
    static BasicUDPSink* createNew(UsageEnvironment& env, Groupsock* gs,
  				  unsigned maxPayloadSize = 1450);
-diff -Naru a/live/liveMedia/include/BasicUDPSource.hh b/live/liveMedia/include/BasicUDPSource.hh
---- a/live/liveMedia/include/BasicUDPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/BasicUDPSource.hh	2018-02-01 16:53:39.446859600 +0900
+diff -Naru a/liveMedia/include/BasicUDPSource.hh b/liveMedia/include/BasicUDPSource.hh
+--- a/liveMedia/include/BasicUDPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/BasicUDPSource.hh	2018-02-01 16:53:39.446859600 +0900
 @@ -28,7 +28,7 @@
  #include "Groupsock.hh"
  #endif
@@ -1366,9 +677,9 @@ diff -Naru a/live/liveMedia/include/BasicUDPSource.hh b/live/liveMedia/include/B
  public:
    static BasicUDPSource* createNew(UsageEnvironment& env, Groupsock* inputGS);
  
-diff -Naru a/live/liveMedia/include/BitVector.hh b/live/liveMedia/include/BitVector.hh
---- a/live/liveMedia/include/BitVector.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/BitVector.hh	2018-02-01 16:53:45.894857400 +0900
+diff -Naru a/liveMedia/include/BitVector.hh b/liveMedia/include/BitVector.hh
+--- a/liveMedia/include/BitVector.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/BitVector.hh	2018-02-01 16:53:45.894857400 +0900
 @@ -25,7 +25,7 @@
  #include "Boolean.hh"
  #endif
@@ -1378,9 +689,9 @@ diff -Naru a/live/liveMedia/include/BitVector.hh b/live/liveMedia/include/BitVec
  public:
    BitVector(unsigned char* baseBytePtr,
  	    unsigned baseBitOffset,
-diff -Naru a/live/liveMedia/include/ByteStreamFileSource.hh b/live/liveMedia/include/ByteStreamFileSource.hh
---- a/live/liveMedia/include/ByteStreamFileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ByteStreamFileSource.hh	2018-02-01 16:53:54.335834400 +0900
+diff -Naru a/liveMedia/include/ByteStreamFileSource.hh b/liveMedia/include/ByteStreamFileSource.hh
+--- a/liveMedia/include/ByteStreamFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ByteStreamFileSource.hh	2018-02-01 16:53:54.335834400 +0900
 @@ -25,7 +25,7 @@
  #include "FramedFileSource.hh"
  #endif
@@ -1390,9 +701,9 @@ diff -Naru a/live/liveMedia/include/ByteStreamFileSource.hh b/live/liveMedia/inc
  public:
    static ByteStreamFileSource* createNew(UsageEnvironment& env,
  					 char const* fileName,
-diff -Naru a/live/liveMedia/include/ByteStreamMemoryBufferSource.hh b/live/liveMedia/include/ByteStreamMemoryBufferSource.hh
---- a/live/liveMedia/include/ByteStreamMemoryBufferSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ByteStreamMemoryBufferSource.hh	2018-02-01 16:54:00.656826100 +0900
+diff -Naru a/liveMedia/include/ByteStreamMemoryBufferSource.hh b/liveMedia/include/ByteStreamMemoryBufferSource.hh
+--- a/liveMedia/include/ByteStreamMemoryBufferSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ByteStreamMemoryBufferSource.hh	2018-02-01 16:54:00.656826100 +0900
 @@ -25,7 +25,7 @@
  #include "FramedSource.hh"
  #endif
@@ -1402,9 +713,9 @@ diff -Naru a/live/liveMedia/include/ByteStreamMemoryBufferSource.hh b/live/liveM
  public:
    static ByteStreamMemoryBufferSource* createNew(UsageEnvironment& env,
  						 u_int8_t* buffer, u_int64_t bufferSize,
-diff -Naru a/live/liveMedia/include/ByteStreamMultiFileSource.hh b/live/liveMedia/include/ByteStreamMultiFileSource.hh
---- a/live/liveMedia/include/ByteStreamMultiFileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ByteStreamMultiFileSource.hh	2018-02-01 16:54:06.647827200 +0900
+diff -Naru a/liveMedia/include/ByteStreamMultiFileSource.hh b/liveMedia/include/ByteStreamMultiFileSource.hh
+--- a/liveMedia/include/ByteStreamMultiFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ByteStreamMultiFileSource.hh	2018-02-01 16:54:06.647827200 +0900
 @@ -25,7 +25,7 @@
  #include "ByteStreamFileSource.hh"
  #endif
@@ -1414,9 +725,9 @@ diff -Naru a/live/liveMedia/include/ByteStreamMultiFileSource.hh b/live/liveMedi
  public:
    static ByteStreamMultiFileSource*
    createNew(UsageEnvironment& env, char const** fileNameArray,
-diff -Naru a/live/liveMedia/include/DeviceSource.hh b/live/liveMedia/include/DeviceSource.hh
---- a/live/liveMedia/include/DeviceSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/DeviceSource.hh	2018-02-01 16:54:12.856816800 +0900
+diff -Naru a/liveMedia/include/DeviceSource.hh b/liveMedia/include/DeviceSource.hh
+--- a/liveMedia/include/DeviceSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/DeviceSource.hh	2018-02-01 16:54:12.856816800 +0900
 @@ -33,7 +33,7 @@
    //%%% TO BE WRITTEN %%%
  };
@@ -1426,9 +737,9 @@ diff -Naru a/live/liveMedia/include/DeviceSource.hh b/live/liveMedia/include/Dev
  public:
    static DeviceSource* createNew(UsageEnvironment& env,
  				 DeviceParameters params);
-diff -Naru a/live/liveMedia/include/DigestAuthentication.hh b/live/liveMedia/include/DigestAuthentication.hh
---- a/live/liveMedia/include/DigestAuthentication.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/DigestAuthentication.hh	2018-02-01 16:54:21.158818600 +0900
+diff -Naru a/liveMedia/include/DigestAuthentication.hh b/liveMedia/include/DigestAuthentication.hh
+--- a/liveMedia/include/DigestAuthentication.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/DigestAuthentication.hh	2018-02-01 16:54:21.158818600 +0900
 @@ -29,7 +29,7 @@
  // The "realm", and "nonce" fields are supplied by the server
  // (in a "401 Unauthorized" response).
@@ -1438,9 +749,9 @@ diff -Naru a/live/liveMedia/include/DigestAuthentication.hh b/live/liveMedia/inc
  public:
    Authenticator();
    Authenticator(char const* username, char const* password, Boolean passwordIsMD5 = False);
-diff -Naru a/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh b/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh
---- a/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh	2018-02-01 16:54:27.285829400 +0900
+diff -Naru a/liveMedia/include/DVVideoFileServerMediaSubsession.hh b/liveMedia/include/DVVideoFileServerMediaSubsession.hh
+--- a/liveMedia/include/DVVideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/DVVideoFileServerMediaSubsession.hh	2018-02-01 16:54:27.285829400 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1450,9 +761,9 @@ diff -Naru a/live/liveMedia/include/DVVideoFileServerMediaSubsession.hh b/live/l
  public:
    static DVVideoFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/DVVideoRTPSink.hh b/live/liveMedia/include/DVVideoRTPSink.hh
---- a/live/liveMedia/include/DVVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/DVVideoRTPSink.hh	2018-02-01 16:54:32.454810500 +0900
+diff -Naru a/liveMedia/include/DVVideoRTPSink.hh b/liveMedia/include/DVVideoRTPSink.hh
+--- a/liveMedia/include/DVVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/DVVideoRTPSink.hh	2018-02-01 16:54:32.454810500 +0900
 @@ -29,7 +29,7 @@
  #include "DVVideoStreamFramer.hh"
  #endif
@@ -1462,9 +773,9 @@ diff -Naru a/live/liveMedia/include/DVVideoRTPSink.hh b/live/liveMedia/include/D
  public:
    static DVVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
    char const* auxSDPLineFromFramer(DVVideoStreamFramer* framerSource);
-diff -Naru a/live/liveMedia/include/DVVideoRTPSource.hh b/live/liveMedia/include/DVVideoRTPSource.hh
---- a/live/liveMedia/include/DVVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/DVVideoRTPSource.hh	2018-02-01 16:54:37.478807000 +0900
+diff -Naru a/liveMedia/include/DVVideoRTPSource.hh b/liveMedia/include/DVVideoRTPSource.hh
+--- a/liveMedia/include/DVVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/DVVideoRTPSource.hh	2018-02-01 16:54:37.478807000 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -1474,9 +785,9 @@ diff -Naru a/live/liveMedia/include/DVVideoRTPSource.hh b/live/liveMedia/include
  public:
    static DVVideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/DVVideoStreamFramer.hh b/live/liveMedia/include/DVVideoStreamFramer.hh
---- a/live/liveMedia/include/DVVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/DVVideoStreamFramer.hh	2018-02-01 16:54:42.671800300 +0900
+diff -Naru a/liveMedia/include/DVVideoStreamFramer.hh b/liveMedia/include/DVVideoStreamFramer.hh
+--- a/liveMedia/include/DVVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/DVVideoStreamFramer.hh	2018-02-01 16:54:42.671800300 +0900
 @@ -30,7 +30,7 @@
  #define DV_SAVED_INITIAL_BLOCKS_SIZE ((DV_NUM_BLOCKS_PER_SEQUENCE+6-1)*DV_DIF_BLOCK_SIZE)
      /* enough data to ensure that it contains an intact 6-block header (which occurs at the start of a 150-block sequence) */
@@ -1486,43 +797,9 @@ diff -Naru a/live/liveMedia/include/DVVideoStreamFramer.hh b/live/liveMedia/incl
  public:
    static DVVideoStreamFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/export.h b/live/liveMedia/include/export.h
---- a/live/liveMedia/include/export.h	1970-01-01 09:00:00.000000000 +0900
-+++ b/live/liveMedia/include/export.h	2017-12-22 12:50:44.848427400 +0900
-@@ -0,0 +1,30 @@
-+#pragma once
-+
-+#ifdef __cplusplus
-+extern "C" {
-+#endif // #ifdef __cplusplus
-+
-+
-+#if _WIN32
-+#  define LIVEMEDIA_EXPORT_API __declspec (dllexport)
-+#  define LIVEMEDIA_IMPORT_API __declspec (dllimport)
-+#else // #if _WIN32
-+#  define LIVEMEDIA_EXPORT_API __attribute__ ((visibility("default")))
-+#  define LIVEMEDIA_IMPORT_API __attribute__ ((visibility("default")))
-+#endif // #if _WIN32
-+
-+
-+#ifndef LIVEMEDIA_STATIC
-+#  ifdef LIVEMEDIA_EXPORTS
-+#     define LIVEMEDIA_API LIVEMEDIA_EXPORT_API
-+#  else
-+#     define LIVEMEDIA_API LIVEMEDIA_IMPORT_API
-+#  endif // #ifdef LIVEMEDIA_EXPORTS
-+#else // #ifndef LIVEMEDIA_STATIC
-+#  define LIVEMEDIA_API
-+#endif // #ifndef LIVEMEDIA_STATIC
-+
-+
-+#ifdef __cplusplus
-+} // extern "C" {
-+#endif // #ifdef __cplusplus
-diff -Naru a/live/liveMedia/include/FileServerMediaSubsession.hh b/live/liveMedia/include/FileServerMediaSubsession.hh
---- a/live/liveMedia/include/FileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/FileServerMediaSubsession.hh	2018-02-01 16:55:09.914778400 +0900
+diff -Naru a/liveMedia/include/FileServerMediaSubsession.hh b/liveMedia/include/FileServerMediaSubsession.hh
+--- a/liveMedia/include/FileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/FileServerMediaSubsession.hh	2018-02-01 16:55:09.914778400 +0900
 @@ -29,7 +29,7 @@
  #include "OnDemandServerMediaSubsession.hh"
  #endif
@@ -1532,9 +809,9 @@ diff -Naru a/live/liveMedia/include/FileServerMediaSubsession.hh b/live/liveMedi
  protected: // we're a virtual base class
    FileServerMediaSubsession(UsageEnvironment& env, char const* fileName,
  			    Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/FileSink.hh b/live/liveMedia/include/FileSink.hh
---- a/live/liveMedia/include/FileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/FileSink.hh	2018-02-01 16:55:16.072797300 +0900
+diff -Naru a/liveMedia/include/FileSink.hh b/liveMedia/include/FileSink.hh
+--- a/liveMedia/include/FileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/FileSink.hh	2018-02-01 16:55:16.072797300 +0900
 @@ -25,7 +25,7 @@
  #include "MediaSink.hh"
  #endif
@@ -1544,9 +821,9 @@ diff -Naru a/live/liveMedia/include/FileSink.hh b/live/liveMedia/include/FileSin
  public:
    static FileSink* createNew(UsageEnvironment& env, char const* fileName,
  			     unsigned bufferSize = 20000,
-diff -Naru a/live/liveMedia/include/FramedFileSource.hh b/live/liveMedia/include/FramedFileSource.hh
---- a/live/liveMedia/include/FramedFileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/FramedFileSource.hh	2018-02-01 16:55:22.575776200 +0900
+diff -Naru a/liveMedia/include/FramedFileSource.hh b/liveMedia/include/FramedFileSource.hh
+--- a/liveMedia/include/FramedFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/FramedFileSource.hh	2018-02-01 16:55:22.575776200 +0900
 @@ -25,7 +25,7 @@
  #include "FramedSource.hh"
  #endif
@@ -1556,9 +833,9 @@ diff -Naru a/live/liveMedia/include/FramedFileSource.hh b/live/liveMedia/include
  protected:
    FramedFileSource(UsageEnvironment& env, FILE* fid); // abstract base class
    virtual ~FramedFileSource();
-diff -Naru a/live/liveMedia/include/FramedFilter.hh b/live/liveMedia/include/FramedFilter.hh
---- a/live/liveMedia/include/FramedFilter.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/FramedFilter.hh	2018-02-01 16:55:29.049769900 +0900
+diff -Naru a/liveMedia/include/FramedFilter.hh b/liveMedia/include/FramedFilter.hh
+--- a/liveMedia/include/FramedFilter.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/FramedFilter.hh	2018-02-01 16:55:29.049769900 +0900
 @@ -25,7 +25,7 @@
  #include "FramedSource.hh"
  #endif
@@ -1568,9 +845,9 @@ diff -Naru a/live/liveMedia/include/FramedFilter.hh b/live/liveMedia/include/Fra
  public:
    FramedSource* inputSource() const { return fInputSource; }
  
-diff -Naru a/live/liveMedia/include/FramedSource.hh b/live/liveMedia/include/FramedSource.hh
---- a/live/liveMedia/include/FramedSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/FramedSource.hh	2018-02-01 16:55:35.099763000 +0900
+diff -Naru a/liveMedia/include/FramedSource.hh b/liveMedia/include/FramedSource.hh
+--- a/liveMedia/include/FramedSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/FramedSource.hh	2018-02-01 16:55:35.099763000 +0900
 @@ -28,7 +28,7 @@
  #include "MediaSource.hh"
  #endif
@@ -1580,9 +857,9 @@ diff -Naru a/live/liveMedia/include/FramedSource.hh b/live/liveMedia/include/Fra
  public:
    static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
  			      FramedSource*& resultSource);
-diff -Naru a/live/liveMedia/include/GenericMediaServer.hh b/live/liveMedia/include/GenericMediaServer.hh
---- a/live/liveMedia/include/GenericMediaServer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/GenericMediaServer.hh	2018-02-01 16:55:44.784777900 +0900
+diff -Naru a/liveMedia/include/GenericMediaServer.hh b/liveMedia/include/GenericMediaServer.hh
+--- a/liveMedia/include/GenericMediaServer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/GenericMediaServer.hh	2018-02-01 16:55:44.784777900 +0900
 @@ -36,7 +36,7 @@
  #define RESPONSE_BUFFER_SIZE 20000
  #endif
@@ -1601,9 +878,9 @@ diff -Naru a/live/liveMedia/include/GenericMediaServer.hh b/live/liveMedia/inclu
  public:
    UserAuthenticationDatabase(char const* realm = NULL,
  			     Boolean passwordsAreMD5 = False);
-diff -Naru a/live/liveMedia/include/GSMAudioRTPSink.hh b/live/liveMedia/include/GSMAudioRTPSink.hh
---- a/live/liveMedia/include/GSMAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/GSMAudioRTPSink.hh	2018-02-01 16:55:50.840759100 +0900
+diff -Naru a/liveMedia/include/GSMAudioRTPSink.hh b/liveMedia/include/GSMAudioRTPSink.hh
+--- a/liveMedia/include/GSMAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/GSMAudioRTPSink.hh	2018-02-01 16:55:50.840759100 +0900
 @@ -25,7 +25,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -1613,9 +890,9 @@ diff -Naru a/live/liveMedia/include/GSMAudioRTPSink.hh b/live/liveMedia/include/
  public:
    static GSMAudioRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
  
-diff -Naru a/live/liveMedia/include/H261VideoRTPSource.hh b/live/liveMedia/include/H261VideoRTPSource.hh
---- a/live/liveMedia/include/H261VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H261VideoRTPSource.hh	2018-02-01 16:55:58.432746700 +0900
+diff -Naru a/liveMedia/include/H261VideoRTPSource.hh b/liveMedia/include/H261VideoRTPSource.hh
+--- a/liveMedia/include/H261VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H261VideoRTPSource.hh	2018-02-01 16:55:58.432746700 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -1625,9 +902,9 @@ diff -Naru a/live/liveMedia/include/H261VideoRTPSource.hh b/live/liveMedia/inclu
  public:
    static H261VideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh b/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh
---- a/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh	2018-02-01 16:56:04.072750000 +0900
+diff -Naru a/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh b/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh
+--- a/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh	2018-02-01 16:56:04.072750000 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1637,9 +914,9 @@ diff -Naru a/live/liveMedia/include/H263plusVideoFileServerMediaSubsession.hh b/
  public:
    static H263plusVideoFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/H263plusVideoRTPSink.hh b/live/liveMedia/include/H263plusVideoRTPSink.hh
---- a/live/liveMedia/include/H263plusVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H263plusVideoRTPSink.hh	2018-02-01 16:56:10.041762700 +0900
+diff -Naru a/liveMedia/include/H263plusVideoRTPSink.hh b/liveMedia/include/H263plusVideoRTPSink.hh
+--- a/liveMedia/include/H263plusVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H263plusVideoRTPSink.hh	2018-02-01 16:56:10.041762700 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -1649,9 +926,9 @@ diff -Naru a/live/liveMedia/include/H263plusVideoRTPSink.hh b/live/liveMedia/inc
  public:
    static H263plusVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs,
  					 unsigned char rtpPayloadFormat,
-diff -Naru a/live/liveMedia/include/H263plusVideoRTPSource.hh b/live/liveMedia/include/H263plusVideoRTPSource.hh
---- a/live/liveMedia/include/H263plusVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H263plusVideoRTPSource.hh	2018-02-01 16:56:16.137759200 +0900
+diff -Naru a/liveMedia/include/H263plusVideoRTPSource.hh b/liveMedia/include/H263plusVideoRTPSource.hh
+--- a/liveMedia/include/H263plusVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H263plusVideoRTPSource.hh	2018-02-01 16:56:16.137759200 +0900
 @@ -27,7 +27,7 @@
  
  #define SPECIAL_HEADER_BUFFER_SIZE 1000
@@ -1661,9 +938,9 @@ diff -Naru a/live/liveMedia/include/H263plusVideoRTPSource.hh b/live/liveMedia/i
  public:
    static H263plusVideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/H263plusVideoStreamFramer.hh b/live/liveMedia/include/H263plusVideoStreamFramer.hh
---- a/live/liveMedia/include/H263plusVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H263plusVideoStreamFramer.hh	2018-02-01 16:56:23.640732000 +0900
+diff -Naru a/liveMedia/include/H263plusVideoStreamFramer.hh b/liveMedia/include/H263plusVideoStreamFramer.hh
+--- a/liveMedia/include/H263plusVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H263plusVideoStreamFramer.hh	2018-02-01 16:56:23.640732000 +0900
 @@ -26,7 +26,7 @@
  #endif
  
@@ -1673,9 +950,9 @@ diff -Naru a/live/liveMedia/include/H263plusVideoStreamFramer.hh b/live/liveMedi
  public:
  
    static H263plusVideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/H264or5VideoFileSink.hh b/live/liveMedia/include/H264or5VideoFileSink.hh
---- a/live/liveMedia/include/H264or5VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264or5VideoFileSink.hh	2018-02-01 16:56:29.518731400 +0900
+diff -Naru a/liveMedia/include/H264or5VideoFileSink.hh b/liveMedia/include/H264or5VideoFileSink.hh
+--- a/liveMedia/include/H264or5VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264or5VideoFileSink.hh	2018-02-01 16:56:29.518731400 +0900
 @@ -25,7 +25,7 @@
  #include "FileSink.hh"
  #endif
@@ -1685,9 +962,9 @@ diff -Naru a/live/liveMedia/include/H264or5VideoFileSink.hh b/live/liveMedia/inc
  protected:
    H264or5VideoFileSink(UsageEnvironment& env, FILE* fid,
  		       unsigned bufferSize, char const* perFrameFileNamePrefix,
-diff -Naru a/live/liveMedia/include/H264or5VideoRTPSink.hh b/live/liveMedia/include/H264or5VideoRTPSink.hh
---- a/live/liveMedia/include/H264or5VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264or5VideoRTPSink.hh	2018-02-01 16:56:35.057747100 +0900
+diff -Naru a/liveMedia/include/H264or5VideoRTPSink.hh b/liveMedia/include/H264or5VideoRTPSink.hh
+--- a/liveMedia/include/H264or5VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264or5VideoRTPSink.hh	2018-02-01 16:56:35.057747100 +0900
 @@ -28,7 +28,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -1697,9 +974,9 @@ diff -Naru a/live/liveMedia/include/H264or5VideoRTPSink.hh b/live/liveMedia/incl
  protected:
    H264or5VideoRTPSink(int hNumber, // 264 or 265
  		      UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,
-diff -Naru a/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh b/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh
---- a/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh	2018-02-01 16:56:40.063726500 +0900
+diff -Naru a/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh b/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh
+--- a/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh	2018-02-01 16:56:40.063726500 +0900
 @@ -28,7 +28,7 @@
  #include "H264or5VideoStreamFramer.hh"
  #endif
@@ -1709,9 +986,9 @@ diff -Naru a/live/liveMedia/include/H264or5VideoStreamDiscreteFramer.hh b/live/l
  protected:
    H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource);
        // we're an abstract base class
-diff -Naru a/live/liveMedia/include/H264or5VideoStreamFramer.hh b/live/liveMedia/include/H264or5VideoStreamFramer.hh
---- a/live/liveMedia/include/H264or5VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264or5VideoStreamFramer.hh	2018-02-01 16:56:46.026716700 +0900
+diff -Naru a/liveMedia/include/H264or5VideoStreamFramer.hh b/liveMedia/include/H264or5VideoStreamFramer.hh
+--- a/liveMedia/include/H264or5VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264or5VideoStreamFramer.hh	2018-02-01 16:56:46.026716700 +0900
 @@ -25,7 +25,7 @@
  #include "MPEGVideoStreamFramer.hh"
  #endif
@@ -1721,9 +998,9 @@ diff -Naru a/live/liveMedia/include/H264or5VideoStreamFramer.hh b/live/liveMedia
  public:
    void getVPSandSPSandPPS(u_int8_t*& vps, unsigned& vpsSize,
  			  u_int8_t*& sps, unsigned& spsSize,
-diff -Naru a/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh b/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh
---- a/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh	2018-02-01 16:56:51.841734800 +0900
+diff -Naru a/liveMedia/include/H264VideoFileServerMediaSubsession.hh b/liveMedia/include/H264VideoFileServerMediaSubsession.hh
+--- a/liveMedia/include/H264VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264VideoFileServerMediaSubsession.hh	2018-02-01 16:56:51.841734800 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1733,9 +1010,9 @@ diff -Naru a/live/liveMedia/include/H264VideoFileServerMediaSubsession.hh b/live
  public:
    static H264VideoFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/H264VideoFileSink.hh b/live/liveMedia/include/H264VideoFileSink.hh
---- a/live/liveMedia/include/H264VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264VideoFileSink.hh	2018-02-01 16:56:58.375714800 +0900
+diff -Naru a/liveMedia/include/H264VideoFileSink.hh b/liveMedia/include/H264VideoFileSink.hh
+--- a/liveMedia/include/H264VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264VideoFileSink.hh	2018-02-01 16:56:58.375714800 +0900
 @@ -25,7 +25,7 @@
  #include "H264or5VideoFileSink.hh"
  #endif
@@ -1745,9 +1022,9 @@ diff -Naru a/live/liveMedia/include/H264VideoFileSink.hh b/live/liveMedia/includ
  public:
    static H264VideoFileSink* createNew(UsageEnvironment& env, char const* fileName,
  				      char const* sPropParameterSetsStr = NULL,
-diff -Naru a/live/liveMedia/include/H264VideoRTPSink.hh b/live/liveMedia/include/H264VideoRTPSink.hh
---- a/live/liveMedia/include/H264VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264VideoRTPSink.hh	2018-02-01 16:57:03.688704300 +0900
+diff -Naru a/liveMedia/include/H264VideoRTPSink.hh b/liveMedia/include/H264VideoRTPSink.hh
+--- a/liveMedia/include/H264VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264VideoRTPSink.hh	2018-02-01 16:57:03.688704300 +0900
 @@ -25,7 +25,7 @@
  #include "H264or5VideoRTPSink.hh"
  #endif
@@ -1757,9 +1034,9 @@ diff -Naru a/live/liveMedia/include/H264VideoRTPSink.hh b/live/liveMedia/include
  public:
    static H264VideoRTPSink*
    createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
-diff -Naru a/live/liveMedia/include/H264VideoRTPSource.hh b/live/liveMedia/include/H264VideoRTPSource.hh
---- a/live/liveMedia/include/H264VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264VideoRTPSource.hh	2018-02-01 16:57:14.775704200 +0900
+diff -Naru a/liveMedia/include/H264VideoRTPSource.hh b/liveMedia/include/H264VideoRTPSource.hh
+--- a/liveMedia/include/H264VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264VideoRTPSource.hh	2018-02-01 16:57:14.775704200 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -1787,9 +1064,9 @@ diff -Naru a/live/liveMedia/include/H264VideoRTPSource.hh b/live/liveMedia/inclu
  				     // result parameter:
  				     unsigned& numSPropRecords);
      // Returns the binary value of each 'parameter set' specified in a
-diff -Naru a/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh b/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh
---- a/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh	2018-02-01 16:57:20.169716000 +0900
+diff -Naru a/liveMedia/include/H264VideoStreamDiscreteFramer.hh b/liveMedia/include/H264VideoStreamDiscreteFramer.hh
+--- a/liveMedia/include/H264VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264VideoStreamDiscreteFramer.hh	2018-02-01 16:57:20.169716000 +0900
 @@ -28,7 +28,7 @@
  #include "H264or5VideoStreamDiscreteFramer.hh"
  #endif
@@ -1799,9 +1076,9 @@ diff -Naru a/live/liveMedia/include/H264VideoStreamDiscreteFramer.hh b/live/live
  public:
    static H264VideoStreamDiscreteFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/H264VideoStreamFramer.hh b/live/liveMedia/include/H264VideoStreamFramer.hh
---- a/live/liveMedia/include/H264VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H264VideoStreamFramer.hh	2018-02-01 16:57:25.673692600 +0900
+diff -Naru a/liveMedia/include/H264VideoStreamFramer.hh b/liveMedia/include/H264VideoStreamFramer.hh
+--- a/liveMedia/include/H264VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H264VideoStreamFramer.hh	2018-02-01 16:57:25.673692600 +0900
 @@ -25,7 +25,7 @@
  #include "H264or5VideoStreamFramer.hh"
  #endif
@@ -1811,9 +1088,9 @@ diff -Naru a/live/liveMedia/include/H264VideoStreamFramer.hh b/live/liveMedia/in
  public:
    static H264VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
  					  Boolean includeStartCodeInOutput = False);
-diff -Naru a/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh b/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh
---- a/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh	2018-02-01 16:57:31.415708400 +0900
+diff -Naru a/liveMedia/include/H265VideoFileServerMediaSubsession.hh b/liveMedia/include/H265VideoFileServerMediaSubsession.hh
+--- a/liveMedia/include/H265VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H265VideoFileServerMediaSubsession.hh	2018-02-01 16:57:31.415708400 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -1823,9 +1100,9 @@ diff -Naru a/live/liveMedia/include/H265VideoFileServerMediaSubsession.hh b/live
  public:
    static H265VideoFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/H265VideoFileSink.hh b/live/liveMedia/include/H265VideoFileSink.hh
---- a/live/liveMedia/include/H265VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H265VideoFileSink.hh	2018-02-01 16:57:37.751681000 +0900
+diff -Naru a/liveMedia/include/H265VideoFileSink.hh b/liveMedia/include/H265VideoFileSink.hh
+--- a/liveMedia/include/H265VideoFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H265VideoFileSink.hh	2018-02-01 16:57:37.751681000 +0900
 @@ -25,7 +25,7 @@
  #include "H264or5VideoFileSink.hh"
  #endif
@@ -1835,9 +1112,9 @@ diff -Naru a/live/liveMedia/include/H265VideoFileSink.hh b/live/liveMedia/includ
  public:
    static H265VideoFileSink* createNew(UsageEnvironment& env, char const* fileName,
  				      char const* sPropVPSStr = NULL,
-diff -Naru a/live/liveMedia/include/H265VideoRTPSink.hh b/live/liveMedia/include/H265VideoRTPSink.hh
---- a/live/liveMedia/include/H265VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H265VideoRTPSink.hh	2018-02-01 16:57:43.391679600 +0900
+diff -Naru a/liveMedia/include/H265VideoRTPSink.hh b/liveMedia/include/H265VideoRTPSink.hh
+--- a/liveMedia/include/H265VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H265VideoRTPSink.hh	2018-02-01 16:57:43.391679600 +0900
 @@ -25,7 +25,7 @@
  #include "H264or5VideoRTPSink.hh"
  #endif
@@ -1847,9 +1124,9 @@ diff -Naru a/live/liveMedia/include/H265VideoRTPSink.hh b/live/liveMedia/include
  public:
    static H265VideoRTPSink*
    createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
-diff -Naru a/live/liveMedia/include/H265VideoRTPSource.hh b/live/liveMedia/include/H265VideoRTPSource.hh
---- a/live/liveMedia/include/H265VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H265VideoRTPSource.hh	2018-02-01 16:57:48.936697800 +0900
+diff -Naru a/liveMedia/include/H265VideoRTPSource.hh b/liveMedia/include/H265VideoRTPSource.hh
+--- a/liveMedia/include/H265VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H265VideoRTPSource.hh	2018-02-01 16:57:48.936697800 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -1859,9 +1136,9 @@ diff -Naru a/live/liveMedia/include/H265VideoRTPSource.hh b/live/liveMedia/inclu
  public:
    static H265VideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh b/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh
---- a/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh	2018-02-01 16:57:54.007672000 +0900
+diff -Naru a/liveMedia/include/H265VideoStreamDiscreteFramer.hh b/liveMedia/include/H265VideoStreamDiscreteFramer.hh
+--- a/liveMedia/include/H265VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H265VideoStreamDiscreteFramer.hh	2018-02-01 16:57:54.007672000 +0900
 @@ -28,7 +28,7 @@
  #include "H264or5VideoStreamDiscreteFramer.hh"
  #endif
@@ -1871,9 +1148,9 @@ diff -Naru a/live/liveMedia/include/H265VideoStreamDiscreteFramer.hh b/live/live
  public:
    static H265VideoStreamDiscreteFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/H265VideoStreamFramer.hh b/live/liveMedia/include/H265VideoStreamFramer.hh
---- a/live/liveMedia/include/H265VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/H265VideoStreamFramer.hh	2018-02-01 16:57:58.840670900 +0900
+diff -Naru a/liveMedia/include/H265VideoStreamFramer.hh b/liveMedia/include/H265VideoStreamFramer.hh
+--- a/liveMedia/include/H265VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/H265VideoStreamFramer.hh	2018-02-01 16:57:58.840670900 +0900
 @@ -25,7 +25,7 @@
  #include "H264or5VideoStreamFramer.hh"
  #endif
@@ -1883,9 +1160,9 @@ diff -Naru a/live/liveMedia/include/H265VideoStreamFramer.hh b/live/liveMedia/in
  public:
    static H265VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
  					  Boolean includeStartCodeInOutput = False);
-diff -Naru a/live/liveMedia/include/InputFile.hh b/live/liveMedia/include/InputFile.hh
---- a/live/liveMedia/include/InputFile.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/InputFile.hh	2018-02-01 16:58:42.522639800 +0900
+diff -Naru a/liveMedia/include/InputFile.hh b/liveMedia/include/InputFile.hh
+--- a/liveMedia/include/InputFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/InputFile.hh	2018-02-01 16:58:42.522639800 +0900
 @@ -46,22 +46,22 @@
  #include <sys/stat.h>
  #endif
@@ -1915,9 +1192,9 @@ diff -Naru a/live/liveMedia/include/InputFile.hh b/live/liveMedia/include/InputF
      // Tests whether "fid" is seekable, by trying to seek within it.
  
  #endif
-diff -Naru a/live/liveMedia/include/JPEGVideoRTPSink.hh b/live/liveMedia/include/JPEGVideoRTPSink.hh
---- a/live/liveMedia/include/JPEGVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/JPEGVideoRTPSink.hh	2018-02-01 16:58:58.813629500 +0900
+diff -Naru a/liveMedia/include/JPEGVideoRTPSink.hh b/liveMedia/include/JPEGVideoRTPSink.hh
+--- a/liveMedia/include/JPEGVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/JPEGVideoRTPSink.hh	2018-02-01 16:58:58.813629500 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -1927,9 +1204,9 @@ diff -Naru a/live/liveMedia/include/JPEGVideoRTPSink.hh b/live/liveMedia/include
  public:
    static JPEGVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
  
-diff -Naru a/live/liveMedia/include/JPEGVideoRTPSource.hh b/live/liveMedia/include/JPEGVideoRTPSource.hh
---- a/live/liveMedia/include/JPEGVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/JPEGVideoRTPSource.hh	2018-02-01 16:59:06.197624200 +0900
+diff -Naru a/liveMedia/include/JPEGVideoRTPSource.hh b/liveMedia/include/JPEGVideoRTPSource.hh
+--- a/liveMedia/include/JPEGVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/JPEGVideoRTPSource.hh	2018-02-01 16:59:06.197624200 +0900
 @@ -27,7 +27,7 @@
  
  #define MAX_JPEG_HEADER_SIZE 1024
@@ -1939,9 +1216,9 @@ diff -Naru a/live/liveMedia/include/JPEGVideoRTPSource.hh b/live/liveMedia/inclu
  public:
    static JPEGVideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/JPEGVideoSource.hh b/live/liveMedia/include/JPEGVideoSource.hh
---- a/live/liveMedia/include/JPEGVideoSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/JPEGVideoSource.hh	2018-02-01 16:59:12.991619200 +0900
+diff -Naru a/liveMedia/include/JPEGVideoSource.hh b/liveMedia/include/JPEGVideoSource.hh
+--- a/liveMedia/include/JPEGVideoSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/JPEGVideoSource.hh	2018-02-01 16:59:12.991619200 +0900
 @@ -25,7 +25,7 @@
  #include "FramedSource.hh"
  #endif
@@ -1951,21 +1228,9 @@ diff -Naru a/live/liveMedia/include/JPEGVideoSource.hh b/live/liveMedia/include/
  public:
    virtual u_int8_t type() = 0;
    virtual u_int8_t qFactor() = 0;
-diff -Naru a/live/liveMedia/include/Locale.hh b/live/liveMedia/include/Locale.hh
---- a/live/liveMedia/include/Locale.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/Locale.hh	2018-02-01 16:59:33.767612900 +0900
-@@ -51,7 +51,7 @@
- 
- enum LocaleCategory { All, Numeric }; // define and implement more categories later, as needed
- 
--class Locale {
-+class LIVEMEDIA_API Locale {
- public:
-   Locale(char const* newLocale, LocaleCategory category = All);
-   virtual ~Locale();
-diff -Naru a/live/liveMedia/include/MatroskaFile.hh b/live/liveMedia/include/MatroskaFile.hh
---- a/live/liveMedia/include/MatroskaFile.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MatroskaFile.hh	2018-02-01 16:59:46.651599800 +0900
+diff -Naru a/liveMedia/include/MatroskaFile.hh b/liveMedia/include/MatroskaFile.hh
+--- a/liveMedia/include/MatroskaFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MatroskaFile.hh	2018-02-01 16:59:46.651599800 +0900
 @@ -31,7 +31,7 @@
  class MatroskaTrack; // forward
  class MatroskaDemux; // forward
@@ -1993,9 +1258,9 @@ diff -Naru a/live/liveMedia/include/MatroskaFile.hh b/live/liveMedia/include/Mat
  public:
    FramedSource* newDemuxedTrack();
    FramedSource* newDemuxedTrack(unsigned& resultTrackNumber);
-diff -Naru a/live/liveMedia/include/MatroskaFileServerDemux.hh b/live/liveMedia/include/MatroskaFileServerDemux.hh
---- a/live/liveMedia/include/MatroskaFileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MatroskaFileServerDemux.hh	2018-02-01 16:59:54.000598800 +0900
+diff -Naru a/liveMedia/include/MatroskaFileServerDemux.hh b/liveMedia/include/MatroskaFileServerDemux.hh
+--- a/liveMedia/include/MatroskaFileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MatroskaFileServerDemux.hh	2018-02-01 16:59:54.000598800 +0900
 @@ -29,7 +29,7 @@
  #include "MatroskaFile.hh"
  #endif
@@ -2005,9 +1270,9 @@ diff -Naru a/live/liveMedia/include/MatroskaFileServerDemux.hh b/live/liveMedia/
  public:
    typedef void (onCreationFunc)(MatroskaFileServerDemux* newDemux, void* clientData);
    static void createNew(UsageEnvironment& env, char const* fileName,
-diff -Naru a/live/liveMedia/include/Media.hh b/live/liveMedia/include/Media.hh
---- a/live/liveMedia/include/Media.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/Media.hh	2018-02-01 17:00:06.176607900 +0900
+diff -Naru a/liveMedia/include/Media.hh b/liveMedia/include/Media.hh
+--- a/liveMedia/include/Media.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/Media.hh	2018-02-01 17:00:06.176607900 +0900
 @@ -47,7 +47,7 @@
  
  #define mediumNameMaxLen 30
@@ -2026,9 +1291,9 @@ diff -Naru a/live/liveMedia/include/Media.hh b/live/liveMedia/include/Media.hh
  public:
    static MediaLookupTable* ourMedia(UsageEnvironment& env);
    HashTable const& getTable() { return *fTable; }
-diff -Naru a/live/liveMedia/include/MediaSession.hh b/live/liveMedia/include/MediaSession.hh
---- a/live/liveMedia/include/MediaSession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MediaSession.hh	2018-02-01 17:00:24.491575400 +0900
+diff -Naru a/liveMedia/include/MediaSession.hh b/liveMedia/include/MediaSession.hh
+--- a/liveMedia/include/MediaSession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MediaSession.hh	2018-02-01 17:00:24.491575400 +0900
 @@ -57,7 +57,7 @@
  
  class MediaSubsession; // forward
@@ -2056,9 +1321,9 @@ diff -Naru a/live/liveMedia/include/MediaSession.hh b/live/liveMedia/include/Med
  public:
    MediaSession& parentSession() { return fParent; }
    MediaSession const& parentSession() const { return fParent; }
-diff -Naru a/live/liveMedia/include/MediaSink.hh b/live/liveMedia/include/MediaSink.hh
---- a/live/liveMedia/include/MediaSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MediaSink.hh	2018-02-01 17:00:34.314566600 +0900
+diff -Naru a/liveMedia/include/MediaSink.hh b/liveMedia/include/MediaSink.hh
+--- a/liveMedia/include/MediaSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MediaSink.hh	2018-02-01 17:00:34.314566600 +0900
 @@ -25,7 +25,7 @@
  #include "FramedSource.hh"
  #endif
@@ -2077,9 +1342,9 @@ diff -Naru a/live/liveMedia/include/MediaSink.hh b/live/liveMedia/include/MediaS
  public:
    OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize,
  		  unsigned maxBufferSize = 0);
-diff -Naru a/live/liveMedia/include/MediaSource.hh b/live/liveMedia/include/MediaSource.hh
---- a/live/liveMedia/include/MediaSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MediaSource.hh	2018-02-01 17:00:39.823585000 +0900
+diff -Naru a/liveMedia/include/MediaSource.hh b/liveMedia/include/MediaSource.hh
+--- a/liveMedia/include/MediaSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MediaSource.hh	2018-02-01 17:00:39.823585000 +0900
 @@ -25,7 +25,7 @@
  #include "Media.hh"
  #endif
@@ -2089,9 +1354,9 @@ diff -Naru a/live/liveMedia/include/MediaSource.hh b/live/liveMedia/include/Medi
  public:
    static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
  			      MediaSource*& resultSource);
-diff -Naru a/live/liveMedia/include/MediaTranscodingTable.hh b/live/liveMedia/include/MediaTranscodingTable.hh
---- a/live/liveMedia/include/MediaTranscodingTable.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MediaTranscodingTable.hh	2018-02-01 17:00:46.336563800 +0900
+diff -Naru a/liveMedia/include/MediaTranscodingTable.hh b/liveMedia/include/MediaTranscodingTable.hh
+--- a/liveMedia/include/MediaTranscodingTable.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MediaTranscodingTable.hh	2018-02-01 17:00:46.336563800 +0900
 @@ -31,7 +31,7 @@
  #include "MediaSession.hh"
  #endif
@@ -2101,9 +1366,9 @@ diff -Naru a/live/liveMedia/include/MediaTranscodingTable.hh b/live/liveMedia/in
  public:
    virtual FramedFilter*
    lookupTranscoder(MediaSubsession& /*inputCodecDescription*/, // in
-diff -Naru a/live/liveMedia/include/MP3ADU.hh b/live/liveMedia/include/MP3ADU.hh
---- a/live/liveMedia/include/MP3ADU.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3ADU.hh	2018-02-01 17:00:55.423573000 +0900
+diff -Naru a/liveMedia/include/MP3ADU.hh b/liveMedia/include/MP3ADU.hh
+--- a/liveMedia/include/MP3ADU.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3ADU.hh	2018-02-01 17:00:55.423573000 +0900
 @@ -25,7 +25,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -2122,9 +1387,9 @@ diff -Naru a/live/liveMedia/include/MP3ADU.hh b/live/liveMedia/include/MP3ADU.hh
  public:
    static MP3FromADUSource* createNew(UsageEnvironment& env,
  				     FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/MP3ADUinterleaving.hh b/live/liveMedia/include/MP3ADUinterleaving.hh
---- a/live/liveMedia/include/MP3ADUinterleaving.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3ADUinterleaving.hh	2018-02-01 17:01:10.435565400 +0900
+diff -Naru a/liveMedia/include/MP3ADUinterleaving.hh b/liveMedia/include/MP3ADUinterleaving.hh
+--- a/liveMedia/include/MP3ADUinterleaving.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3ADUinterleaving.hh	2018-02-01 17:01:10.435565400 +0900
 @@ -27,7 +27,7 @@
  
  // A data structure used to represent an interleaving
@@ -2161,9 +1426,9 @@ diff -Naru a/live/liveMedia/include/MP3ADUinterleaving.hh b/live/liveMedia/inclu
  public:
    static MP3ADUdeinterleaver* createNew(UsageEnvironment& env,
  					FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/MP3ADURTPSink.hh b/live/liveMedia/include/MP3ADURTPSink.hh
---- a/live/liveMedia/include/MP3ADURTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3ADURTPSink.hh	2018-02-01 17:01:19.232561000 +0900
+diff -Naru a/liveMedia/include/MP3ADURTPSink.hh b/liveMedia/include/MP3ADURTPSink.hh
+--- a/liveMedia/include/MP3ADURTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3ADURTPSink.hh	2018-02-01 17:01:19.232561000 +0900
 @@ -25,7 +25,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -2173,9 +1438,9 @@ diff -Naru a/live/liveMedia/include/MP3ADURTPSink.hh b/live/liveMedia/include/MP
  public:
    static MP3ADURTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs,
  				  unsigned char RTPPayloadType);
-diff -Naru a/live/liveMedia/include/MP3ADURTPSource.hh b/live/liveMedia/include/MP3ADURTPSource.hh
---- a/live/liveMedia/include/MP3ADURTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3ADURTPSource.hh	2018-02-01 17:01:26.336538200 +0900
+diff -Naru a/liveMedia/include/MP3ADURTPSource.hh b/liveMedia/include/MP3ADURTPSource.hh
+--- a/liveMedia/include/MP3ADURTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3ADURTPSource.hh	2018-02-01 17:01:26.336538200 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2185,9 +1450,9 @@ diff -Naru a/live/liveMedia/include/MP3ADURTPSource.hh b/live/liveMedia/include/
  public:
    static MP3ADURTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MP3ADUTranscoder.hh b/live/liveMedia/include/MP3ADUTranscoder.hh
---- a/live/liveMedia/include/MP3ADUTranscoder.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3ADUTranscoder.hh	2018-02-01 17:01:32.191550400 +0900
+diff -Naru a/liveMedia/include/MP3ADUTranscoder.hh b/liveMedia/include/MP3ADUTranscoder.hh
+--- a/liveMedia/include/MP3ADUTranscoder.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3ADUTranscoder.hh	2018-02-01 17:01:32.191550400 +0900
 @@ -25,7 +25,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -2197,9 +1462,9 @@ diff -Naru a/live/liveMedia/include/MP3ADUTranscoder.hh b/live/liveMedia/include
  public:
    static MP3ADUTranscoder* createNew(UsageEnvironment& env,
  				  unsigned outBitrate /* in kbps */,
-diff -Naru a/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh b/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh
---- a/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh	2018-02-01 17:01:37.615525800 +0900
+diff -Naru a/liveMedia/include/MP3AudioFileServerMediaSubsession.hh b/liveMedia/include/MP3AudioFileServerMediaSubsession.hh
+--- a/liveMedia/include/MP3AudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3AudioFileServerMediaSubsession.hh	2018-02-01 17:01:37.615525800 +0900
 @@ -33,7 +33,7 @@
  #include "MP3ADU.hh"
  #endif
@@ -2209,9 +1474,9 @@ diff -Naru a/live/liveMedia/include/MP3AudioFileServerMediaSubsession.hh b/live/
  public:
    static MP3AudioFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource,
-diff -Naru a/live/liveMedia/include/MP3FileSource.hh b/live/liveMedia/include/MP3FileSource.hh
---- a/live/liveMedia/include/MP3FileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3FileSource.hh	2018-02-01 17:01:43.480541300 +0900
+diff -Naru a/liveMedia/include/MP3FileSource.hh b/liveMedia/include/MP3FileSource.hh
+--- a/liveMedia/include/MP3FileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3FileSource.hh	2018-02-01 17:01:43.480541300 +0900
 @@ -27,7 +27,7 @@
  
  class MP3StreamState; // forward
@@ -2221,9 +1486,9 @@ diff -Naru a/live/liveMedia/include/MP3FileSource.hh b/live/liveMedia/include/MP
  public:
    static MP3FileSource* createNew(UsageEnvironment& env, char const* fileName);
  
-diff -Naru a/live/liveMedia/include/MP3Transcoder.hh b/live/liveMedia/include/MP3Transcoder.hh
---- a/live/liveMedia/include/MP3Transcoder.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MP3Transcoder.hh	2018-02-01 17:01:50.824519300 +0900
+diff -Naru a/liveMedia/include/MP3Transcoder.hh b/liveMedia/include/MP3Transcoder.hh
+--- a/liveMedia/include/MP3Transcoder.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MP3Transcoder.hh	2018-02-01 17:01:50.824519300 +0900
 @@ -28,7 +28,7 @@
  #include "MP3ADUTranscoder.hh"
  #endif
@@ -2233,9 +1498,9 @@ diff -Naru a/live/liveMedia/include/MP3Transcoder.hh b/live/liveMedia/include/MP
  public:
    static MP3Transcoder* createNew(UsageEnvironment& env,
  				  unsigned outBitrate /* in kbps */,
-diff -Naru a/live/liveMedia/include/MPEG1or2AudioRTPSink.hh b/live/liveMedia/include/MPEG1or2AudioRTPSink.hh
---- a/live/liveMedia/include/MPEG1or2AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2AudioRTPSink.hh	2018-02-01 17:01:56.455534200 +0900
+diff -Naru a/liveMedia/include/MPEG1or2AudioRTPSink.hh b/liveMedia/include/MPEG1or2AudioRTPSink.hh
+--- a/liveMedia/include/MPEG1or2AudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2AudioRTPSink.hh	2018-02-01 17:01:56.455534200 +0900
 @@ -25,7 +25,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -2245,9 +1510,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2AudioRTPSink.hh b/live/liveMedia/inc
  public:
    static MPEG1or2AudioRTPSink* createNew(UsageEnvironment& env,
  				     Groupsock* RTPgs);
-diff -Naru a/live/liveMedia/include/MPEG1or2AudioRTPSource.hh b/live/liveMedia/include/MPEG1or2AudioRTPSource.hh
---- a/live/liveMedia/include/MPEG1or2AudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2AudioRTPSource.hh	2018-02-01 17:02:01.688511400 +0900
+diff -Naru a/liveMedia/include/MPEG1or2AudioRTPSource.hh b/liveMedia/include/MPEG1or2AudioRTPSource.hh
+--- a/liveMedia/include/MPEG1or2AudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2AudioRTPSource.hh	2018-02-01 17:02:01.688511400 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2257,9 +1522,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2AudioRTPSource.hh b/live/liveMedia/i
  public:
    static MPEG1or2AudioRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh b/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh
---- a/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh	2018-02-01 17:02:07.159511500 +0900
+diff -Naru a/liveMedia/include/MPEG1or2AudioStreamFramer.hh b/liveMedia/include/MPEG1or2AudioStreamFramer.hh
+--- a/liveMedia/include/MPEG1or2AudioStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2AudioStreamFramer.hh	2018-02-01 17:02:07.159511500 +0900
 @@ -25,7 +25,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -2269,9 +1534,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2AudioStreamFramer.hh b/live/liveMedi
  public:
    static MPEG1or2AudioStreamFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh b/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh
---- a/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh	2018-02-01 17:02:17.849496800 +0900
+diff -Naru a/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh b/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh
+--- a/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh	2018-02-01 17:02:17.849496800 +0900
 @@ -25,7 +25,7 @@
  #include "MPEG1or2Demux.hh"
  #endif
@@ -2281,9 +1546,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2DemuxedElementaryStream.hh b/live/li
  public:
    MPEG1or2Demux::SCR lastSeenSCR() const { return fLastSeenSCR; }
  
-diff -Naru a/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh b/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh
---- a/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh	2018-02-01 17:02:23.073516000 +0900
+diff -Naru a/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh b/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh
+--- a/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh	2018-02-01 17:02:23.073516000 +0900
 @@ -29,7 +29,7 @@
  #include "MPEG1or2FileServerDemux.hh"
  #endif
@@ -2293,9 +1558,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2DemuxedServerMediaSubsession.hh b/li
  public:
    static MPEG1or2DemuxedServerMediaSubsession*
    createNew(MPEG1or2FileServerDemux& demux, u_int8_t streamIdTag,
-diff -Naru a/live/liveMedia/include/MPEG1or2Demux.hh b/live/liveMedia/include/MPEG1or2Demux.hh
---- a/live/liveMedia/include/MPEG1or2Demux.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2Demux.hh	2018-02-01 17:29:46.012420300 +0900
+diff -Naru a/liveMedia/include/MPEG1or2Demux.hh b/liveMedia/include/MPEG1or2Demux.hh
+--- a/liveMedia/include/MPEG1or2Demux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2Demux.hh	2018-02-01 17:29:46.012420300 +0900
 @@ -27,7 +27,7 @@
  
  class MPEG1or2DemuxedElementaryStream; // forward
@@ -2314,9 +1579,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2Demux.hh b/live/liveMedia/include/MP
    public:
      SCR();
  
-diff -Naru a/live/liveMedia/include/MPEG1or2FileServerDemux.hh b/live/liveMedia/include/MPEG1or2FileServerDemux.hh
---- a/live/liveMedia/include/MPEG1or2FileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2FileServerDemux.hh	2018-02-01 17:02:29.255512400 +0900
+diff -Naru a/liveMedia/include/MPEG1or2FileServerDemux.hh b/liveMedia/include/MPEG1or2FileServerDemux.hh
+--- a/liveMedia/include/MPEG1or2FileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2FileServerDemux.hh	2018-02-01 17:02:29.255512400 +0900
 @@ -28,7 +28,7 @@
  #include "MPEG1or2DemuxedElementaryStream.hh"
  #endif
@@ -2326,9 +1591,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2FileServerDemux.hh b/live/liveMedia/
  public:
    static MPEG1or2FileServerDemux*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh b/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh
---- a/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh	2018-02-01 17:02:34.505507600 +0900
+diff -Naru a/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh b/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh
+--- a/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh	2018-02-01 17:02:34.505507600 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -2338,9 +1603,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2VideoFileServerMediaSubsession.hh b/
  public:
    static MPEG1or2VideoFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource,
-diff -Naru a/live/liveMedia/include/MPEG1or2VideoRTPSink.hh b/live/liveMedia/include/MPEG1or2VideoRTPSink.hh
---- a/live/liveMedia/include/MPEG1or2VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2VideoRTPSink.hh	2018-02-01 17:02:40.441505500 +0900
+diff -Naru a/liveMedia/include/MPEG1or2VideoRTPSink.hh b/liveMedia/include/MPEG1or2VideoRTPSink.hh
+--- a/liveMedia/include/MPEG1or2VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2VideoRTPSink.hh	2018-02-01 17:02:40.441505500 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -2350,9 +1615,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2VideoRTPSink.hh b/live/liveMedia/inc
  public:
    static MPEG1or2VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
  
-diff -Naru a/live/liveMedia/include/MPEG1or2VideoRTPSource.hh b/live/liveMedia/include/MPEG1or2VideoRTPSource.hh
---- a/live/liveMedia/include/MPEG1or2VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2VideoRTPSource.hh	2018-02-01 17:02:45.840485200 +0900
+diff -Naru a/liveMedia/include/MPEG1or2VideoRTPSource.hh b/liveMedia/include/MPEG1or2VideoRTPSource.hh
+--- a/liveMedia/include/MPEG1or2VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2VideoRTPSource.hh	2018-02-01 17:02:45.840485200 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2362,9 +1627,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2VideoRTPSource.hh b/live/liveMedia/i
  public:
    static MPEG1or2VideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh b/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh
---- a/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh	2018-02-01 17:02:52.184481700 +0900
+diff -Naru a/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh b/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh
+--- a/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh	2018-02-01 17:02:52.184481700 +0900
 @@ -30,7 +30,7 @@
  
  #define VSH_MAX_SIZE 1000
@@ -2374,9 +1639,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2VideoStreamDiscreteFramer.hh b/live/
  public:
    static MPEG1or2VideoStreamDiscreteFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh b/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh
---- a/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh	2018-02-01 17:02:57.967478100 +0900
+diff -Naru a/liveMedia/include/MPEG1or2VideoStreamFramer.hh b/liveMedia/include/MPEG1or2VideoStreamFramer.hh
+--- a/liveMedia/include/MPEG1or2VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG1or2VideoStreamFramer.hh	2018-02-01 17:02:57.967478100 +0900
 @@ -26,7 +26,7 @@
  #include "MPEGVideoStreamFramer.hh"
  #endif
@@ -2386,9 +1651,9 @@ diff -Naru a/live/liveMedia/include/MPEG1or2VideoStreamFramer.hh b/live/liveMedi
  public:
    static MPEG1or2VideoStreamFramer*
        createNew(UsageEnvironment& env, FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/MPEG2IndexFromTransportStream.hh b/live/liveMedia/include/MPEG2IndexFromTransportStream.hh
---- a/live/liveMedia/include/MPEG2IndexFromTransportStream.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2IndexFromTransportStream.hh	2018-02-01 17:03:04.217473300 +0900
+diff -Naru a/liveMedia/include/MPEG2IndexFromTransportStream.hh b/liveMedia/include/MPEG2IndexFromTransportStream.hh
+--- a/liveMedia/include/MPEG2IndexFromTransportStream.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2IndexFromTransportStream.hh	2018-02-01 17:03:04.217473300 +0900
 @@ -35,7 +35,7 @@
  
  class IndexRecord; // forward
@@ -2398,9 +1663,9 @@ diff -Naru a/live/liveMedia/include/MPEG2IndexFromTransportStream.hh b/live/live
  public:
    static MPEG2IFrameIndexFromTransportStream*
    createNew(UsageEnvironment& env, FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh b/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh
---- a/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh	2018-02-01 17:03:18.552464700 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh b/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh
+--- a/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh	2018-02-01 17:03:18.552464700 +0900
 @@ -40,7 +40,7 @@
  
  class ClientTrickPlayState; // forward
@@ -2419,9 +1684,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh b
  public:
    ClientTrickPlayState(MPEG2TransportStreamIndexFile* indexFile);
  
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh b/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh
---- a/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh	2018-02-01 17:03:30.603472100 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamAccumulator.hh b/liveMedia/include/MPEG2TransportStreamAccumulator.hh
+--- a/liveMedia/include/MPEG2TransportStreamAccumulator.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamAccumulator.hh	2018-02-01 17:03:30.603472100 +0900
 @@ -26,7 +26,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -2440,9 +1705,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamAccumulator.hh b/live/li
  public:
    static MP3Transcoder* createNew(UsageEnvironment& env,
  				  unsigned outBitrate /* in kbps */,
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFramer.hh b/live/liveMedia/include/MPEG2TransportStreamFramer.hh
---- a/live/liveMedia/include/MPEG2TransportStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamFramer.hh	2018-02-01 17:03:39.713468600 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamFramer.hh b/liveMedia/include/MPEG2TransportStreamFramer.hh
+--- a/liveMedia/include/MPEG2TransportStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamFramer.hh	2018-02-01 17:03:39.713468600 +0900
 @@ -31,7 +31,7 @@
  #include "HashTable.hh"
  #endif
@@ -2452,9 +1717,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFramer.hh b/live/liveMed
  public:
    static MPEG2TransportStreamFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh b/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh
---- a/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh	2018-02-01 17:03:46.824446000 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamFromESSource.hh b/liveMedia/include/MPEG2TransportStreamFromESSource.hh
+--- a/liveMedia/include/MPEG2TransportStreamFromESSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamFromESSource.hh	2018-02-01 17:03:46.824446000 +0900
 @@ -26,7 +26,7 @@
  #include "MPEG2TransportStreamMultiplexor.hh"
  #endif
@@ -2464,9 +1729,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFromESSource.hh b/live/l
  public:
    static MPEG2TransportStreamFromESSource* createNew(UsageEnvironment& env);
  
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh b/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh
---- a/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh	2018-02-01 17:03:52.882436500 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamFromPESSource.hh b/liveMedia/include/MPEG2TransportStreamFromPESSource.hh
+--- a/liveMedia/include/MPEG2TransportStreamFromPESSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamFromPESSource.hh	2018-02-01 17:03:52.882436500 +0900
 @@ -28,7 +28,7 @@
  #include "MPEG1or2DemuxedElementaryStream.hh"
  #endif
@@ -2476,9 +1741,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamFromPESSource.hh b/live/
  public:
    static MPEG2TransportStreamFromPESSource*
    createNew(UsageEnvironment& env, MPEG1or2DemuxedElementaryStream* inputSource);
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh b/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh
---- a/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh	2018-02-01 17:03:59.944438700 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamIndexFile.hh b/liveMedia/include/MPEG2TransportStreamIndexFile.hh
+--- a/liveMedia/include/MPEG2TransportStreamIndexFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamIndexFile.hh	2018-02-01 17:03:59.944438700 +0900
 @@ -30,7 +30,7 @@
  
  #define INDEX_RECORD_SIZE 11
@@ -2488,9 +1753,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamIndexFile.hh b/live/live
  public:
    static MPEG2TransportStreamIndexFile* createNew(UsageEnvironment& env,
  						  char const* indexFileName);
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh b/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh
---- a/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh	2018-02-01 17:04:06.113428900 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamMultiplexor.hh b/liveMedia/include/MPEG2TransportStreamMultiplexor.hh
+--- a/liveMedia/include/MPEG2TransportStreamMultiplexor.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamMultiplexor.hh	2018-02-01 17:04:06.113428900 +0900
 @@ -31,7 +31,7 @@
  
  #define PID_TABLE_SIZE 256
@@ -2500,9 +1765,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamMultiplexor.hh b/live/li
  public:
    Boolean canDeliverNewFrameImmediately() const { return fInputBufferBytesUsed < fInputBufferSize; }
        // Can be used by a downstream reader to test whether the next call to "doGetNextFrame()"
-diff -Naru a/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh b/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh
---- a/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh	2018-02-01 17:04:13.272425000 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh b/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh
+--- a/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh	2018-02-01 17:04:13.272425000 +0900
 @@ -35,7 +35,7 @@
  #define TRANSPORT_PACKET_SIZE 188
  #endif
@@ -2512,9 +1777,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportStreamTrickModeFilter.hh b/liv
  public:
    static MPEG2TransportStreamTrickModeFilter*
    createNew(UsageEnvironment& env, FramedSource* inputSource,
-diff -Naru a/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh b/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh
---- a/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh	2018-02-01 17:04:18.849417600 +0900
+diff -Naru a/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh b/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh
+--- a/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh	2018-02-01 17:04:18.849417600 +0900
 @@ -26,7 +26,7 @@
  #include "OnDemandServerMediaSubsession.hh"
  #endif
@@ -2524,9 +1789,9 @@ diff -Naru a/live/liveMedia/include/MPEG2TransportUDPServerMediaSubsession.hh b/
  public:
    static MPEG2TransportUDPServerMediaSubsession*
    createNew(UsageEnvironment& env,
-diff -Naru a/live/liveMedia/include/MPEG4ESVideoRTPSink.hh b/live/liveMedia/include/MPEG4ESVideoRTPSink.hh
---- a/live/liveMedia/include/MPEG4ESVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4ESVideoRTPSink.hh	2018-02-01 17:04:24.520413500 +0900
+diff -Naru a/liveMedia/include/MPEG4ESVideoRTPSink.hh b/liveMedia/include/MPEG4ESVideoRTPSink.hh
+--- a/liveMedia/include/MPEG4ESVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4ESVideoRTPSink.hh	2018-02-01 17:04:24.520413500 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -2536,9 +1801,9 @@ diff -Naru a/live/liveMedia/include/MPEG4ESVideoRTPSink.hh b/live/liveMedia/incl
  public:
    static MPEG4ESVideoRTPSink* createNew(UsageEnvironment& env,
  					Groupsock* RTPgs, unsigned char rtpPayloadFormat,
-diff -Naru a/live/liveMedia/include/MPEG4ESVideoRTPSource.hh b/live/liveMedia/include/MPEG4ESVideoRTPSource.hh
---- a/live/liveMedia/include/MPEG4ESVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4ESVideoRTPSource.hh	2018-02-01 17:04:30.287417300 +0900
+diff -Naru a/liveMedia/include/MPEG4ESVideoRTPSource.hh b/liveMedia/include/MPEG4ESVideoRTPSource.hh
+--- a/liveMedia/include/MPEG4ESVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4ESVideoRTPSource.hh	2018-02-01 17:04:30.287417300 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2548,9 +1813,9 @@ diff -Naru a/live/liveMedia/include/MPEG4ESVideoRTPSource.hh b/live/liveMedia/in
  public:
    static MPEG4ESVideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG4GenericRTPSink.hh b/live/liveMedia/include/MPEG4GenericRTPSink.hh
---- a/live/liveMedia/include/MPEG4GenericRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4GenericRTPSink.hh	2018-02-01 17:04:35.704408700 +0900
+diff -Naru a/liveMedia/include/MPEG4GenericRTPSink.hh b/liveMedia/include/MPEG4GenericRTPSink.hh
+--- a/liveMedia/include/MPEG4GenericRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4GenericRTPSink.hh	2018-02-01 17:04:35.704408700 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSink.hh"
  #endif
@@ -2560,9 +1825,9 @@ diff -Naru a/live/liveMedia/include/MPEG4GenericRTPSink.hh b/live/liveMedia/incl
  public:
    static MPEG4GenericRTPSink*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG4GenericRTPSource.hh b/live/liveMedia/include/MPEG4GenericRTPSource.hh
---- a/live/liveMedia/include/MPEG4GenericRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4GenericRTPSource.hh	2018-02-01 17:04:43.016405500 +0900
+diff -Naru a/liveMedia/include/MPEG4GenericRTPSource.hh b/liveMedia/include/MPEG4GenericRTPSource.hh
+--- a/liveMedia/include/MPEG4GenericRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4GenericRTPSource.hh	2018-02-01 17:04:43.016405500 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2572,9 +1837,9 @@ diff -Naru a/live/liveMedia/include/MPEG4GenericRTPSource.hh b/live/liveMedia/in
  public:
    static MPEG4GenericRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh b/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh
---- a/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh	2018-02-01 17:04:49.842398700 +0900
+diff -Naru a/liveMedia/include/MPEG4LATMAudioRTPSink.hh b/liveMedia/include/MPEG4LATMAudioRTPSink.hh
+--- a/liveMedia/include/MPEG4LATMAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4LATMAudioRTPSink.hh	2018-02-01 17:04:49.842398700 +0900
 @@ -27,7 +27,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -2584,9 +1849,9 @@ diff -Naru a/live/liveMedia/include/MPEG4LATMAudioRTPSink.hh b/live/liveMedia/in
  public:
    static MPEG4LATMAudioRTPSink* createNew(UsageEnvironment& env,
  					  Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh b/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh
---- a/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh	2018-02-01 17:05:00.216413800 +0900
+diff -Naru a/liveMedia/include/MPEG4LATMAudioRTPSource.hh b/liveMedia/include/MPEG4LATMAudioRTPSource.hh
+--- a/liveMedia/include/MPEG4LATMAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4LATMAudioRTPSource.hh	2018-02-01 17:05:00.216413800 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2596,9 +1861,9 @@ diff -Naru a/live/liveMedia/include/MPEG4LATMAudioRTPSource.hh b/live/liveMedia/
  public:
    static MPEG4LATMAudioRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh b/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh
---- a/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh	2018-02-01 17:05:07.368407900 +0900
+diff -Naru a/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh b/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh
+--- a/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh	2018-02-01 17:05:07.368407900 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -2608,9 +1873,9 @@ diff -Naru a/live/liveMedia/include/MPEG4VideoFileServerMediaSubsession.hh b/liv
  public:
    static MPEG4VideoFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
-diff -Naru a/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh b/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh
---- a/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh	2018-02-01 17:05:13.656402700 +0900
+diff -Naru a/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh b/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh
+--- a/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh	2018-02-01 17:05:13.656402700 +0900
 @@ -28,7 +28,7 @@
  #include "MPEG4VideoStreamFramer.hh"
  #endif
@@ -2620,9 +1885,9 @@ diff -Naru a/live/liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh b/live/liv
  public:
    static MPEG4VideoStreamDiscreteFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean leavePresentationTimesUnmodified = False);
-diff -Naru a/live/liveMedia/include/MPEG4VideoStreamFramer.hh b/live/liveMedia/include/MPEG4VideoStreamFramer.hh
---- a/live/liveMedia/include/MPEG4VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEG4VideoStreamFramer.hh	2018-02-01 17:05:20.192377400 +0900
+diff -Naru a/liveMedia/include/MPEG4VideoStreamFramer.hh b/liveMedia/include/MPEG4VideoStreamFramer.hh
+--- a/liveMedia/include/MPEG4VideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEG4VideoStreamFramer.hh	2018-02-01 17:05:20.192377400 +0900
 @@ -30,7 +30,7 @@
  #include "MPEGVideoStreamFramer.hh"
  #endif
@@ -2632,9 +1897,9 @@ diff -Naru a/live/liveMedia/include/MPEG4VideoStreamFramer.hh b/live/liveMedia/i
  public:
    static MPEG4VideoStreamFramer*
    createNew(UsageEnvironment& env, FramedSource* inputSource);
-diff -Naru a/live/liveMedia/include/MPEGVideoStreamFramer.hh b/live/liveMedia/include/MPEGVideoStreamFramer.hh
---- a/live/liveMedia/include/MPEGVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MPEGVideoStreamFramer.hh	2018-02-01 17:05:29.859378400 +0900
+diff -Naru a/liveMedia/include/MPEGVideoStreamFramer.hh b/liveMedia/include/MPEGVideoStreamFramer.hh
+--- a/liveMedia/include/MPEGVideoStreamFramer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MPEGVideoStreamFramer.hh	2018-02-01 17:05:29.859378400 +0900
 @@ -26,7 +26,7 @@
  #include "FramedFilter.hh"
  #endif
@@ -2653,9 +1918,9 @@ diff -Naru a/live/liveMedia/include/MPEGVideoStreamFramer.hh b/live/liveMedia/in
  public:
    Boolean& pictureEndMarker() { return fPictureEndMarker; }
        // a hack for implementing the RTP 'M' bit
-diff -Naru a/live/liveMedia/include/MultiFramedRTPSink.hh b/live/liveMedia/include/MultiFramedRTPSink.hh
---- a/live/liveMedia/include/MultiFramedRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MultiFramedRTPSink.hh	2018-02-01 17:05:36.344373600 +0900
+diff -Naru a/liveMedia/include/MultiFramedRTPSink.hh b/liveMedia/include/MultiFramedRTPSink.hh
+--- a/liveMedia/include/MultiFramedRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MultiFramedRTPSink.hh	2018-02-01 17:05:36.344373600 +0900
 @@ -26,7 +26,7 @@
  #include "RTPSink.hh"
  #endif
@@ -2665,9 +1930,9 @@ diff -Naru a/live/liveMedia/include/MultiFramedRTPSink.hh b/live/liveMedia/inclu
  public:
    void setPacketSizes(unsigned preferredPacketSize, unsigned maxPacketSize);
  
-diff -Naru a/live/liveMedia/include/MultiFramedRTPSource.hh b/live/liveMedia/include/MultiFramedRTPSource.hh
---- a/live/liveMedia/include/MultiFramedRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/MultiFramedRTPSource.hh	2018-02-01 17:30:10.833404100 +0900
+diff -Naru a/liveMedia/include/MultiFramedRTPSource.hh b/liveMedia/include/MultiFramedRTPSource.hh
+--- a/liveMedia/include/MultiFramedRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/MultiFramedRTPSource.hh	2018-02-01 17:30:10.833404100 +0900
 @@ -29,7 +29,7 @@
  class BufferedPacket; // forward
  class BufferedPacketFactory; // forward
@@ -2695,9 +1960,9 @@ diff -Naru a/live/liveMedia/include/MultiFramedRTPSource.hh b/live/liveMedia/inc
  public:
    BufferedPacketFactory();
    virtual ~BufferedPacketFactory();
-diff -Naru a/live/liveMedia/include/OggFile.hh b/live/liveMedia/include/OggFile.hh
---- a/live/liveMedia/include/OggFile.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/OggFile.hh	2018-02-01 17:05:56.489377200 +0900
+diff -Naru a/liveMedia/include/OggFile.hh b/liveMedia/include/OggFile.hh
+--- a/liveMedia/include/OggFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/OggFile.hh	2018-02-01 17:05:56.489377200 +0900
 @@ -31,7 +31,7 @@
  class OggTrack; // forward
  class OggDemux; // forward
@@ -2734,9 +1999,9 @@ diff -Naru a/live/liveMedia/include/OggFile.hh b/live/liveMedia/include/OggFile.
  public:
    FramedSource* newDemuxedTrack(u_int32_t& resultTrackNumber);
      // Returns a new stream ("FramedSource" subclass) that represents the next media track
-diff -Naru a/live/liveMedia/include/OggFileServerDemux.hh b/live/liveMedia/include/OggFileServerDemux.hh
---- a/live/liveMedia/include/OggFileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/OggFileServerDemux.hh	2018-02-01 17:06:03.988372100 +0900
+diff -Naru a/liveMedia/include/OggFileServerDemux.hh b/liveMedia/include/OggFileServerDemux.hh
+--- a/liveMedia/include/OggFileServerDemux.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/OggFileServerDemux.hh	2018-02-01 17:06:03.988372100 +0900
 @@ -29,7 +29,7 @@
  #include "OggFile.hh"
  #endif
@@ -2746,9 +2011,9 @@ diff -Naru a/live/liveMedia/include/OggFileServerDemux.hh b/live/liveMedia/inclu
  public:
    typedef void (onCreationFunc)(OggFileServerDemux* newDemux, void* clientData);
    static void createNew(UsageEnvironment& env, char const* fileName,
-diff -Naru a/live/liveMedia/include/OggFileSink.hh b/live/liveMedia/include/OggFileSink.hh
---- a/live/liveMedia/include/OggFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/OggFileSink.hh	2018-02-01 17:06:11.688367400 +0900
+diff -Naru a/liveMedia/include/OggFileSink.hh b/liveMedia/include/OggFileSink.hh
+--- a/liveMedia/include/OggFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/OggFileSink.hh	2018-02-01 17:06:11.688367400 +0900
 @@ -25,7 +25,7 @@
  #include "FileSink.hh"
  #endif
@@ -2758,9 +2023,9 @@ diff -Naru a/live/liveMedia/include/OggFileSink.hh b/live/liveMedia/include/OggF
  public:
    static OggFileSink* createNew(UsageEnvironment& env, char const* fileName,
  				unsigned samplingFrequency = 0, // used for granule_position
-diff -Naru a/live/liveMedia/include/OnDemandServerMediaSubsession.hh b/live/liveMedia/include/OnDemandServerMediaSubsession.hh
---- a/live/liveMedia/include/OnDemandServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/OnDemandServerMediaSubsession.hh	2018-02-01 17:06:24.529357000 +0900
+diff -Naru a/liveMedia/include/OnDemandServerMediaSubsession.hh b/liveMedia/include/OnDemandServerMediaSubsession.hh
+--- a/liveMedia/include/OnDemandServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/OnDemandServerMediaSubsession.hh	2018-02-01 17:06:24.529357000 +0900
 @@ -35,7 +35,7 @@
  #include "RTCP.hh"
  #endif
@@ -2788,9 +2053,9 @@ diff -Naru a/live/liveMedia/include/OnDemandServerMediaSubsession.hh b/live/live
  public:
    StreamState(OnDemandServerMediaSubsession& master,
                Port const& serverRTPPort, Port const& serverRTCPPort,
-diff -Naru a/live/liveMedia/include/OutputFile.hh b/live/liveMedia/include/OutputFile.hh
---- a/live/liveMedia/include/OutputFile.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/OutputFile.hh	2018-02-01 17:06:39.873347300 +0900
+diff -Naru a/liveMedia/include/OutputFile.hh b/liveMedia/include/OutputFile.hh
+--- a/liveMedia/include/OutputFile.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/OutputFile.hh	2018-02-01 17:06:39.873347300 +0900
 @@ -24,8 +24,8 @@
  #include <UsageEnvironment.hh>
  #include <stdio.h>
@@ -2802,9 +2067,9 @@ diff -Naru a/live/liveMedia/include/OutputFile.hh b/live/liveMedia/include/Outpu
 +LIVEMEDIA_API void CloseOutputFile(FILE* fid);
  
  #endif
-diff -Naru a/live/liveMedia/include/PassiveServerMediaSubsession.hh b/live/liveMedia/include/PassiveServerMediaSubsession.hh
---- a/live/liveMedia/include/PassiveServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/PassiveServerMediaSubsession.hh	2018-02-01 17:06:48.889321100 +0900
+diff -Naru a/liveMedia/include/PassiveServerMediaSubsession.hh b/liveMedia/include/PassiveServerMediaSubsession.hh
+--- a/liveMedia/include/PassiveServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/PassiveServerMediaSubsession.hh	2018-02-01 17:06:48.889321100 +0900
 @@ -33,7 +33,7 @@
  #include "RTCP.hh"
  #endif
@@ -2814,9 +2079,9 @@ diff -Naru a/live/liveMedia/include/PassiveServerMediaSubsession.hh b/live/liveM
  public:
    static PassiveServerMediaSubsession* createNew(RTPSink& rtpSink,
  						 RTCPInstance* rtcpInstance = NULL);
-diff -Naru a/live/liveMedia/include/ProxyServerMediaSession.hh b/live/liveMedia/include/ProxyServerMediaSession.hh
---- a/live/liveMedia/include/ProxyServerMediaSession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ProxyServerMediaSession.hh	2018-02-01 17:07:03.753329300 +0900
+diff -Naru a/liveMedia/include/ProxyServerMediaSession.hh b/liveMedia/include/ProxyServerMediaSession.hh
+--- a/liveMedia/include/ProxyServerMediaSession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ProxyServerMediaSession.hh	2018-02-01 17:07:03.753329300 +0900
 @@ -39,7 +39,7 @@
  // It is used only within the implementation of "ProxyServerMediaSession", but is defined here, in case developers wish to
  // subclass it.
@@ -2853,9 +2118,9 @@ diff -Naru a/live/liveMedia/include/ProxyServerMediaSession.hh b/live/liveMedia/
  public:
    PresentationTimeSessionNormalizer(UsageEnvironment& env);
    virtual ~PresentationTimeSessionNormalizer();
-diff -Naru a/live/liveMedia/include/QCELPAudioRTPSource.hh b/live/liveMedia/include/QCELPAudioRTPSource.hh
---- a/live/liveMedia/include/QCELPAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/QCELPAudioRTPSource.hh	2018-02-01 17:07:16.439302000 +0900
+diff -Naru a/liveMedia/include/QCELPAudioRTPSource.hh b/liveMedia/include/QCELPAudioRTPSource.hh
+--- a/liveMedia/include/QCELPAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/QCELPAudioRTPSource.hh	2018-02-01 17:07:16.439302000 +0900
 @@ -25,7 +25,7 @@
  #include "RTPSource.hh"
  #endif
@@ -2865,9 +2130,9 @@ diff -Naru a/live/liveMedia/include/QCELPAudioRTPSource.hh b/live/liveMedia/incl
  public:
    static FramedSource* createNew(UsageEnvironment& env,
  				 Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/QuickTimeFileSink.hh b/live/liveMedia/include/QuickTimeFileSink.hh
---- a/live/liveMedia/include/QuickTimeFileSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/QuickTimeFileSink.hh	2018-02-01 17:07:27.263301100 +0900
+diff -Naru a/liveMedia/include/QuickTimeFileSink.hh b/liveMedia/include/QuickTimeFileSink.hh
+--- a/liveMedia/include/QuickTimeFileSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/QuickTimeFileSink.hh	2018-02-01 17:07:27.263301100 +0900
 @@ -25,7 +25,7 @@
  #include "MediaSession.hh"
  #endif
@@ -2877,9 +2142,9 @@ diff -Naru a/live/liveMedia/include/QuickTimeFileSink.hh b/live/liveMedia/includ
  public:
    static QuickTimeFileSink* createNew(UsageEnvironment& env,
  				      MediaSession& inputSession,
-diff -Naru a/live/liveMedia/include/QuickTimeGenericRTPSource.hh b/live/liveMedia/include/QuickTimeGenericRTPSource.hh
---- a/live/liveMedia/include/QuickTimeGenericRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/QuickTimeGenericRTPSource.hh	2018-02-01 17:07:33.185293700 +0900
+diff -Naru a/liveMedia/include/QuickTimeGenericRTPSource.hh b/liveMedia/include/QuickTimeGenericRTPSource.hh
+--- a/liveMedia/include/QuickTimeGenericRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/QuickTimeGenericRTPSource.hh	2018-02-01 17:07:33.185293700 +0900
 @@ -26,7 +26,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -2889,9 +2154,9 @@ diff -Naru a/live/liveMedia/include/QuickTimeGenericRTPSource.hh b/live/liveMedi
  public:
    static QuickTimeGenericRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/RTCP.hh b/live/liveMedia/include/RTCP.hh
---- a/live/liveMedia/include/RTCP.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTCP.hh	2018-02-01 17:07:41.361293100 +0900
+diff -Naru a/liveMedia/include/RTCP.hh b/liveMedia/include/RTCP.hh
+--- a/liveMedia/include/RTCP.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTCP.hh	2018-02-01 17:07:41.361293100 +0900
 @@ -28,7 +28,7 @@
  #include "RTPSource.hh"
  #endif
@@ -2910,9 +2175,9 @@ diff -Naru a/live/liveMedia/include/RTCP.hh b/live/liveMedia/include/RTCP.hh
  public:
    static RTCPInstance* createNew(UsageEnvironment& env, Groupsock* RTCPgs,
  				 unsigned totSessionBW, /* in kbps */
-diff -Naru a/live/liveMedia/include/RTPInterface.hh b/live/liveMedia/include/RTPInterface.hh
---- a/live/liveMedia/include/RTPInterface.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTPInterface.hh	2018-02-01 17:08:05.313276000 +0900
+diff -Naru a/liveMedia/include/RTPInterface.hh b/liveMedia/include/RTPInterface.hh
+--- a/liveMedia/include/RTPInterface.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTPInterface.hh	2018-02-01 17:08:05.313276000 +0900
 @@ -40,7 +40,7 @@
  // the same TCP connection.  A RTSP server implementation would supply a function like this - as a parameter to
  // "ServerMediaSubsession::startStream()".
@@ -2931,9 +2196,9 @@ diff -Naru a/live/liveMedia/include/RTPInterface.hh b/live/liveMedia/include/RTP
  public:
    RTPInterface(Medium* owner, Groupsock* gs);
    virtual ~RTPInterface();
-diff -Naru a/live/liveMedia/include/RTPSink.hh b/live/liveMedia/include/RTPSink.hh
---- a/live/liveMedia/include/RTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTPSink.hh	2018-02-01 17:08:37.369252800 +0900
+diff -Naru a/liveMedia/include/RTPSink.hh b/liveMedia/include/RTPSink.hh
+--- a/liveMedia/include/RTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTPSink.hh	2018-02-01 17:08:37.369252800 +0900
 @@ -30,7 +30,7 @@
  
  class RTPTransmissionStatsDB; // forward
@@ -2961,9 +2226,9 @@ diff -Naru a/live/liveMedia/include/RTPSink.hh b/live/liveMedia/include/RTPSink.
  public:
    u_int32_t SSRC() const {return fSSRC;}
    struct sockaddr_in const& lastFromAddress() const {return fLastFromAddress;}
-diff -Naru a/live/liveMedia/include/RTPSource.hh b/live/liveMedia/include/RTPSource.hh
---- a/live/liveMedia/include/RTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTPSource.hh	2018-02-01 17:09:00.889235500 +0900
+diff -Naru a/liveMedia/include/RTPSource.hh b/liveMedia/include/RTPSource.hh
+--- a/liveMedia/include/RTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTPSource.hh	2018-02-01 17:09:00.889235500 +0900
 @@ -30,7 +30,7 @@
  
  class RTPReceptionStatsDB; // forward
@@ -3009,9 +2274,9 @@ diff -Naru a/live/liveMedia/include/RTPSource.hh b/live/liveMedia/include/RTPSou
    // a 'less-than' on 16-bit sequence numbers
  
  #endif
-diff -Naru a/live/liveMedia/include/RTSPClient.hh b/live/liveMedia/include/RTSPClient.hh
---- a/live/liveMedia/include/RTSPClient.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTSPClient.hh	2018-02-01 17:09:33.820211200 +0900
+diff -Naru a/liveMedia/include/RTSPClient.hh b/liveMedia/include/RTSPClient.hh
+--- a/liveMedia/include/RTSPClient.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTSPClient.hh	2018-02-01 17:09:33.820211200 +0900
 @@ -36,7 +36,7 @@
  #endif
  #endif
@@ -3030,9 +2295,9 @@ diff -Naru a/live/liveMedia/include/RTSPClient.hh b/live/liveMedia/include/RTSPC
    public:
      RequestQueue();
      RequestQueue(RequestQueue& origQueue); // moves the queue contents to the new queue
-diff -Naru a/live/liveMedia/include/RTSPCommon.hh b/live/liveMedia/include/RTSPCommon.hh
---- a/live/liveMedia/include/RTSPCommon.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTSPCommon.hh	2018-02-01 17:09:52.448220900 +0900
+diff -Naru a/liveMedia/include/RTSPCommon.hh b/liveMedia/include/RTSPCommon.hh
+--- a/liveMedia/include/RTSPCommon.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTSPCommon.hh	2018-02-01 17:09:52.448220900 +0900
 @@ -38,7 +38,7 @@
  
  #define RTSP_PARAM_STRING_MAX 200
@@ -3063,9 +2328,9 @@ diff -Naru a/live/liveMedia/include/RTSPCommon.hh b/live/liveMedia/include/RTSPC
 +LIVEMEDIA_API char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
  
  #endif
-diff -Naru a/live/liveMedia/include/RTSPRegisterSender.hh b/live/liveMedia/include/RTSPRegisterSender.hh
---- a/live/liveMedia/include/RTSPRegisterSender.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTSPRegisterSender.hh	2018-02-01 17:10:04.225213600 +0900
+diff -Naru a/liveMedia/include/RTSPRegisterSender.hh b/liveMedia/include/RTSPRegisterSender.hh
+--- a/liveMedia/include/RTSPRegisterSender.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTSPRegisterSender.hh	2018-02-01 17:10:04.225213600 +0900
 @@ -26,7 +26,7 @@
  #include "RTSPClient.hh"
  #endif
@@ -3093,9 +2358,9 @@ diff -Naru a/live/liveMedia/include/RTSPRegisterSender.hh b/live/liveMedia/inclu
  public:
    static RTSPDeregisterSender*
    createNew(UsageEnvironment& env,
-diff -Naru a/live/liveMedia/include/RTSPServer.hh b/live/liveMedia/include/RTSPServer.hh
---- a/live/liveMedia/include/RTSPServer.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTSPServer.hh	2018-02-01 17:10:15.781184400 +0900
+diff -Naru a/liveMedia/include/RTSPServer.hh b/liveMedia/include/RTSPServer.hh
+--- a/liveMedia/include/RTSPServer.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTSPServer.hh	2018-02-01 17:10:15.781184400 +0900
 @@ -28,7 +28,7 @@
  #include "DigestAuthentication.hh"
  #endif
@@ -3114,9 +2379,9 @@ diff -Naru a/live/liveMedia/include/RTSPServer.hh b/live/liveMedia/include/RTSPS
  public:
    static RTSPServerWithREGISTERProxying* createNew(UsageEnvironment& env, Port ourPort = 554,
  						   UserAuthenticationDatabase* authDatabase = NULL,
-diff -Naru a/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh b/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh
---- a/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh	2018-02-01 17:10:24.138180600 +0900
+diff -Naru a/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh b/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh
+--- a/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh	2018-02-01 17:10:24.138180600 +0900
 @@ -31,7 +31,7 @@
  #include "TCPStreamSink.hh"
  #endif
@@ -3126,9 +2391,9 @@ diff -Naru a/live/liveMedia/include/RTSPServerSupportingHTTPStreaming.hh b/live/
  public:
    static RTSPServerSupportingHTTPStreaming* createNew(UsageEnvironment& env, Port rtspPort = 554,
  						      UserAuthenticationDatabase* authDatabase = NULL,
-diff -Naru a/live/liveMedia/include/ServerMediaSession.hh b/live/liveMedia/include/ServerMediaSession.hh
---- a/live/liveMedia/include/ServerMediaSession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/ServerMediaSession.hh	2018-02-01 17:10:34.473195400 +0900
+diff -Naru a/liveMedia/include/ServerMediaSession.hh b/liveMedia/include/ServerMediaSession.hh
+--- a/liveMedia/include/ServerMediaSession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/ServerMediaSession.hh	2018-02-01 17:10:34.473195400 +0900
 @@ -30,7 +30,7 @@
  
  class ServerMediaSubsession; // forward
@@ -3156,9 +2421,9 @@ diff -Naru a/live/liveMedia/include/ServerMediaSession.hh b/live/liveMedia/inclu
  public:
    unsigned trackNumber() const { return fTrackNumber; }
    char const* trackId();
-diff -Naru a/live/liveMedia/include/SimpleRTPSink.hh b/live/liveMedia/include/SimpleRTPSink.hh
---- a/live/liveMedia/include/SimpleRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/SimpleRTPSink.hh	2018-02-01 17:10:41.436170100 +0900
+diff -Naru a/liveMedia/include/SimpleRTPSink.hh b/liveMedia/include/SimpleRTPSink.hh
+--- a/liveMedia/include/SimpleRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/SimpleRTPSink.hh	2018-02-01 17:10:41.436170100 +0900
 @@ -26,7 +26,7 @@
  #include "MultiFramedRTPSink.hh"
  #endif
@@ -3168,9 +2433,9 @@ diff -Naru a/live/liveMedia/include/SimpleRTPSink.hh b/live/liveMedia/include/Si
  public:
    static SimpleRTPSink*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/SimpleRTPSource.hh b/live/liveMedia/include/SimpleRTPSource.hh
---- a/live/liveMedia/include/SimpleRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/SimpleRTPSource.hh	2018-02-01 17:10:49.113162400 +0900
+diff -Naru a/liveMedia/include/SimpleRTPSource.hh b/liveMedia/include/SimpleRTPSource.hh
+--- a/liveMedia/include/SimpleRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/SimpleRTPSource.hh	2018-02-01 17:10:49.113162400 +0900
 @@ -29,7 +29,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -3180,9 +2445,9 @@ diff -Naru a/live/liveMedia/include/SimpleRTPSource.hh b/live/liveMedia/include/
  public:
    static SimpleRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
  				    unsigned char rtpPayloadFormat,
-diff -Naru a/live/liveMedia/include/SIPClient.hh b/live/liveMedia/include/SIPClient.hh
---- a/live/liveMedia/include/SIPClient.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/SIPClient.hh	2018-02-01 17:10:56.209179100 +0900
+diff -Naru a/liveMedia/include/SIPClient.hh b/liveMedia/include/SIPClient.hh
+--- a/liveMedia/include/SIPClient.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/SIPClient.hh	2018-02-01 17:10:56.209179100 +0900
 @@ -34,7 +34,7 @@
  // Possible states in the "INVITE" transition diagram (RFC 3261, Figure 5)
  enum inviteClientState { Calling, Proceeding, Completed, Terminated };
@@ -3192,9 +2457,9 @@ diff -Naru a/live/liveMedia/include/SIPClient.hh b/live/liveMedia/include/SIPCli
  public:
    static SIPClient* createNew(UsageEnvironment& env,
  			      unsigned char desiredAudioRTPPayloadFormat,
-diff -Naru a/live/liveMedia/include/StreamReplicator.hh b/live/liveMedia/include/StreamReplicator.hh
---- a/live/liveMedia/include/StreamReplicator.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/StreamReplicator.hh	2018-02-01 17:11:03.844152000 +0900
+diff -Naru a/liveMedia/include/StreamReplicator.hh b/liveMedia/include/StreamReplicator.hh
+--- a/liveMedia/include/StreamReplicator.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/StreamReplicator.hh	2018-02-01 17:11:03.844152000 +0900
 @@ -27,7 +27,7 @@
  
  class StreamReplica; // forward
@@ -3204,9 +2469,9 @@ diff -Naru a/live/liveMedia/include/StreamReplicator.hh b/live/liveMedia/include
  public:
    static StreamReplicator* createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean deleteWhenLastReplicaDies = True);
      // If "deleteWhenLastReplicaDies" is True (the default), then the "StreamReplicator" object is deleted when (and only when)
-diff -Naru a/live/liveMedia/include/T140TextRTPSink.hh b/live/liveMedia/include/T140TextRTPSink.hh
---- a/live/liveMedia/include/T140TextRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/T140TextRTPSink.hh	2018-02-01 17:11:15.347152100 +0900
+diff -Naru a/liveMedia/include/T140TextRTPSink.hh b/liveMedia/include/T140TextRTPSink.hh
+--- a/liveMedia/include/T140TextRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/T140TextRTPSink.hh	2018-02-01 17:11:15.347152100 +0900
 @@ -30,7 +30,7 @@
  
  class T140IdleFilter;
@@ -3225,9 +2490,9 @@ diff -Naru a/live/liveMedia/include/T140TextRTPSink.hh b/live/liveMedia/include/
  public:
    T140IdleFilter(UsageEnvironment& env, FramedSource* inputSource);
    virtual ~T140IdleFilter();
-diff -Naru a/live/liveMedia/include/TCPStreamSink.hh b/live/liveMedia/include/TCPStreamSink.hh
---- a/live/liveMedia/include/TCPStreamSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/TCPStreamSink.hh	2018-02-01 17:11:23.005140900 +0900
+diff -Naru a/liveMedia/include/TCPStreamSink.hh b/liveMedia/include/TCPStreamSink.hh
+--- a/liveMedia/include/TCPStreamSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/TCPStreamSink.hh	2018-02-01 17:11:23.005140900 +0900
 @@ -27,7 +27,7 @@
  
  #define TCP_STREAM_SINK_BUFFER_SIZE 10000
@@ -3237,9 +2502,9 @@ diff -Naru a/live/liveMedia/include/TCPStreamSink.hh b/live/liveMedia/include/TC
  public:
    static TCPStreamSink* createNew(UsageEnvironment& env, int socketNum);
    // "socketNum" is the socket number of an existing, writable TCP socket (which should be non-blocking).
-diff -Naru a/live/liveMedia/include/TextRTPSink.hh b/live/liveMedia/include/TextRTPSink.hh
---- a/live/liveMedia/include/TextRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/TextRTPSink.hh	2018-02-01 17:11:29.623158200 +0900
+diff -Naru a/liveMedia/include/TextRTPSink.hh b/liveMedia/include/TextRTPSink.hh
+--- a/liveMedia/include/TextRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/TextRTPSink.hh	2018-02-01 17:11:29.623158200 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSink.hh"
  #endif
@@ -3249,9 +2514,9 @@ diff -Naru a/live/liveMedia/include/TextRTPSink.hh b/live/liveMedia/include/Text
  protected:
    TextRTPSink(UsageEnvironment& env,
  	      Groupsock* rtpgs, unsigned char rtpPayloadType,
-diff -Naru a/live/liveMedia/include/TheoraVideoRTPSink.hh b/live/liveMedia/include/TheoraVideoRTPSink.hh
---- a/live/liveMedia/include/TheoraVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/TheoraVideoRTPSink.hh	2018-02-01 17:11:37.016160600 +0900
+diff -Naru a/liveMedia/include/TheoraVideoRTPSink.hh b/liveMedia/include/TheoraVideoRTPSink.hh
+--- a/liveMedia/include/TheoraVideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/TheoraVideoRTPSink.hh	2018-02-01 17:11:37.016160600 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -3261,9 +2526,9 @@ diff -Naru a/live/liveMedia/include/TheoraVideoRTPSink.hh b/live/liveMedia/inclu
  public:
    static TheoraVideoRTPSink*
    createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,
-diff -Naru a/live/liveMedia/include/TheoraVideoRTPSource.hh b/live/liveMedia/include/TheoraVideoRTPSource.hh
---- a/live/liveMedia/include/TheoraVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/TheoraVideoRTPSource.hh	2018-02-01 17:11:42.983128200 +0900
+diff -Naru a/liveMedia/include/TheoraVideoRTPSource.hh b/liveMedia/include/TheoraVideoRTPSource.hh
+--- a/liveMedia/include/TheoraVideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/TheoraVideoRTPSource.hh	2018-02-01 17:11:42.983128200 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -3273,9 +2538,9 @@ diff -Naru a/live/liveMedia/include/TheoraVideoRTPSource.hh b/live/liveMedia/inc
  public:
    static TheoraVideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/uLawAudioFilter.hh b/live/liveMedia/include/uLawAudioFilter.hh
---- a/live/liveMedia/include/uLawAudioFilter.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/uLawAudioFilter.hh	2018-02-01 17:12:02.473116300 +0900
+diff -Naru a/liveMedia/include/uLawAudioFilter.hh b/liveMedia/include/uLawAudioFilter.hh
+--- a/liveMedia/include/uLawAudioFilter.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/uLawAudioFilter.hh	2018-02-01 17:12:02.473116300 +0900
 @@ -27,7 +27,7 @@
  
  ////////// 16-bit PCM (in various byte orderings) -> 8-bit u-Law //////////
@@ -3330,9 +2595,9 @@ diff -Naru a/live/liveMedia/include/uLawAudioFilter.hh b/live/liveMedia/include/
  public:
    static EndianSwap24* createNew(UsageEnvironment& env, FramedSource* inputSource);
  
-diff -Naru a/live/liveMedia/include/VideoRTPSink.hh b/live/liveMedia/include/VideoRTPSink.hh
---- a/live/liveMedia/include/VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VideoRTPSink.hh	2018-02-01 17:12:09.143116600 +0900
+diff -Naru a/liveMedia/include/VideoRTPSink.hh b/liveMedia/include/VideoRTPSink.hh
+--- a/liveMedia/include/VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VideoRTPSink.hh	2018-02-01 17:12:09.143116600 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSink.hh"
  #endif
@@ -3342,9 +2607,9 @@ diff -Naru a/live/liveMedia/include/VideoRTPSink.hh b/live/liveMedia/include/Vid
  protected:
    VideoRTPSink(UsageEnvironment& env,
  	       Groupsock* rtpgs, unsigned char rtpPayloadType,
-diff -Naru a/live/liveMedia/include/VorbisAudioRTPSink.hh b/live/liveMedia/include/VorbisAudioRTPSink.hh
---- a/live/liveMedia/include/VorbisAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VorbisAudioRTPSink.hh	2018-02-01 17:12:15.852104900 +0900
+diff -Naru a/liveMedia/include/VorbisAudioRTPSink.hh b/liveMedia/include/VorbisAudioRTPSink.hh
+--- a/liveMedia/include/VorbisAudioRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VorbisAudioRTPSink.hh	2018-02-01 17:12:15.852104900 +0900
 @@ -25,7 +25,7 @@
  #include "AudioRTPSink.hh"
  #endif
@@ -3354,9 +2619,9 @@ diff -Naru a/live/liveMedia/include/VorbisAudioRTPSink.hh b/live/liveMedia/inclu
  public:
    static VorbisAudioRTPSink*
    createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,
-diff -Naru a/live/liveMedia/include/VorbisAudioRTPSource.hh b/live/liveMedia/include/VorbisAudioRTPSource.hh
---- a/live/liveMedia/include/VorbisAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VorbisAudioRTPSource.hh	2018-02-01 17:12:21.656106800 +0900
+diff -Naru a/liveMedia/include/VorbisAudioRTPSource.hh b/liveMedia/include/VorbisAudioRTPSource.hh
+--- a/liveMedia/include/VorbisAudioRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VorbisAudioRTPSource.hh	2018-02-01 17:12:21.656106800 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -3366,9 +2631,9 @@ diff -Naru a/live/liveMedia/include/VorbisAudioRTPSource.hh b/live/liveMedia/inc
  public:
    static VorbisAudioRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/VP8VideoRTPSink.hh b/live/liveMedia/include/VP8VideoRTPSink.hh
---- a/live/liveMedia/include/VP8VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VP8VideoRTPSink.hh	2018-02-01 17:12:29.552116300 +0900
+diff -Naru a/liveMedia/include/VP8VideoRTPSink.hh b/liveMedia/include/VP8VideoRTPSink.hh
+--- a/liveMedia/include/VP8VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VP8VideoRTPSink.hh	2018-02-01 17:12:29.552116300 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -3378,9 +2643,9 @@ diff -Naru a/live/liveMedia/include/VP8VideoRTPSink.hh b/live/liveMedia/include/
  public:
    static VP8VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
  
-diff -Naru a/live/liveMedia/include/VP8VideoRTPSource.hh b/live/liveMedia/include/VP8VideoRTPSource.hh
---- a/live/liveMedia/include/VP8VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VP8VideoRTPSource.hh	2018-02-01 17:12:35.352098600 +0900
+diff -Naru a/liveMedia/include/VP8VideoRTPSource.hh b/liveMedia/include/VP8VideoRTPSource.hh
+--- a/liveMedia/include/VP8VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VP8VideoRTPSource.hh	2018-02-01 17:12:35.352098600 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -3390,9 +2655,9 @@ diff -Naru a/live/liveMedia/include/VP8VideoRTPSource.hh b/live/liveMedia/includ
  public:
    static VP8VideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/VP9VideoRTPSink.hh b/live/liveMedia/include/VP9VideoRTPSink.hh
---- a/live/liveMedia/include/VP9VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VP9VideoRTPSink.hh	2018-02-01 17:12:42.016093200 +0900
+diff -Naru a/liveMedia/include/VP9VideoRTPSink.hh b/liveMedia/include/VP9VideoRTPSink.hh
+--- a/liveMedia/include/VP9VideoRTPSink.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VP9VideoRTPSink.hh	2018-02-01 17:12:42.016093200 +0900
 @@ -25,7 +25,7 @@
  #include "VideoRTPSink.hh"
  #endif
@@ -3402,9 +2667,9 @@ diff -Naru a/live/liveMedia/include/VP9VideoRTPSink.hh b/live/liveMedia/include/
  public:
    static VP9VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
  
-diff -Naru a/live/liveMedia/include/VP9VideoRTPSource.hh b/live/liveMedia/include/VP9VideoRTPSource.hh
---- a/live/liveMedia/include/VP9VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/VP9VideoRTPSource.hh	2018-02-01 17:12:48.056081500 +0900
+diff -Naru a/liveMedia/include/VP9VideoRTPSource.hh b/liveMedia/include/VP9VideoRTPSource.hh
+--- a/liveMedia/include/VP9VideoRTPSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/VP9VideoRTPSource.hh	2018-02-01 17:12:48.056081500 +0900
 @@ -25,7 +25,7 @@
  #include "MultiFramedRTPSource.hh"
  #endif
@@ -3414,9 +2679,9 @@ diff -Naru a/live/liveMedia/include/VP9VideoRTPSource.hh b/live/liveMedia/includ
  public:
    static VP9VideoRTPSource*
    createNew(UsageEnvironment& env, Groupsock* RTPgs,
-diff -Naru a/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh b/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh
---- a/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh	2018-02-01 17:12:53.824101700 +0900
+diff -Naru a/liveMedia/include/WAVAudioFileServerMediaSubsession.hh b/liveMedia/include/WAVAudioFileServerMediaSubsession.hh
+--- a/liveMedia/include/WAVAudioFileServerMediaSubsession.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/WAVAudioFileServerMediaSubsession.hh	2018-02-01 17:12:53.824101700 +0900
 @@ -26,7 +26,7 @@
  #include "FileServerMediaSubsession.hh"
  #endif
@@ -3426,9 +2691,9 @@ diff -Naru a/live/liveMedia/include/WAVAudioFileServerMediaSubsession.hh b/live/
  public:
    static WAVAudioFileServerMediaSubsession*
    createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource,
-diff -Naru a/live/liveMedia/include/WAVAudioFileSource.hh b/live/liveMedia/include/WAVAudioFileSource.hh
---- a/live/liveMedia/include/WAVAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
-+++ b/live/liveMedia/include/WAVAudioFileSource.hh	2018-02-01 17:12:59.888082400 +0900
+diff -Naru a/liveMedia/include/WAVAudioFileSource.hh b/liveMedia/include/WAVAudioFileSource.hh
+--- a/liveMedia/include/WAVAudioFileSource.hh	2018-01-29 19:11:02.000000000 +0900
++++ b/liveMedia/include/WAVAudioFileSource.hh	2018-02-01 17:12:59.888082400 +0900
 @@ -36,7 +36,7 @@
  } WAV_AUDIO_FORMAT;
  
@@ -3438,9 +2703,9 @@ diff -Naru a/live/liveMedia/include/WAVAudioFileSource.hh b/live/liveMedia/inclu
  public:
  
    static WAVAudioFileSource* createNew(UsageEnvironment& env,
-diff -Naru a/live/UsageEnvironment/include/HashTable.hh b/live/UsageEnvironment/include/HashTable.hh
---- a/live/UsageEnvironment/include/HashTable.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/UsageEnvironment/include/HashTable.hh	2018-02-01 17:27:16.267534700 +0900
+diff -Naru a/UsageEnvironment/include/HashTable.hh b/UsageEnvironment/include/HashTable.hh
+--- a/UsageEnvironment/include/HashTable.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/UsageEnvironment/include/HashTable.hh	2018-02-01 17:27:16.267534700 +0900
 @@ -24,7 +24,7 @@
  #include "Boolean.hh"
  #endif
@@ -3450,9 +2715,9 @@ diff -Naru a/live/UsageEnvironment/include/HashTable.hh b/live/UsageEnvironment/
  public:
    virtual ~HashTable();
    
-diff -Naru a/live/UsageEnvironment/include/strDup.hh b/live/UsageEnvironment/include/strDup.hh
---- a/live/UsageEnvironment/include/strDup.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/UsageEnvironment/include/strDup.hh	2018-02-01 17:27:25.999511700 +0900
+diff -Naru a/UsageEnvironment/include/strDup.hh b/UsageEnvironment/include/strDup.hh
+--- a/UsageEnvironment/include/strDup.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/UsageEnvironment/include/strDup.hh	2018-02-01 17:27:25.999511700 +0900
 @@ -24,14 +24,14 @@
  
  #include <string.h>
@@ -3471,9 +2736,9 @@ diff -Naru a/live/UsageEnvironment/include/strDup.hh b/live/UsageEnvironment/inc
  // An alternative form of "strDupSize()" that also returns the size of the allocated buffer.
  
  #endif
-diff -Naru a/live/UsageEnvironment/include/UsageEnvironment.hh b/live/UsageEnvironment/include/UsageEnvironment.hh
---- a/live/UsageEnvironment/include/UsageEnvironment.hh	2018-01-29 19:11:03.000000000 +0900
-+++ b/live/UsageEnvironment/include/UsageEnvironment.hh	2018-02-01 17:27:36.226522100 +0900
+diff -Naru a/UsageEnvironment/include/UsageEnvironment.hh b/UsageEnvironment/include/UsageEnvironment.hh
+--- a/UsageEnvironment/include/UsageEnvironment.hh	2018-01-29 19:11:03.000000000 +0900
++++ b/UsageEnvironment/include/UsageEnvironment.hh	2018-02-01 17:27:36.226522100 +0900
 @@ -50,7 +50,7 @@
  
  // An abstract base class, subclassed for each use of the library

@@ -15,7 +15,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
-// A source that consists of multiple byte-stream files, read sequentially
+// A source that consists of multiple byte-stream files, read sequentially.
+// (The input is an array of file names, with a terminating 'file name' of NULL.) 
 // Implementation
 
 #include "ByteStreamMultiFileSource.hh"
@@ -26,7 +27,7 @@ ByteStreamMultiFileSource
   : FramedSource(env),
     fPreferredFrameSize(preferredFrameSize), fPlayTimePerFrame(playTimePerFrame),
     fCurrentlyReadSourceNumber(0), fHaveStartedNewFile(False) {
-    // Begin by counting the number of sources:
+    // Begin by counting the number of sources (by looking for a terminating 'file name' of NULL):
     for (fNumSources = 0; ; ++fNumSources) {
       if (fileNameArray[fNumSources] == NULL) break;
     }

@@ -15,7 +15,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
-// A source that consists of multiple byte-stream files, read sequentially
+// A source that consists of multiple byte-stream files, read sequentially.
+// (The input is an array of file names, with a terminating 'file name' of NULL.)
 // C++ header
 
 #ifndef _BYTE_STREAM_MULTI_FILE_SOURCE_HH
@@ -30,7 +31,8 @@ public:
   static ByteStreamMultiFileSource*
   createNew(UsageEnvironment& env, char const** fileNameArray,
 	    unsigned preferredFrameSize = 0, unsigned playTimePerFrame = 0);
-  // A 'filename' of NULL indicates the end of the array
+  // "fileNameArray" is a pointer to an array of (char const*) file names, with
+  // A 'file name' of NULL indicating the end of the array
 
   Boolean haveStartedNewFile() const { return fHaveStartedNewFile; }
   // True iff the most recently delivered frame was the first from a newly-opened file

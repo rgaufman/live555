@@ -98,3 +98,20 @@ You can test with examples application. This examples connect to RTSP server wit
 ```shell
 # ./testRTSPClient rtsp://admin:1@192.168.123.37/profile5/media.smp
 ```
+
+## Build using cmake file without Visual Studio IDE
+
+You want to build without Visual Studio IDE or You want to build shared or static mode.
+
+```shell
+cmake . -Bshared -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
+cmake --build shared --config Release --target install
+```
+
+Or 
+
+```shell
+cmake . -Bstatic -G "Visual Studio 15 2017" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
+cmake --build static --config Release --target install
+```
+

@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 Locale::Locale(char const* newLocale, LocaleCategory category) {
 #ifndef LOCALE_NOT_USED
-#ifndef XLOCALE_NOT_USED
+#ifndef NEWLOCALE_NOT_USED
   int categoryMask;
   switch (category) {
     case All: { categoryMask = LC_ALL_MASK; break; }
@@ -45,7 +45,7 @@ Locale::Locale(char const* newLocale, LocaleCategory category) {
 
 Locale::~Locale() {
 #ifndef LOCALE_NOT_USED
-#ifndef XLOCALE_NOT_USED
+#ifndef NEWLOCALE_NOT_USED
   if (fLocale != (locale_t)0) {
     uselocale(fPrevLocale);
     freelocale(fLocale);
