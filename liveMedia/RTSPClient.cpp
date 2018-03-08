@@ -1300,7 +1300,7 @@ Boolean RTSPClient::handleGET_PARAMETERResponse(char const* parameterName, char*
       // ASSERT: parameterNameLen >= 2;
       parameterNameLen -= 2; // because of the trailing \r\n
       if (resultValueString + parameterNameLen > resultValueStringEnd) break; // not enough space
-      if (_strncasecmp(resultValueString, parameterName, parameterNameLen) == 0) {
+      if (parameterNameLen > 0 && _strncasecmp(resultValueString, parameterName, parameterNameLen) == 0) {
 	resultValueString += parameterNameLen;
 	// ASSERT: resultValueString <= resultValueStringEnd
 	if (resultValueString == resultValueStringEnd) break;

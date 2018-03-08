@@ -56,7 +56,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 enum LocaleCategory { All, Numeric }; // define and implement more categories later, as needed
 
-class LIVEMEDIA_API Locale {
+class Locale {
 public:
   Locale(char const* newLocale, LocaleCategory category = All);
   virtual ~Locale();

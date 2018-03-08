@@ -75,7 +75,7 @@ OnDemandServerMediaSubsession::sdpLines() {
 
     setSDPLinesFromRTPSink(dummyRTPSink, inputSource, estBitrate);
     Medium::close(dummyRTPSink);
-    delete dummyGroupsock;
+setsdp    delete dummyGroupsock;
     closeStreamSource(inputSource);
   }
 
@@ -465,7 +465,7 @@ void OnDemandServerMediaSubsession
 	  trackId()); // a=control:<track-id>
   delete[] (char*)rangeLine; delete[] rtpmapLine;
 
-  delete[] fSDPLines; fSDPLines = strDup(sdpLines);
+  fSDPLines = strDup(sdpLines);
   delete[] sdpLines;
 }
 
