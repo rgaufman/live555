@@ -482,7 +482,7 @@ unsigned SIPClient::getResponseCode() {
 	  && fWorkingAuthenticator != NULL) {
 	// We have an authentication failure, so fill in
 	// "*fWorkingAuthenticator" using the contents of a following
-	// "Proxy-Authenticate:" or "WWW_Authenticate:" line.  (Once we compute a 'response' for
+	// "Proxy-Authenticate:" or "WWW-Authenticate:" line.  (Once we compute a 'response' for
 	// "fWorkingAuthenticator", it can be used in a subsequent request
 	// - that will hopefully succeed.)
 	char* lineStart;

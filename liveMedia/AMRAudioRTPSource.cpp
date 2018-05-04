@@ -721,15 +721,17 @@ static void unpackBandwidthEfficientData(BufferedPacket* packet,
       = isWideband ? frameBitsFromFTWideband[FT] : frameBitsFromFT[FT];
     unsigned short frameSizeBytes = (frameSizeBits+7)/8;
 
+    if (frameSizeBits > fromBV.numBitsRemaining()) {
+#ifdef DEBUG
+      fprintf(stderr, "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!\n", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
+#endif
+      break;
+    }
+
     shiftBits(&toBuffer[toCount], 0, // to
 	      packet->data(), fromBV.curBitIndex(), // from
 	      frameSizeBits // num bits
 	      );
-#ifdef DEBUG
-    if (frameSizeBits > fromBV.numBitsRemaining()) {
-      fprintf(stderr, "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!\n", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
-    }
-#endif
     fromBV.skipBits(frameSizeBits);
     toCount += frameSizeBytes;
   }
