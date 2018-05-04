@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="org.tizen.nativecore.config.sbi.gcc45.so.debug.36973708">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecore.config.sbi.gcc45.so.debug.36973708" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.tizen.nativecore.NativeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="so" artifactName="BasicUsageEnvironment" buildArtefactType="org.tizen.nativecore.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.tizen.nativecore.buildArtefactType.sharedLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;" id="org.tizen.nativecore.config.sbi.gcc45.so.debug.36973708" name="Debug" parent="org.tizen.nativecore.config.sbi.gcc45.so.debug">
+					<folderInfo id="org.tizen.nativecore.config.sbi.gcc45.so.debug.36973708." name="/" resourcePath="">
+						<toolChain id="org.tizen.nativecore.toolchain.sbi.gcc45.so.debug.1596244764" name="Tizen Native Toolchain" superClass="org.tizen.nativecore.toolchain.sbi.gcc45.so.debug">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.1107213287" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<builder autoBuildTarget="all" buildPath="${workspace_loc:/BasicUsageEnvironment}/Debug" enableAutoBuild="true" id="org.tizen.nativecore.target.sbi.gnu.builder.1009692991" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecore.target.sbi.gnu.builder">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Debug"/>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Release"/>
+								</outputEntries>
+							</builder>
+							<tool command="i386-linux-gnueabi-ar.exe" id="org.tizen.nativecore.tool.sbi.gnu.archiver.1228944933" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
+							<tool command="clang++.exe" id="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler.1286755725" name="C++ Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.1008591275" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="sbi.gnu.cpp.compiler.option.debugging.level.core.2040640218" name="Debug level" superClass="sbi.gnu.cpp.compiler.option.debugging.level.core" valueType="enumerated"/>
+								<option id="sbi.gnu.cpp.compiler.option.763700247" name="Tizen-Target" superClass="sbi.gnu.cpp.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="wearable-2.3.2-emulator.core_llvm40.i386"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.core.643758503" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.core" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_cflags.core.842482120" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.cpp.compiler.option.frameworks_cflags.core" valueType="stringList">
+									<listOptionValue builtIn="false" value="${TC_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="${RS_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-fvisibility=hidden"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.include.paths.1580794563" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/UsageEnvironment/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/groupsock/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks.core.1711837180" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.core" valueType="userObjs">
+									<listOptionValue builtIn="false" value="Native_API"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1502866643" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_FILE_OFFSET_BITS=64"/>
+									<listOptionValue builtIn="false" value="SOCKLEN_T=socklen_t"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE_SOURCE=1"/>
+									<listOptionValue builtIn="false" value="TIZEN_DEPRECATION"/>
+									<listOptionValue builtIn="false" value="DEPRECATION_WARNING"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.dialect.std.200357790" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.files.1871349787" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/liveMedia/include/export.h}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1748991681" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool command="clang.exe" id="org.tizen.nativecore.tool.sbi.gnu.c.compiler.949769384" name="C Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.433089792" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+								<option defaultValue="gnu.c.debugging.level.max" id="sbi.gnu.c.compiler.option.debugging.level.core.828572214" name="Debug level" superClass="sbi.gnu.c.compiler.option.debugging.level.core" valueType="enumerated"/>
+								<option id="sbi.gnu.c.compiler.option.1695759873" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="wearable-2.3.2-emulator.core_llvm40.i386"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.core.37042987" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.core" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.core.909877576" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.core" valueType="stringList">
+									<listOptionValue builtIn="false" value="${TC_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="${RS_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-fvisibility=hidden"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.paths.439598280" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/UsageEnvironment/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/groupsock/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks.core.1422718675" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.core" valueType="userObjs">
+									<listOptionValue builtIn="false" value="Native_API"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.preprocessor.def.symbols.deprecation.1461365048" name="Defined symbols (-D)" superClass="sbi.gnu.c.compiler.option.preprocessor.def.symbols.deprecation" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_FILE_OFFSET_BITS=64"/>
+									<listOptionValue builtIn="false" value="SOCKLEN_T=socklen_t"/>
+									<listOptionValue builtIn="false" value="_LARGEFILE_SOURCE=1"/>
+									<listOptionValue builtIn="false" value="TIZEN_DEPRECATION"/>
+									<listOptionValue builtIn="false" value="DEPRECATION_WARNING"/>
+								</option>
+								<option id="gnu.c.compiler.option.dialect.std.547954039" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.include.files.486187885" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/liveMedia/include/export.h}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.153527039" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.1993460905" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base"/>
+							<tool command="clang++.exe" id="org.tizen.nativecore.tool.sbi.gnu.cpp.linker.410157798" name="C++ Linker" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.linker">
+								<option id="sbi.gnu.cpp.linker.option.frameworks_lflags.core.44141760" name="Tizen-Frameworks-Other-Lflags" superClass="sbi.gnu.cpp.linker.option.frameworks_lflags.core" valueType="stringList">
+									<listOptionValue builtIn="false" value="${TC_LINKER_MISC}"/>
+									<listOptionValue builtIn="false" value="${RS_LINKER_MISC}"/>
+									<listOptionValue builtIn="false" value="-lpthread "/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib&quot;"/>
+									<listOptionValue builtIn="false" value="$(RS_LIBRARIES)"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.2107650375" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+								<option id="sbi.gnu.cpp.linker.option.noundefined.core.1390609183" name="Report unresolved symbol references (-Wl,--no-undefined)" superClass="sbi.gnu.cpp.linker.option.noundefined.core" value="false" valueType="boolean"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1653423062" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool command="#{PLATFORM_DEFAULT_GCC_PREFIX}as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1164671206" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
+								<option id="gnu.both.asm.option.include.paths.1079348173" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;D:/Tools/Tizen Studio/tizen-studio/platforms/tizen-2.3.2/wearable/rootstraps/wearable-2.3.2-emulator.core/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1559860459" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecore.tool.fnmapgen.198956224" name="C FN-Map Generator" superClass="org.tizen.nativecore.tool.fnmapgen"/>
+							<tool id="org.tizen.nativecore.tool.fnmapgen.cpp.439676907" name="C++ FN-Map Generator" superClass="org.tizen.nativecore.tool.fnmapgen.cpp"/>
+							<tool id="org.tizen.nativecore.tool.ast.98033969" name="C Static Analyzer" superClass="org.tizen.nativecore.tool.ast"/>
+							<tool id="org.tizen.nativecore.tool.ast.cpp.138614948" name="C++ Static Analyzer" superClass="org.tizen.nativecore.tool.ast.cpp"/>
+							<tool id="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib.1232870050" name="Archive Generator" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib"/>
+							<tool id="org.tizen.nativecore.tool.sbi.po.compiler.1645458362" name="PO Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.po.compiler"/>
+							<tool id="org.tizen.nativecore.tool.sbi.edc.compiler.255869156" name="EDC Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.edc.compiler"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="include" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="org.tizen.nativecore.config.sbi.gcc45.so.release.905783227">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="org.tizen.nativecore.config.sbi.gcc45.so.release.905783227" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.tizen.nativecore.NativeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="so" artifactName="basicusageenvironment" buildArtefactType="org.tizen.nativecore.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.tizen.nativecore.buildArtefactType.sharedLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;" id="org.tizen.nativecore.config.sbi.gcc45.so.release.905783227" name="Release" parent="org.tizen.nativecore.config.sbi.gcc45.so.release">
+					<folderInfo id="org.tizen.nativecore.config.sbi.gcc45.so.release.905783227." name="/" resourcePath="">
+						<toolChain id="org.tizen.nativecore.toolchain.sbi.gcc45.so.release.1761741167" name="Tizen Native Toolchain" superClass="org.tizen.nativecore.toolchain.sbi.gcc45.so.release">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="org.tizen.nativeide.target.sbi.gnu.platform.base.1706124456" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
+							<builder buildPath="${workspace_loc:/BasicUsageEnvironment}/Release" id="org.tizen.nativecore.target.sbi.gnu.builder.1218812051" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecore.target.sbi.gnu.builder"/>
+							<tool command="i386-linux-gnueabi-ar.exe" id="org.tizen.nativecore.tool.sbi.gnu.archiver.422978824" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
+							<tool command="clang++.exe" id="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler.429497218" name="C++ Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.515792261" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option defaultValue="gnu.cpp.compiler.debugging.level.none" id="sbi.gnu.cpp.compiler.option.debugging.level.core.1864438361" name="Debug level" superClass="sbi.gnu.cpp.compiler.option.debugging.level.core" valueType="enumerated"/>
+								<option id="sbi.gnu.cpp.compiler.option.86137830" name="Tizen-Target" superClass="sbi.gnu.cpp.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="wearable-2.3.2-emulator.core_llvm40.i386"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_inc.core.2023412151" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.cpp.compiler.option.frameworks_inc.core" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks_cflags.core.1173874123" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.cpp.compiler.option.frameworks_cflags.core" valueType="stringList">
+									<listOptionValue builtIn="false" value="${TC_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="${RS_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-fvisibility=hidden"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.include.paths.37212465" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/groupsock/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/UsageEnvironment/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+								</option>
+								<option id="sbi.gnu.cpp.compiler.option.frameworks.core.1696520897" name="Tizen-Frameworks" superClass="sbi.gnu.cpp.compiler.option.frameworks.core" valueType="userObjs">
+									<listOptionValue builtIn="false" value="Native_API"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.include.files.408622237" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/liveMedia/include/export.h}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1615277440" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool command="clang.exe" id="org.tizen.nativecore.tool.sbi.gnu.c.compiler.458059903" name="C Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.631927805" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+								<option defaultValue="gnu.c.debugging.level.default" id="sbi.gnu.c.compiler.option.debugging.level.core.2101619501" name="Debug level" superClass="sbi.gnu.c.compiler.option.debugging.level.core" valueType="enumerated"/>
+								<option id="sbi.gnu.c.compiler.option.497483703" name="Tizen-Target" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
+									<listOptionValue builtIn="false" value="wearable-2.3.2-emulator.core_llvm40.i386"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_inc.core.1412598855" name="Tizen-Frameworks-Include-Path" superClass="sbi.gnu.c.compiler.option.frameworks_inc.core" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/libxml2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-agent&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appcore-watch&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/appfw&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/badge&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/base&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/cairo&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ckm&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/context-manager&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dbus-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/device&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/dlog&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ecore-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/e_dbus-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/edje-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efl-extension&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/efreet-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eina-1/eina&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/eio-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/elementary-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/embryo-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ethumb-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/evas-1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ewebkit2-0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/fontconfig&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/freetype2&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/gio-unix-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/glib-2.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/json-glib-1.0/json-glib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/location&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/maps&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/media-content&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/messaging&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/minizip&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/network&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/notification&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/sensor&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/storage&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/system&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/telephony&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/ui&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_service&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/include/widget_viewer_evas&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/dbus-1.0/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${SBI_SYSROOT}/usr/lib/glib-2.0/include&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks_cflags.core.521058376" name="Tizen-Frameworks-Other-Cflags" superClass="sbi.gnu.c.compiler.option.frameworks_cflags.core" valueType="stringList">
+									<listOptionValue builtIn="false" value="${TC_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="${RS_COMPILER_MISC}"/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-fvisibility=hidden"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.paths.2110168498" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
+								</option>
+								<option id="sbi.gnu.c.compiler.option.frameworks.core.1067933085" name="Tizen-Frameworks" superClass="sbi.gnu.c.compiler.option.frameworks.core" valueType="userObjs">
+									<listOptionValue builtIn="false" value="Native_API"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.files.744854511" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/liveMedia/include/export.h}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1647628236" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="org.tizen.nativeide.tool.sbi.gnu.c.linker.base.314038660" name="C Linker" superClass="org.tizen.nativeide.tool.sbi.gnu.c.linker.base"/>
+							<tool command="clang++.exe" id="org.tizen.nativecore.tool.sbi.gnu.cpp.linker.859631269" name="C++ Linker" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.linker">
+								<option id="sbi.gnu.cpp.linker.option.frameworks_lflags.core.1616692891" name="Tizen-Frameworks-Other-Lflags" superClass="sbi.gnu.cpp.linker.option.frameworks_lflags.core" valueType="stringList">
+									<listOptionValue builtIn="false" value="${TC_LINKER_MISC}"/>
+									<listOptionValue builtIn="false" value="${RS_LINKER_MISC}"/>
+									<listOptionValue builtIn="false" value="-lpthread "/>
+									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-L&quot;${SBI_SYSROOT}/usr/lib&quot;"/>
+									<listOptionValue builtIn="false" value="$(RS_LIBRARIES)"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.428154379" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+								<option id="sbi.gnu.cpp.linker.option.noundefined.core.311771757" name="Report unresolved symbol references (-Wl,--no-undefined)" superClass="sbi.gnu.cpp.linker.option.noundefined.core" value="false" valueType="boolean"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1446860614" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool command="#{PLATFORM_DEFAULT_GCC_PREFIX}as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.1458492046" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1216401930" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="org.tizen.nativecore.tool.fnmapgen.727944525" name="C FN-Map Generator" superClass="org.tizen.nativecore.tool.fnmapgen"/>
+							<tool id="org.tizen.nativecore.tool.fnmapgen.cpp.714568115" name="C++ FN-Map Generator" superClass="org.tizen.nativecore.tool.fnmapgen.cpp"/>
+							<tool id="org.tizen.nativecore.tool.ast.609697090" name="C Static Analyzer" superClass="org.tizen.nativecore.tool.ast"/>
+							<tool id="org.tizen.nativecore.tool.ast.cpp.564615836" name="C++ Static Analyzer" superClass="org.tizen.nativecore.tool.ast.cpp"/>
+							<tool id="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib.1402220901" name="Archive Generator" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver.mergelib"/>
+							<tool id="org.tizen.nativecore.tool.sbi.po.compiler.362798379" name="PO Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.po.compiler"/>
+							<tool id="org.tizen.nativecore.tool.sbi.edc.compiler.2139880634" name="EDC Resource Compiler" superClass="org.tizen.nativecore.tool.sbi.edc.compiler"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="include" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="BasicUsageEnvironment.org.tizen.nativecore.target.sbi.gcc45.so.1520416872" name="Tizen Native Shared Library" projectType="org.tizen.nativecore.target.sbi.gcc45.so"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.so.debug.36973708">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.tizen.nativecore.config.sbi.gcc45.so.release.905783227">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/BasicUsageEnvironment"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/BasicUsageEnvironment"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+</cproject>
