@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // Common routines for opening/closing named input files
 // C++ header
 
@@ -50,6 +50,7 @@ FILE* OpenInputFile(UsageEnvironment& env, char const* fileName);
 
 void CloseInputFile(FILE* fid);
 
+#undef GetFileSize // because some platforms already define this as a macro
 u_int64_t GetFileSize(char const* fileName, FILE* fid);
     // 0 means zero-length, unbounded, or unknown
 

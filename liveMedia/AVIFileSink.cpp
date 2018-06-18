@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // A sink that generates an AVI file from a composite media session
 // Implementation
 
@@ -24,6 +24,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "GroupsockHelper.hh"
 
 #define fourChar(x,y,z,w) ( ((w)<<24)|((z)<<16)|((y)<<8)|(x) )/*little-endian*/
+
+#define AVIIF_LIST		0x00000001
+#define AVIIF_KEYFRAME		0x00000010
+#define AVIIF_NO_TIME		0x00000100
+#define AVIIF_COMPRESSOR	0x0FFF0000
 
 ////////// AVISubsessionIOState ///////////
 // A structure used to represent the I/O state of each input 'subsession':
@@ -365,7 +370,7 @@ void AVIFileSink::completeOutputFile() {
     addWord(indexRecord->size());
   }
 
-  fRIFFSizeValue += fNumBytesWritten;
+  fRIFFSizeValue += fNumBytesWritten + fNumIndexRecords*4*4 - 4;
   setWord(fRIFFSizePosition, fRIFFSizeValue);
 
   setWord(fAVIHMaxBytesPerSecondPosition, maxBytesPerSecond);
@@ -531,9 +536,9 @@ void AVISubsessionIOState::useFrame(SubsessionBuffer& buffer) {
   // Add an index record for this frame:
   AVIIndexRecord* newIndexRecord
     = new AVIIndexRecord(fAVISubsessionTag, // chunk id
-			 frameSource[0] == 0x67 ? 0x10 : 0, // flags
-			 fOurSink.fMoviSizePosition + 8 + fOurSink.fNumBytesWritten, // offset (note: 8 == size + 'movi')
-			 frameSize + 4); // size
+			 AVIIF_KEYFRAME, // flags
+			 4 + fOurSink.fNumBytesWritten, // offset (note: 4 == 'movi')
+			 frameSize); // size
   fOurSink.addIndexRecord(newIndexRecord);
 
   // Write the data into the file:

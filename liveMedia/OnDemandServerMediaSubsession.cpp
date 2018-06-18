@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand.
 // Implementation
@@ -465,7 +465,7 @@ void OnDemandServerMediaSubsession
 	  trackId()); // a=control:<track-id>
   delete[] (char*)rangeLine; delete[] rtpmapLine;
 
-  fSDPLines = strDup(sdpLines);
+  delete[] fSDPLines; fSDPLines = strDup(sdpLines);
   delete[] sdpLines;
 }
 

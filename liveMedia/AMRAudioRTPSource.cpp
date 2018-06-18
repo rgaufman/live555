@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // AMR Audio RTP Sources (RFC 4867)
 // Implementation
 
@@ -721,15 +721,17 @@ static void unpackBandwidthEfficientData(BufferedPacket* packet,
       = isWideband ? frameBitsFromFTWideband[FT] : frameBitsFromFT[FT];
     unsigned short frameSizeBytes = (frameSizeBits+7)/8;
 
+    if (frameSizeBits > fromBV.numBitsRemaining()) {
+#ifdef DEBUG
+      fprintf(stderr, "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!\n", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
+#endif
+      break;
+    }
+
     shiftBits(&toBuffer[toCount], 0, // to
 	      packet->data(), fromBV.curBitIndex(), // from
 	      frameSizeBits // num bits
 	      );
-#ifdef DEBUG
-    if (frameSizeBits > fromBV.numBitsRemaining()) {
-      fprintf(stderr, "\tWarning: Unpacking frame %d of %d: want %d bits, but only %d are available!\n", i, tocSize, frameSizeBits, fromBV.numBitsRemaining());
-    }
-#endif
     fromBV.skipBits(frameSizeBits);
     toCount += frameSizeBytes;
   }

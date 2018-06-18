@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 **********/
-// Copyright (c) 1996-2017, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2018, Live Networks, Inc.  All rights reserved
 // A test program that reads a H.264 Elementary Stream video file
 // and streams it using RTP
 // main program

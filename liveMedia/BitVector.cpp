@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // Bit Vector data structure
 // Implementation
 
@@ -143,7 +143,7 @@ int BitVector::get_expGolombSigned() {
   unsigned codeNum = get_expGolomb();
 
   if ((codeNum&1) == 0) { // even
-    return -(codeNum/2);
+    return -(int)(codeNum/2);
   } else { // odd
     return (codeNum+1)/2;
   }

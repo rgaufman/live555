@@ -1,4 +1,4 @@
-COMPILE_OPTS =          $(INCLUDES) -m64 -I. -O -DSOLARIS -DXLOCALE_NOT_USED -DSOCKLEN_T=socklen_t
+COMPILE_OPTS =          $(INCLUDES) -m64 -I. -O -DSOLARIS -DNEWLOCALE_NOT_USED -DSOCKLEN_T=socklen_t
 C =                     c
 C_COMPILER =            cc
 C_FLAGS =               $(COMPILE_OPTS)

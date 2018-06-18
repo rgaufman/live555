@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // C++ header
 
@@ -310,13 +310,16 @@ public:
 						   UserAuthenticationDatabase* authDatabaseForREGISTER = NULL,
 						   unsigned reclamationSeconds = 65,
 						   Boolean streamRTPOverTCP = False,
-						   int verbosityLevelForProxying = 0);
+						   int verbosityLevelForProxying = 0,
+						   char const* backEndUsername = NULL,
+						   char const* backEndPassword = NULL);
 
 protected:
   RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
 				 unsigned reclamationSeconds,
-				 Boolean streamRTPOverTCP, int verbosityLevelForProxying);
+				 Boolean streamRTPOverTCP, int verbosityLevelForProxying,
+				 char const* backEndUsername, char const* backEndPassword);
   // called only by createNew();
   virtual ~RTSPServerWithREGISTERProxying();
 
@@ -335,6 +338,8 @@ private:
   unsigned fRegisteredProxyCounter;
   char* fAllowedCommandNames;
   UserAuthenticationDatabase* fAuthDBForREGISTER;
+  char* fBackEndUsername;
+  char* fBackEndPassword;
 }; 
 
 

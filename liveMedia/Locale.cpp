@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // Support for temporarily setting the locale (e.g., to "C" or "POSIX") for (e.g.) parsing or printing
 // floating-point numbers in protocol headers, or calling toupper()/tolower() on human-input strings.
 // Implementation
@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 Locale::Locale(char const* newLocale, LocaleCategory category) {
 #ifndef LOCALE_NOT_USED
-#ifndef XLOCALE_NOT_USED
+#ifndef NEWLOCALE_NOT_USED
   int categoryMask;
   switch (category) {
     case All: { categoryMask = LC_ALL_MASK; break; }
@@ -45,7 +45,7 @@ Locale::Locale(char const* newLocale, LocaleCategory category) {
 
 Locale::~Locale() {
 #ifndef LOCALE_NOT_USED
-#ifndef XLOCALE_NOT_USED
+#ifndef NEWLOCALE_NOT_USED
   if (fLocale != (locale_t)0) {
     uselocale(fPrevLocale);
     freelocale(fLocale);

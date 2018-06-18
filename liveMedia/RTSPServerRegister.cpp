@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // Implementation of functionality related to the "REGISTER" and "DEREGISTER" commands
 
@@ -216,6 +216,8 @@ RTSPServer::RTSPClientConnection::ParamsForREGISTER::~ParamsForREGISTER() {
   delete[] (char*)fCmd; delete[] fURL; delete[] fURLSuffix; delete[] fProxyURLSuffix;
 }
 
+#define DELAY_USECS_AFTER_REGISTER_RESPONSE 100000 /*100ms*/
+
 void RTSPServer
 ::RTSPClientConnection::handleCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
 					   char const* url, char const* urlSuffix, char const* fullRequestStr,
@@ -225,13 +227,19 @@ void RTSPServer
     // The "REGISTER"/"DEREGISTER" command - if we implement it - may require access control:
     if (!authenticationOK(cmd, urlSuffix, fullRequestStr)) return;
     
-    // We implement the "REGISTER"/"DEREGISTER" command by first replying to it, then actually handling it
-    // (in a separate event-loop task, that will get called after the reply has been done):
+    // We implement the "REGISTER"/"DEREGISTER" command by first replying to it, then actually
+    // handling it (in a separate event-loop task, that will get called after the reply has
+    // been done).
+    // Hack: If we're going to reuse the command's connection for subsequent RTSP commands, then we
+    // delay the actual handling of the command slightly, to make it less likely that the first
+    // subsequent RTSP command (e.g., "DESCRIBE") will end up in the client's reponse buffer before
+    // the socket (at the far end) gets reused for RTSP command handling.
     setRTSPResponse(responseStr == NULL ? "200 OK" : responseStr);
     delete[] responseStr;
     
     ParamsForREGISTER* registerParams = new ParamsForREGISTER(cmd, this, url, urlSuffix, reuseConnection, deliverViaTCP, proxyURLSuffix);
-    envir().taskScheduler().scheduleDelayedTask(0, (TaskFunc*)continueHandlingREGISTER, registerParams);
+    envir().taskScheduler().scheduleDelayedTask(reuseConnection ? DELAY_USECS_AFTER_REGISTER_RESPONSE : 0,
+						(TaskFunc*)continueHandlingREGISTER, registerParams);
   } else if (responseStr != NULL) {
     setRTSPResponse(responseStr);
     delete[] responseStr;
@@ -312,26 +320,33 @@ RTSPServerWithREGISTERProxying* RTSPServerWithREGISTERProxying
 ::createNew(UsageEnvironment& env, Port ourPort,
 	    UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
 	    unsigned reclamationSeconds,
-	    Boolean streamRTPOverTCP, int verbosityLevelForProxying) {
+	    Boolean streamRTPOverTCP, int verbosityLevelForProxying,
+	    char const* backEndUsername, char const* backEndPassword) {
   int ourSocket = setUpOurSocket(env, ourPort);
   if (ourSocket == -1) return NULL;
   
-  return new RTSPServerWithREGISTERProxying(env, ourSocket, ourPort, authDatabase, authDatabaseForREGISTER, reclamationSeconds,
-					    streamRTPOverTCP, verbosityLevelForProxying);
+  return new RTSPServerWithREGISTERProxying(env, ourSocket, ourPort,
+					    authDatabase, authDatabaseForREGISTER,
+					    reclamationSeconds,
+					    streamRTPOverTCP, verbosityLevelForProxying,
+					    backEndUsername, backEndPassword);
 }
 
 RTSPServerWithREGISTERProxying
 ::RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
 				 unsigned reclamationSeconds,
-				 Boolean streamRTPOverTCP, int verbosityLevelForProxying)
+				 Boolean streamRTPOverTCP, int verbosityLevelForProxying,
+				 char const* backEndUsername, char const* backEndPassword)
   : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fVerbosityLevelForProxying(verbosityLevelForProxying),
-    fRegisteredProxyCounter(0), fAllowedCommandNames(NULL), fAuthDBForREGISTER(authDatabaseForREGISTER) {
+    fRegisteredProxyCounter(0), fAllowedCommandNames(NULL), fAuthDBForREGISTER(authDatabaseForREGISTER),
+    fBackEndUsername(strDup(backEndUsername)), fBackEndPassword(strDup(backEndPassword)) {
 }
 
 RTSPServerWithREGISTERProxying::~RTSPServerWithREGISTERProxying() {
   delete[] fAllowedCommandNames;
+  delete[] fBackEndUsername; delete[] fBackEndPassword;
 }
 
 char const* RTSPServerWithREGISTERProxying::allowedCommandNames() {
@@ -390,7 +405,8 @@ void RTSPServerWithREGISTERProxying
         // We don't support streaming from the back-end via RTSP/RTP/RTCP-over-HTTP; only via RTP/RTCP-over-TCP or RTP/RTCP-over-UDP
 
     ServerMediaSession* sms
-      = ProxyServerMediaSession::createNew(envir(), this, url, proxyStreamName, NULL, NULL,
+      = ProxyServerMediaSession::createNew(envir(), this, url, proxyStreamName,
+					   fBackEndUsername, fBackEndPassword,
 					   tunnelOverHTTPPortNum, fVerbosityLevelForProxying, socketToRemoteServer);
     addServerMediaSession(sms);
   

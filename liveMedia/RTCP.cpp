@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // RTCP
 // Implementation
 
@@ -238,7 +238,7 @@ void RTCPInstance::noteArrivingRR(struct sockaddr_in const& fromAddressAndPort,
       }
     }
   }
-
+  
   // General RR handler:
   if (fRRHandlerTask != NULL) (*fRRHandlerTask)(fRRHandlerClientData);
 }
@@ -415,12 +415,12 @@ void RTCPInstance::incomingReportHandler(RTCPInstance* instance,
 
 void RTCPInstance::incomingReportHandler1() {
   do {
-    // if (fNumBytesAlreadyRead >= maxRTCPPacketSize) {
-    //   envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
-	  //     << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
-	  //     << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
-    //   break;
-    // }
+    if (fNumBytesAlreadyRead >= maxRTCPPacketSize) {
+      envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
+	      << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
+	      << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
+      break;
+    }
 
     unsigned numBytesRead;
     struct sockaddr_in fromAddress;
@@ -437,7 +437,7 @@ void RTCPInstance::incomingReportHandler1() {
     if (packetReadWasIncomplete) {
       fNumBytesAlreadyRead += numBytesRead;
       return; // more reads are needed to get the entire packet
-    } else { // normal case: We've read the entire packet
+    } else { // normal case: We've read the entire packet 
       packetSize = fNumBytesAlreadyRead + numBytesRead;
       fNumBytesAlreadyRead = 0; // for next time
     }

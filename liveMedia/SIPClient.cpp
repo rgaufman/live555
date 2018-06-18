@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2017 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
 // A generic SIP client
 // Implementation
 
@@ -482,7 +482,7 @@ unsigned SIPClient::getResponseCode() {
 	  && fWorkingAuthenticator != NULL) {
 	// We have an authentication failure, so fill in
 	// "*fWorkingAuthenticator" using the contents of a following
-	// "Proxy-Authenticate:" line.  (Once we compute a 'response' for
+	// "Proxy-Authenticate:" or "WWW-Authenticate:" line.  (Once we compute a 'response' for
 	// "fWorkingAuthenticator", it can be used in a subsequent request
 	// - that will hopefully succeed.)
 	char* lineStart;
@@ -502,6 +502,8 @@ unsigned SIPClient::getResponseCode() {
 	  if (
 	      // Asterisk #####
 	      sscanf(lineStart, "Proxy-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"",
+		     realm, nonce) == 2 ||
+	      sscanf(lineStart, "WWW-Authenticate: Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"",
 		     realm, nonce) == 2 ||
 	      // Cisco ATA #####
 	      sscanf(lineStart, "Proxy-Authenticate: Digest algorithm=MD5,domain=\"%*[^\"]\",nonce=\"%[^\"]\", realm=\"%[^\"]\"",
@@ -868,7 +870,7 @@ SIPClient::createAuthenticatorString(Authenticator const* authenticator,
       && authenticator->password() != NULL) {
     // We've been provided a filled-in authenticator, so use it:
     char const* const authFmt
-      = "Proxy-Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", response=\"%s\", uri=\"%s\"\r\n";
+      = "Authorization: Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", response=\"%s\", uri=\"%s\"\r\n";
     char const* response = authenticator->computeDigestResponse(cmd, url);
     unsigned authBufSize = strlen(authFmt)
       + strlen(authenticator->username()) + strlen(authenticator->realm())
