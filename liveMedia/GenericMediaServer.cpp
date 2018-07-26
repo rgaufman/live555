@@ -149,7 +149,7 @@ int GenericMediaServer::setUpOurSocket(UsageEnvironment& env, Port& ourPort) {
     NoReuse dummy(env); // Don't use this socket if there's already a local server using it
 #endif
     
-    ourSocket = setupStreamSocket(env, ourPort);
+    ourSocket = setupStreamSocket(env, ourPort, True, True);
     if (ourSocket < 0) break;
     
     // Make sure we have a big send buffer:

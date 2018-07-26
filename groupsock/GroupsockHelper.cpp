@@ -27,6 +27,7 @@ extern "C" int initializeWinsockIfNecessary();
 #include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
+#include <netinet/tcp.h>
 #include <fcntl.h>
 #define initializeWinsockIfNecessary() 1
 #endif
@@ -217,8 +218,36 @@ Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds) {
   return result;
 }
 
+Boolean setSocketKeepAlive(int sock) {
+#if defined(__WIN32__) || defined(_WIN32)
+  // How do we do this in Windows?  For now, just make this a no-op in Windows:
+#else
+  int const keepalive_enabled = 1;
+  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, (void*)&keepalive_enabled, sizeof keepalive_enabled) < 0) {
+    return False;
+  }
+
+  int const keepalive_time = 180;
+  if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, (void*)&keepalive_time, sizeof keepalive_time) < 0) {
+    return False;
+  }
+
+  int const keepalive_count = 5;
+  if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, (void*)&keepalive_count, sizeof keepalive_count) < 0) {
+    return False;
+  }
+
+  int const keepalive_interval = 20;
+  if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, (void*)&keepalive_interval, sizeof keepalive_interval) < 0) {
+    return False;
+  }
+#endif
+
+  return True;
+}
+
 int setupStreamSocket(UsageEnvironment& env,
-                      Port port, Boolean makeNonBlocking) {
+                      Port port, Boolean makeNonBlocking, Boolean setKeepAlive) {
   if (!initializeWinsockIfNecessary()) {
     socketErr(env, "Failed to initialize 'winsock': ");
     return -1;
@@ -279,6 +308,16 @@ int setupStreamSocket(UsageEnvironment& env,
   if (makeNonBlocking) {
     if (!makeSocketNonBlocking(newSocket)) {
       socketErr(env, "failed to make non-blocking: ");
+      closeSocket(newSocket);
+      return -1;
+    }
+  }
+
+  // Set the keep alive mechanism for the TCP socket, to avoid "ghost sockets" 
+  //    that remain after an interrupted communication.
+  if (setKeepAlive) {
+    if (!setSocketKeepAlive(newSocket)) {
+      socketErr(env, "failed to set keep alive: ");
       closeSocket(newSocket);
       return -1;
     }

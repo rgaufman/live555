@@ -27,23 +27,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 LIVEMEDIA_API int setupDatagramSocket(UsageEnvironment& env, Port port);
 LIVEMEDIA_API int setupStreamSocket(UsageEnvironment& env,
-		      Port port, Boolean makeNonBlocking = True);
+		      Port port, Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
 
-LIVEMEDIA_API  int readSocket(UsageEnvironment& env,
+LIVEMEDIA_API int readSocket(UsageEnvironment& env,
 	       int socket, unsigned char* buffer, unsigned bufferSize,
 	       struct sockaddr_in& fromAddress);
 
-LIVEMEDIA_API  Boolean writeSocket(UsageEnvironment& env,
+LIVEMEDIA_API Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize);
 
-LIVEMEDIA_API  Boolean writeSocket(UsageEnvironment& env,
+LIVEMEDIA_API Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
 		    unsigned char* buffer, unsigned bufferSize);
     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
-LIVEMEDIA_API  void ignoreSigPipeOnSocket(int socketNum);
+LIVEMEDIA_API void ignoreSigPipeOnSocket(int socketNum);
 
 LIVEMEDIA_API unsigned getSendBufferSize(UsageEnvironment& env, int socket);
 LIVEMEDIA_API unsigned getReceiveBufferSize(UsageEnvironment& env, int socket);
@@ -59,6 +59,7 @@ LIVEMEDIA_API unsigned increaseReceiveBufferTo(UsageEnvironment& env,
 LIVEMEDIA_API Boolean makeSocketNonBlocking(int sock);
 LIVEMEDIA_API Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
   // A "writeTimeoutInMilliseconds" value of 0 means: Don't timeout
+LIVEMEDIA_API Boolean setSocketKeepAlive(int sock);
 
 LIVEMEDIA_API Boolean socketJoinGroup(UsageEnvironment& env, int socket,
 			netAddressBits groupAddress);
