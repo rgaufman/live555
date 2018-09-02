@@ -1267,6 +1267,9 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
       } else if (strcmp(fCodecName, "THEORA") == 0) { // Theora video
 	fReadSource = fRTPSource
 	  = TheoraVideoRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat);
+      } else if (strcmp(fCodecName, "RAW") == 0) { // Uncompressed raw video (RFC 4175)
+	fReadSource = fRTPSource
+	  = RawVideoRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat, fRTPTimestampFrequency);
       } else if (strcmp(fCodecName, "VP8") == 0) { // VP8 video
 	fReadSource = fRTPSource
 	  = VP8VideoRTPSource::createNew(env(), fRTPSocket,

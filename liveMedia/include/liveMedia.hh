@@ -68,6 +68,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "TheoraVideoRTPSource.hh"
 #include "VP8VideoRTPSource.hh"
 #include "VP9VideoRTPSource.hh"
+#include "RawVideoRTPSource.hh"
 #include "MPEG2TransportStreamFromPESSource.hh"
 #include "MPEG2TransportStreamFromESSource.hh"
 #include "MPEG2TransportStreamFramer.hh"

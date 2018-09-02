@@ -419,7 +419,7 @@ void RTCPInstance::incomingReportHandler1() {
       envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
 	      << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
 	      << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
-      break;
+      exit(1);
     }
 
     unsigned numBytesRead;

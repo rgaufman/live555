@@ -1138,7 +1138,7 @@ void sessionAfterPlaying(void* /*clientData*/) {
     // We've been asked to play the stream(s) over again.
     // First, reset state from the current session:
     if (env != NULL) {
-      env->taskScheduler().unscheduleDelayedTask(periodicFileOutputTask);
+      // Keep this running:      env->taskScheduler().unscheduleDelayedTask(periodicFileOutputTask);
       env->taskScheduler().unscheduleDelayedTask(sessionTimerTask);
       env->taskScheduler().unscheduleDelayedTask(sessionTimeoutBrokenServerTask);
       env->taskScheduler().unscheduleDelayedTask(arrivalCheckTimerTask);
