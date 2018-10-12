@@ -16,9 +16,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Copyright (c) 1996-2018, Live Networks, Inc.  All rights reserved
 // LIVE555 Proxy Server
 // main program
-
+#include <string>
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
+
+#define BUFF_SIZE 50
 
 char const* progName;
 UsageEnvironment* env;
@@ -36,6 +38,7 @@ Boolean proxyREGISTERRequests = False;
 char* usernameForREGISTER = NULL;
 char* passwordForREGISTER = NULL;
 unsigned interPacketGapMaxTime = 0;
+char* endpoint = NULL;
 
 static RTSPServer* createRTSPServer(Port port) {
   if (proxyREGISTERRequests) {
@@ -53,6 +56,7 @@ void usage() {
        << " [-u <username> <password>]"
        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
        << " [-D <max-inter-packet-gap-time>]"
+       << " [-e <custom-endpoint> default 'proxyStream' (max: 50 char)]"
        << " <rtsp-url-1> ... <rtsp-url-n>\n";
   exit(1);
 }
@@ -84,19 +88,22 @@ int main(int argc, char** argv) {
       verbosityLevel = 1;
       break;
     }
-
     case 'V': { // more verbose output
       verbosityLevel = 2;
       break;
     }
-
     case 't': {
       // Stream RTP and RTCP over the TCP 'control' connection.
       // (This is for the 'back end' (i.e., proxied) stream only.)
       streamRTPOverTCP = True;
       break;
     }
-
+    case 'e':
+      endpoint = argv[2];
+      if(strlen(argv[2]) > BUFF_SIZE)
+          usage();
+      ++argv; --argc;
+      break;
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 2 && argv[2][0] != '-') {
@@ -160,7 +167,6 @@ int main(int argc, char** argv) {
           break;
         }
       }
-
       // If we get here, the option was specified incorrectly:
       usage();
       break;
@@ -171,7 +177,6 @@ int main(int argc, char** argv) {
       break;
     }
     }
-
     ++argv; --argc;
   }
   if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end 
@@ -198,7 +203,7 @@ int main(int argc, char** argv) {
   // To implement client access control to the RTSP server, do the following:
   authDB = new UserAuthenticationDatabase;
   authDB->addUserRecord("username1", "password1"); // replace these with real strings
-      // Repeat this line with each <username>, <password> that you wish to allow access to the server.
+  // Repeat this line with each <username>, <password> that you wish to allow access to the server.
 #endif
 
   // Create the RTSP server. Try first with the configured port number,
@@ -208,8 +213,9 @@ int main(int argc, char** argv) {
   rtspServer = createRTSPServer(rtspServerPortNum);
   if (rtspServer == NULL) {
     if (rtspServerPortNum != 554) {
-      *env << "Unable to create a RTSP server with port number " << rtspServerPortNum << ": " << env->getResultMsg() << "\n";
-      *env << "Trying instead with the standard port numbers (554 and 8554)...\n";
+      *env << "Unable to create a RTSP server with port number " 
+	   << rtspServerPortNum << ": " << env->getResultMsg() << "\n"
+           << "Trying instead with the standard port numbers (554 and 8554)...\n";
 
       rtspServerPortNum = 554;
       rtspServer = createRTSPServer(rtspServerPortNum);
@@ -226,17 +232,22 @@ int main(int argc, char** argv) {
 
   // Create a proxy for each "rtsp://" URL specified on the command line:
   for (i = 1; i < argc; ++i) {
+    char const* epName = NULL;
     char const* proxiedStreamURL = argv[i];
-    char streamName[30];
+    char streamName[BUFF_SIZE+3];
+
     if (argc == 2) {
-      sprintf(streamName, "%s", "proxyStream"); // there's just one stream; give it this name
+      epName = (endpoint != NULL) ? endpoint : "proxyStream";
+      sprintf(streamName, "%s", epName); // there's just one stream; give it this name
     } else {
-      sprintf(streamName, "proxyStream-%d", i); // there's more than one stream; distinguish them by name
+      epName = (endpoint != NULL) ? std::string(endpoint).append("-%d").c_str() : "proxyStream-%d";
+      sprintf(streamName, epName, i); // there's more than one stream; distinguish them by name
     }
-    ServerMediaSession* sms
-      = ProxyServerMediaSession::createNew(*env, rtspServer,
+
+    ServerMediaSession* sms = ProxyServerMediaSession::createNew(*env, rtspServer,
 					   proxiedStreamURL, streamName,
-					   username, password, tunnelOverHTTPPortNum, verbosityLevel, -1, NULL, interPacketGapMaxTime);
+					   username, password, tunnelOverHTTPPortNum,
+					   verbosityLevel, -1, NULL, interPacketGapMaxTime);
     rtspServer->addServerMediaSession(sms);
 
     char* proxyStreamURL = rtspServer->rtspURL(sms);
