@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // The following class can be used to define specific encoder parameters
-class DeviceParameters {
+class LIVEMEDIA_API DeviceParameters {
   //%%% TO BE WRITTEN %%%
 };
 

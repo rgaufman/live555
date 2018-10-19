@@ -51,7 +51,7 @@ protected: // redefined virtual functions
   virtual ClientConnection* createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr);
 
 public: // should be protected, but some old compilers complain otherwise
-  class RTSPClientConnectionSupportingHTTPStreaming: public RTSPServer::RTSPClientConnection {
+  class LIVEMEDIA_API RTSPClientConnectionSupportingHTTPStreaming: public RTSPServer::RTSPClientConnection {
   public:
     RTSPClientConnectionSupportingHTTPStreaming(RTSPServer& ourServer, int clientSocket, struct sockaddr_in clientAddr);
     virtual ~RTSPClientConnectionSupportingHTTPStreaming();

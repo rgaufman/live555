@@ -33,6 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <VP8VideoRTPSink.hh>
 #include <VP9VideoRTPSink.hh>
 #include <TheoraVideoRTPSink.hh>
+#include <RawVideoRTPSink.hh>
 #include <T140TextRTPSink.hh>
 
 ////////// CuePoint definition //////////
@@ -437,6 +438,9 @@ RTPSink* MatroskaFile
       } while (0);
 
       delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
+    } else if (strcmp(track->mimeType, "video/RAW") == 0) {
+      result = RawVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, 
+                                          track->pixelHeight, track->pixelWidth, track->bitDepth, track->colorSampling, track->colorimetry);
     } else if (strcmp(track->mimeType, "video/H264") == 0) {
       // Use our track's 'Codec Private' data: Bytes 5 and beyond contain SPS and PPSs:
       u_int8_t* SPS = NULL; unsigned SPSSize = 0;
@@ -668,7 +672,8 @@ MatroskaTrack::MatroskaTrack()
     codecPrivateSize(0), codecPrivate(NULL),
     codecPrivateUsesH264FormatForH265(False), codecIsOpus(False),
     headerStrippedBytesSize(0), headerStrippedBytes(NULL),
-    subframeSizeSize(0) {
+    colorSampling(""), colorimetry("BT709-2") /*Matroska default value for Primaries */,
+    pixelWidth(0), pixelHeight(0), bitDepth(8), subframeSizeSize(0) {
 }
 
 MatroskaTrack::~MatroskaTrack() {

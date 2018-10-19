@@ -217,7 +217,7 @@ public: // should be protected, but some old compilers complain otherwise
   };
 
   // The state of an individual client session (using one or more sequential TCP connections) handled by a RTSP server:
-  class RTSPClientSession: public GenericMediaServer::ClientSession {
+  class LIVEMEDIA_API RTSPClientSession: public GenericMediaServer::ClientSession {
   protected:
     RTSPClientSession(RTSPServer& ourServer, u_int32_t sessionId);
     virtual ~RTSPClientSession();
@@ -345,7 +345,7 @@ private:
 
 // A special version of "parseTransportHeader()", used just for parsing the "Transport:" header
 // in an incoming "REGISTER" command:
-void parseTransportHeaderForREGISTER(char const* buf, // in
+LIVEMEDIA_API void parseTransportHeaderForREGISTER(char const* buf, // in
 				     Boolean &reuseConnection, // out
 				     Boolean& deliverViaTCP, // out
 				     char*& proxyURLSuffix); // out

@@ -131,6 +131,11 @@ public:
   Boolean codecIsOpus; // a hack for Opus audio
   unsigned headerStrippedBytesSize;
   u_int8_t* headerStrippedBytes;
+  char const* colorSampling;
+  char const* colorimetry;
+  unsigned pixelWidth;
+  unsigned pixelHeight;
+  unsigned bitDepth;
   unsigned subframeSizeSize; // 0 means: frames do not have subframes (the default behavior)
   Boolean haveSubframes() const { return subframeSizeSize > 0; }
 };

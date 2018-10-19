@@ -63,7 +63,7 @@ private:
   unsigned fLastSentTTL;
 };
 
-class destRecord {
+class LIVEMEDIA_API destRecord {
 public:
   destRecord(struct in_addr const& addr, Port const& port, u_int8_t ttl, unsigned sessionId,
 	     destRecord* next);

@@ -191,7 +191,7 @@ public:
 
 public: // Some compilers complain if this is "private:"
   // The state of a request-in-progress:
-  class RequestRecord {
+  class LIVEMEDIA_API RequestRecord {
   public:
     RequestRecord(unsigned cseq, char const* commandName, responseHandler* handler,
 		  MediaSession* session = NULL, MediaSubsession* subsession = NULL, u_int32_t booleanFlags = 0,
@@ -356,7 +356,7 @@ private:
 
 typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP);
 
-class HandlerServerForREGISTERCommand: public RTSPServer {
+class LIVEMEDIA_API LIVEMEDIA_API HandlerServerForREGISTERCommand: public RTSPServer {
 public:
   static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
 						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,

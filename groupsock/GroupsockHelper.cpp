@@ -27,7 +27,13 @@ extern "C" int initializeWinsockIfNecessary();
 #include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
+#if !defined(_WIN32)
 #include <netinet/tcp.h>
+#ifdef __ANDROID_NDK__
+#include <android/ndk-version.h>
+#define ANDROID_OLD_NDK __NDK_MAJOR__ < 17
+#endif
+#endif
 #include <fcntl.h>
 #define initializeWinsockIfNecessary() 1
 #endif
@@ -227,10 +233,12 @@ Boolean setSocketKeepAlive(int sock) {
     return False;
   }
 
+#ifdef TCP_KEEPIDLE
   int const keepalive_time = 180;
   if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, (void*)&keepalive_time, sizeof keepalive_time) < 0) {
     return False;
   }
+#endif
 
   int const keepalive_count = 5;
   if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, (void*)&keepalive_count, sizeof keepalive_count) < 0) {
@@ -559,7 +567,7 @@ Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   struct ip_mreq_source imr;
-#ifdef __ANDROID__
+#if ANDROID_OLD_NDK
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = ReceivingInterfaceAddr;
@@ -585,7 +593,7 @@ Boolean socketLeaveGroupSSM(UsageEnvironment& /*env*/, int socket,
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   struct ip_mreq_source imr;
-#ifdef __ANDROID__
+#if ANDROID_OLD_NDK
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = ReceivingInterfaceAddr;
@@ -881,3 +889,4 @@ int gettimeofday(struct timeval* tp, int* /*tz*/) {
   return 0;
 }
 #endif
+#undef ANDROID_OLD_NDK

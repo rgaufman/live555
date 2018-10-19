@@ -81,7 +81,7 @@ private:
 
 // A 'packet data' class that's used to implement the above.
 // Note that this can be subclassed - if desired - to redefine
-// "nextEnclosedFrameSize()".
+// "nextEnclosedFrameParameters()".
 
 class LIVEMEDIA_API BufferedPacket {
 public:

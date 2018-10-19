@@ -940,8 +940,6 @@ void H264or5VideoStreamParser::flushInput() {
   StreamParser::flushInput();
 }
 
-#define NUM_NEXT_SLICE_HEADER_BYTES_TO_ANALYZE 12
-
 unsigned H264or5VideoStreamParser::parse() {
   try {
     // The stream must start with a 0x00000001:
