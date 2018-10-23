@@ -239,6 +239,8 @@ list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/include/VP9VideoRTPSource.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/WAVAudioFileServerMediaSubsession.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/WAVAudioFileSource.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RawVideoRTPSink.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RawVideoRTPSource.hh
 )
 # Group (Filter) source files
 source_group ( "Header Files\\liveMedia" FILES ${${PROJECT_NAME}_HEADERS_LIVEMEDIA} )
@@ -470,6 +472,9 @@ list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/VP9VideoRTPSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/WAVAudioFileServerMediaSubsession.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/WAVAudioFileSource.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/RawVideoRTPSink.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/RawVideoRTPSource.cpp
+
 )
 # Group (Filter) source files
 source_group ( "Source Files\\liveMedia" FILES ${${PROJECT_NAME}_SOURCES_LIVEMEDIA} )
