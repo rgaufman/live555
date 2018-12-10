@@ -541,8 +541,8 @@ Boolean RTSPServer::RTSPClientConnection
   }
   RTSPServer::RTSPClientConnection* prevClientConnection
     = (RTSPServer::RTSPClientConnection*)(fOurRTSPServer.fClientConnectionsForHTTPTunneling->Lookup(sessionCookie));
-  if (prevClientConnection == NULL) {
-    // There was no previous HTTP "GET" request; treat this "POST" request as bad:
+  if (prevClientConnection == NULL || prevClientConnection == this) {
+    // Either there was no previous HTTP "GET" request, or it was on the same connection; treat this "POST" request as bad:
     handleHTTPCmd_notSupported();
     fIsActive = False; // triggers deletion of ourself
     return False;
