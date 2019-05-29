@@ -144,6 +144,8 @@ list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamDiscreteFramer.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamFramer.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/InputFile.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEG2000VideoRTPSink.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEG2000VideoRTPSource.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoRTPSink.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoRTPSource.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEGVideoSource.hh
@@ -350,6 +352,8 @@ list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamDiscreteFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/InputFile.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/JPEG2000VideoRTPSink.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/JPEG2000VideoRTPSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoRTPSink.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoRTPSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/JPEGVideoSource.cpp
