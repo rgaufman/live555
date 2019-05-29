@@ -31,10 +31,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class LIVEMEDIA_API H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
 public:
   static H265VideoStreamDiscreteFramer*
-  createNew(UsageEnvironment& env, FramedSource* inputSource);
+  createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput = False);
 
 protected:
-  H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource);
+  H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput);
       // called only by createNew()
   virtual ~H265VideoStreamDiscreteFramer();
 

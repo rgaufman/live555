@@ -15,32 +15,39 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
-// A simplified version of "H264VideoStreamFramer" that takes only complete,
-// discrete frames (rather than an arbitrary byte stream) as input.
-// This avoids the parsing and data copying overhead of the full
-// "H264VideoStreamFramer".
-// C++ header
 
-#ifndef _H264_VIDEO_STREAM_DISCRETE_FRAMER_HH
-#define _H264_VIDEO_STREAM_DISCRETE_FRAMER_HH
+#ifndef _JPEG2000_VIDEO_RTP_SOURCE_HH
+#define _JPEG2000_VIDEO_RTP_SOURCE_HH
 
-#ifndef _H264_OR_5_VIDEO_STREAM_DISCRETE_FRAMER_HH
-#include "H264or5VideoStreamDiscreteFramer.hh"
+#ifndef _MULTI_FRAMED_RTP_SOURCE_HH
+#include "MultiFramedRTPSource.hh"
 #endif
 
-class LIVEMEDIA_API H264VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
+class JPEG2000VideoRTPSource: public MultiFramedRTPSource {
 public:
-  static H264VideoStreamDiscreteFramer*
-  createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput = False);
+  static JPEG2000VideoRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
+					   unsigned char rtpPayloadFormat,
+					   unsigned rtpTimestampFrequency,
+					   char const* sampling);
 
 protected:
-  H264VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput);
-      // called only by createNew()
-  virtual ~H264VideoStreamDiscreteFramer();
+  virtual ~JPEG2000VideoRTPSource();
+
+protected:
+  JPEG2000VideoRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
+			 unsigned char rtpPayloadFormat,
+			 unsigned rtpTimestampFrequency,
+			 char const* sampling);
+    // called only by createNew()
 
 private:
   // redefined virtual functions:
-  virtual Boolean isH264VideoStreamFramer() const;
+  virtual Boolean processSpecialHeader(BufferedPacket* packet,
+                                       unsigned& resultSpecialHeaderSize);
+  virtual char const* MIMEtype() const;
+
+private:
+  char* fSampling;
 };
 
 #endif

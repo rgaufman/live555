@@ -714,6 +714,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 #ifdef DEBUG
       fprintf(stderr, "parseRTSPRequestString() returned a bogus \"Content-Length:\" value: 0x%x (%d)\n", contentLength, (int)contentLength);
 #endif
+      contentLength = 0;
       parseSucceeded = False;
     }
     if (parseSucceeded) {
@@ -901,6 +902,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
   }
 }
 
+#define SKIP_WHITESPACE while (*fields != '\0' && (*fields == ' ' || *fields == '\t')) ++fields
+
 static Boolean parseAuthorizationHeader(char const* buf,
 					char const*& username,
 					char const*& realm,
@@ -918,15 +921,28 @@ static Boolean parseAuthorizationHeader(char const* buf,
   
   // Then, run through each of the fields, looking for ones we handle:
   char const* fields = buf + 22;
-  while (*fields == ' ') ++fields;
   char* parameter = strDupSize(fields);
   char* value = strDupSize(fields);
-  while (1) {
-    value[0] = '\0';
-    if (sscanf(fields, "%[^=]=\"%[^\"]\"", parameter, value) != 2 &&
-	sscanf(fields, "%[^=]=\"\"", parameter) != 1) {
-      break;
-    }
+  char* p;
+  Boolean success;
+  do {
+    // Parse: <parameter>="<value>"
+    success = False;
+    parameter[0] = value[0] = '\0';
+    SKIP_WHITESPACE;
+    for (p = parameter; *fields != '\0' && *fields != ' ' && *fields != '\t' && *fields != '='; ) *p++ = *fields++;
+    SKIP_WHITESPACE;
+    if (*fields++ != '=') break; // parsing failed
+    *p = '\0'; // complete parsing <parameter>
+    SKIP_WHITESPACE;
+    if (*fields++ != '"') break; // parsing failed
+    for (p = value; *fields != '\0' && *fields != '"'; ) *p++ = *fields++;
+    if (*fields++ != '"') break; // parsing failed
+    *p = '\0'; // complete parsing <value>
+    SKIP_WHITESPACE;
+    success = True;
+
+    // Copy values for parameters that we understand:
     if (strcmp(parameter, "username") == 0) {
       username = strDup(value);
     } else if (strcmp(parameter, "realm") == 0) {
@@ -938,14 +954,12 @@ static Boolean parseAuthorizationHeader(char const* buf,
     } else if (strcmp(parameter, "response") == 0) {
       response = strDup(value);
     }
-    
-    fields += strlen(parameter) + 2 /*="*/ + strlen(value) + 1 /*"*/;
-    while (*fields == ',' || *fields == ' ') ++fields;
-        // skip over any separating ',' and ' ' chars
-    if (*fields == '\0' || *fields == '\r' || *fields == '\n') break;
-  }
+
+    // Check for a ',', indicating that more <parameter>="<value>" pairs follow:
+  } while (*fields++ == ',');
+
   delete[] parameter; delete[] value;
-  return True;
+  return success;
 }
 
 Boolean RTSPServer::RTSPClientConnection

@@ -42,17 +42,15 @@ public:
   // of a frame.  Otherwise (i.e., if "doNormalMBitRule" is False, or the medium is "audio"), the "M" bit is ignored.
 
 protected:
-  virtual ~SimpleRTPSource();
-
-protected:
   SimpleRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		  unsigned char rtpPayloadFormat,
 		  unsigned rtpTimestampFrequency,
 		  char const* mimeTypeString, unsigned offset,
 		  Boolean doNormalMBitRule);
-      // called only by createNew()
+      // called only by createNew(), or by subclass constructors
+  virtual ~SimpleRTPSource();
 
-private:
+protected:
   // redefined virtual functions:
   virtual Boolean processSpecialHeader(BufferedPacket* packet,
                                        unsigned& resultSpecialHeaderSize);

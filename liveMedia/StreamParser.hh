@@ -68,6 +68,13 @@ protected: // we're a virtual base class
 
     return result;
   }
+  u_int16_t test2Bytes() {
+    ensureValidBytes(2);
+
+    unsigned char const* ptr = nextToParse();
+    return (ptr[0]<<8)|ptr[1];
+  }
+
 
   u_int8_t get1Byte() { // byte-aligned
     ensureValidBytes(1);

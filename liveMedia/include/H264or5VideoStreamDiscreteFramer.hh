@@ -30,7 +30,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class LIVEMEDIA_API H264or5VideoStreamDiscreteFramer: public H264or5VideoStreamFramer {
 protected:
-  H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource);
+  H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource,
+				   Boolean includeStartCodeInOutput);
       // we're an abstract base class
   virtual ~H264or5VideoStreamDiscreteFramer();
 
@@ -49,6 +50,9 @@ protected:
                           unsigned durationInMicroseconds);
 
   virtual Boolean nalUnitEndsAccessUnit(u_int8_t nal_unit_type);
+
+private:
+  Boolean fIncludeStartCodeInOutput;
 };
 
 #endif

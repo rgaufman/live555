@@ -336,7 +336,7 @@ void MultiFramedRTPSink
     //      read would overflow the packet, or
     // (iii) it contains the last fragment of a fragmented frame, and we
     //      don't allow anything else to follow this or
-    // (iv) one frame per packet is allowed:
+    // (iv) only one frame per packet is allowed:
     if (fOutBuf->isPreferredSize()
         || fOutBuf->wouldOverflow(numFrameBytesToUse)
         || (fPreviousFrameEndedFragmentation &&

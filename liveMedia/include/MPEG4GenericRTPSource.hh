@@ -40,9 +40,6 @@ public:
   // it *cannot* be NULL
 
 protected:
-  virtual ~MPEG4GenericRTPSource();
-
-private:
   MPEG4GenericRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 			unsigned char rtpPayloadFormat,
 			unsigned rtpTimestampFrequency,
@@ -51,9 +48,10 @@ private:
 			unsigned sizeLength, unsigned indexLength,
 			unsigned indexDeltaLength
 			);
-      // called only by createNew()
+      // called only by createNew(), or by subclass constructors
+  virtual ~MPEG4GenericRTPSource();
 
-private:
+protected:
   // redefined virtual functions:
   virtual Boolean processSpecialHeader(BufferedPacket* packet,
                                        unsigned& resultSpecialHeaderSize);

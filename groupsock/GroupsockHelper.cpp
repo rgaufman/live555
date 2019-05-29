@@ -669,6 +669,7 @@ netAddressBits ourIPAddress(UsageEnvironment& env) {
     do {
       loopbackWorks = 0; // until we learn otherwise
 
+#ifndef DISABLE_LOOPBACK_IP_ADDRESS_CHECK
       testAddr.s_addr = our_inet_addr("228.67.43.91"); // arbitrary
       Port testPort(15947); // ditto
 
@@ -705,6 +706,7 @@ netAddressBits ourIPAddress(UsageEnvironment& env) {
 
       // We use this packet's source address, if it's good:
       loopbackWorks = !badAddressForUs(fromAddr.sin_addr.s_addr);
+#endif
     } while (0);
 
     if (sock >= 0) {

@@ -24,13 +24,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H265VideoStreamDiscreteFramer.hh"
 
 H265VideoStreamDiscreteFramer*
-H265VideoStreamDiscreteFramer::createNew(UsageEnvironment& env, FramedSource* inputSource) {
-  return new H265VideoStreamDiscreteFramer(env, inputSource);
+H265VideoStreamDiscreteFramer::createNew(UsageEnvironment& env, FramedSource* inputSource,
+					 Boolean includeStartCodeInOutput) {
+  return new H265VideoStreamDiscreteFramer(env, inputSource, includeStartCodeInOutput);
 }
 
 H265VideoStreamDiscreteFramer
-::H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource)
-  : H264or5VideoStreamDiscreteFramer(265, env, inputSource) {
+::H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource,
+				Boolean includeStartCodeInOutput)
+  : H264or5VideoStreamDiscreteFramer(265, env, inputSource, includeStartCodeInOutput) {
 }
 
 H265VideoStreamDiscreteFramer::~H265VideoStreamDiscreteFramer() {
