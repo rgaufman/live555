@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // Implementation
 
@@ -29,6 +29,10 @@ extern "C" int initializeWinsockIfNecessary();
 #include <sys/time.h>
 #if !defined(_WIN32)
 #include <netinet/tcp.h>
+#ifdef __ANDROID_NDK__
+#include <android/ndk-version.h>
+#define ANDROID_OLD_NDK __NDK_MAJOR__ < 17
+#endif
 #endif
 #include <fcntl.h>
 #define initializeWinsockIfNecessary() 1
@@ -563,7 +567,7 @@ Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   struct ip_mreq_source imr;
-#ifdef __ANDROID__
+#if ANDROID_OLD_NDK
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = ReceivingInterfaceAddr;
@@ -589,7 +593,7 @@ Boolean socketLeaveGroupSSM(UsageEnvironment& /*env*/, int socket,
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   struct ip_mreq_source imr;
-#ifdef __ANDROID__
+#if ANDROID_OLD_NDK
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = ReceivingInterfaceAddr;
@@ -665,6 +669,7 @@ netAddressBits ourIPAddress(UsageEnvironment& env) {
     do {
       loopbackWorks = 0; // until we learn otherwise
 
+#ifndef DISABLE_LOOPBACK_IP_ADDRESS_CHECK
       testAddr.s_addr = our_inet_addr("228.67.43.91"); // arbitrary
       Port testPort(15947); // ditto
 
@@ -701,6 +706,7 @@ netAddressBits ourIPAddress(UsageEnvironment& env) {
 
       // We use this packet's source address, if it's good:
       loopbackWorks = !badAddressForUs(fromAddr.sin_addr.s_addr);
+#endif
     } while (0);
 
     if (sock >= 0) {
@@ -885,3 +891,4 @@ int gettimeofday(struct timeval* tp, int* /*tz*/) {
   return 0;
 }
 #endif
+#undef ANDROID_OLD_NDK

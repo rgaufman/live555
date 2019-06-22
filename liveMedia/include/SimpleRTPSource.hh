@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // A RTP source for a simple RTP payload format that
 //     - doesn't have any special headers following the RTP header
 //       (if necessary, the "offset" parameter can be used to specify a
@@ -42,17 +42,15 @@ public:
   // of a frame.  Otherwise (i.e., if "doNormalMBitRule" is False, or the medium is "audio"), the "M" bit is ignored.
 
 protected:
-  virtual ~SimpleRTPSource();
-
-protected:
   SimpleRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		  unsigned char rtpPayloadFormat,
 		  unsigned rtpTimestampFrequency,
 		  char const* mimeTypeString, unsigned offset,
 		  Boolean doNormalMBitRule);
-      // called only by createNew()
+      // called only by createNew(), or by subclass constructors
+  virtual ~SimpleRTPSource();
 
-private:
+protected:
   // redefined virtual functions:
   virtual Boolean processSpecialHeader(BufferedPacket* packet,
                                        unsigned& resultSpecialHeaderSize);

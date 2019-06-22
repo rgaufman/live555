@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // A simplified version of "H264VideoStreamFramer" that takes only complete,
 // discrete frames (rather than an arbitrary byte stream) as input.
 // This avoids the parsing and data copying overhead of the full
@@ -24,13 +24,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264VideoStreamDiscreteFramer.hh"
 
 H264VideoStreamDiscreteFramer*
-H264VideoStreamDiscreteFramer::createNew(UsageEnvironment& env, FramedSource* inputSource) {
-  return new H264VideoStreamDiscreteFramer(env, inputSource);
+H264VideoStreamDiscreteFramer::createNew(UsageEnvironment& env, FramedSource* inputSource,
+					 Boolean includeStartCodeInOutput) {
+  return new H264VideoStreamDiscreteFramer(env, inputSource, includeStartCodeInOutput);
 }
 
 H264VideoStreamDiscreteFramer
-::H264VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource)
-  : H264or5VideoStreamDiscreteFramer(264, env, inputSource) {
+::H264VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource,
+				Boolean includeStartCodeInOutput)
+  : H264or5VideoStreamDiscreteFramer(264, env, inputSource, includeStartCodeInOutput) {
 }
 
 H264VideoStreamDiscreteFramer::~H264VideoStreamDiscreteFramer() {

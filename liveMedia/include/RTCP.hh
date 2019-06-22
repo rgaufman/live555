@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -45,6 +45,8 @@ typedef void RTCPAppHandlerFunc(void* clientData,
 
 class RTCPMemberDatabase; // forward
 
+typedef void ByeWithReasonHandlerFunc(void* clientData, char const* reason);
+
 class RTCPInstance: public Medium {
 public:
   static RTCPInstance* createNew(UsageEnvironment& env, Groupsock* RTCPgs,
@@ -73,6 +75,12 @@ public:
       // If "handleActiveParticipantsOnly" is False, then the handler is called
       // for any incoming RTCP "BYE".
       // (To remove an existing "BYE" handler, call "setByeHandler()" again, with a "handlerTask" of NULL.)
+  void setByeWithReasonHandler(ByeWithReasonHandlerFunc* handlerTask, void* clientData,
+			       Boolean handleActiveParticipantsOnly = True);
+      // Like "setByeHandler()", except that a string 'reason for the bye' (received as part of
+      // the RTCP "BYE" packet) is passed to the handler function (along with "clientData").
+      // (The 'reason' parameter to the handler function will be a dynamically-allocated string,
+      // or NULL, and should be delete[]d by the handler function.)
   void setSRHandler(TaskFunc* handlerTask, void* clientData);
   void setRRHandler(TaskFunc* handlerTask, void* clientData);
       // Assigns a handler routine to be called if a "SR" or "RR" packet
@@ -140,7 +148,7 @@ private:
       void enqueueCommonReportSuffix();
         void enqueueReportBlock(RTPReceptionStats* receptionStats);
   void addSDES();
-  void addBYE();
+  void addBYE(char const* reason);
 
   void sendBuiltPacket();
 
@@ -181,6 +189,7 @@ private:
   unsigned fLastPacketSentSize;
 
   TaskFunc* fByeHandlerTask;
+  ByeWithReasonHandlerFunc* fByeWithReasonHandlerTask;
   void* fByeHandlerClientData;
   Boolean fByeHandleActiveParticipantsOnly;
   TaskFunc* fSRHandlerTask;
@@ -195,7 +204,7 @@ public: // because this stuff is used by an external "C" function
   void schedule(double nextTime);
   void reschedule(double nextTime);
   void sendReport();
-  void sendBYE();
+  void sendBYE(char const* reason = NULL);
   int typeOfEvent() {return fTypeOfEvent;}
   int sentPacketSize() {return fLastSentSize;}
   int packetType() {return fTypeOfPacket;}

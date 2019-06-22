@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // Implementation
@@ -617,6 +617,7 @@ MediaSubsession::MediaSubsession(MediaSession& parent)
   setAttribute("profile-id", "1"); // used with "video/H265"
   setAttribute("level-id", "93"); // used with "video/H265"
   setAttribute("interop-constraints", "B00000000000"); // used with "video/H265"
+  setAttribute("sampling", "RGB"); // used with "video/JPEG2000"
 }
 
 MediaSubsession::~MediaSubsession() {
@@ -1254,7 +1255,7 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
 	// Add a filter that converts these ADUs to MP3 frames:
 	fReadSource = MP3FromADUSource::createNew(env(), fRTPSource,
 						  False /*no ADU header*/);
-      } else if (strcmp(fCodecName, "MP4A-LATM") == 0) { // MPEG-4 LATM audio
+       } else if (strcmp(fCodecName, "MP4A-LATM") == 0) { // MPEG-4 LATM audio
 	fReadSource = fRTPSource
 	  = MPEG4LATMAudioRTPSource::createNew(env(), fRTPSocket,
 					       fRTPPayloadFormat,
@@ -1354,6 +1355,11 @@ Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
 					    videoWidth(),
 					    videoHeight());
 	}
+      } else if (strcmp(fCodecName, "JPEG2000") == 0) { // JPEG 2000 video
+        fReadSource = fRTPSource
+          = JPEG2000VideoRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat,
+					      fRTPTimestampFrequency,
+					      attrVal_str("sampling"));
       } else if (strcmp(fCodecName, "X-QT") == 0
 		 || strcmp(fCodecName, "X-QUICKTIME") == 0) {
 	// Generic QuickTime streams, as defined in

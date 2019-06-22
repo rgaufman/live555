@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // RTP sink for a common kind of payload format: Those which pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // Implementation
@@ -336,7 +336,7 @@ void MultiFramedRTPSink
     //      read would overflow the packet, or
     // (iii) it contains the last fragment of a fragmented frame, and we
     //      don't allow anything else to follow this or
-    // (iv) one frame per packet is allowed:
+    // (iv) only one frame per packet is allowed:
     if (fOutBuf->isPreferredSize()
         || fOutBuf->wouldOverflow(numFrameBytesToUse)
         || (fPreviousFrameEndedFragmentation &&

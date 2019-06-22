@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2018, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
 // A common framework, used for the "openRTSP" and "playSIP" applications
 // Implementation
 //
@@ -46,7 +46,7 @@ void createPeriodicOutputFiles();
 void setupStreams();
 void closeMediaSinks();
 void subsessionAfterPlaying(void* clientData);
-void subsessionByeHandler(void* clientData);
+void subsessionByeHandler(void* clientData, char const* reason);
 void sessionAfterPlaying(void* clientData = NULL);
 void sessionTimerHandler(void* clientData);
 void periodicFileOutputTimerHandler(void* clientData);
@@ -952,7 +952,7 @@ void createOutputFiles(char const* periodicFilenameSuffix) {
 	// Also set a handler to be called if a RTCP "BYE" arrives
 	// for this subsession:
 	if (subsession->rtcpInstance() != NULL) {
-	  subsession->rtcpInstance()->setByeHandler(subsessionByeHandler, subsession);
+	  subsession->rtcpInstance()->setByeWithReasonHandler(subsessionByeHandler, subsession);
 	}
 	
 	madeProgress = True;
@@ -1116,13 +1116,18 @@ void subsessionAfterPlaying(void* clientData) {
   sessionAfterPlaying();
 }
 
-void subsessionByeHandler(void* clientData) {
+void subsessionByeHandler(void* clientData, char const* reason) {
   struct timeval timeNow;
   gettimeofday(&timeNow, NULL);
   unsigned secsDiff = timeNow.tv_sec - startTime.tv_sec;
 
   MediaSubsession* subsession = (MediaSubsession*)clientData;
-  *env << "Received RTCP \"BYE\" on \"" << subsession->mediumName()
+  *env << "Received RTCP \"BYE\"";
+  if (reason != NULL) {
+    *env << " (reason:\"" << reason << "\")";
+    delete[] reason;
+  }
+  *env << " on \"" << subsession->mediumName()
 	<< "/" << subsession->codecName()
 	<< "\" subsession (after " << secsDiff
 	<< " seconds)\n";

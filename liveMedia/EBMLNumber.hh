@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // EBML numbers (ids and sizes)
 // C++ header
 
@@ -124,6 +124,8 @@ public:
 #define MATROSKA_ID_SEEK_PRE_ROLL 0x56BB
 #define MATROSKA_ID_CODEC_DELAY 0x56AA
 #define MATROSKA_ID_DISCARD_PADDING 0x75A2
+#define MATROSKA_ID_COLOR_SPACE 0x2EB524
+#define MATROSKA_ID_PRIMARIES 0x55BB
 
 class EBMLId: public EBMLNumber {
 public:
