@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up a H.264 or H.265 Video Elementary Stream into NAL units.
 // Implementation
 
@@ -939,8 +939,6 @@ void H264or5VideoStreamParser::flushInput() {
 
   StreamParser::flushInput();
 }
-
-#define NUM_NEXT_SLICE_HEADER_BYTES_TO_ANALYZE 12
 
 unsigned H264or5VideoStreamParser::parse() {
   try {

@@ -23,7 +23,7 @@ Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when
 you never run multiple instances of the proxy on the same port!
 
 ### Quit on TCP Errors
-liveMedia/RTCP.cpp#422 is changed to exit(1); - this ensures that live555 does not flood the screen and/or log with:
+liveMedia/RTCP.cpp#431 changed break to exit(1); - this ensures that live555 does not flood the screen and/or log with:
 The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!
 
 ### Add -d option

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2018 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // A simplified version of "H264or5VideoStreamFramer" that takes only complete,
 // discrete frames (rather than an arbitrary byte stream) as input.
 // This avoids the parsing and data copying overhead of the full
@@ -24,14 +24,28 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoStreamDiscreteFramer.hh"
 
 H264or5VideoStreamDiscreteFramer
-::H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource)
-  : H264or5VideoStreamFramer(hNumber, env, inputSource, False/*don't create a parser*/, False) {
+::H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource,
+				   Boolean includeStartCodeInOutput)
+  : H264or5VideoStreamFramer(hNumber, env, inputSource, False/*don't create a parser*/,
+			     includeStartCodeInOutput),
+    fIncludeStartCodeInOutput(includeStartCodeInOutput) {
 }
 
 H264or5VideoStreamDiscreteFramer::~H264or5VideoStreamDiscreteFramer() {
 }
 
 void H264or5VideoStreamDiscreteFramer::doGetNextFrame() {
+  if (fIncludeStartCodeInOutput) {
+    // Prepend a 4-byte 'start code' (0x00000001) to the output:
+    if (fMaxSize < 4) {  // there's no space
+      fNumTruncatedBytes = 4 - fMaxSize;
+      handleClosure();
+      return;
+    }
+    *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x01;
+    fMaxSize -= 4;
+  }
+
   // Arrange to read data (which should be a complete H.264 or H.265 NAL unit)
   // from our data source, directly into the client's input buffer.
   // After reading this, we'll do some parsing on the frame.
@@ -82,7 +96,7 @@ void H264or5VideoStreamDiscreteFramer
   fPictureEndMarker = nalUnitEndsAccessUnit(nal_unit_type);
 
   // Finally, complete delivery to the client:
-  fFrameSize = frameSize;
+  fFrameSize = fIncludeStartCodeInOutput ? (4+frameSize) : frameSize;
   fNumTruncatedBytes = numTruncatedBytes;
   fPresentationTime = presentationTime;
   fDurationInMicroseconds = durationInMicroseconds;
