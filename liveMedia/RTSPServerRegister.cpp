@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // Implementation of functionality related to the "REGISTER" and "DEREGISTER" commands
 
@@ -76,7 +76,7 @@ public:
     }
 
     // We're completely done with the REGISTER command now, so delete ourself now:
-    delete this;
+    Medium::close(this);
   }
 
 private:
@@ -104,12 +104,14 @@ unsigned RTSPServer::registerStream(ServerMediaSession* serverMediaSession,
     authenticator = new Authenticator(username, password);
   }
   unsigned requestId = ++fRegisterOrDeregisterRequestCounter;
+  char const* url = rtspURL(serverMediaSession);
   new RegisterRequestRecord(*this, requestId,
-			    remoteClientNameOrAddress, remoteClientPortNum, rtspURL(serverMediaSession),
+			    remoteClientNameOrAddress, remoteClientPortNum, url,
 			    responseHandler, authenticator,
 			    receiveOurStreamViaTCP, proxyURLSuffix);
   
-  delete authenticator; // we can do this here because it was copied to the "RegisterRequestRecord"
+  delete[] url; // we can do this here because it was copied to the "RegisterRequestRecord" 
+  delete authenticator; // ditto
   return requestId;
 }
 
@@ -152,7 +154,7 @@ public:
     }
 
     // We're completely done with the DEREGISTER command now, so delete ourself now:
-    delete this;
+    Medium::close(this);
   }
 
 private:
@@ -180,12 +182,14 @@ unsigned RTSPServer::deregisterStream(ServerMediaSession* serverMediaSession,
     authenticator = new Authenticator(username, password);
   }
   unsigned requestId = ++fRegisterOrDeregisterRequestCounter;
+  char const* url = rtspURL(serverMediaSession);
   new DeregisterRequestRecord(*this, requestId,
-			      remoteClientNameOrAddress, remoteClientPortNum, rtspURL(serverMediaSession),
+			      remoteClientNameOrAddress, remoteClientPortNum, url,
 			      responseHandler, authenticator,
 			      proxyURLSuffix);
   
-  delete authenticator; // we can do this here because it was copied to the "DeregisterRequestRecord"
+  delete[] url; // we can do this here because it was copied to the "DeregisterRequestRecord"
+  delete authenticator; // ditto
   return requestId;
 }
 

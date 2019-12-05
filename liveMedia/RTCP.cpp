@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // RTCP
 // Implementation
 
@@ -24,7 +24,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
-#define HACK_FOR_CHROME_WEBRTC_BUG 1 //#####@@@@@
 
 ////////// RTCPMemberDatabase //////////
 

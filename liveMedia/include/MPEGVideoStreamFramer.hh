@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up an MPEG video elementary stream into
 //   headers and frames
 // C++ header
@@ -52,7 +52,7 @@ protected:
   void setTimeCode(unsigned hours, unsigned minutes, unsigned seconds,
 		   unsigned pictures, unsigned picturesSinceLastGOP);
 
-private: // redefined virtual functions
+protected: // redefined virtual functions
   virtual void doGetNextFrame();
   virtual void doStopGettingFrames();
 

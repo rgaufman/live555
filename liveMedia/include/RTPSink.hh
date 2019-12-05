@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // C++ header
 
@@ -134,7 +134,7 @@ private:
 
 class RTPTransmissionStats; // forward
 
-class LIVEMEDIA_API RTPTransmissionStatsDB {
+class RTPTransmissionStatsDB {
 public:
   unsigned numReceivers() const { return fNumReceivers; }
 
@@ -175,7 +175,7 @@ private:
   HashTable* fTable;
 };
 
-class LIVEMEDIA_API RTPTransmissionStats {
+class RTPTransmissionStats {
 public:
   u_int32_t SSRC() const {return fSSRC;}
   struct sockaddr_in const& lastFromAddress() const {return fLastFromAddress;}

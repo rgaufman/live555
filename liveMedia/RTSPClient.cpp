@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client
 // Implementation
 
@@ -142,12 +142,11 @@ unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHand
   if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
 
   // We assume that:
-  //    parameterName is NULL means: Send no body in the request.
-  //    parameterName is "" means: Send only \r\n in the request body.  
+  //    parameterName is NULL or "" means: Send no body in the request.
   //    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
   unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
   char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
-  if (parameterName == NULL) {
+  if (parameterName == NULL || parameterName[0] == '\0') {
     paramString[0] = '\0';
   } else {
     sprintf(paramString, "%s\r\n", parameterName);
@@ -266,28 +265,30 @@ Boolean RTSPClient::parseRTSPURL(UsageEnvironment& env, char const* url,
     // We do this by checking whether '@' appears before the end of the URL, or before the first '/'.
     username = password = NULL; // default return values
     char const* colonPasswordStart = NULL;
-    char const* p;
-    for (p = from; *p != '\0' && *p != '/'; ++p) {
+    char const* lastAtPtr = NULL;
+    for (char const* p = from; *p != '\0' && *p != '/'; ++p) {
       if (*p == ':' && colonPasswordStart == NULL) {
 	colonPasswordStart = p;
       } else if (*p == '@') {
-	// We found <username> (and perhaps <password>).  Copy them into newly-allocated result strings:
-	if (colonPasswordStart == NULL) colonPasswordStart = p;
-
-	char const* usernameStart = from;
-	unsigned usernameLen = colonPasswordStart - usernameStart;
-	username = new char[usernameLen + 1] ; // allow for the trailing '\0'
-	copyUsernameOrPasswordStringFromURL(username, usernameStart, usernameLen);
-
-	char const* passwordStart = colonPasswordStart;
-	if (passwordStart < p) ++passwordStart; // skip over the ':'
-	unsigned passwordLen = p - passwordStart;
-	password = new char[passwordLen + 1]; // allow for the trailing '\0'
-	copyUsernameOrPasswordStringFromURL(password, passwordStart, passwordLen);
-
-	from = p + 1; // skip over the '@'
-	break;
+	lastAtPtr = p;
       }
+    }
+    if (lastAtPtr != NULL) {      
+      // We found <username> (and perhaps <password>).  Copy them into newly-allocated result strings:
+      if (colonPasswordStart == NULL || colonPasswordStart > lastAtPtr) colonPasswordStart = lastAtPtr;
+
+      char const* usernameStart = from;
+      unsigned usernameLen = colonPasswordStart - usernameStart;
+      username = new char[usernameLen + 1] ; // allow for the trailing '\0'
+      copyUsernameOrPasswordStringFromURL(username, usernameStart, usernameLen);
+
+      char const* passwordStart = colonPasswordStart;
+      if (passwordStart < lastAtPtr) ++passwordStart; // skip over the ':'
+      unsigned passwordLen = lastAtPtr - passwordStart;
+      password = new char[passwordLen + 1]; // allow for the trailing '\0'
+      copyUsernameOrPasswordStringFromURL(password, passwordStart, passwordLen);
+
+      from = lastAtPtr + 1; // skip over the '@'
     }
 
     // Next, parse <server-address-or-name>

@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
 // A demo application, showing how to create and run a RTSP client (that can potentially receive multiple streams concurrently).
 //
 // NOTE: This code - although it builds a running application - is intended only to illustrate how to develop your own RTSP
@@ -377,7 +377,7 @@ void subsessionByeHandler(void* clientData, char const* reason) {
   env << *rtspClient << "Received RTCP \"BYE\"";
   if (reason != NULL) {
     env << " (reason:\"" << reason << "\")";
-    delete[] reason;
+    delete[] (char*)reason;
   }
   env << " on \"" << *subsession << "\" subsession\n";
 

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A simplified version of "H265VideoStreamFramer" that takes only complete,
 // discrete frames (rather than an arbitrary byte stream) as input.
 // This avoids the parsing and data copying overhead of the full
@@ -31,10 +31,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class LIVEMEDIA_API H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
 public:
   static H265VideoStreamDiscreteFramer*
-  createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput = False);
+  createNew(UsageEnvironment& env, FramedSource* inputSource,
+	    Boolean includeStartCodeInOutput = False, Boolean insertAccessUnitDelimiters = False);
 
 protected:
-  H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput);
+  H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource,
+				Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
       // called only by createNew()
   virtual ~H265VideoStreamDiscreteFramer();
 

@@ -143,6 +143,7 @@ list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoRTPSource.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamDiscreteFramer.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/H265VideoStreamFramer.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/HLSSegmenter.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/InputFile.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEG2000VideoRTPSink.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/JPEG2000VideoRTPSource.hh
@@ -182,6 +183,7 @@ list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2IndexFromTransportStream.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportFileServerMediaSubsession.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamAccumulator.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamDemux.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFramer.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFromESSource.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/MPEG2TransportStreamFromPESSource.hh
@@ -351,6 +353,7 @@ list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoRTPSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamDiscreteFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/H265VideoStreamFramer.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/HLSSegmenter.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/InputFile.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/JPEG2000VideoRTPSink.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/JPEG2000VideoRTPSource.cpp
@@ -404,11 +407,19 @@ list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2IndexFromTransportStream.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportFileServerMediaSubsession.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamAccumulator.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemux.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemuxTrack.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemuxTrack.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromESSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromPESSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamIndexFile.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamMultiplexor.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamParser.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamParser.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamParser_PAT.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamParser_PMT.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamParser_STREAM.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamTrickModeFilter.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportUDPServerMediaSubsession.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG4ESVideoRTPSink.cpp

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // Media Sources
 // C++ header
 
@@ -45,6 +45,7 @@ public:
   virtual Boolean isDVVideoStreamFramer() const;
   virtual Boolean isJPEGVideoSource() const;
   virtual Boolean isAMRAudioSource() const;
+  virtual Boolean isMPEG2TransportStreamMultiplexor() const;
 
 protected:
   MediaSource(UsageEnvironment& env); // abstract base class

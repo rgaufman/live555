@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates a Matroska file.
 // Implementation
 
@@ -35,6 +35,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <TheoraVideoRTPSink.hh>
 #include <RawVideoRTPSink.hh>
 #include <T140TextRTPSink.hh>
+#include <Base64.hh>
+#include <H264VideoFileSink.hh>
+#include <H265VideoFileSink.hh>
+#include <AMRAudioFileSink.hh>
+#include <OggFileSink.hh>
 
 ////////// CuePoint definition //////////
 
@@ -239,11 +244,278 @@ void MatroskaFile::removeDemux(MatroskaDemux* demux) {
   fDemuxesTable->Remove((char const*)demux);
 }
 
+#define getPrivByte(b) if (n == 0) break; else do {b = *p++; --n;} while (0) /* Vorbis/Theora configuration header parsing */
+#define CHECK_PTR if (ptr >= limit) break /* H.264/H.265 parsing */
+#define NUM_BYTES_REMAINING (unsigned)(limit - ptr) /* H.264/H.265 parsing */
+
+void MatroskaFile::getH264ConfigData(MatroskaTrack const* track,
+				     u_int8_t*& sps, unsigned& spsSize,
+				     u_int8_t*& pps, unsigned& ppsSize) {
+  sps = pps = NULL;
+  spsSize = ppsSize = 0;
+
+  do {
+    if (track == NULL) break;
+
+    // Use our track's 'Codec Private' data: Bytes 5 and beyond contain SPS and PPSs:
+    if (track->codecPrivateSize < 6) break;
+    u_int8_t* SPSandPPSBytes = &track->codecPrivate[5];
+    unsigned numSPSandPPSBytes = track->codecPrivateSize - 5;
+
+    // Extract, from "SPSandPPSBytes", one SPS NAL unit, and one PPS NAL unit.
+    // (I hope one is all we need of each.)
+    unsigned i;
+    u_int8_t* ptr = SPSandPPSBytes;
+    u_int8_t* limit = &SPSandPPSBytes[numSPSandPPSBytes];
+	
+    unsigned numSPSs = (*ptr++)&0x1F; CHECK_PTR;
+    for (i = 0; i < numSPSs; ++i) {
+      unsigned spsSize1 = (*ptr++)<<8; CHECK_PTR;
+      spsSize1 |= *ptr++; CHECK_PTR;
+	  
+      if (spsSize1 > NUM_BYTES_REMAINING) break;
+      u_int8_t nal_unit_type = ptr[0]&0x1F;
+      if (sps == NULL && nal_unit_type == 7/*sanity check*/) { // save the first one
+	spsSize = spsSize1;
+	sps = new u_int8_t[spsSize];
+	memmove(sps, ptr, spsSize);
+      }
+      ptr += spsSize1;
+    }
+	
+    unsigned numPPSs = (*ptr++)&0x1F; CHECK_PTR;
+    for (i = 0; i < numPPSs; ++i) {
+      unsigned ppsSize1 = (*ptr++)<<8; CHECK_PTR;
+      ppsSize1 |= *ptr++; CHECK_PTR;
+	  
+      if (ppsSize1 > NUM_BYTES_REMAINING) break;
+      u_int8_t nal_unit_type = ptr[0]&0x1F;
+      if (pps == NULL && nal_unit_type == 8/*sanity check*/) { // save the first one
+	ppsSize = ppsSize1;
+	pps = new u_int8_t[ppsSize];
+	memmove(pps, ptr, ppsSize);
+      }
+      ptr += ppsSize1;
+    }
+
+    return;
+  } while (0);
+
+  // An error occurred:
+  delete[] sps; sps = NULL; spsSize = 0;
+  delete[] pps; pps = NULL; ppsSize = 0;
+}
+
+void MatroskaFile::getH265ConfigData(MatroskaTrack const* track,
+				     u_int8_t*& vps, unsigned& vpsSize,
+				     u_int8_t*& sps, unsigned& spsSize,
+				     u_int8_t*& pps, unsigned& ppsSize) {
+  vps = sps = pps = NULL;
+  vpsSize = spsSize = ppsSize = 0;
+
+  do {
+    if (track == NULL) break;
+
+    u_int8_t* VPS_SPS_PPSBytes = NULL; unsigned numVPS_SPS_PPSBytes = 0;
+    unsigned i;
+
+    if (track->codecPrivateUsesH264FormatForH265) {
+      // The data uses the H.264-style format (but including VPS NAL unit(s)).
+      // The VPS,SPS,PPS NAL unit information starts at byte #5:
+      if (track->codecPrivateSize >= 6) {
+	numVPS_SPS_PPSBytes = track->codecPrivateSize - 5;
+	VPS_SPS_PPSBytes = &track->codecPrivate[5];
+      }
+    } else {
+      // The data uses the proper H.265-style format.
+      // The VPS,SPS,PPS NAL unit information starts at byte #22:
+      if (track->codecPrivateSize >= 23) {
+	numVPS_SPS_PPSBytes = track->codecPrivateSize - 22;
+ 	VPS_SPS_PPSBytes = &track->codecPrivate[22];
+      }
+    }
+    if (VPS_SPS_PPSBytes == NULL) break; // no VPS,SPS,PPS NAL unit information was present
+	
+    // Extract, from "VPS_SPS_PPSBytes", one VPS NAL unit, one SPS NAL unit, and one PPS NAL unit.
+    // (I hope one is all we need of each.)
+    u_int8_t* ptr = VPS_SPS_PPSBytes;
+    u_int8_t* limit = &VPS_SPS_PPSBytes[numVPS_SPS_PPSBytes];
+	
+    if (track->codecPrivateUsesH264FormatForH265) {
+      // The data uses the H.264-style format (but including VPS NAL unit(s)).
+      while (NUM_BYTES_REMAINING > 0) {
+	unsigned numNALUnits = (*ptr++)&0x1F; CHECK_PTR;
+	for (i = 0; i < numNALUnits; ++i) {
+	  unsigned nalUnitLength = (*ptr++)<<8; CHECK_PTR;
+	  nalUnitLength |= *ptr++; CHECK_PTR;
+	      
+	  if (nalUnitLength > NUM_BYTES_REMAINING) break;
+	  u_int8_t nal_unit_type = (ptr[0]&0x7E)>>1;
+	  if (nal_unit_type == 32) { // VPS
+	    vpsSize = nalUnitLength;
+	    delete[] vps; vps = new u_int8_t[nalUnitLength];
+	    memmove(vps, ptr, nalUnitLength);
+	  } else if (nal_unit_type == 33) { // SPS
+	    spsSize = nalUnitLength;
+	    delete[] sps; sps = new u_int8_t[nalUnitLength];
+	    memmove(sps, ptr, nalUnitLength);
+	  } else if (nal_unit_type == 34) { // PPS
+	    ppsSize = nalUnitLength;
+	    delete[] pps; pps = new u_int8_t[nalUnitLength];
+	    memmove(pps, ptr, nalUnitLength);
+	  }
+	  ptr += nalUnitLength;
+	}
+      }
+    } else {
+      // The data uses the proper H.265-style format.
+      unsigned numOfArrays = *ptr++; CHECK_PTR;
+      for (unsigned j = 0; j < numOfArrays; ++j) {
+	++ptr; CHECK_PTR; // skip the 'array_completeness'|'reserved'|'NAL_unit_type' byte
+	    
+	unsigned numNalus = (*ptr++)<<8; CHECK_PTR;
+	numNalus |= *ptr++; CHECK_PTR;
+	    
+	for (i = 0; i < numNalus; ++i) {
+	  unsigned nalUnitLength = (*ptr++)<<8; CHECK_PTR;
+	  nalUnitLength |= *ptr++; CHECK_PTR;
+	      
+	  if (nalUnitLength > NUM_BYTES_REMAINING) break;
+	  u_int8_t nal_unit_type = (ptr[0]&0x7E)>>1;
+	  if (nal_unit_type == 32) { // VPS
+	    vpsSize = nalUnitLength;
+	    delete[] vps; vps = new u_int8_t[nalUnitLength];
+	    memmove(vps, ptr, nalUnitLength);
+	  } else if (nal_unit_type == 33) { // SPS
+	    spsSize = nalUnitLength;
+	    delete[] sps; sps = new u_int8_t[nalUnitLength];
+	    memmove(sps, ptr, nalUnitLength);
+	  } else if (nal_unit_type == 34) { // PPS
+	    ppsSize = nalUnitLength;
+	    delete[] pps; pps = new u_int8_t[nalUnitLength];
+	    memmove(pps, ptr, nalUnitLength);
+	  }
+	  ptr += nalUnitLength;
+	}
+      }
+    }
+
+    return;
+  } while (0);
+
+  // An error occurred:
+  delete[] vps; vps = NULL; vpsSize = 0;
+  delete[] sps; sps = NULL; spsSize = 0;
+  delete[] pps; pps = NULL; ppsSize = 0;
+}
+
+void MatroskaFile
+::getVorbisOrTheoraConfigData(MatroskaTrack const* track,
+			      u_int8_t*& identificationHeader, unsigned& identificationHeaderSize,
+			      u_int8_t*& commentHeader, unsigned& commentHeaderSize,
+			      u_int8_t*& setupHeader, unsigned& setupHeaderSize) {
+  identificationHeader = commentHeader = setupHeader = NULL;
+  identificationHeaderSize = commentHeaderSize = setupHeaderSize = 0;
+
+  do {
+    if (track == NULL) break;
+
+    // The Matroska file's 'Codec Private' data is assumed to be the codec configuration
+    // information, containing the "Identification", "Comment", and "Setup" headers.
+    // Extract these headers now:
+    Boolean isTheora = strcmp(track->mimeType, "video/THEORA") == 0; // otherwise, Vorbis
+    u_int8_t* p = track->codecPrivate;
+    unsigned n = track->codecPrivateSize;
+    if (n == 0 || p == NULL) break; // we have no 'Codec Private' data
+    
+    u_int8_t numHeaders;
+    getPrivByte(numHeaders);
+    unsigned headerSize[3]; // we don't handle any more than 2+1 headers
+    
+    // Extract the sizes of each of these headers:
+    unsigned sizesSum = 0;
+    Boolean success = True;
+    unsigned i;
+    for (i = 0; i < numHeaders && i < 3; ++i) {
+      unsigned len = 0;
+      u_int8_t c;
+      
+      do {
+	success = False;
+	getPrivByte(c);
+	success = True;
+	
+	len += c;
+      } while (c == 255);
+      if (!success || len == 0) break;
+      
+      headerSize[i] = len;
+      sizesSum += len;
+    }
+    if (!success) break;
+    
+    // Compute the implicit size of the final header:
+    if (numHeaders < 3) {
+      int finalHeaderSize = n - sizesSum;
+      if (finalHeaderSize <= 0) break; // error in data; give up
+      
+      headerSize[numHeaders] = (unsigned)finalHeaderSize;
+      ++numHeaders; // include the final header now
+    } else {
+      numHeaders = 3; // The maximum number of headers that we handle
+    }
+    
+    // Then, extract and classify each header:
+    for (i = 0; i < numHeaders; ++i) {
+      success = False;
+      unsigned newHeaderSize = headerSize[i];
+      u_int8_t* newHeader = new u_int8_t[newHeaderSize];
+      if (newHeader == NULL) break;
+      
+      u_int8_t* hdr = newHeader;
+      while (newHeaderSize-- > 0) {
+	success = False;
+	getPrivByte(*hdr++);
+	success = True;
+      }
+      if (!success) {
+	delete[] newHeader;
+	break;
+      }
+      
+      u_int8_t headerType = newHeader[0];
+      if (headerType == 1 || (isTheora && headerType == 0x80)) { // "identification" header
+	delete[] identificationHeader; identificationHeader = newHeader;
+	identificationHeaderSize = headerSize[i];
+      } else if (headerType == 3 || (isTheora && headerType == 0x81)) { // "comment" header
+	delete[] commentHeader; commentHeader = newHeader;
+	commentHeaderSize = headerSize[i];
+      } else if (headerType == 5 || (isTheora && headerType == 0x82)) { // "setup" header
+	delete[] setupHeader; setupHeader = newHeader;
+	setupHeaderSize = headerSize[i];
+      } else {
+	delete[] newHeader; // because it was a header type that we don't understand
+      }
+    }
+    if (!success) break;
+
+    return;
+  } while (0);
+
+  // An error occurred:
+  delete[] identificationHeader; identificationHeader = NULL; identificationHeaderSize = 0;
+  delete[] commentHeader; commentHeader = NULL; commentHeaderSize = 0;
+  delete[] setupHeader; setupHeader = NULL; setupHeaderSize = 0;
+}
+
 float MatroskaFile::fileDuration() {
   if (fCuePoints == NULL) return 0.0; // Hack, because the RTSP server code assumes that duration > 0 => seekable. (fix this) #####
 
   return segmentDuration()*(timecodeScale()/1000000000.0f);
 }
+
+// The size of the largest key frame that we expect.  This determines our buffer sizes:
+#define MAX_KEY_FRAME_SIZE 300000
 
 FramedSource* MatroskaFile
 ::createSourceForStreaming(FramedSource* baseSource, unsigned trackNumber,
@@ -270,7 +542,7 @@ FramedSource* MatroskaFile
     } else if (strcmp(track->mimeType, "video/H264") == 0) {
       estBitrate = 500;
       // Allow for the possibility of very large NAL units being fed to the sink object:
-      OutPacketBuffer::increaseMaxSizeTo(300000); // bytes
+      OutPacketBuffer::increaseMaxSizeTo(MAX_KEY_FRAME_SIZE); // bytes
 
       // Add a framer in front of the source:
       result = H264VideoStreamDiscreteFramer::createNew(envir(), result);
@@ -278,7 +550,7 @@ FramedSource* MatroskaFile
     } else if (strcmp(track->mimeType, "video/H265") == 0) {
       estBitrate = 500;
       // Allow for the possibility of very large NAL units being fed to the sink object:
-      OutPacketBuffer::increaseMaxSizeTo(300000); // bytes
+      OutPacketBuffer::increaseMaxSizeTo(MAX_KEY_FRAME_SIZE); // bytes
 
       // Add a framer in front of the source:
       result = H265VideoStreamDiscreteFramer::createNew(envir(), result);
@@ -297,9 +569,12 @@ FramedSource* MatroskaFile
   return result;
 }
 
-#define getPrivByte(b) if (n == 0) break; else do {b = *p++; --n;} while (0) /* Vorbis/Theora configuration header parsing */
-#define CHECK_PTR if (ptr >= limit) break /* H.264/H.265 parsing */
-#define NUM_BYTES_REMAINING (unsigned)(limit - ptr) /* H.264/H.265 parsing */
+char const* MatroskaFile::trackMIMEType(unsigned trackNumber) const {
+  MatroskaTrack* track = lookup(trackNumber);
+  if (track == NULL) return NULL;
+
+  return track->mimeType;
+}
 
 RTPSink* MatroskaFile
 ::createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock* rtpGroupsock,
@@ -337,262 +612,141 @@ RTPSink* MatroskaFile
 	::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
 		    48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
     } else if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0) {
-      // The Matroska file's 'Codec Private' data is assumed to be the codec configuration
-      // information, containing the "Identification", "Comment", and "Setup" headers.
-      // Extract these headers now:
-      u_int8_t* identificationHeader = NULL; unsigned identificationHeaderSize = 0;
-      u_int8_t* commentHeader = NULL; unsigned commentHeaderSize = 0;
-      u_int8_t* setupHeader = NULL; unsigned setupHeaderSize = 0;
-      Boolean isTheora = strcmp(track->mimeType, "video/THEORA") == 0; // otherwise, Vorbis
+      u_int8_t* identificationHeader; unsigned identificationHeaderSize;
+      u_int8_t* commentHeader; unsigned commentHeaderSize;
+      u_int8_t* setupHeader; unsigned setupHeaderSize;
+      getVorbisOrTheoraConfigData(track,
+				  identificationHeader, identificationHeaderSize,
+				  commentHeader, commentHeaderSize,
+				  setupHeader, setupHeaderSize);
 
-      do {
-	u_int8_t* p = track->codecPrivate;
-	unsigned n = track->codecPrivateSize;
-	if (n == 0 || p == NULL) break; // we have no 'Codec Private' data
-
-	u_int8_t numHeaders;
-	getPrivByte(numHeaders);
-	unsigned headerSize[3]; // we don't handle any more than 2+1 headers
-
-	// Extract the sizes of each of these headers:
-	unsigned sizesSum = 0;
-	Boolean success = True;
-	unsigned i;
-	for (i = 0; i < numHeaders && i < 3; ++i) {
-	  unsigned len = 0;
-	  u_int8_t c;
-
-	  do {
-	    success = False;
-	    getPrivByte(c);
-	    success = True;
-	    
-	    len += c;
-	  } while (c == 255);
-	  if (!success || len == 0) break;
-	  
-	  headerSize[i] = len;
-	  sizesSum += len;
-	}
-	if (!success) break;
-	
-	// Compute the implicit size of the final header:
-	if (numHeaders < 3) {
-	  int finalHeaderSize = n - sizesSum;
-	  if (finalHeaderSize <= 0) break; // error in data; give up
-	  
-	  headerSize[numHeaders] = (unsigned)finalHeaderSize;
-	  ++numHeaders; // include the final header now
-	} else {
-	  numHeaders = 3; // The maximum number of headers that we handle
-	}
-	
-	// Then, extract and classify each header:
-	for (i = 0; i < numHeaders; ++i) {
-	  success = False;
-	  unsigned newHeaderSize = headerSize[i];
-	  u_int8_t* newHeader = new u_int8_t[newHeaderSize];
-	  if (newHeader == NULL) break;
-	  
-	  u_int8_t* hdr = newHeader;
-	  while (newHeaderSize-- > 0) {
-	    success = False;
-	    getPrivByte(*hdr++);
-	    success = True;
-	  }
-	  if (!success) {
-	    delete[] newHeader;
-	    break;
-	  }
-	  
-	  u_int8_t headerType = newHeader[0];
-	  if (headerType == 1 || (isTheora && headerType == 0x80)) { // "identification" header
-	    delete[] identificationHeader; identificationHeader = newHeader;
-	    identificationHeaderSize = headerSize[i];
-	  } else if (headerType == 3 || (isTheora && headerType == 0x81)) { // "comment" header
-	    delete[] commentHeader; commentHeader = newHeader;
-	    commentHeaderSize = headerSize[i];
-	  } else if (headerType == 5 || (isTheora && headerType == 0x82)) { // "setup" header
-	    delete[] setupHeader; setupHeader = newHeader;
-	    setupHeaderSize = headerSize[i];
-	  } else {
-	    delete[] newHeader; // because it was a header type that we don't understand
-	  }
-	}
-	if (!success) break;
-
-	if (isTheora) {
-	  result = TheoraVideoRTPSink
-	    ::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-			identificationHeader, identificationHeaderSize,
-			commentHeader, commentHeaderSize,
-			setupHeader, setupHeaderSize);
-	} else { // Vorbis
-	  result = VorbisAudioRTPSink
-	    ::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-			track->samplingFrequency, track->numChannels,
-			identificationHeader, identificationHeaderSize,
-			commentHeader, commentHeaderSize,
-			setupHeader, setupHeaderSize);
-	}
-      } while (0);
-
+      if (strcmp(track->mimeType, "video/THEORA") == 0) {
+	result = TheoraVideoRTPSink
+	  ::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
+		      identificationHeader, identificationHeaderSize,
+		      commentHeader, commentHeaderSize,
+		      setupHeader, setupHeaderSize);
+      } else { // Vorbis
+	result = VorbisAudioRTPSink
+	  ::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
+		      track->samplingFrequency, track->numChannels,
+		      identificationHeader, identificationHeaderSize,
+		      commentHeader, commentHeaderSize,
+		      setupHeader, setupHeaderSize);
+      }
       delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
     } else if (strcmp(track->mimeType, "video/RAW") == 0) {
       result = RawVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, 
                                           track->pixelHeight, track->pixelWidth, track->bitDepth, track->colorSampling, track->colorimetry);
     } else if (strcmp(track->mimeType, "video/H264") == 0) {
-      // Use our track's 'Codec Private' data: Bytes 5 and beyond contain SPS and PPSs:
-      u_int8_t* SPS = NULL; unsigned SPSSize = 0;
-      u_int8_t* PPS = NULL; unsigned PPSSize = 0;
-      u_int8_t* SPSandPPSBytes = NULL; unsigned numSPSandPPSBytes = 0;
+      u_int8_t* sps; unsigned spsSize;
+      u_int8_t* pps; unsigned ppsSize;
 
-      do {
-	if (track->codecPrivateSize < 6) break;
-
-	numSPSandPPSBytes = track->codecPrivateSize - 5;
-	SPSandPPSBytes = &track->codecPrivate[5];
-
-	// Extract, from "SPSandPPSBytes", one SPS NAL unit, and one PPS NAL unit.
-	// (I hope one is all we need of each.)
-	unsigned i;
-	u_int8_t* ptr = SPSandPPSBytes;
-	u_int8_t* limit = &SPSandPPSBytes[numSPSandPPSBytes];
-	
-	unsigned numSPSs = (*ptr++)&0x1F; CHECK_PTR;
-	for (i = 0; i < numSPSs; ++i) {
-	  unsigned spsSize = (*ptr++)<<8; CHECK_PTR;
-	  spsSize |= *ptr++; CHECK_PTR;
-	  
-	  if (spsSize > NUM_BYTES_REMAINING) break;
-	  u_int8_t nal_unit_type = ptr[0]&0x1F;
-	  if (SPS == NULL && nal_unit_type == 7/*sanity check*/) { // save the first one
-	    SPSSize = spsSize;
-	    SPS = new u_int8_t[spsSize];
-	    memmove(SPS, ptr, spsSize);
-	  }
-	  ptr += spsSize;
-	}
-	
-	unsigned numPPSs = (*ptr++)&0x1F; CHECK_PTR;
-	for (i = 0; i < numPPSs; ++i) {
-	  unsigned ppsSize = (*ptr++)<<8; CHECK_PTR;
-	  ppsSize |= *ptr++; CHECK_PTR;
-	  
-	  if (ppsSize > NUM_BYTES_REMAINING) break;
-	  u_int8_t nal_unit_type = ptr[0]&0x1F;
-	  if (PPS == NULL && nal_unit_type == 8/*sanity check*/) { // save the first one
-	    PPSSize = ppsSize;
-	    PPS = new u_int8_t[ppsSize];
-	    memmove(PPS, ptr, ppsSize);
-	  }
-	  ptr += ppsSize;
-	}
-      } while (0);
-
+      getH264ConfigData(track, sps, spsSize, pps, ppsSize);
       result = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					   SPS, SPSSize, PPS, PPSSize);
-
-      delete[] SPS; delete[] PPS;
+					   sps, spsSize, pps, ppsSize);
+      delete[] sps; delete[] pps;
     } else if (strcmp(track->mimeType, "video/H265") == 0) {
-      u_int8_t* VPS = NULL; unsigned VPSSize = 0;
-      u_int8_t* SPS = NULL; unsigned SPSSize = 0;
-      u_int8_t* PPS = NULL; unsigned PPSSize = 0;
-      u_int8_t* VPS_SPS_PPSBytes = NULL; unsigned numVPS_SPS_PPSBytes = 0;
-      unsigned i;
+      u_int8_t* vps; unsigned vpsSize;
+      u_int8_t* sps; unsigned spsSize;
+      u_int8_t* pps; unsigned ppsSize;
 
-      do {
-	if (track->codecPrivateUsesH264FormatForH265) {
-	  // The data uses the H.264-style format (but including VPS NAL unit(s)).
-	  // The VPS,SPS,PPS NAL unit information starts at byte #5:
-	  if (track->codecPrivateSize >= 6) {
-	    numVPS_SPS_PPSBytes = track->codecPrivateSize - 5;
-	    VPS_SPS_PPSBytes = &track->codecPrivate[5];
-	  }
-	} else {
-	  // The data uses the proper H.265-style format.
-	  // The VPS,SPS,PPS NAL unit information starts at byte #22:
-	  if (track->codecPrivateSize >= 23) {
-	    numVPS_SPS_PPSBytes = track->codecPrivateSize - 22;
-	    VPS_SPS_PPSBytes = &track->codecPrivate[22];
-	  }
-	}
-	
-	// Extract, from "VPS_SPS_PPSBytes", one VPS NAL unit, one SPS NAL unit, and one PPS NAL unit.
-	// (I hope one is all we need of each.)
-	if (numVPS_SPS_PPSBytes == 0 || VPS_SPS_PPSBytes == NULL) break; // sanity check
-	u_int8_t* ptr = VPS_SPS_PPSBytes;
-	u_int8_t* limit = &VPS_SPS_PPSBytes[numVPS_SPS_PPSBytes];
-	
-	if (track->codecPrivateUsesH264FormatForH265) {
-	  // The data uses the H.264-style format (but including VPS NAL unit(s)).
-	  while (NUM_BYTES_REMAINING > 0) {
-	    unsigned numNALUnits = (*ptr++)&0x1F; CHECK_PTR;
-	    for (i = 0; i < numNALUnits; ++i) {
-	      unsigned nalUnitLength = (*ptr++)<<8; CHECK_PTR;
-	      nalUnitLength |= *ptr++; CHECK_PTR;
-	      
-	      if (nalUnitLength > NUM_BYTES_REMAINING) break;
-	      u_int8_t nal_unit_type = (ptr[0]&0x7E)>>1;
-	      if (nal_unit_type == 32) { // VPS
-		VPSSize = nalUnitLength;
-		delete[] VPS; VPS = new u_int8_t[nalUnitLength];
-		memmove(VPS, ptr, nalUnitLength);
-	      } else if (nal_unit_type == 33) { // SPS
-		SPSSize = nalUnitLength;
-		delete[] SPS; SPS = new u_int8_t[nalUnitLength];
-		memmove(SPS, ptr, nalUnitLength);
-	      } else if (nal_unit_type == 34) { // PPS
-		PPSSize = nalUnitLength;
-		delete[] PPS; PPS = new u_int8_t[nalUnitLength];
-		memmove(PPS, ptr, nalUnitLength);
-	      }
-	      ptr += nalUnitLength;
-	    }
-	  }
-	} else {
-	  // The data uses the proper H.265-style format.
-	  unsigned numOfArrays = *ptr++; CHECK_PTR;
-	  for (unsigned j = 0; j < numOfArrays; ++j) {
-	    ++ptr; CHECK_PTR; // skip the 'array_completeness'|'reserved'|'NAL_unit_type' byte
-	    
-	    unsigned numNalus = (*ptr++)<<8; CHECK_PTR;
-	    numNalus |= *ptr++; CHECK_PTR;
-	    
-	    for (i = 0; i < numNalus; ++i) {
-	      unsigned nalUnitLength = (*ptr++)<<8; CHECK_PTR;
-	      nalUnitLength |= *ptr++; CHECK_PTR;
-	      
-	      if (nalUnitLength > NUM_BYTES_REMAINING) break;
-	      u_int8_t nal_unit_type = (ptr[0]&0x7E)>>1;
-	      if (nal_unit_type == 32) { // VPS
-		VPSSize = nalUnitLength;
-		delete[] VPS; VPS = new u_int8_t[nalUnitLength];
-		memmove(VPS, ptr, nalUnitLength);
-	      } else if (nal_unit_type == 33) { // SPS
-		SPSSize = nalUnitLength;
-		delete[] SPS; SPS = new u_int8_t[nalUnitLength];
-		memmove(SPS, ptr, nalUnitLength);
-	      } else if (nal_unit_type == 34) { // PPS
-		PPSSize = nalUnitLength;
-		delete[] PPS; PPS = new u_int8_t[nalUnitLength];
-		memmove(PPS, ptr, nalUnitLength);
-	      }
-	      ptr += nalUnitLength;
-	    }
-	  }
-	}
-      } while (0);
-
+      getH265ConfigData(track, vps, vpsSize, sps, spsSize, pps, ppsSize);
       result = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
-					   VPS, VPSSize, SPS, SPSSize, PPS, PPSSize);
-      delete[] VPS; delete[] SPS; delete[] PPS;
+					   vps, vpsSize, sps, spsSize, pps, ppsSize);
+      delete[] vps; delete[] sps; delete[] pps;
     } else if (strcmp(track->mimeType, "video/VP8") == 0) {
       result = VP8VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
     } else if (strcmp(track->mimeType, "video/VP9") == 0) {
       result = VP9VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
     } else if (strcmp(track->mimeType, "text/T140") == 0) {
       result = T140TextRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
+    }
+  } while (0);
+
+  return result;
+}
+
+FileSink* MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char const* fileName) {
+  FileSink* result = NULL; // default value, if an error occurs
+  Boolean createOggFileSink = False; // by default
+
+  do {
+    MatroskaTrack* track = lookup(trackNumber);
+    if (track == NULL) break;
+
+    if (strcmp(track->mimeType, "video/H264") == 0) {
+      u_int8_t* sps; unsigned spsSize;
+      u_int8_t* pps; unsigned ppsSize;
+
+      getH264ConfigData(track, sps, spsSize, pps, ppsSize);
+
+      char* sps_base64 = base64Encode((char*)sps, spsSize);
+      char* pps_base64 = base64Encode((char*)pps, ppsSize);
+      delete[] sps; delete[] pps;
+
+      char* sPropParameterSetsStr
+	= new char[sps_base64 == NULL ? 0 : strlen(sps_base64) +
+		   pps_base64 == NULL ? 0 : strlen(pps_base64) +
+		   10 /*more than enough space*/];
+      sprintf(sPropParameterSetsStr, "%s,%s", sps_base64, pps_base64);
+      delete[] sps_base64; delete[] pps_base64;
+
+      result = H264VideoFileSink::createNew(envir(), fileName,
+					    sPropParameterSetsStr,
+					    MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
+      delete[] sPropParameterSetsStr;
+    } else if (strcmp(track->mimeType, "video/H265") == 0) {
+      u_int8_t* vps; unsigned vpsSize;
+      u_int8_t* sps; unsigned spsSize;
+      u_int8_t* pps; unsigned ppsSize;
+
+      getH265ConfigData(track, vps, vpsSize, sps, spsSize, pps, ppsSize);
+
+      char* vps_base64 = base64Encode((char*)vps, vpsSize);
+      char* sps_base64 = base64Encode((char*)sps, spsSize);
+      char* pps_base64 = base64Encode((char*)pps, ppsSize);
+      delete[] vps; delete[] sps; delete[] pps;
+
+      result = H265VideoFileSink::createNew(envir(), fileName,
+					    vps_base64, sps_base64, pps_base64,
+					    MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
+      delete[] vps_base64; delete[] sps_base64; delete[] pps_base64;
+    } else if (strcmp(track->mimeType, "video/THEORA") == 0) {
+      createOggFileSink = True;
+    } else if (strcmp(track->mimeType, "audio/AMR") == 0 ||
+	       strcmp(track->mimeType, "audio/AMR-WB") == 0) {
+      // For AMR audio streams, we use a special sink that inserts AMR frame hdrs:
+      result = AMRAudioFileSink::createNew(envir(), fileName);
+    } else if (strcmp(track->mimeType, "audio/VORBIS") == 0 ||
+	       strcmp(track->mimeType, "audio/OPUS") == 0) {
+      createOggFileSink = True;
+    }
+
+    if (createOggFileSink) {
+      char* configStr = NULL; // by default
+
+      if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0) {
+	u_int8_t* identificationHeader; unsigned identificationHeaderSize;
+	u_int8_t* commentHeader; unsigned commentHeaderSize;
+	u_int8_t* setupHeader; unsigned setupHeaderSize;
+	getVorbisOrTheoraConfigData(track,
+				    identificationHeader, identificationHeaderSize,
+				    commentHeader, commentHeaderSize,
+				    setupHeader, setupHeaderSize);
+	u_int32_t identField = 0xFACADE; // Can we get a real value from the file somehow?
+	configStr = generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize,
+						    commentHeader, commentHeaderSize,
+						    setupHeader, setupHeaderSize,
+						    identField);
+	delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
+      }
+
+      result = OggFileSink::createNew(envir(), fileName, track->samplingFrequency, configStr, MAX_KEY_FRAME_SIZE);
+      delete[] configStr;
+    } else if (result == NULL) {
+      // By default, just create a regular "FileSink":
+      result = FileSink::createNew(envir(), fileName, MAX_KEY_FRAME_SIZE);
     }
   } while (0);
 
