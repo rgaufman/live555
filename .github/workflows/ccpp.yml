@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - uses: actions/checkout
     - name: make directorys
       run: mkdir build; cd build
     - name: cmake
