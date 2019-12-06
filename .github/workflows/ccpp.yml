@@ -9,6 +9,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@master
+      with:
+        ref: develop
+        submodules: true
     - name: make directorys
       run: mkdir build; cd build
     - name: cmake
