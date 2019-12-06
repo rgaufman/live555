@@ -67,7 +67,7 @@ For Emscripten
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
   -DCMAKE_TOOLCHAIN_FILE=/usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
 # make; make install  
-
+```
 
 For Linux for arm with toolchain
 {TOOLCHAIN_PATH} is toolchain path for ARM CPU from manufacture. 
