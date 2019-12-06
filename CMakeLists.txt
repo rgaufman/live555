@@ -408,8 +408,8 @@ list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportFileServerMediaSubsession.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamAccumulator.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemux.cpp
-   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemuxTrack.cpp
-   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemuxTrack.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemuxedTrack.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamDemuxedTrack.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromESSource.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/MPEG2TransportStreamFromPESSource.cpp
