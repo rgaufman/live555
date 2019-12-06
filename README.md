@@ -55,6 +55,20 @@ For Linux
 # make; make install  
 ```
 
+For Emscripten
+```shell
+# mkdir emcc
+# cd emcc
+# export OUT_PATH=./install
+# cmake .. -G "Unix Makefiles" \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_BUILD_TYPE=release \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
+  -DCMAKE_TOOLCHAIN_FILE=/usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
+# make; make install  
+
+
 For Linux for arm with toolchain
 {TOOLCHAIN_PATH} is toolchain path for ARM CPU from manufacture. 
 
