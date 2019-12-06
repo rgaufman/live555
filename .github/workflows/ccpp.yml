@@ -8,6 +8,5 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v1
     - name: cmake
       run: mkdir build;cd build;cmake .. -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=./install;make;make install
