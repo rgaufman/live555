@@ -1,4 +1,4 @@
-cmake_minimum_required ( VERSION 2.8 )
+cmake_minimum_required ( VERSION 3.7 )
 
 set ( PROJECT_NAME live555 )
 set ( TEST_PROGS testProgs )
@@ -7,9 +7,53 @@ set ( TEST_ONDEMAND_RTSP_SERVER testOnDemandRTSPServer )
 
 project ( ${PROJECT_NAME} )
 
-set ( ${PROJECT_NAME}_VERSION_MAJOR "2018" )
-set ( ${PROJECT_NAME}_VERSION_MINOR "01" )
-set ( ${PROJECT_NAME}_VERSION_PATCH "29" )
+set (CMAKE_BUILD_TYPE_INIT "Release")
+set (CMAKE_CXX_STANDARD 11)
+
+if ( NOT DEFINED BUILD_EMSCRIPTEN )
+   set ( BUILD_EMSCRIPTEN FALSE )
+endif ()
+
+if ( BUILD_EMSCRIPTEN )
+# If not found by above search, locate using the EMSCRIPTEN environment variable.
+if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+  set(EMSCRIPTEN_ROOT_PATH "$ENV{EMSCRIPTEN}")
+endif()
+
+# Abort if not found.
+if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+  message(FATAL_ERROR "Could not locate the Emscripten compiler toolchain directory! Either set the EMSCRIPTEN environment variable, or pass -DEMSCRIPTEN_ROOT_PATH=xxx to CMake to explicitly specify the location of the compiler!")
+endif()
+
+# Check version
+set(EMSCRIPTEN_REQUIRED_VERSION 1.21.4)
+if(EXISTS ${EMSCRIPTEN_ROOT_PATH}/emscripten-version.txt)
+  file(READ ${EMSCRIPTEN_ROOT_PATH}/emscripten-version.txt EMSCRIPTEN_VERSION)
+  string(STRIP ${EMSCRIPTEN_VERSION} EMSCRIPTEN_VERSION)
+  string(REPLACE "\"" "" EMSCRIPTEN_VERSION ${EMSCRIPTEN_VERSION})
+  message(STATUS "Found Emscripten [${EMSCRIPTEN_VERSION}]")
+  if(EMSCRIPTEN_VERSION VERSION_LESS ${EMSCRIPTEN_REQUIRED_VERSION})
+    message(FATAL_ERROR "Emscripten >= ${EMSCRIPTEN_REQUIRED_VERSION} is required.")
+  endif()
+endif()
+
+if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+    set (CMAKE_C_COMPILER ${EMSCRIPTEN_ROOT_PATH}/emcc)
+    set (CMAKE_CXX_COMPILER ${EMSCRIPTEN_ROOT_PATH}/em++)
+	set (CMAKE_RANLIB ${EMSCRIPTEN_ROOT_PATH}/emranlib)
+    set (CMAKE_AR ${EMSCRIPTEN_ROOT_PATH}/emar)
+    set (CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
+    set (CMAKE_C_CREATE_STATIC_LIBRARY "<CMAKE_AR> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set (CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-warn-absolute-paths -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1 --memory-init-file 0")
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-warn-absolute-paths -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1 --memory-init-file 0")
+	set (CMAKE_EXECUTABLE_SUFFIX ".wasm.js")
+endif ()
+endif () # BUILD_EMSCRIPTEN
+
+set ( ${PROJECT_NAME}_VERSION_MAJOR "2019" )
+set ( ${PROJECT_NAME}_VERSION_MINOR "12" )
+set ( ${PROJECT_NAME}_VERSION_PATCH "05" )
 set ( ${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
 
 if ( CMAKE_COMPILER_IS_GNUCXX )
@@ -25,6 +69,12 @@ if ( NOT DEFINED BUILD_EXAMPLES )
 endif ()
 
 set ( ${TEST_PROGS}_HOME ${CMAKE_CURRENT_SOURCE_DIR}/testProgs )
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+include_directories (
+		/usr/share/emscripten/system/include
+)
+endif ()
 
 set ( ${PROJECT_NAME}_HOME ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories ( ${${PROJECT_NAME}_HOME}/UsageEnvironment/include )
@@ -516,11 +566,10 @@ else ()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE LIVEMEDIA_STATIC=1)
 endif ()
 
-
 if ( WIN32 )
-   set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d" )
+	set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d" )
 else ()
-   set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug" )
+	set_target_properties ( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "-debug" )
 endif ()
 
 if(MSVC)
@@ -542,7 +591,7 @@ if ( BUILD_EXAMPLES )
 		# GCC or Clang
 		add_definitions(-include export.h)
 	endif()
-	
+
 	if ( WIN32 )
 		set ( LIB_EXTENSION lib )
 	else ()
@@ -553,27 +602,34 @@ if ( BUILD_EXAMPLES )
 			#For the static library:
 			set ( LIB_EXTENSION a )
 		endif()
-	endif()	
-	
-	# add library path	
+	endif()
+
+	# add library path
 	if ( WIN32 )
 		link_directories ( ${CMAKE_BINARY_DIR}\\${CMAKE_BUILD_TYPE} )
 	else()
 		link_directories( ${CMAKE_BINARY_DIR} )
 	endif()
-	
+
 	#file(GLOB SOURCES ${${TEST_PROGS}_HOME}"/*.cpp")
-	
+
 	# add execute testRTSPClient
 	add_executable(${TEST_RTSP_CLIENT} ${${TEST_PROGS}_HOME}/testRTSPClient.cpp)
+	if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+		set_target_properties ( ${TEST_RTSP_CLIENT} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_RTSP_CLIENT}.html -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 --bind -s WASM=1  -s BINARYEN_METHOD=native-wasm -O2 --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s ASSERTIONS=1 -s INVOKE_RUN=0  -std=c++11")
+	endif()
 	target_link_libraries(${TEST_RTSP_CLIENT} ${PROJECT_NAME})
 	target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
-	
+
+
 	# add execute testRTSPClient
-	add_executable(${TEST_ONDEMAND_RTSP_SERVER} ${${TEST_PROGS}_HOME}/testOnDemandRTSPServer.cpp)
-	target_link_libraries(${TEST_ONDEMAND_RTSP_SERVER} ${PROJECT_NAME})
-	target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
-	
+	# add_executable(${TEST_ONDEMAND_RTSP_SERVER} ${${TEST_PROGS}_HOME}/testOnDemandRTSPServer.cpp)
+	# if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
+	# 	set_target_properties ( ${TEST_ONDEMAND_RTSP_SERVER} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_ONDEMAND_RTSP_SERVER}.html -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 --bind -s WASM=1  -s BINARYEN_METHOD=native-wasm -O2 --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s ASSERTIONS=1 -s INVOKE_RUN=0  -std=c++11")
+	# endif()
+	# target_link_libraries(${TEST_ONDEMAND_RTSP_SERVER} ${PROJECT_NAME})
+	# target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
+
 endif ()
 
 # Disable warnings
@@ -584,7 +640,7 @@ if ( WIN32 AND NOT CMAKE_COMPILER_IS_GNUCXX )
       "/wd4267" # 'var' : conversion from 'size_t' to 'type', possible loss of data
       "/wd4312" # 'operation' : conversion from 'type1' to 'type2' of greater size
       "/wd4334" # 'operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
-      "/wd4477" # <function> : format string <format-string> requires an argument of type <type>, but variadic argument <position> has type <type> 
+      "/wd4477" # <function> : format string <format-string> requires an argument of type <type>, but variadic argument <position> has type <type>
       "/wd4996" # 'function': was declared deprecated also 'std::<function name>': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct.To disable this warning, use -D_SCL_SECURE_NO_WARNINGS.See documentation on how to use Visual C++ 'Checked Iterators'
    )
 else ()
