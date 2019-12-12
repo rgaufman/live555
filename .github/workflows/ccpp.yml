@@ -14,7 +14,10 @@ jobs:
     - name: make directorys
       run: mkdir build; cd build
     - name: cmake
-      run: cmake .. -G "Unix Makefiles"
+      run: cmake .. -G "Unix Makefiles" \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_VERBOSE_MAKEFILE=OFF \
+            -DCMAKE_BUILD_TYPE=release
     - name: make
       run: make
     - name: make check
