@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
       with:
-        ref: develop
+        ref: master
     - name: make directorys
       run: mkdir build; cd build
     - name: cmake
