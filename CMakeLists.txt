@@ -17,38 +17,51 @@ endif ()
 if ( BUILD_EMSCRIPTEN )
 # If not found by above search, locate using the EMSCRIPTEN environment variable.
 if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-  set(EMSCRIPTEN_ROOT_PATH "$ENV{EMSCRIPTEN}")
+   set(EMSCRIPTEN_ROOT_PATH "$ENV{EMSCRIPTEN}")
 endif()
 
 # Abort if not found.
 if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-  message(FATAL_ERROR "Could not locate the Emscripten compiler toolchain directory! Either set the EMSCRIPTEN environment variable, or pass -DEMSCRIPTEN_ROOT_PATH=xxx to CMake to explicitly specify the location of the compiler!")
+   message(FATAL_ERROR "Could not locate the Emscripten compiler toolchain directory! Either set the EMSCRIPTEN environment variable, or pass -DEMSCRIPTEN_ROOT_PATH=xxx to CMake to explicitly specify the location of the compiler!")
+endif()
+
+if(WIN32)
+    set(EMCC_SUFFIX ".bat")
+else()
+    set(EMCC_SUFFIX "")
 endif()
 
 # Check version
 set(EMSCRIPTEN_REQUIRED_VERSION 1.21.4)
 if(EXISTS ${EMSCRIPTEN_ROOT_PATH}/emscripten-version.txt)
-  file(READ ${EMSCRIPTEN_ROOT_PATH}/emscripten-version.txt EMSCRIPTEN_VERSION)
-  string(STRIP ${EMSCRIPTEN_VERSION} EMSCRIPTEN_VERSION)
-  string(REPLACE "\"" "" EMSCRIPTEN_VERSION ${EMSCRIPTEN_VERSION})
-  message(STATUS "Found Emscripten [${EMSCRIPTEN_VERSION}]")
-  if(EMSCRIPTEN_VERSION VERSION_LESS ${EMSCRIPTEN_REQUIRED_VERSION})
-    message(FATAL_ERROR "Emscripten >= ${EMSCRIPTEN_REQUIRED_VERSION} is required.")
-  endif()
-endif()
+   file(READ ${EMSCRIPTEN_ROOT_PATH}/emscripten-version.txt EMSCRIPTEN_VERSION)
+   string(STRIP ${EMSCRIPTEN_VERSION} EMSCRIPTEN_VERSION)
+   string(REPLACE "\"" "" EMSCRIPTEN_VERSION ${EMSCRIPTEN_VERSION})
+   message(STATUS "Found Emscripten [${EMSCRIPTEN_VERSION}]")
+   if(EMSCRIPTEN_VERSION VERSION_LESS ${EMSCRIPTEN_REQUIRED_VERSION})
+      message(FATAL_ERROR "Emscripten >= ${EMSCRIPTEN_REQUIRED_VERSION} is required.")
+   endif()
+   set (CMAKE_C_COMPILER ${EMSCRIPTEN_ROOT_PATH}/emcc${EMCC_SUFFIX})
+   set (CMAKE_CXX_COMPILER ${EMSCRIPTEN_ROOT_PATH}/em++${EMCC_SUFFIX})
+   set (CMAKE_RANLIB ${EMSCRIPTEN_ROOT_PATH}/emranlib${EMCC_SUFFIX} CACHE FILEPATH "Emscripten ranlib")
+   set (CMAKE_AR ${EMSCRIPTEN_ROOT_PATH}/emar${EMCC_SUFFIX} CACHE FILEPATH "Emscripten ar")
+   set (CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} ${EMSCRIPTEN_ROOT_PATH})
+   set (CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+   set (CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+   set (CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+   set (CMAKE_SYSTEM_PREFIX_PATH ${CMAKE_FIND_ROOT_PATH})
+   set (CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -s WASM=1")
+   set (CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} -s WASM=1")
+   set (CMAKE_CXX_FLAGS_RELEASE_INIT "${CMAKE_CXX_FLAGS_RELEASE_INIT} -DNDEBUG -O3")
+   set (CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "${CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT} -O3 --llvm-lto 1")
 
-if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-    set (CMAKE_C_COMPILER ${EMSCRIPTEN_ROOT_PATH}/emcc)
-    set (CMAKE_CXX_COMPILER ${EMSCRIPTEN_ROOT_PATH}/em++)
-	set (CMAKE_RANLIB ${EMSCRIPTEN_ROOT_PATH}/emranlib)
-    set (CMAKE_AR ${EMSCRIPTEN_ROOT_PATH}/emar)
-    set (CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
-    set (CMAKE_C_CREATE_STATIC_LIBRARY "<CMAKE_AR> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
-    set (CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-warn-absolute-paths -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1 --memory-init-file 0")
-	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-warn-absolute-paths -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1 --memory-init-file 0")
-	set (CMAKE_EXECUTABLE_SUFFIX ".wasm.js")
-endif ()
+   #set (CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
+   #set (CMAKE_C_CREATE_STATIC_LIBRARY "<CMAKE_AR> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
+   #set (CMAKE_CXX_CREATE_STATIC_LIBRARY "<CMAKE_AR> -o <TARGET> <LINK_FLAGS> <OBJECTS>")
+   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-warn-absolute-paths -s USE_PTHREADS=1 -s USE_FHEAP=1 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1 --memory-init-file 0")
+   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-warn-absolute-paths -s USE_PTHREADS=1 -s USE_FHEAP=1 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=1 --memory-init-file 0")
+   #set (CMAKE_EXECUTABLE_SUFFIX ".wasm.js")
+endif()
 endif () # BUILD_EMSCRIPTEN
 
 set ( ${PROJECT_NAME}_VERSION_MAJOR "2019" )
@@ -70,9 +83,9 @@ endif ()
 
 set ( ${TEST_PROGS}_HOME ${CMAKE_CURRENT_SOURCE_DIR}/testProgs )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+if ( BUILD_EMSCRIPTEN )
 include_directories (
-		/usr/share/emscripten/system/include
+   ${EMSCRIPTEN_ROOT_PATH}/system/include
 )
 endif ()
 
@@ -615,21 +628,27 @@ if ( BUILD_EXAMPLES )
 
 	# add execute testRTSPClient
 	add_executable(${TEST_RTSP_CLIENT} ${${TEST_PROGS}_HOME}/testRTSPClient.cpp)
-	if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-		set_target_properties ( ${TEST_RTSP_CLIENT} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_RTSP_CLIENT}.html -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 --bind -s WASM=1  -s BINARYEN_METHOD=native-wasm -O2 --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s ASSERTIONS=1 -s INVOKE_RUN=0  -std=c++11")
+	if ( BUILD_EMSCRIPTEN )
+		set_target_properties ( ${TEST_RTSP_CLIENT} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_RTSP_CLIENT}.html -std=c++11 -O2 --bind --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 -s WASM=1 -s ASSERTIONS=1 -s INVOKE_RUN=0 -s USE_PTHREADS=1")
 	endif()
 	target_link_libraries(${TEST_RTSP_CLIENT} ${PROJECT_NAME})
 	target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
 
+  	# add execute testOnDemandRTSPServer
+	add_executable(${TEST_ONDEMAND_RTSP_SERVER} ${${TEST_PROGS}_HOME}/testOnDemandRTSPServer.cpp)
+	if ( BUILD_EMSCRIPTEN )
+		set_target_properties ( ${TEST_ONDEMAND_RTSP_SERVER} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_RTSP_CLIENT}.html -std=c++11 -O2 --bind --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 -s WASM=1 -s ASSERTIONS=1 -s INVOKE_RUN=0 -s USE_PTHREADS=1")
+	endif()
+	target_link_libraries(${TEST_ONDEMAND_RTSP_SERVER} ${PROJECT_NAME})
+	target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
 
-	# add execute testRTSPClient
-	# add_executable(${TEST_ONDEMAND_RTSP_SERVER} ${${TEST_PROGS}_HOME}/testOnDemandRTSPServer.cpp)
-	# if ("${EMSCRIPTEN_ROOT_PATH}" STREQUAL "")
-	# 	set_target_properties ( ${TEST_ONDEMAND_RTSP_SERVER} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_ONDEMAND_RTSP_SERVER}.html -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 --bind -s WASM=1  -s BINARYEN_METHOD=native-wasm -O2 --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s ASSERTIONS=1 -s INVOKE_RUN=0  -std=c++11")
+	# add execute testRelay
+	# add_executable(${TEST_ONDEMAND_RTSP_SERVER} ${${TEST_PROGS}_HOME}/testRelay.cpp)
+	# if ( BUILD_EMSCRIPTEN )
+	# 	set_target_properties ( ${TEST_ONDEMAND_RTSP_SERVER} PROPERTIES LINK_FLAGS "-o ${CMAKE_INSTALL_PREFIX}/${TEST_ONDEMAND_RTSP_SERVER}.html -s USE_FREETYPE=1 -s DISABLE_EXCEPTION_CATCHING=0 -s DEMANGLE_SUPPORT=1 -s SAFE_HEAP=1 --bind -s WASM=1  -s BINARYEN_METHOD=native-wasm -O2 --pre-js ${CMAKE_INSTALL_PREFIX}/pre-module.js --post-js ${CMAKE_INSTALL_PREFIX}/post-module.js -s ASSERTIONS=1 -s INVOKE_RUN=0 -s USE_PTHREADS=1 -std=c++11")
 	# endif()
 	# target_link_libraries(${TEST_ONDEMAND_RTSP_SERVER} ${PROJECT_NAME})
 	# target_compile_definitions(${TEST_RTSP_CLIENT} PRIVATE LIVEMEDIA_IMPORTS=1)
-
 endif ()
 
 # Disable warnings
