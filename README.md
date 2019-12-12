@@ -56,19 +56,32 @@ For Linux
 ```
 
 For Emscripten
+
+Install Emscripten from emsdk
+You will refer to install Emscripten environment from https://emscripten.org/docs/getting_started/downloads.html.
+And you have to set emsdk environment to your shell environment.
+```shell
+# export EMSCRIPTEN_PATH=/root/tools/emsdk // this is your install path of emsdk
+# source ${EMSCRIPTEN_PATH}/emsdk_env.sh
+# which emcc
+# export EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_PATH}/upstream/emscripten/
+```
+
+And you change to into the live555 source path.
+
 ```shell
 # mkdir emcc
 # cd emcc
-# export EMSCRIPTEN_ROOT_PATH=/usr/share/emscripten
 # export OUT_PATH=./install
-# cmake .. -G "Unix Makefiles" \
-  -DBUILD_EMSCRIPTEN=ON \
+# emconfigure cmake .. -G "Unix Makefiles" \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
+  -DBUILD_EXAMPLES=ON \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
-  -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_ROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake
-# make; make install  
+  -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_ROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake \
+  -DEMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}
+# emmake make; emmake make install  
 ```
 
 For Linux for arm with toolchain
