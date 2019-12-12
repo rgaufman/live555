@@ -64,7 +64,7 @@ And you have to set emsdk environment to your shell environment.
 # export EMSCRIPTEN_PATH=/root/tools/emsdk // this is your install path of emsdk
 # source ${EMSCRIPTEN_PATH}/emsdk_env.sh
 # which emcc
-# export EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_PATH}/upstream/emscripten/
+# export EMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_PATH}/upstream/emscripten
 ```
 
 And you change to into the live555 source path.
