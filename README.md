@@ -79,6 +79,7 @@ And you change to into the live555 source path.
   -DCMAKE_BUILD_TYPE=release \
   -DBUILD_EXAMPLES=ON \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
+  -DBUILD_EMSCRIPTEN=ON \
   -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_ROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake \
   -DEMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}
 # emmake make; emmake make install  
