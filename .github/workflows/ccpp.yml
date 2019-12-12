@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@master
+        with:
+        ref: master
     - name: disable git simbolic linkx
       run: git config core.symlinks false
     - name: make directorys
