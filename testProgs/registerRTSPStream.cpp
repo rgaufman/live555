@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
 // A demonstration application that uses our custom RTSP "REGISTER" command to register a stream
 // (given by "rtsp://" URL) with a RTSP client or proxy server
 // main program

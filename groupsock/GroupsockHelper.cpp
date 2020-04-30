@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "mTunnel" multicast access service
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // Implementation
 
@@ -240,15 +240,19 @@ Boolean setSocketKeepAlive(int sock) {
   }
 #endif
 
+#ifdef TCP_KEEPCNT
   int const keepalive_count = 5;
   if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, (void*)&keepalive_count, sizeof keepalive_count) < 0) {
     return False;
   }
+#endif
 
+#ifdef TCP_KEEPINTVL
   int const keepalive_interval = 20;
   if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, (void*)&keepalive_interval, sizeof keepalive_interval) < 0) {
     return False;
   }
+#endif
 #endif
 
   return True;

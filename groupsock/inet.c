@@ -424,7 +424,7 @@ u_int32_t our_random32() {
   /* Return a 32-bit random number.
      Because "our_random()" returns a 31-bit random number, we call it a second
      time, to generate the high bit.
-     (Actually, to increase the likelhood of randomness, we take the middle 16 bits of two successive calls to "our_random()")
+     (Actually, to increase the likelihood of randomness, we take the middle 16 bits of two successive calls to "our_random()")
   */
   long random_1 = our_random();
   u_int32_t random16_1 = (u_int32_t)(random_1&0x00FFFF00);

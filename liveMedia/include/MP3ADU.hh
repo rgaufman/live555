@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // 'ADU' MP3 streams (for improved loss-tolerance)
 // C++ header
 
@@ -90,8 +90,5 @@ private:
   Boolean fAreEnqueueingADU;
   class SegmentQueue* fSegments;
 };
-
-// Definitions of external C functions that implement various MP3 operations:
-extern "C" int mp3ZeroOutSideInfo(unsigned char*, unsigned, unsigned);
 
 #endif

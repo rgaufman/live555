@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 **********/
-// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
 // A test program that reads a ".mkv" (i.e., Matroska) file, demultiplexes each track
 // (video, audio, subtitles), and streams each track using RTP multicast.
 // main program
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 
   // Arrange to create a "MatroskaFile" object for the specified file.
   // (Note that this object is not created immediately, but instead via a callback.)
-  MatroskaFile::createNew(*env, inputFileName, onMatroskaFileCreation, NULL, "jpn");
+  MatroskaFile::createNew(*env, inputFileName, onMatroskaFileCreation, NULL);
 
   env->taskScheduler().doEventLoop(); // does not return
 
