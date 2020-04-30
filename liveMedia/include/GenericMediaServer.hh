@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A generic media server class, used to implement a RTSP server, and any other server that uses
 //  "ServerMediaSession" objects to describe media to be served.
 // C++ header
@@ -49,19 +49,19 @@ public:
       //  The "ServerMediaSession" object will not get deleted until all of these client sessions have closed.)
       // (To both delete the "ServerMediaSession" object *and* close all client sessions that use it,
       //  call "deleteServerMediaSession(serverMediaSession)" instead.)
-  void removeServerMediaSession(char const* streamName);
+  virtual void removeServerMediaSession(char const* streamName);
      // ditto
 
   void closeAllClientSessionsForServerMediaSession(ServerMediaSession* serverMediaSession);
       // Closes (from the server) all client sessions that are currently using this "ServerMediaSession" object.
       // Note, however, that the "ServerMediaSession" object remains accessible by new clients.
-  void closeAllClientSessionsForServerMediaSession(char const* streamName);
+  virtual void closeAllClientSessionsForServerMediaSession(char const* streamName);
      // ditto
 
   void deleteServerMediaSession(ServerMediaSession* serverMediaSession);
       // Equivalent to:
       //     "closeAllClientSessionsForServerMediaSession(serverMediaSession); removeServerMediaSession(serverMediaSession);"
-  void deleteServerMediaSession(char const* streamName);
+  virtual void deleteServerMediaSession(char const* streamName);
       // Equivalent to:
       //     "closeAllClientSessionsForServerMediaSession(streamName); removeServerMediaSession(streamName);
 
@@ -163,6 +163,7 @@ private:
   HashTable* fServerMediaSessions; // maps 'stream name' strings to "ServerMediaSession" objects
   HashTable* fClientConnections; // the "ClientConnection" objects that we're using
   HashTable* fClientSessions; // maps 'session id' strings to "ClientSession" objects
+  u_int32_t fPreviousClientSessionId;
 };
 
 // A data structure used for optional user/password authentication:

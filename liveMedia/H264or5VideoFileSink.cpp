@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // H.264 or H.265 Video File sinks
 // Implementation
 
@@ -31,12 +31,13 @@ H264or5VideoFileSink
                        char const* sPropParameterSetsStr3)
   : FileSink(env, fid, bufferSize, perFrameFileNamePrefix),
     fHaveWrittenFirstFrame(False) {
-  fSPropParameterSetsStr[0] = sPropParameterSetsStr1;
-  fSPropParameterSetsStr[1] = sPropParameterSetsStr2;
-  fSPropParameterSetsStr[2] = sPropParameterSetsStr3;
+  fSPropParameterSetsStr[0] = strDup(sPropParameterSetsStr1);
+  fSPropParameterSetsStr[1] = strDup(sPropParameterSetsStr2);
+  fSPropParameterSetsStr[2] = strDup(sPropParameterSetsStr3);
 }
 
 H264or5VideoFileSink::~H264or5VideoFileSink() {
+  for (unsigned j = 0; j < 3; ++j) delete[] (char*)fSPropParameterSetsStr[j];
 }
 
 void H264or5VideoFileSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes, struct timeval presentationTime) {
@@ -49,7 +50,7 @@ void H264or5VideoFileSink::afterGettingFrame(unsigned frameSize, unsigned numTru
       SPropRecord* sPropRecords
 	= parseSPropParameterSets(fSPropParameterSetsStr[j], numSPropRecords);
       for (unsigned i = 0; i < numSPropRecords; ++i) {
-	addData(start_code, 4, presentationTime);
+	if (sPropRecords[i].sPropLength > 0) addData(start_code, 4, presentationTime);
 	addData(sPropRecords[i].sPropBytes, sPropRecords[i].sPropLength, presentationTime);
       }
       delete[] sPropRecords;

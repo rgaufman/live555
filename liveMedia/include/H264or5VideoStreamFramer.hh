@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up a H.264 or H.265 Video Elementary Stream into NAL units.
 // C++ header
 
@@ -51,7 +51,8 @@ public:
 protected:
   H264or5VideoStreamFramer(int hNumber, // 264 or 265
 			   UsageEnvironment& env, FramedSource* inputSource,
-			   Boolean createParser, Boolean includeStartCodeInOutput);
+			   Boolean createParser,
+			   Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
       // We're an abstract base class.
   virtual ~H264or5VideoStreamFramer();
 
@@ -59,15 +60,19 @@ protected:
   void saveCopyOfSPS(u_int8_t* from, unsigned size);
   void saveCopyOfPPS(u_int8_t* from, unsigned size);
 
-  void setPresentationTime() { fPresentationTime = fNextPresentationTime; }
+  void setPresentationTime();
 
   Boolean isVPS(u_int8_t nal_unit_type);
   Boolean isSPS(u_int8_t nal_unit_type);
   Boolean isPPS(u_int8_t nal_unit_type);
   Boolean isVCL(u_int8_t nal_unit_type);
 
+protected: // redefined virtual functions
+  virtual void doGetNextFrame();
+
 protected:
   int fHNumber;
+  Boolean fIncludeStartCodeInOutput, fInsertAccessUnitDelimiters;
   u_int8_t* fLastSeenVPS;
   unsigned fLastSeenVPSSize;
   u_int8_t* fLastSeenSPS;

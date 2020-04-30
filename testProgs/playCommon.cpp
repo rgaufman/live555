@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
 // A common framework, used for the "openRTSP" and "playSIP" applications
 // Implementation
 //
@@ -613,6 +613,7 @@ int main(int argc, char** argv) {
 						   verbosityLevel, progName);
     if (handlerServerForREGISTERCommand == NULL) {
       *env << "Failed to create a server for handling incoming \"REGISTER\" commands: " << env->getResultMsg() << "\n";
+      shutdown();
     } else {
       *env << "Awaiting an incoming \"REGISTER\" command on port " << handlerServerForREGISTERCommand->serverPortNum() << "\n";
     }
@@ -1125,7 +1126,7 @@ void subsessionByeHandler(void* clientData, char const* reason) {
   *env << "Received RTCP \"BYE\"";
   if (reason != NULL) {
     *env << " (reason:\"" << reason << "\")";
-    delete[] reason;
+    delete[] (char*)reason;
   }
   *env << " on \"" << subsession->mediumName()
 	<< "/" << subsession->codecName()
@@ -1163,6 +1164,7 @@ void sessionTimerHandler(void* /*clientData*/) {
 }
 
 void periodicFileOutputTimerHandler(void* /*clientData*/) {
+  periodicFileOutputTask = NULL;
   fileOutputSecondsSoFar += fileOutputInterval;
 
   // First, close the existing output files:
@@ -1435,6 +1437,7 @@ void signalHandlerShutdown(int /*sig*/) {
 }
 
 void checkForPacketArrival(void* /*clientData*/) {
+  arrivalCheckTimerTask = NULL;
   if (!notifyOnPacketArrival) return; // we're not checking
 
   // Check each subsession, to see whether it has received data packets:
@@ -1493,6 +1496,7 @@ void checkForPacketArrival(void* /*clientData*/) {
 }
 
 void checkInterPacketGaps(void* /*clientData*/) {
+  interPacketGapCheckTimerTask = NULL;
   if (interPacketGapMaxTime == 0) return; // we're not checking
 
   // Check each subsession, counting up how many packets have been received:

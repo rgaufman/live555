@@ -34,3 +34,8 @@ cd ../proxyServer
 /bin/rm -f proxyServer.mak
 /bin/rm -f Makefile
 cat Makefile.head ../win32config Makefile.tail > proxyServer.mak
+
+cd ../hlsProxy
+/bin/rm -f hlsProxy.mak
+/bin/rm -f Makefile
+cat Makefile.head ../win32config Makefile.tail > hlsProxy.mak

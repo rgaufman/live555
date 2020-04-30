@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -28,6 +28,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 // Helper routines and data structures, used to implement
 // sending/receiving RTP/RTCP over a TCP socket:
+
+class tcpStreamRecord {
+  public:
+  tcpStreamRecord(int streamSocketNum, unsigned char streamChannelId,
+                  tcpStreamRecord* next);
+  virtual ~tcpStreamRecord();
+
+public:
+  tcpStreamRecord* fNext;
+  int fStreamSocketNum;
+  unsigned char fStreamChannelId;
+};
 
 // Reading RTP-over-TCP is implemented using two levels of hash tables.
 // The top-level hash table maps TCP socket numbers to a

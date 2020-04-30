@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A generic media server class, used to implement a RTSP server, and any other server that uses
 //  "ServerMediaSession" objects to describe media to be served.
 // Implementation
@@ -55,7 +55,7 @@ void GenericMediaServer::removeServerMediaSession(ServerMediaSession* serverMedi
 }
 
 void GenericMediaServer::removeServerMediaSession(char const* streamName) {
-  removeServerMediaSession((ServerMediaSession*)(fServerMediaSessions->Lookup(streamName)));
+  removeServerMediaSession(GenericMediaServer::lookupServerMediaSession(streamName));
 }
 
 void GenericMediaServer::closeAllClientSessionsForServerMediaSession(ServerMediaSession* serverMediaSession) {
@@ -73,7 +73,7 @@ void GenericMediaServer::closeAllClientSessionsForServerMediaSession(ServerMedia
 }
 
 void GenericMediaServer::closeAllClientSessionsForServerMediaSession(char const* streamName) {
-  closeAllClientSessionsForServerMediaSession((ServerMediaSession*)(fServerMediaSessions->Lookup(streamName)));
+  closeAllClientSessionsForServerMediaSession(lookupServerMediaSession(streamName));
 }
 
 void GenericMediaServer::deleteServerMediaSession(ServerMediaSession* serverMediaSession) {
@@ -84,7 +84,7 @@ void GenericMediaServer::deleteServerMediaSession(ServerMediaSession* serverMedi
 }
 
 void GenericMediaServer::deleteServerMediaSession(char const* streamName) {
-  deleteServerMediaSession((ServerMediaSession*)(fServerMediaSessions->Lookup(streamName)));
+  deleteServerMediaSession(lookupServerMediaSession(streamName));
 }
 
 GenericMediaServer
@@ -94,7 +94,9 @@ GenericMediaServer
     fServerSocket(ourSocket), fServerPort(ourPort), fReclamationSeconds(reclamationSeconds),
     fServerMediaSessions(HashTable::create(STRING_HASH_KEYS)),
     fClientConnections(HashTable::create(ONE_WORD_HASH_KEYS)),
-    fClientSessions(HashTable::create(STRING_HASH_KEYS)) {
+    fClientSessions(HashTable::create(STRING_HASH_KEYS)),
+    fPreviousClientSessionId(0)
+{
   ignoreSigPipeOnSocket(fServerSocket); // so that clients on the same host that are killed don't also kill us
   
   // Arrange to handle connections from others:
@@ -308,6 +310,7 @@ void GenericMediaServer::ClientSession::livenessTimeoutTask(ClientSession* clien
   fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\") has timed out (due to inactivity)\n",
 	  clientSession->fOurSessionId, streamName);
 #endif
+  clientSession->fLivenessCheckTask = NULL;
   delete clientSession;
 }
 
@@ -317,11 +320,14 @@ GenericMediaServer::ClientSession* GenericMediaServer::createNewClientSessionWit
 
   // Choose a random (unused) 32-bit integer for the session id
   // (it will be encoded as a 8-digit hex number).  (We avoid choosing session id 0,
-  // because that has a special use by some servers.)
+  // because that has a special use by some servers.  Similarly, we avoid choosing the same
+  // session id twice in a row.)
   do {
     sessionId = (u_int32_t)our_random32();
     snprintf(sessionIdStr, sizeof sessionIdStr, "%08X", sessionId);
-  } while (sessionId == 0 || lookupClientSession(sessionIdStr) != NULL);
+  } while (sessionId == 0 || sessionId == fPreviousClientSessionId
+	   || lookupClientSession(sessionIdStr) != NULL);
+  fPreviousClientSessionId = sessionId;
 
   ClientSession* clientSession = createNewClientSession(sessionId);
   if (clientSession != NULL) fClientSessions->Add(sessionIdStr, clientSession);
@@ -384,7 +390,8 @@ UserAuthenticationDatabase::~UserAuthenticationDatabase() {
 
 void UserAuthenticationDatabase::addUserRecord(char const* username,
 					       char const* password) {
-  fTable->Add(username, (void*)(strDup(password)));
+  char* oldPassword = (char*)fTable->Add(username, (void*)(strDup(password)));
+  delete[] oldPassword; // if any
 }
 
 void UserAuthenticationDatabase::removeUserRecord(char const* username) {

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A simplified version of "H264or5VideoStreamFramer" that takes only complete,
 // discrete frames (rather than an arbitrary byte stream) as input.
 // This avoids the parsing and data copying overhead of the full
@@ -31,7 +31,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class H264or5VideoStreamDiscreteFramer: public H264or5VideoStreamFramer {
 protected:
   H264or5VideoStreamDiscreteFramer(int hNumber, UsageEnvironment& env, FramedSource* inputSource,
-				   Boolean includeStartCodeInOutput);
+				   Boolean includeStartCodeInOutput,
+				   Boolean insertAccessUnitDelimiters);
       // we're an abstract base class
   virtual ~H264or5VideoStreamDiscreteFramer();
 
@@ -50,9 +51,6 @@ protected:
                           unsigned durationInMicroseconds);
 
   virtual Boolean nalUnitEndsAccessUnit(u_int8_t nal_unit_type);
-
-private:
-  Boolean fIncludeStartCodeInOutput;
 };
 
 #endif

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // Inclusion of header files representing the interface
 // for the entire library
 //
@@ -103,7 +103,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "WAVAudioFileSource.hh"
 #include "StreamReplicator.hh"
 #include "RTSPRegisterSender.hh"
-#include "RTSPServerSupportingHTTPStreaming.hh"
 #include "RTSPClient.hh"
 #include "SIPClient.hh"
 #include "QuickTimeFileSink.hh"
@@ -118,7 +117,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AMRAudioFileSource.hh"
 #include "AMRAudioRTPSink.hh"
 #include "T140TextRTPSink.hh"
-#include "TCPStreamSink.hh"
 #include "MP3AudioFileServerMediaSubsession.hh"
 #include "MPEG1or2VideoFileServerMediaSubsession.hh"
 #include "MPEG1or2FileServerDemux.hh"
@@ -130,6 +128,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportUDPServerMediaSubsession.hh"
 #include "MatroskaFileServerDemux.hh"
 #include "OggFileServerDemux.hh"
+#include "MPEG2TransportStreamDemux.hh"
 #include "ProxyServerMediaSession.hh"
+#include "HLSSegmenter.hh"
 
 #endif

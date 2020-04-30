@@ -9,7 +9,7 @@ DEVELOPER_PATH = /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimu
 TOOL_PATH = $(DEVELOPER_PATH)/usr/bin
 SDK_PATH = $(DEVELOPER_PATH)/SDKs
 SDK = $(SDK_PATH)/iPhoneSimulator$(IOS_VERSION).sdk
-COMPILE_OPTS =          $(INCLUDES) -I. $(EXTRA_LDFLAGS) -DBSD=1 -O2 -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -miphoneos-version-min=$(MIN_IOS_VERSION) -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -fPIC -arch i386 --sysroot=$(SDK) -isysroot $(SDK)
+COMPILE_OPTS =          $(INCLUDES) -I/usr/local/include -I. $(EXTRA_LDFLAGS) -DBSD=1 -O2 -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -miphoneos-version-min=$(MIN_IOS_VERSION) -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -fPIC -arch i386 --sysroot=$(SDK) -isysroot $(SDK)
 C =                     c
 C_COMPILER =            /usr/bin/xcrun clang
 C_FLAGS =               $(COMPILE_OPTS)
@@ -23,6 +23,6 @@ CONSOLE_LINK_OPTS =     $(LINK_OPTS)
 LIBRARY_LINK =          /usr/bin/xcrun libtool -static -o 
 LIBRARY_LINK_OPTS =
 LIB_SUFFIX =            a
-LIBS_FOR_CONSOLE_APPLICATION =
+LIBS_FOR_CONSOLE_APPLICATION = -lssl -lcrypto
 LIBS_FOR_GUI_APPLICATION =
 EXE =

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A class for generating MPEG-2 Transport Stream from one or more input
 // Elementary Stream data sources
 // C++ header
@@ -29,10 +29,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2Demux.hh" // for SCR
 #endif
 
-#define PID_TABLE_SIZE 256
+#define PID_TABLE_SIZE 0x2000 // 2^13
 
 class MPEG2TransportStreamMultiplexor: public FramedSource {
 public:
+  typedef void (onEndOfSegmentFunc)(void* clientData, double segmentDuration);
+  void setTimedSegmentation(unsigned segmentationDuration,
+			    onEndOfSegmentFunc* onEndOfSegmentFunc = NULL,
+			    void* onEndOfSegmentClientData = NULL);
+      // Specifies that PAT and PMT packets should be output every "segmentationDuration" seconds.
+      // (If "segmentationDuration" is 0 (the default value), then PAT and PMT packets are output
+      // at a preset frequency.)
+      // The optional function "onEndOfSegmentFunc" is called after each segment is output.
+  double currentSegmentDuration() const { return fCurrentSegmentDuration; }
+      // Valid only if "setTimedSegmentation()" was previously called with "segmentationDuration" > 0
+
   Boolean canDeliverNewFrameImmediately() const { return fInputBufferBytesUsed < fInputBufferSize; }
       // Can be used by a downstream reader to test whether the next call to "doGetNextFrame()"
       // will deliver data immediately).
@@ -56,10 +67,11 @@ protected:
 
 private:
   // Redefined virtual functions:
+  virtual Boolean isMPEG2TransportStreamMultiplexor() const;
   virtual void doGetNextFrame();
 
 private:
-  void deliverDataToClient(u_int8_t pid, unsigned char* buffer, unsigned bufferSize,
+  void deliverDataToClient(u_int16_t pid, unsigned char* buffer, unsigned bufferSize,
 			   unsigned& startPositionInBuffer);
 
   void deliverPATPacket();
@@ -79,12 +91,25 @@ private:
     unsigned counter;
     u_int8_t streamType; // for use in Program Maps
   } fPIDState[PID_TABLE_SIZE];
-  u_int8_t fPCR_PID, fCurrentPID;
-      // Note: We map 8-bit stream_ids directly to PIDs
+  u_int16_t fPCR_PID, fCurrentPID; // only the low 13 bits are used
   MPEG1or2Demux::SCR fPCR;
   unsigned char* fInputBuffer;
   unsigned fInputBufferSize, fInputBufferBytesUsed;
   Boolean fIsFirstAdaptationField;
+  unsigned fSegmentationDuration;
+      // if nonzero, this is the number of seconds between successive 'segments'.  Each 'segment'
+      // begins with a PAT, followed by a PMT.
+      // if zero (the default value), then the frequency of PATs and PMTs depends on the constants
+      // PAT_PERIOD_IF_UNTIMED and PMT_PERIOD_IF_UNTIMED, defined in the .cpp file.
+  Boolean segmentationIsTimed() const { return fSegmentationDuration > 0; }
+  u_int8_t fSegmentationIndication;
+      // used only if fSegmentationDuration > 0:
+      // 1 if a segment has just ended and the next packet is to be a PAT
+      // 2 if a segment has just ended and the following PAT has been sent; a PMT is next
+      // 0 otherwise
+  double fCurrentSegmentDuration, fPreviousPTS; // used only if fSegmentationDuration > 0
+  onEndOfSegmentFunc* fOnEndOfSegmentFunc; // used only if fSegmentationDuration > 0
+  void* fOnEndOfSegmentClientData; // ditto
 };
 
 

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // A generic SIP client
 // Implementation
 
@@ -339,6 +339,7 @@ unsigned const timerDFires = 0xDDDDDDDD;
 
 void SIPClient::timerAHandler(void* clientData) {
   SIPClient* client = (SIPClient*)clientData;
+  client->fTimerA = NULL;
   if (client->fVerbosityLevel >= 1) {
     client->envir() << "RETRANSMISSION " << ++client->fTimerACount
 		    << ", after " << client->fTimerALen/1000000.0
@@ -349,6 +350,7 @@ void SIPClient::timerAHandler(void* clientData) {
 
 void SIPClient::timerBHandler(void* clientData) {
   SIPClient* client = (SIPClient*)clientData;
+  client->fTimerB = NULL;
   if (client->fVerbosityLevel >= 1) {
     client->envir() << "RETRANSMISSION TIMEOUT, after "
 		    << 64*client->fT1/1000000.0 << " seconds\n";
@@ -359,6 +361,7 @@ void SIPClient::timerBHandler(void* clientData) {
 
 void SIPClient::timerDHandler(void* clientData) {
   SIPClient* client = (SIPClient*)clientData;
+  client->fTimerD = NULL;
   if (client->fVerbosityLevel >= 1) {
     client->envir() << "TIMER D EXPIRED\n";
   }

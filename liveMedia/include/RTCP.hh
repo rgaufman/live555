@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -26,6 +26,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 #ifndef _RTP_SOURCE_HH
 #include "RTPSource.hh"
+#endif
+#ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
+#include "SRTPCryptographicContext.hh"
 #endif
 
 class SDESItem {
@@ -54,7 +57,8 @@ public:
 				 unsigned char const* cname,
 				 RTPSink* sink,
 				 RTPSource* source,
-				 Boolean isSSMSource = False);
+				 Boolean isSSMTransmitter = False,
+				 SRTPCryptographicContext* crypto = NULL);
 
   static Boolean lookupByName(UsageEnvironment& env, char const* instanceName,
                               RTCPInstance*& resultInstance);
@@ -126,7 +130,8 @@ protected:
   RTCPInstance(UsageEnvironment& env, Groupsock* RTPgs, unsigned totSessionBW,
 	       unsigned char const* cname,
 	       RTPSink* sink, RTPSource* source,
-	       Boolean isSSMSource);
+	       Boolean isSSMTransmitter,
+	       SRTPCryptographicContext* crypto);
       // called only by createNew()
   virtual ~RTCPInstance();
 
@@ -168,7 +173,8 @@ private:
   unsigned fTotSessionBW;
   RTPSink* fSink;
   RTPSource* fSource;
-  Boolean fIsSSMSource;
+  Boolean fIsSSMTransmitter;
+  SRTPCryptographicContext* fCrypto;
 
   SDESItem fCNAME;
   RTCPMemberDatabase* fKnownMembers;
