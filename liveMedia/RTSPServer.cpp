@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // Implementation
 
@@ -740,9 +740,6 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	// If the "OPTIONS" command included a "Session:" id for a session that doesn't exist,
 	// then treat this as an error:
 	if (requestIncludedSessionId && clientSession == NULL) {
-#ifdef DEBUG
-	  fprintf(stderr, "Calling handleCmd_sessionNotFound() (case 1)\n");
-#endif
 	  handleCmd_sessionNotFound();
 	} else {
 	  // Normal case:
@@ -786,9 +783,6 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	  clientSession->handleCmd_SETUP(this, urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
 	  playAfterSetup = clientSession->fStreamAfterSETUP;
 	} else if (areAuthenticated) {
-#ifdef DEBUG
-	  fprintf(stderr, "Calling handleCmd_sessionNotFound() (case 2)\n");
-#endif
 	  handleCmd_sessionNotFound();
 	}
       } else if (strcmp(cmdName, "TEARDOWN") == 0
@@ -799,9 +793,6 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	if (clientSession != NULL) {
 	  clientSession->handleCmd_withinSession(this, cmdName, urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
 	} else {
-#ifdef DEBUG
-	  fprintf(stderr, "Calling handleCmd_sessionNotFound() (case 3)\n");
-#endif
 	  handleCmd_sessionNotFound();
 	}
       } else if (strcmp(cmdName, "REGISTER") == 0 || strcmp(cmdName, "DEREGISTER") == 0) {
