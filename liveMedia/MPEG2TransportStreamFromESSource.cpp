@@ -220,7 +220,7 @@ Boolean InputESSourceRecord::deliverBufferToClient() {
 
   // Do the delivery:
   fParent.handleNewBuffer(fInputBuffer, fInputBufferBytesAvailable,
-			 fMPEGVersion, fSCR, fPID);
+			  fMPEGVersion, fSCR, fPID);
 
   return True;
 }

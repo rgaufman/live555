@@ -217,8 +217,19 @@ Boolean parseRangeParam(char const* paramStr,
   startTimeIsNow = False; // by default
   double start, end;
   int numCharsMatched1 = 0, numCharsMatched2 = 0, numCharsMatched3 = 0, numCharsMatched4 = 0;
+  int startHour = 0, startMin = 0, endHour = 0, endMin = 0;
+  double startSec = 0.0, endSec = 0.0;
   Locale l("C", Numeric);
-  if (sscanf(paramStr, "npt = %lf - %lf", &start, &end) == 2) {
+  if (sscanf(paramStr, "npt = %d:%d:%lf - %d:%d:%lf", &startHour, &startMin, &startSec, &endHour, &endMin, &endSec) == 6) {
+    rangeStart = startHour*3600 + startMin*60 + startSec;
+    rangeEnd = endHour*3600 + endMin*60 + endSec;
+  } else if (sscanf(paramStr, "npt =%lf - %d:%d:%lf", &start, &endHour, &endMin, &endSec) == 4) {
+    rangeStart = start;
+    rangeEnd = endHour*3600 + endMin*60 + endSec;
+  } else if (sscanf(paramStr, "npt = %d:%d:%lf -", &startHour, &startMin, &startSec) == 3) {
+    rangeStart = startHour*3600 + startMin*60 + startSec;
+    rangeEnd = 0.0;
+  } else if (sscanf(paramStr, "npt = %lf - %lf", &start, &end) == 2) {
     rangeStart = start;
     rangeEnd = end;
   } else if (sscanf(paramStr, "npt = %n%lf -", &numCharsMatched1, &start) == 1) {

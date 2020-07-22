@@ -2,7 +2,6 @@
 
 PROXY_SERVER = live555ProxyServer$(EXE)
 
-PREFIX = /usr/local
 ALL = $(PROXY_SERVER)
 all: $(ALL)
 

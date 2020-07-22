@@ -250,7 +250,8 @@ void MPEG2TransportStreamMultiplexor
 	    pts += fPCR.remainingBits/90000.0;
 	    pts += fPCR.extension/27000000.0;
 
-	    double lastSubSegmentDuration = fPreviousPTS == 0.0 ? 0.0 : pts - fPreviousPTS;
+	    double lastSubSegmentDuration
+	      = (fPreviousPTS == 0.0) || (pts < fPreviousPTS) ? 0.0 : pts - fPreviousPTS;
 	    fCurrentSegmentDuration += lastSubSegmentDuration;
 
 	    // Check whether we need to segment the stream now:

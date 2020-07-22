@@ -54,7 +54,7 @@ RTPSource::RTPSource(UsageEnvironment& env, Groupsock* RTPgs,
   : FramedSource(env),
     fRTPInterface(this, RTPgs),
     fCurPacketHasBeenSynchronizedUsingRTCP(False), fLastReceivedSSRC(0),
-    fRTCPInstanceForMultiplexedRTCPPackets(NULL),
+    fRTCPInstanceForMultiplexedRTCPPackets(NULL), fCrypto(NULL),
     fRTPPayloadFormat(rtpPayloadFormat), fTimestampFrequency(rtpTimestampFrequency),
     fSSRC(our_random32()), fEnableRTCPReports(True) {
   fReceptionStatsDB = new RTPReceptionStatsDB();

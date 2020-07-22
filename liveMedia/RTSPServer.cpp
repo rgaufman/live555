@@ -1734,14 +1734,21 @@ void RTSPServer::RTSPClientSession
   
   // Create the "Range:" header that we'll send back in our response.
   // (Note that we do this after seeking, in case the seeking operation changed the range start time.)
+  char* rangeHeader;
   if (absStart != NULL) {
     // We're seeking by 'absolute' time:
+    char* rangeHeaderBuf;
+    
     if (absEnd == NULL) {
-      sprintf(buf, "Range: clock=%s-\r\n", absStart);
+      rangeHeaderBuf = new char[100 + strlen(absStart)]; // ample space
+      sprintf(rangeHeaderBuf, "Range: clock=%s-\r\n", absStart);
     } else {
-      sprintf(buf, "Range: clock=%s-%s\r\n", absStart, absEnd);
+      rangeHeaderBuf = new char[100 + strlen(absStart) + strlen(absEnd)]; // ample space
+      sprintf(rangeHeaderBuf, "Range: clock=%s-%s\r\n", absStart, absEnd);
     }
     delete[] absStart; delete[] absEnd;
+    rangeHeader = strDup(rangeHeaderBuf);
+    delete[] rangeHeaderBuf;
   } else {
     // We're seeking by relative (NPT) time:
     if (!sawRangeHeader || startTimeIsNow) {
@@ -1767,8 +1774,8 @@ void RTSPServer::RTSPClientSession
     } else {
       sprintf(buf, "Range: npt=%.3f-%.3f\r\n", rangeStart, rangeEnd);
     }
+    rangeHeader = strDup(buf);
   }
-  char* rangeHeader = strDup(buf);
   
   // Now, start streaming:
   for (i = 0; i < fNumStreamStates; ++i) {

@@ -21,6 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoStreamFramer.hh"
 #include "MPEGVideoStreamParser.hh"
 #include "BitVector.hh"
+#include <GroupsockHelper.hh> // for "gettimeofday()"
 
 ////////// H264or5VideoStreamParser definition //////////
 
@@ -85,7 +86,6 @@ H264or5VideoStreamFramer
   fParser = createParser
     ? new H264or5VideoStreamParser(hNumber, this, inputSource, includeStartCodeInOutput)
     : NULL;
-  fNextPresentationTime = fPresentationTimeBase;
   fFrameRate = 25.0; // We assume a frame rate of 25 fps, unless we learn otherwise (from parsing a VPS or SPS NAL unit)
 }
 
@@ -124,6 +124,15 @@ void H264or5VideoStreamFramer::saveCopyOfPPS(u_int8_t* from, unsigned size) {
   memmove(fLastSeenPPS, from, size);
 
   fLastSeenPPSSize = size;
+}
+
+void H264or5VideoStreamFramer::setPresentationTime() {
+  if (fPresentationTimeBase.tv_sec == 0 && fPresentationTimeBase.tv_usec == 0) {
+    // Set to the current time:
+    gettimeofday(&fPresentationTimeBase, NULL);
+    fNextPresentationTime = fPresentationTimeBase;
+  }
+  fPresentationTime = fNextPresentationTime;
 }
 
 Boolean H264or5VideoStreamFramer::isVPS(u_int8_t nal_unit_type) {

@@ -4,7 +4,7 @@
 #  Watcom 10.6
 #  TCP/IP 5.0
 #
-COMPILE_OPTS =		$(INCLUDES) -I. -D_QNX4 -DBSD -DSOCKLEN_T=uint32_t -I/usr/watcom/10.6/usr/include
+COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -D_QNX4 -DBSD -DSOCKLEN_T=uint32_t -I/usr/watcom/10.6/usr/include
 C =				c
 C_COMPILER =		cc32
 C_FLAGS =		$(COMPILE_OPTS)
@@ -18,6 +18,6 @@ CONSOLE_LINK_OPTS =	$(LINK_OPTS)
 LIBRARY_LINK =		wlib -n -b -c
 LIBRARY_LINK_OPTS =	$(LINK_OPTS)
 LIB_SUFFIX =			lib
-LIBS_FOR_CONSOLE_APPLICATION = -lsocket
+LIBS_FOR_CONSOLE_APPLICATION = -lsocket -lssl -lcrypto
 LIBS_FOR_GUI_APPLICATION = $(LIBS_FOR_CONSOLE_APPLICATION)
 EXE =

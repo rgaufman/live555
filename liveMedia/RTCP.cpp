@@ -116,17 +116,18 @@ static double dTimeNow() {
     return (double) (timeNow.tv_sec + timeNow.tv_usec/1000000.0);
 }
 
-static unsigned const maxRTCPPacketSize = 1456;
-	// bytes (1500, minus some allowance for IP, UDP, UMTP headers)
+static unsigned const maxRTCPPacketSize = 1438;
+	// bytes (1500, minus some allowance for IP, UDP, UMTP headers; SRTCP trailers)
 static unsigned const preferredRTCPPacketSize = 1000; // bytes
 
 RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
 			   unsigned totSessionBW,
 			   unsigned char const* cname,
 			   RTPSink* sink, RTPSource* source,
-			   Boolean isSSMSource)
+			   Boolean isSSMTransmitter,
+			   SRTPCryptographicContext* crypto)
   : Medium(env), fRTCPInterface(this, RTCPgs), fTotSessionBW(totSessionBW),
-    fSink(sink), fSource(source), fIsSSMSource(isSSMSource),
+    fSink(sink), fSource(source), fIsSSMTransmitter(isSSMTransmitter), fCrypto(crypto),
     fCNAME(RTCP_SDES_CNAME, cname), fOutgoingReportCount(1),
     fAveRTCPSize(0), fIsInitial(1), fPrevNumMembers(0),
     fLastSentSize(0), fLastReceivedSize(0), fLastReceivedSSRC(0),
@@ -145,7 +146,7 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
     fTotSessionBW = 1;
   }
 
-  if (isSSMSource) RTCPgs->multicastSendOnly(); // don't receive multicast
+  if (isSSMTransmitter) RTCPgs->multicastSendOnly(); // don't receive multicast
 
   double timeNow = dTimeNow();
   fPrevReportTime = fNextReportTime = timeNow;
@@ -155,7 +156,7 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
   if (fKnownMembers == NULL || fInBuf == NULL) return;
   fNumBytesAlreadyRead = 0;
 
-  fOutBuf = new OutPacketBuffer(preferredRTCPPacketSize, maxRTCPPacketSize, maxRTCPPacketSize);
+  fOutBuf = new OutPacketBuffer(preferredRTCPPacketSize, maxRTCPPacketSize, 1500);
   if (fOutBuf == NULL) return;
 
   if (fSource != NULL && fSource->RTPgs() == RTCPgs) {
@@ -246,9 +247,10 @@ RTCPInstance* RTCPInstance::createNew(UsageEnvironment& env, Groupsock* RTCPgs,
 				      unsigned totSessionBW,
 				      unsigned char const* cname,
 				      RTPSink* sink, RTPSource* source,
-				      Boolean isSSMSource) {
+				      Boolean isSSMTransmitter,
+				      SRTPCryptographicContext* crypt) {
   return new RTCPInstance(env, RTCPgs, totSessionBW, cname, sink, source,
-			  isSSMSource);
+			  isSSMTransmitter, crypt);
 }
 
 Boolean RTCPInstance::lookupByName(UsageEnvironment& env,
@@ -467,9 +469,9 @@ void RTCPInstance::incomingReportHandler1() {
       }
     }
 
-    if (fIsSSMSource && !packetWasFromOurHost) {
-      // This packet is assumed to have been received via unicast (because we're a SSM source,
-      // and SSM receivers send back RTCP "RR" packets via unicast).
+    if (fIsSSMTransmitter && !packetWasFromOurHost) {
+      // This packet is assumed to have been received via unicast (because we're
+      // a SSM transmitter, and SSM receivers send back RTCP "RR" packets via unicast).
       // 'Reflect' the packet by resending it to the multicast group, so that any other receivers
       // can also get to see it.
 
@@ -499,6 +501,12 @@ void RTCPInstance
 ::processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddressAndPort,
 			int tcpSocketNum, unsigned char tcpStreamChannelId) {
   do {
+    if (fCrypto != NULL) { // The packet is assumed to be SRTCP.  Verify/decrypt it first:
+      unsigned newPacketSize;
+      if (!fCrypto->processIncomingSRTCPPacket(fInBuf, packetSize, newPacketSize)) break;
+      packetSize = newPacketSize;
+    }
+
     Boolean callByeHandler = False;
     char* reason = NULL; // by default, unless/until a BYE packet with a 'reason' arrives
     unsigned char* pkt = fInBuf;
@@ -943,6 +951,11 @@ void RTCPInstance::sendBuiltPacket() {
   fprintf(stderr, "\n");
 #endif
   unsigned reportSize = fOutBuf->curPacketSize();
+  if (fCrypto != NULL) { // Encrypt/tag the data before sending it:
+    unsigned newReportSize;
+    if (!fCrypto->processOutgoingSRTCPPacket(fOutBuf->packet(), reportSize, newReportSize)) return;
+    reportSize = newReportSize;
+  }
   fRTCPInterface.sendPacket(fOutBuf->packet(), reportSize);
   fOutBuf->resetOffset();
 

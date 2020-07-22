@@ -89,7 +89,7 @@ void HLSSegmenter::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBy
     fprintf(stderr, "HLSSegmenter::afterGettingFrame(frameSize %d, numTruncatedBytes %d)\n", frameSize, numTruncatedBytes);
   }
 
-  // Write the data to out output segment file:
+  // Write the data to our output segment file:
   fwrite(fOutputFileBuffer, 1, frameSize, fOutFid);
 
   // Then try getting the next frame:

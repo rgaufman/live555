@@ -240,15 +240,19 @@ Boolean setSocketKeepAlive(int sock) {
   }
 #endif
 
+#ifdef TCP_KEEPCNT
   int const keepalive_count = 5;
   if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, (void*)&keepalive_count, sizeof keepalive_count) < 0) {
     return False;
   }
+#endif
 
+#ifdef TCP_KEEPINTVL
   int const keepalive_interval = 20;
   if (setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, (void*)&keepalive_interval, sizeof keepalive_interval) < 0) {
     return False;
   }
+#endif
 #endif
 
   return True;

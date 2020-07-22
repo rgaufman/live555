@@ -29,6 +29,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Helper routines and data structures, used to implement
 // sending/receiving RTP/RTCP over a TCP socket:
 
+class tcpStreamRecord {
+  public:
+  tcpStreamRecord(int streamSocketNum, unsigned char streamChannelId,
+                  tcpStreamRecord* next);
+  virtual ~tcpStreamRecord();
+
+public:
+  tcpStreamRecord* fNext;
+  int fStreamSocketNum;
+  unsigned char fStreamChannelId;
+};
+
 // Reading RTP-over-TCP is implemented using two levels of hash tables.
 // The top-level hash table maps TCP socket numbers to a
 // "SocketDescriptor" that contains a hash table for each of the

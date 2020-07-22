@@ -50,8 +50,18 @@ void H264or5VideoStreamDiscreteFramer::doGetNextFrame() {
     // Deliver an "access_unit_delimiter" NAL unit instead:
     unsigned const audNALSize = fHNumber == 264 ? 2 : 3;
 
-    if (audNALSize > fMaxSize) { // there's no space
-      fNumTruncatedBytes = audNALSize - fMaxSize;
+    // If we have VPS,SPS,PPS NAL units, then append those as well:
+    unsigned nalDataSize
+      = audNALSize + fLastSeenVPSSize + fLastSeenSPSSize + fLastSeenPPSSize;
+    if (fIncludeStartCodeInOutput) {
+      // Add the size of the 4-byte start codes:
+      if (fLastSeenVPSSize > 0) nalDataSize += 4;
+      if (fLastSeenSPSSize > 0) nalDataSize += 4;
+      if (fLastSeenPPSSize > 0) nalDataSize += 4;
+    }
+
+    if (nalDataSize > fMaxSize) { // there's no space
+      fNumTruncatedBytes = nalDataSize - fMaxSize;
       handleClosure();
       return;
     }
@@ -65,7 +75,21 @@ void H264or5VideoStreamDiscreteFramer::doGetNextFrame() {
       *fTo++ = 0x50; // "pic_type" (2); "rbsp_trailing_bits()" (Is this correct??)
     }
 
-    fFrameSize = (fIncludeStartCodeInOutput ? 4: 0) + audNALSize;
+    if (fLastSeenVPSSize > 0) {
+      if (fIncludeStartCodeInOutput) { *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x01; }
+      memmove(fTo, fLastSeenVPS, fLastSeenVPSSize); fTo += fLastSeenVPSSize;
+    }
+    if (fLastSeenSPSSize > 0) {
+      if (fIncludeStartCodeInOutput) { *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x01; }
+      memmove(fTo, fLastSeenSPS, fLastSeenSPSSize); fTo += fLastSeenSPSSize;
+    }
+    if (fLastSeenPPSSize > 0) {
+      if (fIncludeStartCodeInOutput) { *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x00; *fTo++ = 0x01; }
+      memmove(fTo, fLastSeenPPS, fLastSeenPPSSize); fTo += fLastSeenPPSSize;
+    }
+
+    fFrameSize = (fIncludeStartCodeInOutput ? 4: 0) + nalDataSize;
+
     pictureEndMarker() = False; // for next time
     afterGetting(this); // complete delivery to the downstream object
   } else {

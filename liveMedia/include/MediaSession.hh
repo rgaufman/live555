@@ -54,6 +54,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _FRAMED_FILTER_HH
 #include "FramedFilter.hh"
 #endif
+#ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
+#include "SRTPCryptographicContext.hh"
+#endif
 
 class MediaSubsession; // forward
 
@@ -91,6 +94,9 @@ public:
       // Initiates the first subsession with the specified MIME type
       // Returns the resulting subsession, or 'multi source' (not both)
 
+  MIKEYState* getMIKEYState() const { return fMIKEYState; }
+  SRTPCryptographicContext* getCrypto() const { return fCrypto; }
+
 protected: // redefined virtual functions
   virtual Boolean isMediaSession() const;
 
@@ -110,6 +116,7 @@ protected:
   Boolean parseSDPAttribute_control(char const* sdpLine);
   Boolean parseSDPAttribute_range(char const* sdpLine);
   Boolean parseSDPAttribute_source_filter(char const* sdpLine);
+  Boolean parseSDPAttribute_key_mgmt(char const* sdpLine);
 
   static char* lookupPayloadFormat(unsigned char rtpPayloadType,
 				   unsigned& rtpTimestampFrequency,
@@ -138,6 +145,10 @@ protected:
   char* fSessionName; // holds s=<session name> value
   char* fSessionDescription; // holds i=<session description> value
   char* fControlPath; // holds optional a=control: string
+
+  // Optional key management and crypto state:
+  MIKEYState* fMIKEYState;
+  SRTPCryptographicContext* fCrypto;
 };
 
 
@@ -167,6 +178,7 @@ public:
   char const* codecName() const { return fCodecName; }
   char const* protocolName() const { return fProtocolName; }
   char const* controlPath() const { return fControlPath; }
+
   Boolean isSSM() const { return fSourceFilterAddr.s_addr != 0; }
 
   unsigned short videoWidth() const { return fVideoWidth; }
@@ -268,6 +280,9 @@ public:
   // synchronized via RTCP.
   // (Note: If this function returns a negative number, then the result should be ignored by the caller.)
 
+  MIKEYState* getMIKEYState() const { return fMIKEYState != NULL ? fMIKEYState : fParent.getMIKEYState(); }
+  SRTPCryptographicContext* getCrypto() const { return fCrypto != NULL ? fCrypto : fParent.getCrypto(); }
+
 protected:
   friend class MediaSession;
   friend class MediaSubsessionIterator;
@@ -289,6 +304,7 @@ protected:
   Boolean parseSDPAttribute_source_filter(char const* sdpLine);
   Boolean parseSDPAttribute_x_dimensions(char const* sdpLine);
   Boolean parseSDPAttribute_framerate(char const* sdpLine);
+  Boolean parseSDPAttribute_key_mgmt(char const* sdpLine);
 
   virtual Boolean createSourceObjects(int useSpecialRTPoffset);
     // create "fRTPSource" and "fReadSource" member objects, after we've been initialized via SDP
@@ -310,6 +326,11 @@ protected:
   unsigned fRTPTimestampFrequency;
   Boolean fMultiplexRTCPWithRTP;
   char* fControlPath; // holds optional a=control: string
+
+  // Optional key management and crypto state:
+  MIKEYState* fMIKEYState;
+  SRTPCryptographicContext* fCrypto;
+
   struct in_addr fSourceFilterAddr; // used for SSM
   unsigned fBandwidth; // in kilobits-per-second, from b= line
 

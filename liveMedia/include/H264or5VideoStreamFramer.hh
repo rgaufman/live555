@@ -60,7 +60,7 @@ protected:
   void saveCopyOfSPS(u_int8_t* from, unsigned size);
   void saveCopyOfPPS(u_int8_t* from, unsigned size);
 
-  void setPresentationTime() { fPresentationTime = fNextPresentationTime; }
+  void setPresentationTime();
 
   Boolean isVPS(u_int8_t nal_unit_type);
   Boolean isSPS(u_int8_t nal_unit_type);

@@ -23,5 +23,8 @@ type Makefile.head ..\win32config Makefile.tail > mediaServer.mak
 cd ../proxyServer
 del /Q proxyServer.mak
 type Makefile.head ..\win32config Makefile.tail > proxyServer.mak
+cd ../hlsProxy
+del /Q hlsProxy.mak
+type Makefile.head ..\win32config Makefile.tail > hlsProxy.mak
 
 ENDLOCAL

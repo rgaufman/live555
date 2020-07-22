@@ -143,6 +143,7 @@ void T140IdleFilter::handleIdleTimeout(void* clientData) {
 }
 
 void T140IdleFilter::handleIdleTimeout() {
+  fIdleTimerTask = NULL;
   // No data has arrived from the upstream source within our specified 'idle period' (after data was requested from downstream).
   // Send an empty 'idle' frame to our downstream "T140TextRTPSink".  (This will cause an empty RTP packet to get sent.)
   deliverEmptyFrame();
@@ -178,7 +179,6 @@ void T140IdleFilter::onSourceClosure(void* clientData) {
 
 void T140IdleFilter::onSourceClosure() {
   envir().taskScheduler().unscheduleDelayedTask(fIdleTimerTask);
-  fIdleTimerTask = NULL;
 
   handleClosure();
 }

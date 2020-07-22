@@ -40,18 +40,6 @@ typedef void ServerRequestAlternativeByteHandler(void* instance, u_int8_t reques
 // the same TCP connection.  A RTSP server implementation would supply a function like this - as a parameter to
 // "ServerMediaSubsession::startStream()".
 
-class LIVEMEDIA_API tcpStreamRecord {
-public:
-  tcpStreamRecord(int streamSocketNum, unsigned char streamChannelId,
-		  tcpStreamRecord* next);
-  virtual ~tcpStreamRecord();
-
-public:
-  tcpStreamRecord* fNext;
-  int fStreamSocketNum;
-  unsigned char fStreamChannelId;
-};
-
 class LIVEMEDIA_API RTPInterface {
 public:
   RTPInterface(Medium* owner, Groupsock* gs);
@@ -106,7 +94,7 @@ private:
   friend class SocketDescriptor;
   Medium* fOwner;
   Groupsock* fGS;
-  tcpStreamRecord* fTCPStreams; // optional, for RTP-over-TCP streaming/receiving
+  class tcpStreamRecord* fTCPStreams; // optional, for RTP-over-TCP streaming/receiving
 
   unsigned short fNextTCPReadSize;
     // how much data (if any) is available to be read from the TCP stream

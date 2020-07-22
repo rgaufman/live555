@@ -65,6 +65,7 @@ private:
 
   void scheduleDESCRIBECommand();
   static void sendDESCRIBE(void* clientData);
+  void sendDESCRIBE();
 
   static void subsessionTimeout(void* clientData);
   void handleSubsessionTimeout();
@@ -122,7 +123,7 @@ public:
     // initialized to 0; set to 1 when the back-end "DESCRIBE" completes.
     // (This can be used as a 'watch variable' in "doEventLoop()".)
   Boolean describeCompletedSuccessfully() const { return fClientMediaSession != NULL; }
-    // This can be used - along with "describeCompletdFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
+    // This can be used - along with "describeCompletedFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
 
 protected:
   ProxyServerMediaSession(UsageEnvironment& env, GenericMediaServer* ourMediaServer,

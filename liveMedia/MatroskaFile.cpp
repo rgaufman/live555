@@ -686,8 +686,8 @@ FileSink* MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char 
       delete[] sps; delete[] pps;
 
       char* sPropParameterSetsStr
-	= new char[sps_base64 == NULL ? 0 : strlen(sps_base64) +
-		   pps_base64 == NULL ? 0 : strlen(pps_base64) +
+	= new char[(sps_base64 == NULL ? 0 : strlen(sps_base64)) +
+		   (pps_base64 == NULL ? 0 : strlen(pps_base64)) +
 		   10 /*more than enough space*/];
       sprintf(sPropParameterSetsStr, "%s,%s", sps_base64, pps_base64);
       delete[] sps_base64; delete[] pps_base64;

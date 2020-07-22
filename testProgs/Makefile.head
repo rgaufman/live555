@@ -1,3 +1,4 @@
+PREFIX = /usr/local
 INCLUDES = -I../UsageEnvironment/include -I../groupsock/include -I../liveMedia/include -I../BasicUsageEnvironment/include
 # Default library filename suffixes for each library that we link with.  The "config.*" file might redefine these later.
 libliveMedia_LIB_SUFFIX = $(LIB_SUFFIX)

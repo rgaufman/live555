@@ -1,4 +1,4 @@
-COMPILE_OPTS =          $(INCLUDES) -m64 -I. -O -DSOLARIS -DNEWLOCALE_NOT_USED -DSOCKLEN_T=socklen_t
+COMPILE_OPTS =          $(INCLUDES) -m64 -I/usr/local/include -I. -O -DSOLARIS -DNEWLOCALE_NOT_USED -DSOCKLEN_T=socklen_t
 C =                     c
 C_COMPILER =            cc
 C_FLAGS =               $(COMPILE_OPTS)
@@ -12,6 +12,6 @@ CONSOLE_LINK_OPTS =     $(LINK_OPTS)
 LIBRARY_LINK =          ld -o
 LIBRARY_LINK_OPTS =     $(LINK_OPTS) -64 -r -dn
 LIB_SUFFIX =                    a
-LIBS_FOR_CONSOLE_APPLICATION = -lsocket -lnsl
+LIBS_FOR_CONSOLE_APPLICATION = -lsocket -lnsl -lssl -lcrypto
 LIBS_FOR_GUI_APPLICATION = $(LIBS_FOR_CONSOLE_APPLICATION)
 EXE =

@@ -2,7 +2,6 @@
 
 MEDIA_SERVER = live555MediaServer$(EXE)
 
-PREFIX = /usr/local
 ALL = $(MEDIA_SERVER)
 all: $(ALL)
 

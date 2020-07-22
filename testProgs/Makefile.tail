@@ -11,9 +11,8 @@ UNICAST_APPS = $(UNICAST_STREAMER_APPS) $(UNICAST_RECEIVER_APPS)
 
 HLS_APPS = testH264VideoToHLSSegments$(EXE)
 
-MISC_APPS = testMPEG1or2Splitter$(EXE) testMPEG1or2ProgramToTransportStream$(EXE) testH264VideoToTransportStream$(EXE) testH265VideoToTransportStream$(EXE) MPEG2TransportStreamIndexer$(EXE) testMPEG2TransportStreamTrickPlay$(EXE) registerRTSPStream$(EXE) testMKVSplitter$(EXE) testMPEG2TransportStreamSplitter$(EXE)
+MISC_APPS = testMPEG1or2Splitter$(EXE) testMPEG1or2ProgramToTransportStream$(EXE) testH264VideoToTransportStream$(EXE) testH265VideoToTransportStream$(EXE) MPEG2TransportStreamIndexer$(EXE) testMPEG2TransportStreamTrickPlay$(EXE) registerRTSPStream$(EXE) testMKVSplitter$(EXE) testMPEG2TransportStreamSplitter$(EXE) mikeyParse$(EXE)
 
-PREFIX = /usr/local
 ALL = $(MULTICAST_APPS) $(UNICAST_APPS) $(HLS_APPS) $(MISC_APPS)
 all: $(ALL)
 
@@ -57,6 +56,7 @@ MPEG2_TRANSPORT_STREAM_TRICK_PLAY_OBJS = testMPEG2TransportStreamTrickPlay.$(OBJ
 REGISTER_RTSP_STREAM_OBJS = registerRTSPStream.$(OBJ)
 TEST_MKV_SPLITTER_OBJS = testMKVSplitter.$(OBJ)
 TEST_MPEG2_TRANSPORT_STREAM_SPLITTER_OBJS = testMPEG2TransportStreamSplitter.$(OBJ)
+MIKEY_PARSE_OBJS = mikeyParse.$(OBJ)
 
 GSM_STREAMER_OBJS = testGSMStreamer.$(OBJ) testGSMEncoder.$(OBJ)
 
@@ -142,6 +142,8 @@ testMKVSplitter$(EXE):	$(TEST_MKV_SPLITTER_OBJS) $(LOCAL_LIBS)
 	$(LINK)$@ $(CONSOLE_LINK_OPTS) $(TEST_MKV_SPLITTER_OBJS) $(LIBS)
 testMPEG2TransportStreamSplitter$(EXE): $(TEST_MPEG2_TRANSPORT_STREAM_SPLITTER_OBJS) $(LOCAL_LIBS)
 	$(LINK)$@ $(CONSOLE_LINK_OPTS) $(TEST_MPEG2_TRANSPORT_STREAM_SPLITTER_OBJS) $(LIBS)
+mikeyParse$(EXE):    $(MIKEY_PARSE_OBJS) $(LOCAL_LIBS)
+	$(LINK)$@ $(CONSOLE_LINK_OPTS) $(MIKEY_PARSE_OBJS) $(LIBS)
 
 testGSMStreamer$(EXE):	$(GSM_STREAMER_OBJS) $(LOCAL_LIBS)
 	$(LINK)$@ $(CONSOLE_LINK_OPTS) $(GSM_STREAMER_OBJS) $(LIBS)

@@ -110,7 +110,7 @@ unsigned RTSPServer::registerStream(ServerMediaSession* serverMediaSession,
 			    responseHandler, authenticator,
 			    receiveOurStreamViaTCP, proxyURLSuffix);
   
-  delete[] url; // we can do this here because it was copied to the "RegisterRequestRecord" 
+  delete[] (char*)url; // we can do this here because it was copied to the "RegisterRequestRecord" 
   delete authenticator; // ditto
   return requestId;
 }
@@ -188,7 +188,7 @@ unsigned RTSPServer::deregisterStream(ServerMediaSession* serverMediaSession,
 			      responseHandler, authenticator,
 			      proxyURLSuffix);
   
-  delete[] url; // we can do this here because it was copied to the "DeregisterRequestRecord"
+  delete[] (char*)url; // we can do this here because it was copied to the "DeregisterRequestRecord"
   delete authenticator; // ditto
   return requestId;
 }

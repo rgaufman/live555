@@ -115,7 +115,7 @@ ProxyServerMediaSession
 				       tunnelOverHTTPPortNum,
 				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
 				       socketNumToServer);
-  ProxyRTSPClient::sendDESCRIBE(fProxyRTSPClient);
+  fProxyRTSPClient->sendDESCRIBE();
 }
 
 ProxyServerMediaSession::~ProxyServerMediaSession() {
@@ -258,10 +258,10 @@ ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession,
 }
 
 void ProxyRTSPClient::reset() {
-  envir().taskScheduler().unscheduleDelayedTask(fLivenessCommandTask); fLivenessCommandTask = NULL;
-  envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask); fDESCRIBECommandTask = NULL;
-  envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask); fSubsessionTimerTask = NULL;
-  envir().taskScheduler().unscheduleDelayedTask(fResetTask); fResetTask = NULL;
+  envir().taskScheduler().unscheduleDelayedTask(fLivenessCommandTask);
+  envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask);
+  envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask);
+  envir().taskScheduler().unscheduleDelayedTask(fResetTask);
 
   fSetupQueueHead = fSetupQueueTail = NULL;
   fNumSetupsDone = 0;
@@ -419,6 +419,7 @@ void ProxyRTSPClient::scheduleLivenessCommand() {
 
 void ProxyRTSPClient::sendLivenessCommand(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
+  rtspClient->fLivenessCommandTask = NULL;
 
   // Note.  By default, we do not send "GET_PARAMETER" as our 'liveness notification' command, even if the server previously
   // indicated (in its response to our earlier "OPTIONS" command) that it supported "GET_PARAMETER".  This is because
@@ -444,6 +445,7 @@ void ProxyRTSPClient::scheduleReset() {
 }
 
 void ProxyRTSPClient::doReset() {
+  fResetTask = NULL;
   if (fVerbosityLevel > 0) {
     envir() << *this << "::doReset\n";
   }
@@ -452,7 +454,7 @@ void ProxyRTSPClient::doReset() {
   fOurServerMediaSession.resetDESCRIBEState();
 
   setBaseURL(fOurURL); // because we'll be sending an initial "DESCRIBE" all over again
-  sendDESCRIBE(this);
+  sendDESCRIBE();
 }
 
 void ProxyRTSPClient::doReset(void* clientData) {
@@ -478,7 +480,14 @@ void ProxyRTSPClient::scheduleDESCRIBECommand() {
 
 void ProxyRTSPClient::sendDESCRIBE(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
-  if (rtspClient != NULL) rtspClient->sendDescribeCommand(::continueAfterDESCRIBE, rtspClient->auth());
+  if (rtspClient != NULL) {
+    rtspClient->fDESCRIBECommandTask = NULL;
+    rtspClient->sendDESCRIBE();
+  }
+}
+
+void ProxyRTSPClient::sendDESCRIBE() {
+  sendDescribeCommand(::continueAfterDESCRIBE, auth());
 }
 
 void ProxyRTSPClient::subsessionTimeout(void* clientData) {
@@ -486,6 +495,7 @@ void ProxyRTSPClient::subsessionTimeout(void* clientData) {
 }
 
 void ProxyRTSPClient::handleSubsessionTimeout() {
+  fSubsessionTimerTask = NULL;
   // We still have one or more subsessions ('tracks') left to "SETUP".  But we can't wait any longer for them.  Send a "PLAY" now:
   MediaSession* sess = fOurServerMediaSession.fClientMediaSession;
   if (sess != NULL) sendPlayCommand(*sess, ::continueAfterPLAY, -1.0f, -1.0f, 1.0f, fOurAuthenticator);

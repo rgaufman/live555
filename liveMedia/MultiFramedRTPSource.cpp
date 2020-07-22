@@ -258,6 +258,13 @@ void MultiFramedRTPSource::networkReadHandler1() {
     if ((our_random()%10) == 0) break; // simulate 10% packet loss
 #endif
 
+    if (fCrypto != NULL) { // The packet is SRTP; authenticate/decrypt it first
+      unsigned newPacketSize;
+      if (!fCrypto->processIncomingSRTPPacket(bPacket->data(), bPacket->dataSize(), newPacketSize)) break;
+      if (newPacketSize > bPacket->dataSize()) break; // sanity check; shouldn't happen
+      bPacket->removePadding(bPacket->dataSize() - newPacketSize); // treat MKI+auth as padding
+    }
+
     // Check for the 12-byte RTP header:
     if (bPacket->dataSize() < 12) break;
     unsigned rtpHdr = ntohl(*(u_int32_t*)(bPacket->data())); ADVANCE(4);
@@ -443,6 +450,13 @@ void BufferedPacket::use(unsigned char* to, unsigned toSize,
   unsigned char* origFramePtr = &fBuf[fHead];
   unsigned char* newFramePtr = origFramePtr; // may change in the call below
   unsigned frameSize, frameDurationInMicroseconds;
+
+  rtpSeqNo = fRTPSeqNo;
+  rtpTimestamp = fRTPTimestamp;
+  presentationTime = fPresentationTime;
+  hasBeenSyncedUsingRTCP = fHasBeenSyncedUsingRTCP;
+  rtpMarkerBit = fRTPMarkerBit;
+
   getNextEnclosedFrameParameters(newFramePtr, fTail - fHead,
 				 frameSize, frameDurationInMicroseconds);
   if (frameSize > toSize) {
@@ -456,12 +470,6 @@ void BufferedPacket::use(unsigned char* to, unsigned toSize,
   memmove(to, newFramePtr, bytesUsed);
   fHead += (newFramePtr - origFramePtr) + frameSize;
   ++fUseCount;
-
-  rtpSeqNo = fRTPSeqNo;
-  rtpTimestamp = fRTPTimestamp;
-  presentationTime = fPresentationTime;
-  hasBeenSyncedUsingRTCP = fHasBeenSyncedUsingRTCP;
-  rtpMarkerBit = fRTPMarkerBit;
 
   // Update "fPresentationTime" for the next enclosed frame (if any):
   fPresentationTime.tv_usec += frameDurationInMicroseconds;

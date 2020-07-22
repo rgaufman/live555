@@ -613,6 +613,7 @@ int main(int argc, char** argv) {
 						   verbosityLevel, progName);
     if (handlerServerForREGISTERCommand == NULL) {
       *env << "Failed to create a server for handling incoming \"REGISTER\" commands: " << env->getResultMsg() << "\n";
+      shutdown();
     } else {
       *env << "Awaiting an incoming \"REGISTER\" command on port " << handlerServerForREGISTERCommand->serverPortNum() << "\n";
     }
@@ -905,6 +906,13 @@ void createOutputFiles(char const* periodicFilenameSuffix) {
 	} else if (strcmp(subsession->codecName(), "VORBIS") == 0 ||
 		   strcmp(subsession->codecName(), "OPUS") == 0) {
 	  createOggFileSink = True;
+	} else if (strcmp(subsession->codecName(), "MPEG4-GENERIC") == 0) {
+	  // For AAC audio, we use a regular file sink, but add a 'ADTS framer' filter
+	  // to the end of the data source, so that the resulting file is playable:
+	  FramedFilter* adtsFramer
+	    = ADTSAudioStreamDiscreteFramer::createNew(*env, subsession->readSource(),
+						       subsession->fmtp_config());
+	  subsession->addFilter(adtsFramer);
 	}
       }
       if (createOggFileSink) {
@@ -1163,6 +1171,7 @@ void sessionTimerHandler(void* /*clientData*/) {
 }
 
 void periodicFileOutputTimerHandler(void* /*clientData*/) {
+  periodicFileOutputTask = NULL;
   fileOutputSecondsSoFar += fileOutputInterval;
 
   // First, close the existing output files:
@@ -1435,6 +1444,7 @@ void signalHandlerShutdown(int /*sig*/) {
 }
 
 void checkForPacketArrival(void* /*clientData*/) {
+  arrivalCheckTimerTask = NULL;
   if (!notifyOnPacketArrival) return; // we're not checking
 
   // Check each subsession, to see whether it has received data packets:
@@ -1493,6 +1503,7 @@ void checkForPacketArrival(void* /*clientData*/) {
 }
 
 void checkInterPacketGaps(void* /*clientData*/) {
+  interPacketGapCheckTimerTask = NULL;
   if (interPacketGapMaxTime == 0) return; // we're not checking
 
   // Check each subsession, counting up how many packets have been received:

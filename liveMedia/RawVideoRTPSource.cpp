@@ -139,7 +139,7 @@ Boolean RawVideoRTPSource
   // Everything looks good:
   fCurrentPacketBeginsFrame
     = (fLineHeaders[0].fieldIdAndLineNumber&0x7FFF) == 0 && fLineHeaders[0].offsetWithinLine == 0;
-  fCurrentPacketCompletesFrame = packet->rtpMarkerBit();
+  // Don't set "fCurrentPacketCompletesFrame" until we've processed the last line in the packet
   resultSpecialHeaderSize = headerStart - packet->data();
   return True;
 }
@@ -172,6 +172,11 @@ void RawVideoBufferedPacket::getNextEnclosedFrameParameters(unsigned char*& /*fr
     frameSize = dataSize;
     return;
   }
+
+  // This line ('subframe') completes a frame if it's the last line in the packet,
+  // and the packet's 'M' bit was set:
+  fOurSource->fCurrentPacketCompletesFrame
+    = fOurSource->fCurPacketMarkerBit && fOurSource->fNextLine == fOurSource->fNumLines;
 
   frameSize = fOurSource->fLineHeaders[fOurSource->fNextLine++].length;
 }

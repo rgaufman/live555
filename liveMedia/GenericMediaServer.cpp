@@ -310,6 +310,7 @@ void GenericMediaServer::ClientSession::livenessTimeoutTask(ClientSession* clien
   fprintf(stderr, "Client session (id \"%08X\", stream name \"%s\") has timed out (due to inactivity)\n",
 	  clientSession->fOurSessionId, streamName);
 #endif
+  clientSession->fLivenessCheckTask = NULL;
   delete clientSession;
 }
 
