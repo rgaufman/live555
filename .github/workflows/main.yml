@@ -28,8 +28,7 @@ jobs:
     - name: make directorys
       run: mkdir build; cd build
     - name: cmake
-      run: cmake .. -G "Unix Makefiles" \
-            -DBUILD_SHARED_LIBS=OFF
+      run: cmake .. -G "Unix Makefiles"
     - name: make
       run: make
     - name: make check
