@@ -20,8 +20,10 @@ jobs:
     - name: disable git simbolic linkx
       run: git config core.symlinks false
     - name: make directorys
-      run: mkdir build; cd build
+      run: mkdir build
     - name: cmake
-      run: cmake . -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_BUILD_TYPE=release
+      run: cd build; cmake .. -Bshared -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
     - name: make
       run: make
+    - name: install
+      run: make install
