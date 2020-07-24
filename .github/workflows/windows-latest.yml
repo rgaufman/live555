@@ -21,7 +21,7 @@ jobs:
       id: setup_msbuild_explicit
       uses: ./
       with:
-        vswhere-path: C:\ProgramData\chocolatey\bin
+        vswhere-path: d:\a\live555\live555
 
     - name: Setup MSBuild (PATH)
       id: setup_msbuild_path
