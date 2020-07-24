@@ -1,0 +1,27 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+      with:
+        ref: master
+    - name: disable git simbolic linkx
+      run: git config core.symlinks false
+    - name: make directorys
+      run: mkdir build; cd build
+    - name: cmake
+      run: cmake . -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DCMAKE_VERBOSE_MAKEFILE=OFF -DCMAKE_BUILD_TYPE=release
+    - name: make
+      run: make
