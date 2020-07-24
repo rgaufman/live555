@@ -17,19 +17,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: master
-    - name: disable git simbolic linkx
-      run: git config core.symlinks false
-    - name: make directorys
-      run: mkdir build
     - name: Setup MSBuild (vswhere-path)
       id: setup_msbuild_explicit
       uses: ./
       with:
         vswhere-path: C:\ProgramData\chocolatey\bin
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.1
-      with:
-        vs-version: '[16.4,16.5)'
+
     - name: Setup MSBuild (PATH)
       id: setup_msbuild_path
       uses: ./
@@ -47,9 +40,3 @@ jobs:
         echo "Fallback: ${{ steps.setup_msbuild_fallback.outputs.msbuildPath }}"
     - name: echo MSBuild
       run: msbuild -version
-    - name: cmake
-      run: cd build; cmake .. -Bshared -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
-    - name: make
-      run: make
-    - name: install
-      run: make install
