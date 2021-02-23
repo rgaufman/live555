@@ -135,12 +135,12 @@ static ServerMediaSession* createNewSMS(UsageEnvironment& env,
     // Assumed to be a MPEG-4 Video Elementary Stream file:
     NEW_SMS("MPEG-4 Video");
     sms->addSubsession(MPEG4VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
-  } else if (strcmp(extension, ".264") == 0) {
+  } else if (strcmp(extension, ".264") == 0 || strcmp(extension, ".h264") == 0) {
     // Assumed to be a H.264 Video Elementary Stream file:
     NEW_SMS("H.264 Video");
     OutPacketBuffer::maxSize = 2000000; // allow for some possibly large H.264 frames
     sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
-  } else if (strcmp(extension, ".265") == 0) {
+  } else if (strcmp(extension, ".265") == 0 || strcmp(extension, ".h265") == 0) {
     // Assumed to be a H.265 Video Elementary Stream file:
     NEW_SMS("H.265 Video");
     OutPacketBuffer::maxSize = 2000000; // allow for some possibly large H.265 frames
