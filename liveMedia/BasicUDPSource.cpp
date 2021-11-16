@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A simple UDP source, where every UDP payload is a complete frame
 // Implementation
 
@@ -42,6 +42,10 @@ BasicUDPSource::~BasicUDPSource(){
   envir().taskScheduler().turnOffBackgroundReadHandling(fInputGS->socketNum());
 }
 
+unsigned BasicUDPSource::maxFrameSize() const {
+  return 0xFFFF; // maximum size of a UDP payload
+}
+
 void BasicUDPSource::doGetNextFrame() {
   if (!fHaveStartedReading) {
     // Await incoming packets:
@@ -65,7 +69,7 @@ void BasicUDPSource::incomingPacketHandler1() {
   if (!isCurrentlyAwaitingData()) return; // we're not ready for the data yet
 
   // Read the packet into our desired destination:
-  struct sockaddr_in fromAddress;
+  struct sockaddr_storage fromAddress;
   if (!fInputGS->handleRead(fTo, fMaxSize, fFrameSize, fromAddress)) return;
 
   // Tell our client that we have new data:

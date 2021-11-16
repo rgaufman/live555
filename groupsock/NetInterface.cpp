@@ -13,8 +13,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// "mTunnel" multicast access service
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// "groupsock"
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // Network Interfaces
 // Implementation
 
@@ -37,57 +37,14 @@ NetInterface::~NetInterface() {
 }
 
 
-////////// NetInterface //////////
-
-DirectedNetInterface::DirectedNetInterface() {
-}
-
-DirectedNetInterface::~DirectedNetInterface() {
-}
-
-
-////////// DirectedNetInterfaceSet //////////
-
-DirectedNetInterfaceSet::DirectedNetInterfaceSet()
-	: fTable(HashTable::create(ONE_WORD_HASH_KEYS)) {
-}
-
-DirectedNetInterfaceSet::~DirectedNetInterfaceSet() {
-	delete fTable;
-}
-
-DirectedNetInterface*
-DirectedNetInterfaceSet::Add(DirectedNetInterface const* interf) {
-  return (DirectedNetInterface*) fTable->Add((char*)interf, (void*)interf);
-}
-
-Boolean
-DirectedNetInterfaceSet::Remove(DirectedNetInterface const* interf) {
-  return fTable->Remove((char*)interf);
-}
-
-DirectedNetInterfaceSet::Iterator::
-Iterator(DirectedNetInterfaceSet& interfaces)
-  : fIter(HashTable::Iterator::create(*(interfaces.fTable))) {
-}
-
-DirectedNetInterfaceSet::Iterator::~Iterator() {
-  delete fIter;
-}
-
-DirectedNetInterface* DirectedNetInterfaceSet::Iterator::next() {
-  char const* key; // dummy
-  return (DirectedNetInterface*) fIter->next(key);
-};
-
-
 ////////// Socket //////////
 
 int Socket::DebugLevel = 1; // default value
 
-Socket::Socket(UsageEnvironment& env, Port port)
-  : fEnv(DefaultUsageEnvironment != NULL ? *DefaultUsageEnvironment : env), fPort(port) {
-  fSocketNum = setupDatagramSocket(fEnv, port);
+Socket::Socket(UsageEnvironment& env, Port port, int family)
+  : fEnv(DefaultUsageEnvironment != NULL ? *DefaultUsageEnvironment : env),
+    fPort(port), fFamily(family) {
+  fSocketNum = setupDatagramSocket(fEnv, port, family);
 }
 
 void Socket::reset() {
@@ -105,7 +62,7 @@ Boolean Socket::changePort(Port newPort) {
   unsigned oldSendBufferSize = getSendBufferSize(fEnv, fSocketNum);
   closeSocket(fSocketNum);
 
-  fSocketNum = setupDatagramSocket(fEnv, newPort);
+  fSocketNum = setupDatagramSocket(fEnv, newPort, fFamily);
   if (fSocketNum < 0) {
     fEnv.taskScheduler().turnOffBackgroundReadHandling(oldSocketNum);
     return False;

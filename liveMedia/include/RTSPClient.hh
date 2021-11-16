@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client - for a single "rtsp://" URL
 // C++ header
 
@@ -336,7 +336,7 @@ protected:
   unsigned fCSeq; // sequence number, used in consecutive requests
   Authenticator fCurrentAuthenticator;
   Boolean fAllowBasicAuthentication;
-  netAddressBits fServerAddress;
+  struct sockaddr_storage fServerAddress;
 
 private:
   portNumBits fTunnelOverHTTPPortNum;
@@ -357,8 +357,8 @@ private:
   Boolean fHTTPTunnelingConnectionIsPending;
 
   // Optional support for TLS:
-  TLSState fTLS;
-  friend class TLSState;
+  ClientTLSState fTLS;
+  friend class ClientTLSState;
 };
 
 
@@ -379,7 +379,7 @@ public:
   portNumBits serverPortNum() const { return ntohs(fServerPort.num()); }
 
 protected:
-  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
+  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
 				  UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName);
       // called only by createNew();
   virtual ~HandlerServerForREGISTERCommand();

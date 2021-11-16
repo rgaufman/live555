@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates a Matroska file.
 // Implementation
 
@@ -132,14 +132,21 @@ MatroskaFile::MatroskaFile(UsageEnvironment& env, char const* fileName, onCreati
   }
 }
 
+struct DemuxRecord {
+  MatroskaDemux* demux;
+  MatroskaDemuxOnDeletionFunc* onDeletionFunc;
+  void* objectToNotify;
+};
+
 MatroskaFile::~MatroskaFile() {
   delete fParserForInitialization;
   delete fCuePoints;
 
   // Delete any outstanding "MatroskaDemux"s, and the table for them:
-  MatroskaDemux* demux;
-  while ((demux = (MatroskaDemux*)fDemuxesTable->RemoveNext()) != NULL) {
-    delete demux;
+  DemuxRecord* demuxRecord;
+  while ((demuxRecord = (DemuxRecord*)fDemuxesTable->RemoveNext()) != NULL) {
+    delete demuxRecord->demux;
+    delete demuxRecord;
   }
   delete fDemuxesTable;
   delete fTrackTable;
@@ -233,15 +240,30 @@ MatroskaTrack* MatroskaFile::lookup(unsigned trackNumber) const {
   return fTrackTable->lookup(trackNumber);
 }
 
-MatroskaDemux* MatroskaFile::newDemux() {
+MatroskaDemux* MatroskaFile
+::newDemux(MatroskaDemuxOnDeletionFunc* onDeletionFunc, void* objectToNotify) {
   MatroskaDemux* demux = new MatroskaDemux(*this);
-  fDemuxesTable->Add((char const*)demux, demux);
+
+  DemuxRecord* demuxRecord = new DemuxRecord();
+  demuxRecord->demux = demux;
+  demuxRecord->onDeletionFunc = onDeletionFunc;
+  demuxRecord->objectToNotify = objectToNotify;
+
+  fDemuxesTable->Add((char const*)demux, demuxRecord);
 
   return demux;
 }
 
 void MatroskaFile::removeDemux(MatroskaDemux* demux) {
-  fDemuxesTable->Remove((char const*)demux);
+  DemuxRecord* demuxRecord = (DemuxRecord*)(fDemuxesTable->Lookup((char const*)demux));
+  if (demuxRecord != NULL) {
+    fDemuxesTable->Remove((char const*)demux);
+
+    if (demuxRecord->onDeletionFunc != NULL) {
+      (*demuxRecord->onDeletionFunc)(demuxRecord->objectToNotify, demux);
+    }
+    delete demuxRecord;
+  }
 }
 
 #define getPrivByte(b) if (n == 0) break; else do {b = *p++; --n;} while (0) /* Vorbis/Theora configuration header parsing */
@@ -637,7 +659,7 @@ RTPSink* MatroskaFile
       delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
     } else if (strcmp(track->mimeType, "video/RAW") == 0) {
       result = RawVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, 
-                                          track->pixelHeight, track->pixelWidth, track->bitDepth, track->colorSampling, track->colorimetry);
+                                          track->pixelWidth, track->pixelHeight, track->bitDepth, track->colorSampling, track->colorimetry);
     } else if (strcmp(track->mimeType, "video/H264") == 0) {
       u_int8_t* sps; unsigned spsSize;
       u_int8_t* pps; unsigned ppsSize;
@@ -908,6 +930,10 @@ void MatroskaDemux::seekToTime(double& seekNPT) {
   if (fOurParser != NULL) fOurParser->seekToTime(seekNPT);
 }
 
+void MatroskaDemux::pause() {
+  if (fOurParser != NULL) fOurParser->pause();
+}
+
 void MatroskaDemux::handleEndOfFile(void* clientData) {
   ((MatroskaDemux*)clientData)->handleEndOfFile();
 }
@@ -935,6 +961,18 @@ void MatroskaDemux::handleEndOfFile() {
   }
 
   delete[] tracks;
+}
+
+void MatroskaDemux::resetState() {
+  // Iterate through all of our 'demuxed tracks', calling 'reset()' on each one.
+  HashTable::Iterator* iter = HashTable::Iterator::create(*fDemuxedTracksTable);
+  MatroskaDemuxedTrack* demuxedTrack;
+  char const* trackNumber;
+
+  while ((demuxedTrack = (MatroskaDemuxedTrack*)iter->next(trackNumber)) != NULL) {
+    demuxedTrack->reset();
+  }
+  delete iter;
 }
 
 

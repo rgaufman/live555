@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // MP3 File Sources
 // C++ header
 
@@ -56,11 +56,13 @@ private:
   virtual void getAttributes() const;
 
 private:
-  virtual Boolean doGetNextFrame1();
+  static void fileReadableHandler(MP3FileSource* source, int mask);
 
 private:
   MP3StreamState* fStreamState;
-  Boolean fHaveJustInitialized;
+  Boolean fFidIsSeekable;
+  Boolean fHaveStartedReading;
+  unsigned fHaveBeenInitialized;
   struct timeval fFirstFramePresentationTime; // set on stream init
   Boolean fLimitNumBytesToStream;
   unsigned fNumBytesToStream; // used iff "fLimitNumBytesToStream" is True

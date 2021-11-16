@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // Demultiplexer for a MPEG 1 or 2 Program Stream
 // Implementation
 
@@ -80,12 +80,14 @@ public:
 
 MPEG1or2Demux
 ::MPEG1or2Demux(UsageEnvironment& env,
-		FramedSource* inputSource, Boolean reclaimWhenLastESDies)
+		FramedSource* inputSource, Boolean reclaimWhenLastESDies,
+		MPEG1or2DemuxOnDeletionFunc* onDeletionFunc, void* objectToNotify)
   : Medium(env),
     fInputSource(inputSource), fMPEGversion(0),
     fNextAudioStreamNumber(0), fNextVideoStreamNumber(0),
     fReclaimWhenLastESDies(reclaimWhenLastESDies), fNumOutstandingESs(0),
-    fNumPendingReads(0), fHaveUndeliveredData(False) {
+    fNumPendingReads(0), fHaveUndeliveredData(False),
+    fOnDeletionFunc(onDeletionFunc), fOnDeletionObjectToNotify(objectToNotify) {
   fParser = new MPEGProgramStreamParser(this, inputSource);
   for (unsigned i = 0; i < 256; ++i) {
     fOutput[i].savedDataHead = fOutput[i].savedDataTail = NULL;
@@ -96,6 +98,10 @@ MPEG1or2Demux
 }
 
 MPEG1or2Demux::~MPEG1or2Demux() {
+  if (fOnDeletionFunc != NULL) {
+    (*fOnDeletionFunc)(fOnDeletionObjectToNotify, this);
+  }
+
   delete fParser;
   for (unsigned i = 0; i < 256; ++i) delete fOutput[i].savedDataHead;
   Medium::close(fInputSource);
@@ -103,10 +109,13 @@ MPEG1or2Demux::~MPEG1or2Demux() {
 
 MPEG1or2Demux* MPEG1or2Demux
 ::createNew(UsageEnvironment& env,
-	    FramedSource* inputSource, Boolean reclaimWhenLastESDies) {
+	    FramedSource* inputSource, Boolean reclaimWhenLastESDies,
+	    MPEG1or2DemuxOnDeletionFunc* onDeletionFunc,
+	    void* objectToNotify) {
   // Need to add source type checking here???  #####
 
-  return new MPEG1or2Demux(env, inputSource, reclaimWhenLastESDies);
+  return new MPEG1or2Demux(env, inputSource, reclaimWhenLastESDies,
+			   onDeletionFunc, objectToNotify);
 }
 
 MPEG1or2Demux::SCR::SCR()
@@ -281,7 +290,10 @@ void MPEG1or2Demux::getNextFrame(u_int8_t streamIdTag,
 void MPEG1or2Demux::stopGettingFrames(u_int8_t streamIdTag) {
     struct OutputDescriptor& out = fOutput[streamIdTag];
 
-    if (out.isCurrentlyAwaitingData && fNumPendingReads > 0) --fNumPendingReads;
+    if (out.isCurrentlyAwaitingData && fNumPendingReads > 0) {
+      --fNumPendingReads;
+      if (fNumPendingReads == 0 && fInputSource != NULL) fInputSource->stopGettingFrames();
+    }
 
     out.isCurrentlyActive = out.isCurrentlyAwaitingData = False;
 }

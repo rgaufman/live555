@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand, from an incoming UDP (or RTP/UDP) MPEG-2 Transport Stream
 // Implementation
@@ -53,8 +53,14 @@ FramedSource* MPEG2TransportUDPServerMediaSubsession
 
   if (fInputGroupsock == NULL) {
     // Create a 'groupsock' object for receiving the input stream:
-    struct in_addr inputAddress;
-    inputAddress.s_addr = fInputAddressStr == NULL ? 0 : our_inet_addr(fInputAddressStr);
+    struct sockaddr_storage inputAddress;
+    if (fInputAddressStr == NULL) {
+      inputAddress = nullAddress();
+    } else {
+      NetAddressList inputAddresses(fInputAddressStr);
+      if (inputAddresses.numAddresses() == 0) return NULL;
+      copyAddress(inputAddress, inputAddresses.firstAddress());
+    }
     fInputGroupsock = new Groupsock(envir(), inputAddress, fInputPort, 255);
   }
 

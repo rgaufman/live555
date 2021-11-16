@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A test program that reads a ".mkv" (i.e., Matroska) file, demultiplexes each track
 // (video, audio, subtitles), and outputs each track to a file.
 // main program
@@ -77,7 +77,6 @@ void onMatroskaFileCreation(MatroskaFile* matroskaFile, void* /*clientData*/) {
     
     char const* mimeType = matroskaFile->trackMIMEType(trackNumber);
     if (mimeType == NULL || mimeType[0] == '\0') continue;
-    fprintf(stderr, "#####@@@@@ MatroskaDemuxedTrack for mimeType %s is %p\n", mimeType, trackState[i].source);
 
     // Create the file name from "mimeType" by replacing "/" with "-", and adding the
     // track number at the end:

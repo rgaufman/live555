@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 
 #ifndef _JPEG2000_VIDEO_RTP_SOURCE_HH
 #define _JPEG2000_VIDEO_RTP_SOURCE_HH
@@ -23,7 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class JPEG2000VideoRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API JPEG2000VideoRTPSource: public MultiFramedRTPSource {
 public:
   static JPEG2000VideoRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
 					   unsigned char rtpPayloadFormat,

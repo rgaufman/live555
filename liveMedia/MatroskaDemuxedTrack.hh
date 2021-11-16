@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A media track, demultiplexed from a Matroska file
 // C++ header
 
@@ -39,6 +39,7 @@ private: // We are created only by a MatroskaDemux (a friend)
 private:
   // redefined virtual functions:
   virtual void doGetNextFrame();
+  virtual void doStopGettingFrames();
   virtual char const* MIMEtype() const;
 
 private: // We are accessed only by MatroskaDemux and by MatroskaFileParser (a friend)
@@ -52,13 +53,14 @@ private: // We are accessed only by MatroskaDemux and by MatroskaFileParser (a f
 
   struct timeval& prevPresentationTime() { return fPrevPresentationTime; }
   int& durationImbalance() { return fDurationImbalance; }
+  void reset();
 
 private:
   unsigned fOurTrackNumber;
   MatroskaDemux& fOurSourceDemux;
   struct timeval fPrevPresentationTime;
   int fDurationImbalance;
-  unsigned fOpusTrackNumber; // hack for Opus audio
+  unsigned fOpusFrameNumber; // hack for Opus audio
 };
 
 #endif

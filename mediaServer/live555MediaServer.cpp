@@ -13,13 +13,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // LIVE555 Media Server
 // main program
 
 #include <BasicUsageEnvironment.hh>
 #include "DynamicRTSPServer.hh"
 #include "version.hh"
+#include <GroupsockHelper.hh> // for "weHaveAnIPv*Address()"
 
 int main(int argc, char** argv) {
   // Begin by setting up our usage environment:
@@ -54,9 +55,20 @@ int main(int argc, char** argv) {
        << " (LIVE555 Streaming Media library version "
        << LIVEMEDIA_LIBRARY_VERSION_STRING << ").\n";
 
-  char* urlPrefix = rtspServer->rtspURLPrefix();
-  *env << "Play streams from this server using the URL\n\t"
-       << urlPrefix << "<filename>\nwhere <filename> is a file present in the current directory.\n";
+  *env << "Play streams from this server using the URL\n";
+  if (weHaveAnIPv4Address(*env)) {
+    char* rtspURLPrefix = rtspServer->ipv4rtspURLPrefix();
+    *env << "\t" << rtspURLPrefix << "<filename>\n";
+    delete[] rtspURLPrefix;
+    if (weHaveAnIPv6Address(*env)) *env << "or\n";
+  }
+  if (weHaveAnIPv6Address(*env)) {
+    char* rtspURLPrefix = rtspServer->ipv6rtspURLPrefix();
+    *env << "\t" << rtspURLPrefix << "<filename>\n";
+    delete[] rtspURLPrefix;
+  }
+  *env << "where <filename> is a file present in the current directory.\n";
+
   *env << "Each file's type is inferred from its name suffix:\n";
   *env << "\t\".264\" => a H.264 Video Elementary Stream file\n";
   *env << "\t\".265\" => a H.265 Video Elementary Stream file\n";
@@ -81,7 +93,7 @@ int main(int argc, char** argv) {
   // port numbers (8000 and 8080).
 
   if (rtspServer->setUpTunnelingOverHTTP(80) || rtspServer->setUpTunnelingOverHTTP(8000) || rtspServer->setUpTunnelingOverHTTP(8080)) {
-    *env << "(We use port " << rtspServer->httpServerPortNum() << " for optional RTSP-over-HTTP tunneling, or for HTTP live streaming (for indexed Transport Stream files only).)\n";
+    *env << "(We use port " << rtspServer->httpServerPortNum() << " for optional RTSP-over-HTTP tunneling).)\n";
   } else {
     *env << "(RTSP-over-HTTP tunneling is not available.)\n";
   }

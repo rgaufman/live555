@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // Implementation
@@ -45,7 +45,7 @@ private: // redefined virtual functions
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
                                     unsigned char rtpPayloadTypeIfDynamic,
                                     FramedSource* inputSource);
-  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual Groupsock* createGroupsock(struct sockaddr_storage const& addr, Port port);
   virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
 				   unsigned char const* cname, RTPSink* sink);
 
@@ -138,7 +138,8 @@ char const* ProxyServerMediaSession::url() const {
   return fProxyRTSPClient == NULL ? NULL : fProxyRTSPClient->url();
 }
 
-Groupsock* ProxyServerMediaSession::createGroupsock(struct in_addr const& addr, Port port) {
+Groupsock* ProxyServerMediaSession
+::createGroupsock(struct sockaddr_storage const& addr, Port port) {
   // Default implementation; may be redefined by subclasses:
   return new Groupsock(envir(), addr, port, 255);
 }
@@ -638,7 +639,7 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
   return fClientMediaSubsession.readSource();
 }
 
-void ProxyServerMediaSubsession::closeStreamSource(FramedSource* inputSource) {
+void ProxyServerMediaSubsession::closeStreamSource(FramedSource* /*inputSource*/) {
   if (verbosityLevel() > 0) {
     envir() << *this << "::closeStreamSource()\n";
   }
@@ -652,10 +653,13 @@ void ProxyServerMediaSubsession::closeStreamSource(FramedSource* inputSource) {
     if (proxyRTSPClient->fLastCommandWasPLAY) { // so that we send only one "PAUSE"; not one for each subsession
       if (fParentSession->referenceCount() > 1) {
 	// There are other client(s) still streaming other subsessions of this stream.
-	// Therefore, we don't send a "PAUSE" for the whole stream, but only for the sub-stream:
-	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession, NULL, proxyRTSPClient->auth());
+	// Therefore, we don't send a "PAUSE" for the whole stream.
+	// In principle, we would send a "PAUSE" only for the sub-stream here, but some
+	// back-end servers might mis-handle that by pausing the entire stream.
+	// So instead, we do nothing here.
+	//proxyRTSPClient->sendPauseCommand(fClientMediaSubsession, NULL, proxyRTSPClient->auth());
       } else {
-	// Normal case: There are no other client still streaming (parts of) this stream.
+	// Normal case: There are no other clients still streaming (parts of) this stream.
 	// Send a "PAUSE" for the whole stream.
 	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession.parentSession(), NULL, proxyRTSPClient->auth());
 	proxyRTSPClient->fLastCommandWasPLAY = False;
@@ -790,7 +794,8 @@ RTPSink* ProxyServerMediaSubsession
   return newSink;
 }
 
-Groupsock* ProxyServerMediaSubsession::createGroupsock(struct in_addr const& addr, Port port) {
+Groupsock* ProxyServerMediaSubsession
+::createGroupsock(struct sockaddr_storage const& addr, Port port) {
   ProxyServerMediaSession* parentSession = (ProxyServerMediaSession*)fParentSession;
   return parentSession->createGroupsock(addr, port);
 }

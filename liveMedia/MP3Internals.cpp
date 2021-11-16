@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // MP3 internal implementation details
 // Implementation
 
@@ -97,7 +97,8 @@ unsigned int i_slen2[256]; /* MPEG 2.0 slen for intensity stereo */
 ////////// MP3FrameParams //////////
 
 MP3FrameParams::MP3FrameParams()
-  : bv(frameBytes, 0, sizeof frameBytes) /* by default */ {
+  : isMPEG2(0), samplingFreq(44100), frameSize(413), // init params, in case we're used early
+    bv(frameBytes, 0, sizeof frameBytes) /* by default */ {
   oldHdr = firstHdr = 0;
 
   static Boolean doneInit = False;

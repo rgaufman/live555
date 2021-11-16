@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A common framework, used for the "openRTSP" and "playSIP" applications
 // Implementation
 //
@@ -212,7 +212,13 @@ int main(int argc, char** argv) {
 	*env << "Failed to find network address for \"" << argv[2] << "\"";
 	break;
       }
-      ReceivingInterfaceAddr = *(unsigned*)(addresses.firstAddress()->data());
+
+      struct sockaddr_storage interfaceAddress;
+
+      copyAddress(interfaceAddress, addresses.firstAddress());
+      if (interfaceAddress.ss_family == AF_INET) { // later, support IPv6 also
+	ReceivingInterfaceAddr = ((sockaddr_in&)interfaceAddress).sin_addr.s_addr;
+      }
       ++argv; --argc;
       break;
     }

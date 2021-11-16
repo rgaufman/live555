@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A generic SIP client
 // C++ header
 
@@ -42,7 +42,7 @@ public:
 			      int verbosityLevel = 0,
 			      char const* applicationName = NULL);
 
-  void setProxyServer(unsigned proxyServerAddress,
+  void setProxyServer(struct sockaddr_storage const& proxyServerAddress,
 		      portNumBits proxyServerPortNum);
 
   void setClientStartPortNum(portNumBits clientStartPortNum) {
@@ -127,7 +127,8 @@ private:
   // Set for each call:
   char const* fURL;
   unsigned fURLSize;
-  struct in_addr fServerAddress;
+  struct sockaddr_storage fServerAddress;
+  Boolean fServerAddressIsSet;
   portNumBits fServerPortNum; // in host order
   portNumBits fClientStartPortNum; // in host order
   unsigned fCallId, fFromTag; // set by us

@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A subclass of "RTSPServer" that creates "ServerMediaSession"s on demand,
 // based on whether or not the specified stream name exists as a file
 // Implementation
@@ -26,16 +26,18 @@ DynamicRTSPServer*
 DynamicRTSPServer::createNew(UsageEnvironment& env, Port ourPort,
 			     UserAuthenticationDatabase* authDatabase,
 			     unsigned reclamationTestSeconds) {
-  int ourSocket = setUpOurSocket(env, ourPort);
-  if (ourSocket == -1) return NULL;
+  int ourSocketIPv4 = setUpOurSocket(env, ourPort, AF_INET);
+  int ourSocketIPv6 = setUpOurSocket(env, ourPort, AF_INET6);
+  if (ourSocketIPv4 < 0 && ourSocketIPv6 < 0) return NULL;
 
-  return new DynamicRTSPServer(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds);
+  return new DynamicRTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort,
+			       authDatabase, reclamationTestSeconds);
 }
 
-DynamicRTSPServer::DynamicRTSPServer(UsageEnvironment& env, int ourSocket,
+DynamicRTSPServer::DynamicRTSPServer(UsageEnvironment& env, int ourSocketIPv4, int ourSocketIPv6,
 				     Port ourPort,
 				     UserAuthenticationDatabase* authDatabase, unsigned reclamationTestSeconds)
-  : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationTestSeconds) {
+  : RTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationTestSeconds) {
 }
 
 DynamicRTSPServer::~DynamicRTSPServer() {
@@ -44,14 +46,17 @@ DynamicRTSPServer::~DynamicRTSPServer() {
 static ServerMediaSession* createNewSMS(UsageEnvironment& env,
 					char const* fileName, FILE* fid); // forward
 
-ServerMediaSession* DynamicRTSPServer
-::lookupServerMediaSession(char const* streamName, Boolean isFirstLookupInSession) {
+void DynamicRTSPServer
+::lookupServerMediaSession(char const* streamName,
+			   lookupServerMediaSessionCompletionFunc* completionFunc,
+			   void* completionClientData,
+			   Boolean isFirstLookupInSession) {
   // First, check whether the specified "streamName" exists as a local file:
   FILE* fid = fopen(streamName, "rb");
   Boolean const fileExists = fid != NULL;
 
   // Next, check whether we already have a "ServerMediaSession" for this file:
-  ServerMediaSession* sms = RTSPServer::lookupServerMediaSession(streamName);
+  ServerMediaSession* sms = getServerMediaSession(streamName);
   Boolean const smsExists = sms != NULL;
 
   // Handle the four possibilities for "fileExists" and "smsExists":
@@ -59,10 +64,9 @@ ServerMediaSession* DynamicRTSPServer
     if (smsExists) {
       // "sms" was created for a file that no longer exists. Remove it:
       removeServerMediaSession(sms);
-      sms = NULL;
     }
 
-    return NULL;
+    sms = NULL;
   } else {
     if (smsExists && isFirstLookupInSession) { 
       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
@@ -77,7 +81,10 @@ ServerMediaSession* DynamicRTSPServer
     }
 
     fclose(fid);
-    return sms;
+  }
+
+  if (completionFunc != NULL) {
+    (*completionFunc)(completionClientData, sms);
   }
 }
 

@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A test program that receives a RTP/RTCP multicast MPEG-2 Transport Stream,
 // and outputs the resulting Transport Stream data to 'stdout'
 // main program
@@ -63,16 +63,19 @@ int main(int argc, char** argv) {
   const unsigned char ttl = 1; // low, in case routers don't admin scope
 #endif
 
-  struct in_addr sessionAddress;
-  sessionAddress.s_addr = our_inet_addr(sessionAddressStr);
+  NetAddressList sessionAddresses(sessionAddressStr);
+  struct sockaddr_storage sessionAddress;
+  copyAddress(sessionAddress, sessionAddresses.firstAddress());
+
   const Port rtpPort(rtpPortNum);
   const Port rtcpPort(rtcpPortNum);
 
 #ifdef USE_SSM
-  char* sourceAddressStr = "aaa.bbb.ccc.ddd";
+  char const* sourceAddressStr = "aaa.bbb.ccc.ddd";
                            // replace this with the real source address
-  struct in_addr sourceFilterAddress;
-  sourceFilterAddress.s_addr = our_inet_addr(sourceAddressStr);
+  NetAddressList sourceFilterAddresses(sourceAddressStr);
+  struct sockaddr_storage sourceFilterAddress;
+  copyAddress(sourceFilterAddress, sourceFilterAddresses.firstAddress());
 
   Groupsock rtpGroupsock(*env, sessionAddress, sourceFilterAddress, rtpPort);
   Groupsock rtcpGroupsock(*env, sessionAddress, sourceFilterAddress, rtcpPort);

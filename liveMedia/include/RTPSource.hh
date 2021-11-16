@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // RTP Sources
 // C++ header
 
@@ -71,9 +71,9 @@ public:
   Boolean& enableRTCPReports() { return fEnableRTCPReports; }
   Boolean const& enableRTCPReports() const { return fEnableRTCPReports; }
 
-  void setStreamSocket(int sockNum, unsigned char streamChannelId) {
+  void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState) {
     // hack to allow sending RTP over TCP (RFC 2236, section 10.12)
-    fRTPInterface.setStreamSocket(sockNum, streamChannelId);
+    fRTPInterface.setStreamSocket(sockNum, streamChannelId, tlsState);
   }
 
   void setAuxilliaryReadHandler(AuxHandlerFunc* handlerFunc,

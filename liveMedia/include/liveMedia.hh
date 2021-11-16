@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // Inclusion of header files representing the interface
 // for the entire library
 //
@@ -132,5 +132,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportStreamDemux.hh"
 #include "ProxyServerMediaSession.hh"
 #include "HLSSegmenter.hh"
+#include "MPEG2TransportStreamAccumulator.hh"
 
 #endif

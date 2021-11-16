@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // An class that can be used to create (possibly multiple) 'replicas' of an incoming stream.
 // C++ header
 
@@ -77,8 +77,8 @@ private:
   unsigned fNumReplicas, fNumActiveReplicas, fNumDeliveriesMadeSoFar;
   int fFrameIndex; // 0 or 1; used to figure out if a replica is requesting the current frame, or the next frame
 
-  StreamReplica* fMasterReplica; // the first replica that requests each frame.  We use its buffer when copying to the others.
-  StreamReplica* fReplicasAwaitingCurrentFrame; // other than the 'master' replica
+  StreamReplica* fPrimaryReplica; // the first replica that requests each frame.  We use its buffer when copying to the others.
+  StreamReplica* fReplicasAwaitingCurrentFrame; // other than the 'primary' replica
   StreamReplica* fReplicasAwaitingNextFrame; // replicas that have already received the current frame, and have asked for the next
 };
 #endif

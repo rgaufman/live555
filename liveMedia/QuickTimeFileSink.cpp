@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A sink that generates a QuickTime file from a composite media session
 // Implementation
 
@@ -1791,23 +1791,26 @@ unsigned QuickTimeFileSink::addAtom_mp4a() {
 addAtomEnd;
 
 addAtom(esds);
-  //#####
+  // Get the source's 'config' information.  (We need the size now.)
+  unsigned configSize;
   MediaSubsession& subsession = fCurrentIOState->fOurSubsession;
-  if (strcmp(subsession.mediumName(), "audio") == 0) {
-    // MPEG-4 audio
+  unsigned char* config
+    = parseGeneralConfigStr(subsession.fmtp_config(), configSize);
+
+  if (strcmp(subsession.mediumName(), "audio") == 0) { // MPEG-4 audio
     size += addWord(0x00000000); // ???
-    size += addWord(0x03808080); // ???
-    size += addWord(0x2a000000); // ???
-    size += addWord(0x04808080); // ???
-    size += addWord(0x1c401500); // ???
-    size += addWord(0x18000000); // ???
-    size += addWord(0x6d600000); // ???
-    size += addWord(0x6d600580); // ???
-    size += addByte(0x80); size += addByte(0x80); // ???
-  } else if (strcmp(subsession.mediumName(), "video") == 0) {
-    // MPEG-4 video
+    size += addWord(0x03808080); // ES_DescrTag+length coding
+    size += addWord((31+configSize)<<24); // length (includes 'config' and SLConfigDescriptor)
+        // DecoderConfigDescriptor
+        size += addWord(0x04808080); // DecoderConfigDescrTag + length coding
+	size += addWord(((17+configSize)<<24)|0x00401500); // length (includes 'config' info)
+	size += addWord(0x18000000); // ???
+	size += addWord(0x6d600000); // ???
+	size += addWord(0x6d600580); // ???
+	size += addByte(0x80); size += addByte(0x80); // ???
+  } else if (strcmp(subsession.mediumName(), "video") == 0) { // MPEG-4 video
     size += addWord(0x00000000); // ???
-    size += addWord(0x03330000); // ???
+    size += addWord(((22+configSize)<<16)|0x03000000); // ES_DescrTag + length (incl. 'config')
     size += addWord(0x1f042b20); // ???
     size += addWord(0x1104fd46); // ???
     size += addWord(0x000d4e10); // ???
@@ -1816,25 +1819,21 @@ addAtom(esds);
   }
 
   // Add the source's 'config' information:
-  unsigned configSize;
-  unsigned char* config
-    = parseGeneralConfigStr(subsession.fmtp_config(), configSize);
   size += addByte(configSize);
   for (unsigned i = 0; i < configSize; ++i) {
     size += addByte(config[i]);
   }
   delete[] config;
 
-  if (strcmp(subsession.mediumName(), "audio") == 0) {
-    // MPEG-4 audio
-    size += addWord(0x06808080); // ???
-    size += addHalfWord(0x0102); // ???
-  } else {
-    // MPEG-4 video
-    size += addHalfWord(0x0601); // ???
+  
+  // SLConfigDescriptor:
+  if (strcmp(subsession.mediumName(), "audio") == 0) { // MPEG-4 audio
+    size += addWord(0x06808080); // SLConfigDescrTag + length coding
+    size += addHalfWord(0x0102); // length(1) + ???
+  } else { // MPEG-4 video
+    size += addHalfWord(0x0601); // SLConfigDescrTag + length(1)
     size += addByte(0x02); // ???
   }
-  //#####
 addAtomEnd;
 
 addAtom(srcq);
@@ -1879,12 +1878,12 @@ addAtom(avc1);
   size += addWord(0x00480000); // Horizontal resolution
   size += addWord(0x00480000); // Vertical resolution
   size += addWord(0x00000000); // Data size
-  size += addWord(0x00010548); // Frame       count+Compressor name (start)
+  size += addWord(0x00010548); // Frame count+Compressor name (start)
     // "H.264"
   size += addWord(0x2e323634); // Compressor name (continued)
   size += addZeroWords(6); // Compressor name (continued - zero)
   size += addWord(0x00000018); // Compressor name (final)+Depth
-  size += addHalfWord(0xffff); // Color       table id
+  size += addHalfWord(0xffff); // Color table id
   size += addAtom_avcC();
 addAtomEnd;
 

@@ -13,26 +13,32 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A test program that reads a MPEG-2 Transport Stream file,
 // and streams it using RTP
 // main program
 
 #include "liveMedia.hh"
+
 #include "BasicUsageEnvironment.hh"
+#include "announceURL.hh"
 #include "GroupsockHelper.hh"
 
 // To stream using "source-specific multicast" (SSM), uncomment the following:
 //#define USE_SSM 1
+
+// To stream using IPv6 multicast, rather than IPv4 multicast, uncomment the following:
+//#define USE_IPV6_MULTICAST 1
+
+// To set up an internal RTSP server, uncomment the following:
+//#define IMPLEMENT_RTSP_SERVER 1
+// (Note that this RTSP server works for multicast only)
+
 #ifdef USE_SSM
 Boolean const isSSM = True;
 #else
 Boolean const isSSM = False;
 #endif
-
-// To set up an internal RTSP server, uncomment the following:
-//#define IMPLEMENT_RTSP_SERVER 1
-// (Note that this RTSP server works for multicast only)
 
 #define TRANSPORT_PACKET_SIZE 188
 #define TRANSPORT_PACKETS_PER_NETWORK_PACKET 7
@@ -52,21 +58,32 @@ int main(int argc, char** argv) {
 
   // Create 'groupsocks' for RTP and RTCP:
   char const* destinationAddressStr
+#ifdef USE_IPV6_MULTICAST
+#ifdef USE_SSM
+    = "FF3E::FFFF:2A2A";
+#else
+    = "FF1E::FFFF:2A2A";
+#endif
+#else
 #ifdef USE_SSM
     = "232.255.42.42";
 #else
-  = "239.255.42.42";
+    = "239.255.42.42";
+#endif
+#endif
   // Note: This is a multicast address.  If you wish to stream using
   // unicast instead, then replace this string with the unicast address
   // of the (single) destination.  (You may also need to make a similar
   // change to the receiver program.)
-#endif
+
   const unsigned short rtpPortNum = 1234;
   const unsigned short rtcpPortNum = rtpPortNum+1;
   const unsigned char ttl = 7; // low, in case routers don't admin scope
 
-  struct in_addr destinationAddress;
-  destinationAddress.s_addr = our_inet_addr(destinationAddressStr);
+  NetAddressList destinationAddresses(destinationAddressStr);
+  struct sockaddr_storage destinationAddress;
+  copyAddress(destinationAddress, destinationAddresses.firstAddress());
+
   const Port rtpPort(rtpPortNum);
   const Port rtcpPort(rtcpPortNum);
 
@@ -97,10 +114,7 @@ int main(int argc, char** argv) {
   // Note: This starts RTCP running automatically
 
 #ifdef IMPLEMENT_RTSP_SERVER
-  RTSPServer* rtspServer = RTSPServer::createNew(*env);
-  // Note that this (attempts to) start a server on the default RTSP server
-  // port: 554.  To use a different port number, add it as an extra
-  // (optional) parameter to the "RTSPServer::createNew()" call above.
+  RTSPServer* rtspServer = RTSPServer::createNew(*env, 8554);
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
@@ -111,10 +125,7 @@ int main(int argc, char** argv) {
 					   isSSM);
   sms->addSubsession(PassiveServerMediaSubsession::createNew(*videoSink, rtcp));
   rtspServer->addServerMediaSession(sms);
-
-  char* url = rtspServer->rtspURL(sms);
-  *env << "Play this stream using the URL \"" << url << "\"\n";
-  delete[] url;
+  announceURL(rtspServer, sms);
 #endif
 
   // Finally, start the streaming:

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that represents an existing
 // 'RTPSink', rather than one that creates new 'RTPSink's on demand.
 // C++ header
@@ -46,15 +46,16 @@ protected:
   virtual Boolean rtcpIsMuxed();
 
 protected: // redefined virtual functions
-  virtual char const* sdpLines();
+  virtual char const* sdpLines(int addressFamily);
   virtual void getStreamParameters(unsigned clientSessionId,
-				   netAddressBits clientAddress,
+				   struct sockaddr_storage const& clientAddress,
                                    Port const& clientRTPPort,
                                    Port const& clientRTCPPort,
 				   int tcpSocketNum,
                                    unsigned char rtpChannelId,
                                    unsigned char rtcpChannelId,
-                                   netAddressBits& destinationAddress,
+				   TLSState* tlsSTate,
+                                   struct sockaddr_storage& destinationAddress,
 				   u_int8_t& destinationTTL,
                                    Boolean& isMulticast,
                                    Port& serverRTPPort,

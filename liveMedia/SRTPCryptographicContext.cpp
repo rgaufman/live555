@@ -1,5 +1,20 @@
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
-// This code may not be copied or used in any form without permission from Live Networks, Inc.
+/**********
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
+option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
+
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+**********/
+// "liveMedia"
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 //
 // The SRTP 'Cryptographic Context', used in all of our uses of SRTP.
 // Implementation
@@ -7,7 +22,7 @@
 #include "SRTPCryptographicContext.hh"
 #ifndef NO_OPENSSL
 #include "HMAC_SHA1.hh"
-#include <openssl/aes.h>
+#include <openssl/evp.h>
 #endif
 
 #ifdef DEBUG
@@ -381,26 +396,34 @@ Boolean SRTPCryptographicContext
   // Now generate as many blocks of the keystream as we need, by repeatedly encrypting
   // the IV using our cipher key.  (After each step, we increment the IV by 1.)
   // We then XOR the keystream into the provided data, to do the en/decryption.
-  AES_KEY key;
-  AES_set_encrypt_key(keys.cipherKey, 8*SRTP_CIPHER_KEY_LENGTH, &key);
+  do {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (ctx == NULL) break;
+    
+    if (EVP_EncryptInit(ctx, EVP_aes_128_ecb(), keys.cipherKey, NULL/*no IV*/) != 1) break;
+        // Note: We use ECB mode here, because we're using our "iv" as plaintext
 
-  while (numDataBytes > 0) {
-    u_int8_t keyStream[SRTP_CIPHER_KEY_LENGTH];
-    AES_encrypt(iv, keyStream, &key);
+    while (numDataBytes > 0) {
+      u_int8_t keyStream[SRTP_CIPHER_KEY_LENGTH];
+      int numBytesEncrypted;
+      if (EVP_EncryptUpdate(ctx, keyStream, &numBytesEncrypted, iv, SRTP_CIPHER_KEY_LENGTH) != 1) break;
 
-    unsigned numBytesToUse
-      = numDataBytes < SRTP_CIPHER_KEY_LENGTH ? numDataBytes : SRTP_CIPHER_KEY_LENGTH;
-    for (unsigned i = 0; i < numBytesToUse; ++i) data[i] ^= keyStream[i];
-    data += numBytesToUse;
-    numDataBytes -= numBytesToUse;
+      unsigned numBytesToUse
+	= numDataBytes < numBytesEncrypted ? numDataBytes : numBytesEncrypted;
+      for (unsigned i = 0; i < numBytesToUse; ++i) data[i] ^= keyStream[i];
+      data += numBytesToUse;
+      numDataBytes -= numBytesToUse;
 
-    // Increment the IV by 1:
-    u_int8_t* ptr = &iv[sizeof iv];
-    do {
-      --ptr;
-      ++*ptr;
-    } while (*ptr == 0x00);
-  }
+      // Increment the IV by 1:
+      u_int8_t* ptr = &iv[sizeof iv];
+      do {
+	--ptr;
+	++*ptr;
+      } while (*ptr == 0x00);
+    }
+
+    EVP_CIPHER_CTX_free(ctx);
+  } while (0);
 }
 
 void SRTPCryptographicContext::performKeyDerivation() {
@@ -430,13 +453,8 @@ void SRTPCryptographicContext
 ::deriveSingleKey(u_int8_t const* masterKey, u_int8_t const* salt,
 		  SRTPKeyDerivationLabel label,
 		  unsigned resultKeyLength, u_int8_t* resultKey) {
-  // This looks a little different from the mechanism described in RFC 3711, section 4.3, but
-  // it's what the 'libsrtp' code does, so I hope it's functionally equivalent:
-  AES_KEY key;
-  AES_set_encrypt_key(masterKey, 8*SRTP_CIPHER_KEY_LENGTH, &key);
-
   u_int8_t counter[KDF_PRF_CIPHER_BLOCK_LENGTH];
-  // Set the first bytes of "counter" to be the 'salt'; set the remainder to zero:
+  // Fill in the first bytes of "counter" with our 'salt'; set the remaining bytes to zero:
   memmove(counter, salt, SRTP_CIPHER_SALT_LENGTH);
   for (unsigned i = SRTP_CIPHER_SALT_LENGTH; i < sizeof counter; ++i) {
     counter[i] = 0;
@@ -448,17 +466,29 @@ void SRTPCryptographicContext
   // And use the resulting "counter" as the plaintext:
   u_int8_t const* plaintext = counter;
 
-  unsigned numBytesRemaining = resultKeyLength;
-  while (numBytesRemaining > 0) {
-    u_int8_t ciphertext[KDF_PRF_CIPHER_BLOCK_LENGTH];
-    AES_encrypt(plaintext, ciphertext, &key);
+  // Generate the key by repeatedly encrypting the plaintext:
+  do {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    if (ctx == NULL) break;
 
-    unsigned numBytesToCopy
-      = numBytesRemaining < KDF_PRF_CIPHER_BLOCK_LENGTH ? numBytesRemaining : KDF_PRF_CIPHER_BLOCK_LENGTH;
-    memmove(resultKey, ciphertext, numBytesToCopy);
-    resultKey += numBytesToCopy;
-    numBytesRemaining -= numBytesToCopy;
-    ++counter[15]; // for next time
-  }
+    if (EVP_EncryptInit(ctx, EVP_aes_128_ecb(), masterKey, NULL/*no IV*/) != 1) break;
+        // Note: We use ECB mode here, because there's no IV
+
+    unsigned numBytesRemaining = resultKeyLength;
+    while (numBytesRemaining > 0) {
+      u_int8_t ciphertext[KDF_PRF_CIPHER_BLOCK_LENGTH];
+      int numBytesEncrypted;
+      if (EVP_EncryptUpdate(ctx, ciphertext, &numBytesEncrypted, plaintext, KDF_PRF_CIPHER_BLOCK_LENGTH) != 1) break;
+
+      unsigned numBytesToCopy
+	= numBytesRemaining < numBytesEncrypted ? numBytesRemaining : numBytesEncrypted;
+      memmove(resultKey, ciphertext, numBytesToCopy);
+      resultKey += numBytesToCopy;
+      numBytesRemaining -= numBytesToCopy;
+      ++counter[15]; // for next time
+    }
+
+    EVP_CIPHER_CTX_free(ctx);
+  } while (0);
 }
 #endif

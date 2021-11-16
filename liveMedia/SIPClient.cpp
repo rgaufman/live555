@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A generic SIP client
 // Implementation
 
@@ -72,8 +72,9 @@ SIPClient::SIPClient(UsageEnvironment& env,
   fApplicationName = strDup(applicationName);
   fApplicationNameSize = strlen(fApplicationName);
 
-  struct in_addr ourAddress;
-  ourAddress.s_addr = ourIPAddress(env); // hack
+  struct sockaddr_storage ourAddress;
+  ourAddress.ss_family = AF_INET; // Later, fix to support IPv6
+  ((struct sockaddr_in&)ourAddress).sin_addr.s_addr = ourIPv4Address(env);
   fOurAddressStr = strDup(AddressString(ourAddress).val());
   fOurAddressStrSize = strlen(fOurAddressStr);
 
@@ -88,7 +89,7 @@ SIPClient::SIPClient(UsageEnvironment& env,
   // send a 0-length packet, so that the "getSourcePort()" call will work.
   fOurSocket->output(envir(), (unsigned char*)"", 0);
   Port srcPort(0);
-  getSourcePort(env, fOurSocket->socketNum(), srcPort);
+  getSourcePort(env, fOurSocket->socketNum(), AF_INET, srcPort); // later, allow for IPv6
   if (srcPort.num() != 0) {
     fOurPortNum = ntohs(srcPort.num());
   } else {
@@ -147,17 +148,19 @@ void SIPClient::reset() {
 
   delete[] (char*)fToTagStr; fToTagStr = NULL; fToTagStrSize = 0;
   fServerPortNum = 0;
-  fServerAddress.s_addr = 0;
+  fServerAddressIsSet = False;
   delete[] (char*)fURL; fURL = NULL; fURLSize = 0;
 }
 
-void SIPClient::setProxyServer(unsigned proxyServerAddress,
+void SIPClient::setProxyServer(struct sockaddr_storage const& proxyServerAddress,
 			       portNumBits proxyServerPortNum) {
-  fServerAddress.s_addr = proxyServerAddress;
+  fServerAddress = proxyServerAddress;
+  fServerAddressIsSet = True;
+
   fServerPortNum = proxyServerPortNum;
+
   if (fOurSocket != NULL) {
-    fOurSocket->changeDestinationParameters(fServerAddress,
-					    fServerPortNum, 255);
+    fOurSocket->changeDestinationParameters(fServerAddress, fServerPortNum, 255);
   }
 }
 
@@ -226,8 +229,10 @@ char* SIPClient::invite1(Authenticator* authenticator) {
     char const* const inviteSDPFmt =
       "v=0\r\n"
       "o=- %u %u IN IP4 %s\r\n"
+          // Later, use "IP6" if our address is IPv6-only
       "s=%s session\r\n"
       "c=IN IP4 %s\r\n"
+          // Later, use "IP6" if our address is IPv6-only
       "t=0 0\r\n"
       "m=audio %u RTP/AVP %u\r\n"
       "%s";
@@ -591,11 +596,11 @@ unsigned SIPClient::getResponseCode() {
         while (numExtraBytesNeeded > 0) {
           char* ptr = &readBuf[bytesRead];
 	  unsigned bytesRead2;
-	  struct sockaddr_in fromAddr;
+	  struct sockaddr_storage dummy; // not used
 	  Boolean readSuccess
 	    = fOurSocket->handleRead((unsigned char*)ptr,
 				     numExtraBytesNeeded,
-				     bytesRead2, fromAddr);
+				     bytesRead2, dummy);
           if (!readSuccess) break;
           ptr[bytesRead2] = '\0';
           if (fVerbosityLevel >= 1) {
@@ -733,14 +738,14 @@ Boolean SIPClient::processURL(char const* url) {
   do {
     // If we don't already have a server address/port, then
     // get these by parsing the URL:
-    if (fServerAddress.s_addr == 0) {
+    if (!fServerAddressIsSet) {
       NetAddress destAddress;
       if (!parseSIPURL(envir(), url, destAddress, fServerPortNum)) break;
-      fServerAddress.s_addr = *(unsigned*)(destAddress.data());
+      copyAddress(fServerAddress, &destAddress);
+      fServerAddressIsSet = True;
 
       if (fOurSocket != NULL) {
-	fOurSocket->changeDestinationParameters(fServerAddress,
-						fServerPortNum, 255);
+	fOurSocket->changeDestinationParameters(fServerAddress, fServerPortNum, 255);
       }
     }
 
@@ -754,7 +759,7 @@ Boolean SIPClient::parseSIPURL(UsageEnvironment& env, char const* url,
 			       NetAddress& address,
 			       portNumBits& portNum) {
   do {
-    // Parse the URL as "sip:<username>@<address>:<port>/<etc>"
+    // Parse the URL as "sip:<username>@<server-name-or-address>:<port>/<etc>"
     // (with ":<port>" and "/<etc>" optional)
     // Also, skip over any "<username>[:<password>]@" preceding <address>
     char const* prefix = "sip:";
@@ -781,13 +786,23 @@ Boolean SIPClient::parseSIPURL(UsageEnvironment& env, char const* url,
       ++from1;
     }
 
+    // Next, parse <server-address-or-name>
     char* to = &parseBuffer[0];
+    Boolean isInSquareBrackets = False; //  by default
+    if (*from == '[') {
+      ++from;
+      isInSquareBrackets = True;
+    }
     unsigned i;
     for (i = 0; i < parseBufferSize; ++i) {
-      if (*from == '\0' || *from == ':' || *from == '/') {
-	// We've completed parsing the address
-	*to = '\0';
-	break;
+      if (*from == '\0' ||
+          (*from == ':' && !isInSquareBrackets) ||
+          *from == '/' ||
+          (*from == ']' && isInSquareBrackets)) {
+        // We've completed parsing the address
+        *to = '\0';
+        if (*from == ']' && isInSquareBrackets) ++from;
+        break;
       }
       *to++ = *from++;
     }
@@ -913,11 +928,11 @@ unsigned SIPClient::getResponse(char*& responseBuffer,
   int bytesRead = 0;
   while (bytesRead < (int)responseBufferSize) {
     unsigned bytesReadNow;
-    struct sockaddr_in fromAddr;
+    struct sockaddr_storage dummy; // not used
     unsigned char* toPosn = (unsigned char*)(responseBuffer+bytesRead);
     Boolean readSuccess
       = fOurSocket->handleRead(toPosn, responseBufferSize-bytesRead,
-			       bytesReadNow, fromAddr);
+			       bytesReadNow, dummy);
     if (!readSuccess || bytesReadNow == 0) {
       envir().setResultMsg("SIP response was truncated");
       break;

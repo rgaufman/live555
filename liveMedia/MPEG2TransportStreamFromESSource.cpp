@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A filter for converting one or more MPEG Elementary Streams
 // to a MPEG-2 Transport Stream
 // Implementation
@@ -23,7 +23,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define SIMPLE_PES_HEADER_SIZE 14
 #define INPUT_BUFFER_SIZE (SIMPLE_PES_HEADER_SIZE + 2*MPEG2TransportStreamFromESSource::maxInputESFrameSize)
-#define LOW_WATER_MARK 1000 // <= MPEG2TransportStreamFromESSource::maxInputESFrameSize
+#ifndef TS_FROM_ES_LOW_WATER_MARK
+#define TS_FROM_ES_LOW_WATER_MARK 1000 // <= MPEG2TransportStreamFromESSource::maxInputESFrameSize
+#endif
 
 ////////// InputESSourceRecord definition //////////
 
@@ -187,7 +189,7 @@ void InputESSourceRecord::askForNewData() {
     // fInputBuffer[9..13] will be the PTS; fill this in later
     fInputBufferBytesAvailable = SIMPLE_PES_HEADER_SIZE;
   }
-  if (fInputBufferBytesAvailable < LOW_WATER_MARK &&
+  if (fInputBufferBytesAvailable < TS_FROM_ES_LOW_WATER_MARK &&
       !fInputSource->isCurrentlyAwaitingData()) {
     // We don't yet have enough data in our buffer.  Arrange to read more:
     fInputSource->getNextFrame(&fInputBuffer[fInputBufferBytesAvailable],
@@ -198,7 +200,7 @@ void InputESSourceRecord::askForNewData() {
 }
 
 Boolean InputESSourceRecord::deliverBufferToClient() {
-  if (fInputBufferInUse || fInputBufferBytesAvailable < LOW_WATER_MARK) return False;
+  if (fInputBufferInUse || fInputBufferBytesAvailable < TS_FROM_ES_LOW_WATER_MARK) return False;
 
   // Fill in the PES_packet_length field that we left unset before:
   unsigned PES_packet_length = fInputBufferBytesAvailable - 6;

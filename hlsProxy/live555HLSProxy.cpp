@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A program that acts as a proxy for a RTSP stream, converting it into a sequence of
 // HLS (HTTP Live Streaming) segments, plus a ".m3u8" file that can be accessed via a web browser.
 // main program
@@ -61,6 +61,10 @@ int main(int argc, char** argv) {
   // Begin by setting up our usage environment:
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
+
+  // Output information about the program (and LIVE555 version):
+  *env << "LIVE555 HLS Proxy, documented at http://www.live555.com/hlsProxy/\n";
+  *env << "\t(LIVE555 Streaming Media version " << LIVEMEDIA_LIBRARY_VERSION_STRING << ")\n";
 
   // Parse the command line:
   programName = argv[0];
@@ -456,7 +460,7 @@ void segmentationCallback(void* /*clientData*/,
     ++firstSegmentCounter;
   }
 
-  // Then, rewrite our ".h3u8" file with the new list of segments:
+  // Then, rewrite our ".m3u8" file with the new list of segments:
   if (ourM3U8FileName == NULL) {
     ourM3U8FileName = new char[strlen(hlsPrefix) + 5/*strlen(".m3u8")*/ + 1];
     if (ourM3U8FileName == NULL) exit(1);

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A class encapsulating the state of a MP3 stream
 // Implementation
 
@@ -31,8 +31,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define MILLION 1000000
 
-MP3StreamState::MP3StreamState(UsageEnvironment& env)
-  : fEnv(env), fFid(NULL), fPresentationTimeScale(1) {
+MP3StreamState::MP3StreamState()
+  : fFid(NULL), fPresentationTimeScale(1) {
 }
 
 MP3StreamState::~MP3StreamState() {
@@ -142,7 +142,7 @@ unsigned MP3StreamState::findNextHeader(struct timeval& presentationTime) {
 Boolean MP3StreamState::readFrame(unsigned char* outBuf, unsigned outBufSize,
 				  unsigned& resultFrameSize,
 				  unsigned& resultDurationInMicroseconds) {
-  /* We assume that "mp3FindNextHeader()" has already been called */
+  /* We assume that "findNextHeader()" has already been called */
 
   resultFrameSize = 4 + fr().frameSize;
 
@@ -336,59 +336,9 @@ Boolean MP3StreamState::findNextFrame() {
   return True;
 }
 
-static Boolean socketIsReadable(int socket) {
-  const unsigned numFds = socket+1;
-  fd_set rd_set;
-  FD_ZERO(&rd_set);
-  FD_SET((unsigned)socket, &rd_set);
-  struct timeval timeout;
-  timeout.tv_sec = timeout.tv_usec = 0;
-
-  int result = select(numFds, &rd_set, NULL, NULL, &timeout);
-  return result != 0; // not > 0, because windows can return -1 for file sockets
-}
-
-static char watchVariable;
-
-static void checkFunc(void* /*clientData*/) {
-  watchVariable = ~0;
-}
-
-static void waitUntilSocketIsReadable(UsageEnvironment& env, int socket) {
-  while (!socketIsReadable(socket)) {
-    // Delay a short period of time before checking again.
-    unsigned usecsToDelay = 1000; // 1 ms
-    env.taskScheduler().scheduleDelayedTask(usecsToDelay,
-					    (TaskFunc*)checkFunc, (void*)NULL);
-    watchVariable = 0;
-    env.taskScheduler().doEventLoop(&watchVariable);
-        // This allows other tasks to run while we're waiting:
-  }
-}
-
 unsigned MP3StreamState::readFromStream(unsigned char* buf,
 					unsigned numChars) {
-  // Hack for doing socket I/O instead of file I/O (e.g., on Windows)
-  if (fFidIsReallyASocket) {
-    intptr_t fid_long = (intptr_t)fFid;
-    int sock = (int)fid_long;
-    unsigned totBytesRead = 0;
-    do {
-      waitUntilSocketIsReadable(fEnv, sock);
-      int bytesRead
-	= recv(sock, &((char*)buf)[totBytesRead], numChars-totBytesRead, 0);
-      if (bytesRead < 0) return 0;
-
-      totBytesRead += (unsigned)bytesRead;
-    } while (totBytesRead < numChars);
-
-    return totBytesRead;
-  } else {
-#ifndef _WIN32_WCE
-    waitUntilSocketIsReadable(fEnv, (int)fileno(fFid));
-#endif
-    return fread(buf, 1, numChars, fFid);
-  }
+  return fread(buf, 1, numChars, fFid);
 }
 
 #define XING_FRAMES_FLAG       0x0001

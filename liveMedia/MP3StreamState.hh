@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A class encapsulating the state of a MP3 stream
 // C++ header
 
@@ -40,7 +40,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MP3StreamState {
 public:
-  MP3StreamState(UsageEnvironment& env);
+  MP3StreamState();
   virtual ~MP3StreamState();
 
   void assignStream(FILE* fid, unsigned fileSize);
@@ -73,7 +73,6 @@ private:
   Boolean findNextFrame();
 
 private:
-  UsageEnvironment& fEnv;
   FILE* fFid;
   Boolean fFidIsReallyASocket;
   unsigned fFileSize;

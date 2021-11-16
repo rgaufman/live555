@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up an AC3 audio elementary stream into frames
 // Implementation
 
@@ -224,6 +224,7 @@ AC3AudioStreamParser
 }
 
 AC3AudioStreamParser::~AC3AudioStreamParser() {
+  delete[] fSavedFrame;
 }
 
 void AC3AudioStreamParser::registerReadInterest(unsigned char* to,
@@ -303,7 +304,7 @@ unsigned AC3AudioStreamParser::parseFrame(unsigned& numTruncatedBytes) {
 
 void AC3AudioStreamParser::readAndSaveAFrame() {
   unsigned const maxAC3FrameSize = 4000;
-  fSavedFrame = new unsigned char[maxAC3FrameSize];
+  delete[] fSavedFrame; fSavedFrame = new unsigned char[maxAC3FrameSize];
   fSavedFrameSize = 0;
 
   fSavedFrameFlag = 0;

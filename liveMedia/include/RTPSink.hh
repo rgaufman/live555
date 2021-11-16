@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // C++ header
 
@@ -75,11 +75,11 @@ public:
   void resetPresentationTimes();
 
   // Hacks to allow sending RTP over TCP (RFC 2236, section 10.12):
-  void setStreamSocket(int sockNum, unsigned char streamChannelId) {
-    fRTPInterface.setStreamSocket(sockNum, streamChannelId);
+  void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState) {
+    fRTPInterface.setStreamSocket(sockNum, streamChannelId, tlsState);
   }
-  void addStreamSocket(int sockNum, unsigned char streamChannelId) {
-    fRTPInterface.addStreamSocket(sockNum, streamChannelId);
+  void addStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState) {
+    fRTPInterface.addStreamSocket(sockNum, streamChannelId, tlsState);
   }
   void removeStreamSocket(int sockNum, unsigned char streamChannelId) {
     fRTPInterface.removeStreamSocket(sockNum, streamChannelId);
@@ -151,7 +151,7 @@ public:
   };
 
   // The following is called whenever a RTCP RR packet is received:
-  void noteIncomingRR(u_int32_t SSRC, struct sockaddr_in const& lastFromAddress,
+  void noteIncomingRR(u_int32_t SSRC, struct sockaddr_storage const& lastFromAddress,
                       unsigned lossStats, unsigned lastPacketNumReceived,
                       unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime);
 
@@ -178,7 +178,7 @@ private:
 class RTPTransmissionStats {
 public:
   u_int32_t SSRC() const {return fSSRC;}
-  struct sockaddr_in const& lastFromAddress() const {return fLastFromAddress;}
+  struct sockaddr_storage const& lastFromAddress() const {return fLastFromAddress;}
   unsigned lastPacketNumReceived() const {return fLastPacketNumReceived;}
   unsigned firstPacketNumReported() const {return fFirstPacketNumReported;}
   unsigned totNumPacketsLost() const {return fTotNumPacketsLost;}
@@ -205,7 +205,7 @@ private:
   RTPTransmissionStats(RTPSink& rtpSink, u_int32_t SSRC);
   virtual ~RTPTransmissionStats();
 
-  void noteIncomingRR(struct sockaddr_in const& lastFromAddress,
+  void noteIncomingRR(struct sockaddr_storage const& lastFromAddress,
 		      unsigned lossStats, unsigned lastPacketNumReceived,
                       unsigned jitter,
 		      unsigned lastSRTime, unsigned diffSR_RRTime);
@@ -213,7 +213,7 @@ private:
 private:
   RTPSink& fOurRTPSink;
   u_int32_t fSSRC;
-  struct sockaddr_in fLastFromAddress;
+  struct sockaddr_storage fLastFromAddress;
   unsigned fLastPacketNumReceived;
   u_int8_t fPacketLossRatio;
   unsigned fTotNumPacketsLost;

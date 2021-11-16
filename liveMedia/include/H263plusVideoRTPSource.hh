@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // H.263+ Video RTP Sources
 // C++ header
 
@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define SPECIAL_HEADER_BUFFER_SIZE 1000
 
-class H263plusVideoRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API H263plusVideoRTPSource: public MultiFramedRTPSource {
 public:
   static H263plusVideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

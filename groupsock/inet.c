@@ -8,16 +8,6 @@
 #include <inetLib.h>
 #endif
 
-/* Some systems (e.g., SunOS) have header files that erroneously declare inet_addr() as taking no arguments.
- * This confuses C++.  To overcome this, we use our own routine, implemented in C.
- */
-
-unsigned our_inet_addr(cp)
-	char const* cp;
-{
-	return inet_addr(cp);
-}
-
 #if defined(__WIN32__) || defined(_WIN32)
 #ifndef IMN_PIM
 #define WS_VERSION_CHOICE1 0x202/*MAKEWORD(2,2)*/

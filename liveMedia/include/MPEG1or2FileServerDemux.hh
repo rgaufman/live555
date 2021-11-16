@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A server demultiplexer for a MPEG 1 or 2 Program Stream
 // C++ header
 
@@ -53,6 +53,9 @@ private:
   friend class MPEG1or2DemuxedServerMediaSubsession;
   MPEG1or2DemuxedElementaryStream* newElementaryStream(unsigned clientSessionId,
 						       u_int8_t streamIdTag);
+
+  static void onDemuxDeletion(void* clientData, MPEG1or2Demux* demuxBeingDeleted);
+  void onDemuxDeletion(MPEG1or2Demux* demuxBeingDeleted);
 
 private:
   char const* fFileName;

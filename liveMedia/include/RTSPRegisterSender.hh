@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // Special objects which, when created, sends a custom RTSP "REGISTER" (or "DEREGISTER") command
 // to a specified client.
 // C++ header
@@ -64,7 +64,7 @@ public:
 	    Boolean requestStreamingViaTCP = False, char const* proxyURLSuffix = NULL, Boolean reuseConnection = False,
 	    int verbosityLevel = 0, char const* applicationName = NULL);
 
-  void grabConnection(int& sock, struct sockaddr_in& remoteAddress); // so that the socket doesn't get closed when we're deleted
+  void grabConnection(int& sock, struct sockaddr_storage& remoteAddress); // so that the socket doesn't get closed when we're deleted
 
 protected:
   RTSPRegisterSender(UsageEnvironment& env,

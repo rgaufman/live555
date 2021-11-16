@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *streamers* - i.e., servers.
@@ -43,7 +43,7 @@ public:
                               char const* mediumName,
                               ServerMediaSession*& resultSession);
 
-  char* generateSDPDescription(); // based on the entire session
+  char* generateSDPDescription(int addressFamily); // based on the entire session
       // Note: The caller is responsible for freeing the returned string
 
   char const* streamName() const { return fStreamName; }
@@ -121,15 +121,16 @@ class LIVEMEDIA_API ServerMediaSubsession: public Medium {
 public:
   unsigned trackNumber() const { return fTrackNumber; }
   char const* trackId();
-  virtual char const* sdpLines() = 0;
+  virtual char const* sdpLines(int addressFamily) = 0;
   virtual void getStreamParameters(unsigned clientSessionId, // in
-				   netAddressBits clientAddress, // in
+				   struct sockaddr_storage const& clientAddress, // in
 				   Port const& clientRTPPort, // in
 				   Port const& clientRTCPPort, // in
 				   int tcpSocketNum, // in (-1 means use UDP, not TCP)
 				   unsigned char rtpChannelId, // in (used if TCP)
 				   unsigned char rtcpChannelId, // in (used if TCP)
-				   netAddressBits& destinationAddress, // in out
+				   TLSState* tlsState, // in (used if TCP)
+				   struct sockaddr_storage& destinationAddress, // in out
 				   u_int8_t& destinationTTL, // in out
 				   Boolean& isMulticast, // out
 				   Port& serverRTPPort, // out
@@ -175,11 +176,6 @@ public:
   virtual void getAbsoluteTimeRange(char*& absStartTime, char*& absEndTime) const;
     // Subclasses can reimplement this iff they support seeking by 'absolute' time.
 
-  // The following may be called by (e.g.) SIP servers, for which the
-  // address and port number fields in SDP descriptions need to be non-zero:
-  void setServerAddressAndPortForSDP(netAddressBits addressBits,
-				     portNumBits portBits);
-
 protected: // we're a virtual base class
   ServerMediaSubsession(UsageEnvironment& env);
   virtual ~ServerMediaSubsession();
@@ -188,8 +184,6 @@ protected: // we're a virtual base class
       // returns a string to be delete[]d
 
   ServerMediaSession* fParentSession;
-  netAddressBits fServerAddressForSDP;
-  portNumBits fPortNumForSDP;
 
 private:
   friend class ServerMediaSession;

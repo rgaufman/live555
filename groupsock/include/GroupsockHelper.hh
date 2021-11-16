@@ -13,8 +13,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// "mTunnel" multicast access service
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// "groupsock"
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // C++ header
 
@@ -25,21 +25,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "NetAddress.hh"
 #endif
 
-LIVEMEDIA_API int setupDatagramSocket(UsageEnvironment& env, Port port);
-LIVEMEDIA_API int setupStreamSocket(UsageEnvironment& env,
-		      Port port, Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
+LIVEMEDIA_API int setupDatagramSocket(UsageEnvironment& env, Port port, int domain);
+LIVEMEDIA_API int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
+		      Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
 
 LIVEMEDIA_API int readSocket(UsageEnvironment& env,
 	       int socket, unsigned char* buffer, unsigned bufferSize,
-	       struct sockaddr_in& fromAddress);
+	       struct sockaddr_storage& fromAddress /*set only if we're a datagram socket*/);
 
 LIVEMEDIA_API Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
+		    int socket, struct sockaddr_storage const& addressAndPort,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize);
 
 LIVEMEDIA_API Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
+		    int socket, struct sockaddr_storage const& addressAndPort,
 		    unsigned char* buffer, unsigned bufferSize);
     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
@@ -62,29 +62,35 @@ LIVEMEDIA_API Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMillis
 LIVEMEDIA_API Boolean setSocketKeepAlive(int sock);
 
 LIVEMEDIA_API Boolean socketJoinGroup(UsageEnvironment& env, int socket,
-			netAddressBits groupAddress);
+			struct sockaddr_storage const& groupAddress);
 LIVEMEDIA_API Boolean socketLeaveGroup(UsageEnvironment&, int socket,
-			 netAddressBits groupAddress);
+			 struct sockaddr_storage const& groupAddress);
 
 // source-specific multicast join/leave
 LIVEMEDIA_API Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
-			   netAddressBits groupAddress,
-			   netAddressBits sourceFilterAddr);
+			   struct sockaddr_storage const& groupAddress,
+			   struct sockaddr_storage const& sourceFilterAddr);
 LIVEMEDIA_API Boolean socketLeaveGroupSSM(UsageEnvironment&, int socket,
-			    netAddressBits groupAddress,
-			    netAddressBits sourceFilterAddr);
+			    struct sockaddr_storage const& groupAddress,
+			    struct sockaddr_storage const& sourceFilterAddr);
 
-LIVEMEDIA_API Boolean getSourcePort(UsageEnvironment& env, int socket, Port& port);
+LIVEMEDIA_API Boolean getSourcePort(UsageEnvironment& env, int socket, int domain, Port& port);
 
-LIVEMEDIA_API netAddressBits ourIPAddress(UsageEnvironment& env); // in network order
+LIVEMEDIA_API ipv4AddressBits ourIPv4Address(UsageEnvironment& env); // in network order
+LIVEMEDIA_API ipv6AddressBits const& ourIPv6Address(UsageEnvironment& env);
 
-// IP addresses of our sending and receiving interfaces.  (By default, these
+LIVEMEDIA_API Boolean weHaveAnIPv4Address(UsageEnvironment& env);
+LIVEMEDIA_API Boolean weHaveAnIPv6Address(UsageEnvironment& env);
+LIVEMEDIA_API Boolean weHaveAnIPAddress(UsageEnvironment& env);
+  // returns True if we have either an IPv4 or an IPv6 address
+
+// IPv4 addresses of our sending and receiving interfaces.  (By default, these
 // are INADDR_ANY (i.e., 0), specifying the default interface.)
-extern LIVEMEDIA_API netAddressBits SendingInterfaceAddr;
-extern LIVEMEDIA_API netAddressBits ReceivingInterfaceAddr;
+extern ipv4AddressBits SendingInterfaceAddr;
+extern ipv4AddressBits ReceivingInterfaceAddr;
 
 // Allocates a randomly-chosen IPv4 SSM (multicast) address:
-LIVEMEDIA_API netAddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
+LIVEMEDIA_API ipv4AddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
 
 // Returns a simple "hh:mm:ss" string, for use in debugging output (e.g.)
 LIVEMEDIA_API char const* timestampString();
@@ -92,8 +98,10 @@ LIVEMEDIA_API char const* timestampString();
 
 #ifdef HAVE_SOCKADDR_LEN
 #define SET_SOCKADDR_SIN_LEN(var) var.sin_len = sizeof var
+#define SET_SOCKADDR_SIN6_LEN(var) var.sin6_len = sizeof var
 #else
 #define SET_SOCKADDR_SIN_LEN(var)
+#define SET_SOCKADDR_SIN6_LEN(var)
 #endif
 
 #define MAKE_SOCKADDR_IN(var,adr,prt) /*adr,prt must be in network order*/\
@@ -102,6 +110,12 @@ LIVEMEDIA_API char const* timestampString();
     var.sin_addr.s_addr = (adr);\
     var.sin_port = (prt);\
     SET_SOCKADDR_SIN_LEN(var);
+#define MAKE_SOCKADDR_IN6(var,prt) /*adr,prt must be in network order*/\
+    struct sockaddr_in6 var;\
+    memset(&var, 0, sizeof var);\
+    var.sin6_family = AF_INET6;\
+    var.sin6_port = (prt);\
+    SET_SOCKADDR_SIN6_LEN(var);
 
 
 // By default, we create sockets with the SO_REUSE_* flag set.
@@ -139,7 +153,6 @@ extern LIVEMEDIA_API int gettimeofday(struct timeval*, int*);
 #endif
 
 // The following are implemented in inet.c:
-extern "C" LIVEMEDIA_API netAddressBits our_inet_addr(char const*);
 extern "C" LIVEMEDIA_API void our_srandom(int x);
 extern "C" LIVEMEDIA_API long our_random();
 extern "C" LIVEMEDIA_API u_int32_t our_random32(); // because "our_random()" returns a 31-bit number

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up a H.264 or H.265 Video Elementary Stream into NAL units.
 // Implementation
 
@@ -86,7 +86,7 @@ H264or5VideoStreamFramer
   fParser = createParser
     ? new H264or5VideoStreamParser(hNumber, this, inputSource, includeStartCodeInOutput)
     : NULL;
-  fFrameRate = 25.0; // We assume a frame rate of 25 fps, unless we learn otherwise (from parsing a VPS or SPS NAL unit)
+  fFrameRate = 30.0; // We assume a frame rate of 30 fps, unless we learn otherwise (from parsing a VPS or SPS NAL unit)
 }
 
 H264or5VideoStreamFramer::~H264or5VideoStreamFramer() {
@@ -198,7 +198,7 @@ H264or5VideoStreamParser
     fHNumber(hNumber), fOutputStartCodeSize(includeStartCodeInOutput ? 4 : 0), fHaveSeenFirstStartCode(False), fHaveSeenFirstByteOfNALUnit(False), fParsedFrameRate(0.0),
     cpb_removal_delay_length_minus1(23), dpb_output_delay_length_minus1(23),
     CpbDpbDelaysPresentFlag(0), pic_struct_present_flag(0),
-    DeltaTfiDivisor(2.0) {
+    DeltaTfiDivisor(hNumber == 264 ? 2.0 : 1.0) {
 }
 
 H264or5VideoStreamParser::~H264or5VideoStreamParser() {

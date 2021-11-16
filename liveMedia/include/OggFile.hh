@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates an Ogg file
 // C++ header
 
@@ -31,6 +31,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class OggTrack; // forward
 class OggDemux; // forward
 
+typedef void OggDemuxOnDeletionFunc(void* objectToNotify, OggDemux* demuxBeingDeleted);
+
 class LIVEMEDIA_API OggFile: public Medium {
 public:
   typedef void (onCreationFunc)(OggFile* newFile, void* clientData);
@@ -44,7 +46,7 @@ public:
 
   OggTrack* lookup(u_int32_t trackNumber);
 
-  OggDemux* newDemux();
+  OggDemux* newDemux(OggDemuxOnDeletionFunc* onDeletionFunc = NULL, void* objectToNotify = NULL);
       // Creates a demultiplexor for extracting tracks from this file.
       // (Separate clients will typically have separate demultiplexors.)
 

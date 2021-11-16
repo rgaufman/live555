@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "multikit" Multicast Application Shell
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // "Group Endpoint Id"
 // C++ header
 
@@ -31,33 +31,33 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class LIVEMEDIA_API GroupEId {
 public:
-  GroupEId(struct in_addr const& groupAddr,
+  GroupEId(struct sockaddr_storage const& groupAddr,
 	   portNumBits portNum, u_int8_t ttl);
       // used for a 'source-independent multicast' group
-  GroupEId(struct in_addr const& groupAddr,
-	   struct in_addr const& sourceFilterAddr,
+  GroupEId(struct sockaddr_storage const& groupAddr,
+	   struct sockaddr_storage const& sourceFilterAddr,
 	   portNumBits portNum);
       // used for a 'source-specific multicast' group
+  GroupEId(); // tmp default constructor, until "Groupsock" interface uses "sockaddr_storage"
 
-  struct in_addr const& groupAddress() const { return fGroupAddress; }
-  struct in_addr const& sourceFilterAddress() const { return fSourceFilterAddress; }
+  struct sockaddr_storage const& groupAddress() const { return fGroupAddress; }
+  struct sockaddr_storage const& sourceFilterAddress() const { return fSourceFilterAddress; }
 
   Boolean isSSM() const;
 
-  portNumBits portNum() const { return fPortNum; }
+  portNumBits portNum() const;
 
   u_int8_t ttl() const { return fTTL; }
 
 private:
-  void init(struct in_addr const& groupAddr,
-	    struct in_addr const& sourceFilterAddr,
+  void init(struct sockaddr_storage const& groupAddr,
+	    struct sockaddr_storage const& sourceFilterAddr,
 	    portNumBits portNum,
 	    u_int8_t ttl);
 
 private:
-  struct in_addr fGroupAddress;
-  struct in_addr fSourceFilterAddress;
-  portNumBits fPortNum; // in network byte order
+  struct sockaddr_storage fGroupAddress; // also includes port number (in network byte order)
+  struct sockaddr_storage fSourceFilterAddress;
   u_int8_t fTTL;
 };
 

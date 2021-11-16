@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A demo application that receives a UDP multicast stream, replicates it (using the "StreamReplicator" class),
 // and retransmits one replica stream to another (multicast or unicast) address & port,
 // and writes the other replica stream to a file.
@@ -44,17 +44,19 @@ int main(int argc, char** argv) {
 #else
     = "239.255.42.42";
 #endif
-  struct in_addr inputAddress;
-  inputAddress.s_addr = our_inet_addr(inputAddressStr);
+  NetAddressList inputAddresses(inputAddressStr);
+  struct sockaddr_storage inputAddress;
+  copyAddress(inputAddress, inputAddresses.firstAddress());
 
   Port const inputPort(8888);
   unsigned char const inputTTL = 0; // we're only reading from this mcast group
 
 #ifdef USE_SSM
-  char* sourceAddressStr = "aaa.bbb.ccc.ddd";
+  char const* sourceAddressStr = "aaa.bbb.ccc.ddd";
                            // replace this with the real source address
-  struct in_addr sourceFilterAddress;
-  sourceFilterAddress.s_addr = our_inet_addr(sourceAddressStr);
+  NetAddressList sourceFilterAddresses(sourceAddressStr);
+  struct sockaddr_storage sourceFilterAddress;
+  copyAddress(sourceFilterAddress, sourceFilterAddresses.firstAddress());
 
   Groupsock inputGroupsock(*env, inputAddress, sourceFilterAddress, inputPort);
 #else
@@ -86,8 +88,9 @@ void startReplicaUDPSink(StreamReplicator* replicator, char const* outputAddress
   FramedSource* source = replicator->createStreamReplica();
 
   // Create a 'groupsock' for the destination address and port:
-  struct in_addr outputAddress;
-  outputAddress.s_addr = our_inet_addr(outputAddressStr);
+  NetAddressList outputAddresses(outputAddressStr);
+  struct sockaddr_storage outputAddress;
+  copyAddress(outputAddress, outputAddresses.firstAddress());
 
   Port const outputPort(outputPortNum);
   unsigned char const outputTTL = 255;

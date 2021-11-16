@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A parser for a Matroska file.
 // Implementation
 
@@ -83,6 +83,11 @@ void MatroskaFileParser::seekToTime(double& seekNPT) {
     fCurrentParseState = LOOKING_FOR_BLOCK;
     // LATER handle "blockNumWithinCluster"; for now, we assume that it's 0 #####
   }
+}
+
+void MatroskaFileParser::pause() {
+  resetPresentationTimes();
+  // to ensure that we presentation times continue from 'wall clock' time after we resume
 }
 
 void MatroskaFileParser
@@ -1097,18 +1102,18 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock() {
     u_int8_t const* specialFrameSource = NULL;
     u_int8_t const opusCommentHeader[16]
       = {'O','p','u','s','T','a','g','s', 0, 0, 0, 0, 0, 0, 0, 0};
-    if (track->codecIsOpus && demuxedTrack->fOpusTrackNumber < 2) {
+    if (track->codecIsOpus && demuxedTrack->fOpusFrameNumber < 2) {
       // Special case for Opus audio.  The first frame (the 'configuration' header) comes from
       // the 'private data'.  The second frame (the 'comment' header) comes is synthesized by
       // us here:
-      if (demuxedTrack->fOpusTrackNumber == 0) {
+      if (demuxedTrack->fOpusFrameNumber == 0) {
 	specialFrameSource = track->codecPrivate;
 	frameSize = track->codecPrivateSize;
-      } else { // demuxedTrack->fOpusTrackNumber == 1
+      } else { // demuxedTrack->fOpusFrameNumber == 1
 	specialFrameSource = opusCommentHeader;
 	frameSize = sizeof opusCommentHeader;
       }
-      ++demuxedTrack->fOpusTrackNumber;
+      ++demuxedTrack->fOpusFrameNumber;
     } else {
       frameSize = fFrameSizesWithinBlock[fNextFrameNumberToDeliver];
       if (track->haveSubframes()) {
@@ -1133,8 +1138,8 @@ Boolean MatroskaFileParser::deliverFrameWithinBlock() {
     double pt = (fClusterTimecode+fBlockTimecode)*(fOurFile.fTimecodeScale/1000000000.0)
       + fNextFrameNumberToDeliver*(track->defaultDuration/1000000000.0);
     if (fPresentationTimeOffset == 0.0) {
-      // This is the first time we've computed a presentation time.  Compute an offset to make the presentation times aligned
-      // with 'wall clock' time:
+      // This is the first time we've computed a presentation time.
+      // Compute an offset to make the presentation times aligned with 'wall clock' time:
       struct timeval timeNow;
       gettimeofday(&timeNow, NULL);
       double ptNow = timeNow.tv_sec + timeNow.tv_usec/1000000.0;
@@ -1226,6 +1231,7 @@ void MatroskaFileParser::deliverFrameBytes() {
 
     MatroskaDemuxedTrack* demuxedTrack = fOurDemux->lookupDemuxedTrack(fBlockTrackNumber);
     if (demuxedTrack == NULL) break; // shouldn't happen
+    if (!demuxedTrack->isCurrentlyAwaitingData()) return; // wait until we're asked for data
 
     unsigned const BANK_SIZE = bankSize();
     while (fCurFrameNumBytesToGet > 0) {
@@ -1505,8 +1511,18 @@ void MatroskaFileParser::seekToEndOfFile() {
 }
 
 void MatroskaFileParser::resetStateAfterSeeking() {
+  // Presentation times aren't affected by the seek; they continue advancing as normal.
+  // Therefore, ensure that they continue to be aligned with 'wall clock' time:
+  resetPresentationTimes();
+
   // Because we're resuming parsing after seeking to a new position in the file, reset the parser state:
   fCurOffsetInFile = fSavedCurOffsetInFile = 0;
   fCurOffsetWithinFrame = fSavedCurOffsetWithinFrame = 0;
   flushInput();
+}
+
+void MatroskaFileParser::resetPresentationTimes() {
+  if (fOurDemux != NULL) fOurDemux->resetState();
+
+  fPresentationTimeOffset = 0.0;
 }

@@ -1,5 +1,5 @@
-/* RTCP code taken directly from the most recent RTP specification:
- *     RFC 3550
+/* RTCP code taken directly from the most recent RTP specification: RFC 3550
+ *         Copyright (C) The Internet Society (2003).  All Rights Reserved.
  * Implementation
  */
 

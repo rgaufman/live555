@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -24,10 +24,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define _RTP_INTERFACE_HH
 
 #ifndef _MEDIA_HH
-#include <Media.hh>
+#include "Media.hh"
+#endif
+#ifndef _TLS_STATE_HH
+#include "TLSState.hh"
 #endif
 #ifndef _GROUPSOCK_HH
-#include "Groupsock.hh"
+#include <Groupsock.hh>
 #endif
 
 // Typedef for an optional auxilliary handler function, to be called
@@ -47,8 +50,8 @@ public:
 
   Groupsock* gs() const { return fGS; }
 
-  void setStreamSocket(int sockNum, unsigned char streamChannelId);
-  void addStreamSocket(int sockNum, unsigned char streamChannelId);
+  void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState);
+  void addStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState);
   void removeStreamSocket(int sockNum, unsigned char streamChannelId);
   static void setServerRequestAlternativeByteHandler(UsageEnvironment& env, int socketNum,
 						     ServerRequestAlternativeByteHandler* handler, void* clientData);
@@ -59,7 +62,7 @@ public:
                            handlerProc);
   Boolean handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 		     // out parameters:
-		     unsigned& bytesRead, struct sockaddr_in& fromAddress,
+		     unsigned& bytesRead, struct sockaddr_storage& fromAddress,
 		     int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 		     Boolean& packetReadWasIncomplete);
   // Note: If "tcpSocketNum" < 0, then the packet was received over UDP, and "tcpStreamChannelId"
@@ -87,8 +90,10 @@ public:
 private:
   // Helper functions for sending a RTP or RTCP packet over a TCP connection:
   Boolean sendRTPorRTCPPacketOverTCP(unsigned char* packet, unsigned packetSize,
-				     int socketNum, unsigned char streamChannelId);
-  Boolean sendDataOverTCP(int socketNum, u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed);
+				     int socketNum, unsigned char streamChannelId,
+				     TLSState* tlsState);
+  Boolean sendDataOverTCP(int socketNum, TLSState* tlsState,
+			  u_int8_t const* data, unsigned dataSize, Boolean forceSendToSucceed);
 
 private:
   friend class SocketDescriptor;
@@ -100,6 +105,7 @@ private:
     // how much data (if any) is available to be read from the TCP stream
   int fNextTCPReadStreamSocketNum;
   unsigned char fNextTCPReadStreamChannelId;
+  TLSState* fNextTCPReadTLSState;
   TaskScheduler::BackgroundHandlerProc* fReadHandlerProc; // if any
 
   AuxHandlerFunc* fAuxReadHandlerFunc;

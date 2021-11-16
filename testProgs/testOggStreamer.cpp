@@ -13,18 +13,20 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 **********/
-// Copyright (c) 1996-2020, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2021, Live Networks, Inc.  All rights reserved
 // A test program that reads a ".ogg" (i.e., Ogg) file, demultiplexes each track
 // (audio and/or video), and streams each track using RTP multicast.
 // main program
 
 #include <liveMedia.hh>
+
 #include <BasicUsageEnvironment.hh>
+#include "announceURL.hh"
 #include <GroupsockHelper.hh>
 
 UsageEnvironment* env;
 char const* inputFileName = "test.ogg";
-struct in_addr destinationAddress;
+struct sockaddr_storage destinationAddress;
 RTSPServer* rtspServer;
 ServerMediaSession* sms;
 OggFile* oggFile;
@@ -48,7 +50,8 @@ int main(int argc, char** argv) {
   env = BasicUsageEnvironment::createNew(*scheduler);
 
   // Define our destination (multicast) IP address:
-  destinationAddress.s_addr = chooseRandomIPv4SSMAddress(*env);
+  destinationAddress.ss_family = AF_INET;
+  ((struct sockaddr_in&)destinationAddress).sin_addr.s_addr = chooseRandomIPv4SSMAddress(*env);
     // Note: This is a multicast address.  If you wish instead to stream
     // using unicast, then you should use the "testOnDemandRTSPServer"
     // test program - not this test program - as a model.
@@ -132,10 +135,7 @@ void onOggFileCreation(OggFile* newFile, void* clientData) {
   }
 
   rtspServer->addServerMediaSession(sms);
-
-  char* url = rtspServer->rtspURL(sms);
-  *env << "Play this stream using the URL \"" << url << "\"\n";
-  delete[] url;
+  announceURL(rtspServer, sms);
 
   // Start the streaming:
   play();

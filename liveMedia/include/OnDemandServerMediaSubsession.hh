@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand.
 // C++ header
@@ -43,15 +43,16 @@ protected: // we're a virtual base class
   virtual ~OnDemandServerMediaSubsession();
 
 protected: // redefined virtual functions
-  virtual char const* sdpLines();
+  virtual char const* sdpLines(int addressFamily);
   virtual void getStreamParameters(unsigned clientSessionId,
-				   netAddressBits clientAddress,
+				   struct sockaddr_storage const& clientAddress,
                                    Port const& clientRTPPort,
                                    Port const& clientRTCPPort,
 				   int tcpSocketNum,
                                    unsigned char rtpChannelId,
                                    unsigned char rtcpChannelId,
-                                   netAddressBits& destinationAddress,
+				   TLSState* tlsState,
+                                   struct sockaddr_storage& destinationAddress,
 				   u_int8_t& destinationTTL,
                                    Boolean& isMulticast,
                                    Port& serverRTPPort,
@@ -101,7 +102,7 @@ protected: // new virtual functions, defined by all subclasses
 				    FramedSource* inputSource) = 0;
 
 protected: // new virtual functions, may be redefined by a subclass:
-  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual Groupsock* createGroupsock(struct sockaddr_storage const& addr, Port port);
   virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
 				   unsigned char const* cname, RTPSink* sink);
 
@@ -152,23 +153,26 @@ private:
 
 class LIVEMEDIA_API Destinations {
 public:
-  Destinations(struct in_addr const& destAddr,
+  Destinations(struct sockaddr_storage const& destAddr,
                Port const& rtpDestPort,
                Port const& rtcpDestPort)
     : isTCP(False), addr(destAddr), rtpPort(rtpDestPort), rtcpPort(rtcpDestPort) {
   }
-  Destinations(int tcpSockNum, unsigned char rtpChanId, unsigned char rtcpChanId)
+  Destinations(int tcpSockNum, unsigned char rtpChanId, unsigned char rtcpChanId,
+	       TLSState* tlsSt)
     : isTCP(True), rtpPort(0) /*dummy*/, rtcpPort(0) /*dummy*/,
-      tcpSocketNum(tcpSockNum), rtpChannelId(rtpChanId), rtcpChannelId(rtcpChanId) {
+      tcpSocketNum(tcpSockNum), rtpChannelId(rtpChanId), rtcpChannelId(rtcpChanId),
+      tlsState(tlsSt) {
   }
 
 public:
   Boolean isTCP;
-  struct in_addr addr;
+  struct sockaddr_storage addr;
   Port rtpPort;
   Port rtcpPort;
   int tcpSocketNum;
   unsigned char rtpChannelId, rtcpChannelId;
+  TLSState* tlsState;
 };
 
 class LIVEMEDIA_API StreamState {

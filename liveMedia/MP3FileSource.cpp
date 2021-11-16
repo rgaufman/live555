@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // MP3 File Sources
 // Implementation
 
@@ -23,19 +23,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "InputFile.hh"
 
 ////////// MP3FileSource //////////
-
-MP3FileSource::MP3FileSource(UsageEnvironment& env, FILE* fid)
-  : FramedFileSource(env, fid),
-    fStreamState(new MP3StreamState(env)) {
-}
-
-MP3FileSource::~MP3FileSource() {
-  delete fStreamState;
-}
-
-char const* MP3FileSource::MIMEtype() const {
-  return "audio/MPEG";
-}
 
 MP3FileSource* MP3FileSource::createNew(UsageEnvironment& env, char const* fileName) {
   MP3FileSource* newSource = NULL;
@@ -51,13 +38,35 @@ MP3FileSource* MP3FileSource::createNew(UsageEnvironment& env, char const* fileN
 
     unsigned fileSize = (unsigned)GetFileSize(fileName, fid);
     newSource->assignStream(fid, fileSize);
-    if (!newSource->initializeStream()) break;
 
     return newSource;
   } while (0);
 
   Medium::close(newSource);
   return NULL;
+}
+
+MP3FileSource::MP3FileSource(UsageEnvironment& env, FILE* fid)
+  : FramedFileSource(env, fid),
+    fStreamState(new MP3StreamState),
+    fHaveStartedReading(False), fHaveBeenInitialized(False),
+    fLimitNumBytesToStream(False), fNumBytesToStream(0) {
+  //###### We can't make the socket non-blocking yet, because we still do synchronous reads
+  //###### on it (to find MP3 headers).  Later, fix this.
+  //makeSocketNonBlocking(fileno(fFid));
+
+  // Test whether the file is seekable
+  fFidIsSeekable = FileIsSeekable(fFid);
+}
+
+MP3FileSource::~MP3FileSource() {
+  if (fFid != NULL) envir().taskScheduler().turnOffBackgroundReadHandling(fileno(fFid));
+
+  delete fStreamState; // closes the input file
+}
+
+char const* MP3FileSource::MIMEtype() const {
+  return "audio/MPEG";
 }
 
 float MP3FileSource::filePlayTime() const {
@@ -109,54 +118,66 @@ void MP3FileSource::getAttributes() const {
 }
 
 void MP3FileSource::doGetNextFrame() {
-  if (!doGetNextFrame1()) {
+  if (feof(fFid) || ferror(fFid) || (fLimitNumBytesToStream && fNumBytesToStream == 0)) {
     handleClosure();
     return;
   }
 
-  // Switch to another task:
-#if defined(__WIN32__) || defined(_WIN32)
-  // HACK: liveCaster/lc uses an implementation of scheduleDelayedTask()
-  // that performs very badly (chewing up lots of CPU time, apparently polling)
-  // on Windows.  Until this is fixed, we just call our "afterGetting()"
-  // function directly.  This avoids infinite recursion, as long as our sink
-  // is discontinuous, which is the case for the RTP sink that liveCaster/lc
-  // uses. #####
-  afterGetting(this);
-#else
-  nextTask() = envir().taskScheduler().scheduleDelayedTask(0,
-				(TaskFunc*)afterGetting, this);
-#endif
-}
-
-Boolean MP3FileSource::doGetNextFrame1() {
-  if (fLimitNumBytesToStream && fNumBytesToStream == 0) return False; // we've already streamed as much as we were asked for
-
-  if (!fHaveJustInitialized) {
-    if (fStreamState->findNextHeader(fPresentationTime) == 0) return False;
-  } else {
-    fPresentationTime = fFirstFramePresentationTime;
-    fHaveJustInitialized = False;
+  if (!fHaveStartedReading) {
+    // Await readable data from the file:
+    envir().taskScheduler().turnOnBackgroundReadHandling(fileno(fFid),
+		 (TaskScheduler::BackgroundHandlerProc*)&fileReadableHandler, this);
+    fHaveStartedReading = True;
+    return;
   }
 
+  if (!fHaveBeenInitialized) {
+    if (!initializeStream()) return;
+
+    fPresentationTime = fFirstFramePresentationTime;
+    fHaveBeenInitialized = True;
+  } else {
+    if (fStreamState->findNextHeader(fPresentationTime) == 0) return;
+  }
+
+  if (fLimitNumBytesToStream && fNumBytesToStream < (u_int64_t)fMaxSize) {
+    fMaxSize = (unsigned)fNumBytesToStream;
+  }
   if (!fStreamState->readFrame(fTo, fMaxSize, fFrameSize, fDurationInMicroseconds)) {
     char tmp[200];
     sprintf(tmp,
 	    "Insufficient buffer size %d for reading MPEG audio frame (needed %d)\n",
 	    fMaxSize, fFrameSize);
     envir().setResultMsg(tmp);
-    fFrameSize = fMaxSize;
-    return False;
+    handleClosure();
+    return;
   }
-  if (fNumBytesToStream > fFrameSize) fNumBytesToStream -= fFrameSize; else fNumBytesToStream = 0;
+  fNumBytesToStream -= fFrameSize;
 
-  return True;
+  // Inform the reader that he has data:
+  // Because the file read was done from the event loop, we can call the
+  // 'after getting' function directly, without risk of infinite recursion:
+  FramedSource::afterGetting(this);
+}
+
+void MP3FileSource::fileReadableHandler(MP3FileSource* source, int /*mask*/) {
+  if (!source->isCurrentlyAwaitingData()) {
+    source->doStopGettingFrames(); // we're not ready for the data yet
+    return;
+  }
+  source->doGetNextFrame();
 }
 
 void MP3FileSource::assignStream(FILE* fid, unsigned fileSize) {
   fStreamState->assignStream(fid, fileSize);
-}
 
+  if (!fHaveBeenInitialized) {
+    if (!initializeStream()) return;
+
+    fPresentationTime = fFirstFramePresentationTime;
+    fHaveBeenInitialized = True;
+  }
+}
 
 Boolean MP3FileSource::initializeStream() {
   // Make sure the file has an appropriate header near the start:
@@ -166,10 +187,6 @@ Boolean MP3FileSource::initializeStream() {
   }
 
   fStreamState->checkForXingHeader(); // in case this is a VBR file
-
-  fHaveJustInitialized = True;
-  fLimitNumBytesToStream = False;
-  fNumBytesToStream = 0;
 
   // Hack: It's possible that our environment's 'result message' has been
   // reset within this function, so set it again to our name now:

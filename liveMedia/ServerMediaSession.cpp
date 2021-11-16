@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *streamers* - i.e., servers.
@@ -208,20 +208,34 @@ Boolean ServerMediaSession::isServerMediaSession() const {
   return True;
 }
 
-char* ServerMediaSession::generateSDPDescription() {
-  AddressString ipAddressStr(ourIPAddress(envir()));
+char* ServerMediaSession::generateSDPDescription(int addressFamily) {
+  struct sockaddr_storage ourAddress;
+  if (addressFamily == AF_INET) {
+    ourAddress.ss_family = AF_INET;
+    ((sockaddr_in&)ourAddress).sin_addr.s_addr = ourIPv4Address(envir());
+  } else { // IPv6
+    ourAddress.ss_family = AF_INET6;
+    for (unsigned i = 0; i < 16; ++i) {
+      ((sockaddr_in6&)ourAddress).sin6_addr.s6_addr[i] = ourIPv6Address(envir())[i];
+    }
+  }
+  
+  AddressString ipAddressStr(ourAddress);
   unsigned ipAddressStrSize = strlen(ipAddressStr.val());
 
   // For a SSM sessions, we need a "a=source-filter: incl ..." line also:
   char* sourceFilterLine;
   if (fIsSSM) {
     char const* const sourceFilterFmt =
-      "a=source-filter: incl IN IP4 * %s\r\n"
+      "a=source-filter: incl IN %s * %s\r\n"
       "a=rtcp-unicast: reflection\r\n";
-    unsigned const sourceFilterFmtSize = strlen(sourceFilterFmt) + ipAddressStrSize + 1;
+    unsigned const sourceFilterFmtSize
+      = strlen(sourceFilterFmt) + 3/*IP4 or IP6*/ + ipAddressStrSize + 1;
 
     sourceFilterLine = new char[sourceFilterFmtSize];
-    sprintf(sourceFilterLine, sourceFilterFmt, ipAddressStr.val());
+    sprintf(sourceFilterLine, sourceFilterFmt,
+	    addressFamily == AF_INET ? "IP4" : "IP6",
+	    ipAddressStr.val());
   } else {
     sourceFilterLine = strDup("");
   }
@@ -237,7 +251,7 @@ char* ServerMediaSession::generateSDPDescription() {
     ServerMediaSubsession* subsession;
     for (subsession = fSubsessionsHead; subsession != NULL;
 	 subsession = subsession->fNext) {
-      char const* sdpLines = subsession->sdpLines();
+      char const* sdpLines = subsession->sdpLines(addressFamily);
       if (sdpLines == NULL) continue; // the media's not available
       sdpLength += strlen(sdpLines);
     }
@@ -246,7 +260,7 @@ char* ServerMediaSession::generateSDPDescription() {
     // Unless subsessions have differing durations, we also have a "a=range:" line:
     float dur = duration();
     if (dur == 0.0) {
-      rangeLine = strDup("a=range:npt=0-\r\n");
+      rangeLine = strDup("a=range:npt=now-\r\n");
     } else if (dur > 0.0) {
       char buf[100];
       sprintf(buf, "a=range:npt=0-%.3f\r\n", dur);
@@ -257,7 +271,7 @@ char* ServerMediaSession::generateSDPDescription() {
 
     char const* const sdpPrefixFmt =
       "v=0\r\n"
-      "o=- %ld%06ld %d IN IP4 %s\r\n"
+      "o=- %ld%06ld %d IN %s %s\r\n"
       "s=%s\r\n"
       "i=%s\r\n"
       "t=0 0\r\n"
@@ -270,7 +284,7 @@ char* ServerMediaSession::generateSDPDescription() {
       "a=x-qt-text-inf:%s\r\n"
       "%s";
     sdpLength += strlen(sdpPrefixFmt)
-      + 20 + 6 + 20 + ipAddressStrSize
+      + 20 + 6 + 20 + 3/*IP4 or IP6*/ + ipAddressStrSize
       + strlen(fDescriptionSDPString)
       + strlen(fInfoSDPString)
       + strlen(libNameStr) + strlen(libVersionStr)
@@ -287,6 +301,7 @@ char* ServerMediaSession::generateSDPDescription() {
     snprintf(sdp, sdpLength, sdpPrefixFmt,
 	     fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
 	     1, // o= <version> // (needs to change if params are modified)
+	     addressFamily == AF_INET ? "IP4" : "IP6", // o= <address family>
 	     ipAddressStr.val(), // o= <address>
 	     fDescriptionSDPString, // s= <description>
 	     fInfoSDPString, // i= <info>
@@ -306,7 +321,7 @@ char* ServerMediaSession::generateSDPDescription() {
       sdpLength -= mediaSDPLength;
       if (sdpLength <= 1) break; // the SDP has somehow become too long
 
-      char const* sdpLines = subsession->sdpLines();
+      char const* sdpLines = subsession->sdpLines(addressFamily);
       if (sdpLines != NULL) snprintf(mediaSDP, sdpLength, "%s", sdpLines);
     }
   } while (0);
@@ -344,8 +359,7 @@ void ServerMediaSubsessionIterator::reset() {
 
 ServerMediaSubsession::ServerMediaSubsession(UsageEnvironment& env)
   : Medium(env),
-    fParentSession(NULL), fServerAddressForSDP(0), fPortNumForSDP(0),
-    fNext(NULL), fTrackNumber(0), fTrackId(NULL) {
+    fParentSession(NULL), fNext(NULL), fTrackNumber(0), fTrackId(NULL) {
 }
 
 ServerMediaSubsession::~ServerMediaSubsession() {
@@ -416,12 +430,6 @@ void ServerMediaSubsession::getAbsoluteTimeRange(char*& absStartTime, char*& abs
   absStartTime = absEndTime = NULL;
 }
 
-void ServerMediaSubsession::setServerAddressAndPortForSDP(netAddressBits addressBits,
-							  portNumBits portBits) {
-  fServerAddressForSDP = addressBits;
-  fPortNumForSDP = portBits;
-}
-
 char const*
 ServerMediaSubsession::rangeSDPLine() const {
   // First, check for the special case where we support seeking by 'absolute' time:
@@ -447,7 +455,7 @@ ServerMediaSubsession::rangeSDPLine() const {
   // Use our own duration for a "a=range:" line:
   float ourDuration = duration();
   if (ourDuration == 0.0) {
-    return strDup("a=range:npt=0-\r\n");
+    return strDup("a=range:npt=now-\r\n");
   } else {
     char buf[100];
     sprintf(buf, "a=range:npt=0-%.3f\r\n", ourDuration);

@@ -13,8 +13,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// "mTunnel" multicast access service
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// "groupsock"
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // Network Addresses
 // C++ header
 
@@ -34,14 +34,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // Definition of a type representing a low-level network address.
-// At present, this is 32-bits, for IPv4.  Later, generalize it,
-// to allow for IPv6.
-typedef u_int32_t netAddressBits;
+    // Note that the type "netAddressBits" is no longer defined; use "ipv4AddressBits" instead.
+typedef u_int32_t ipv4AddressBits;
+typedef u_int8_t ipv6AddressBits[16]; // 128 bits
 
 class LIVEMEDIA_API NetAddress {
 public:
   NetAddress(u_int8_t const* data,
-	     unsigned length = 4 /* default: 32 bits */);
+	     unsigned length = 4 /* default: 32 bits (for IPv4); use 16 (128 bits) for IPv6 */);
   NetAddress(unsigned length = 4); // sets address data to all-zeros
   NetAddress(NetAddress const& orig);
   NetAddress& operator=(NetAddress const& rightSide);
@@ -59,9 +59,19 @@ private:
   u_int8_t* fData;
 };
 
-class LIVEMEDIA_API NetAddressList {
+struct sockaddr_storage const& nullAddress(int addressFamily = AF_INET);
+Boolean addressIsNull(sockaddr_storage const& address);
+
+SOCKLEN_T addressSize(sockaddr_storage const& address);
+
+void copyAddress(struct sockaddr_storage& to, NetAddress const* from);
+
+Boolean operator==(struct sockaddr_storage const& left, struct sockaddr_storage const& right);
+    // compares the family and address parts only; not the port number or anything else
+
+class NetAddressList {
 public:
-  NetAddressList(char const* hostname);
+  NetAddressList(char const* hostname, int addressFamily = AF_UNSPEC);
   NetAddressList(NetAddressList const& orig);
   NetAddressList& operator=(NetAddressList const& rightSide);
   virtual ~NetAddressList();
@@ -81,7 +91,7 @@ public:
   };
   
 private:
-  void assign(netAddressBits numAddresses, NetAddress** addressArray);
+  void assign(unsigned numAddresses, NetAddress** addressArray);
   void clean();
   
   friend class Iterator;
@@ -113,11 +123,34 @@ public:
   AddressPortLookupTable();
   virtual ~AddressPortLookupTable();
   
-  void* Add(netAddressBits address1, netAddressBits address2, Port port, void* value);
+  void* Add(struct sockaddr_storage const& address1,
+	    struct sockaddr_storage const& address2,
+	    Port port,
+	    void* value);
       // Returns the old value if different, otherwise 0
-  Boolean Remove(netAddressBits address1, netAddressBits address2, Port port);
-  void* Lookup(netAddressBits address1, netAddressBits address2, Port port);
+  void* Add(struct sockaddr_storage const& address1,
+	    Port port,
+	    void* value) {
+    return Add(address1, nullAddress(), port, value);
+  }
+
+  Boolean Remove(struct sockaddr_storage const& address1,
+		 struct sockaddr_storage const& address2,
+		 Port port);
+  Boolean Remove(struct sockaddr_storage const& address1,
+		 Port port) {
+    return Remove(address1, nullAddress(), port);
+  }
+
+  void* Lookup(struct sockaddr_storage const& address1,
+	       struct sockaddr_storage const& address2,
+	       Port port);
       // Returns 0 if not found
+  void* Lookup(struct sockaddr_storage const& address1,
+	       Port port) {
+    return Lookup(address1, nullAddress(), port);
+  }
+
   void* RemoveNext() { return fTable->RemoveNext(); }
 
   // Used to iterate through the entries in the table
@@ -138,25 +171,39 @@ private:
 };
 
 
-Boolean IsMulticastAddress(netAddressBits address);
+Boolean IsMulticastAddress(struct sockaddr_storage const& address);
 
 
-// A mechanism for displaying an IPv4 address in ASCII.  This is intended to replace "inet_ntoa()", which is not thread-safe.
-class LIVEMEDIA_API AddressString {
+// A mechanism for displaying an IP (v4 or v6) address in ASCII.
+// (This encapsulates the "inet_ntop()" function.)
+class AddressString {
 public:
+  // IPv4 input:
   AddressString(struct sockaddr_in const& addr);
   AddressString(struct in_addr const& addr);
-  AddressString(netAddressBits addr); // "addr" is assumed to be in host byte order here
+  AddressString(ipv4AddressBits const& addr); // "addr" is assumed to be in network byte order
+
+  // IPv6 input:
+  AddressString(struct sockaddr_in6 const& addr);
+  AddressString(struct in6_addr const& addr);
+  AddressString(ipv6AddressBits const& addr);
+
+  // IPv4 or IPv6 input:
+  AddressString(struct sockaddr_storage const& addr);
 
   virtual ~AddressString();
 
   char const* val() const { return fVal; }
 
 private:
-  void init(netAddressBits addr); // used to implement each of the constructors
+  void init(ipv4AddressBits const& addr); // used to implement the IPv4 constructors
+  void init(ipv6AddressBits const& addr); // used to implement the IPv6 constructors
 
 private:
   char* fVal; // The result ASCII string: allocated by the constructor; deleted by the destructor
 };
+
+portNumBits portNum(struct sockaddr_storage const& address);
+void setPortNum(struct sockaddr_storage& address, portNumBits portNum/*in network order*/);
 
 #endif

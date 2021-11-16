@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2020 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // State encapsulating a TLS connection
 // C++ header
 
@@ -27,32 +27,70 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _BOOLEAN_HH
 #include "Boolean.hh"
 #endif
+#ifndef _USAGE_ENVIRONMENT_HH
+#include "UsageEnvironment.hh"
+#endif
 #ifndef NO_OPENSSL
 #include <openssl/ssl.h>
 #endif
 
 class LIVEMEDIA_API TLSState {
 public:
-  TLSState(class RTSPClient& client);
-  virtual ~TLSState();
-
-public:
   Boolean isNeeded;
 
-  int connect(int socketNum); // returns: -1 (unrecoverable error), 0 (pending), 1 (done)
   int write(const char* data, unsigned count);
   int read(u_int8_t* buffer, unsigned bufferSize);
 
-private:
-  void reset();
-  Boolean setup(int socketNum);
+protected: // we're an abstract base class
+  TLSState();
+  virtual ~TLSState();
 
 #ifndef NO_OPENSSL
-private:
-  class RTSPClient& fClient;
+  void initLibrary();
+  void reset();
+
+protected:
   Boolean fHasBeenSetup;
   SSL_CTX* fCtx;
   SSL* fCon;
+#endif
+};
+
+class ClientTLSState: public TLSState {
+public:
+  ClientTLSState(class RTSPClient& client);
+  virtual ~ClientTLSState();
+
+  int connect(int socketNum); // returns: <0 (error), 0 (pending), >0 (success)
+
+#ifndef NO_OPENSSL
+private:
+  Boolean setup(int socketNum);
+
+private:
+  class RTSPClient& fClient;
+#endif
+};
+
+class LIVEMEDIA_API ServerTLSState: public TLSState {
+public:
+  ServerTLSState(UsageEnvironment& env);
+  virtual ~ServerTLSState();
+
+  void setCertificateAndPrivateKeyFileNames(char const* certFileName, char const* privKeyFileName);
+
+  int accept(int socketNum); // returns: <0 (error), 0 (pending), >0 (success)
+
+  Boolean tlsAcceptIsNeeded;
+
+#ifndef NO_OPENSSL
+private:
+  Boolean setup(int socketNum);
+
+private:
+  UsageEnvironment& fEnv;
+  char const* fCertificateFileName;
+  char const* fPrivateKeyFileName;
 #endif
 };
 
