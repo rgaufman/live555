@@ -145,3 +145,10 @@ cmake . -Bstatic -G "Visual Studio 15 2017" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_
 cmake --build static --config Release --target install
 ```
 
+Visual Studio 2022
+
+```shell
+cmake . -Bstatic -G "Visual Studio 17 2022" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
+cmake --build static --config Release --target install
+```
+
