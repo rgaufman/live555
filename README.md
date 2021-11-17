@@ -152,3 +152,8 @@ cmake . -Bstatic -G "Visual Studio 17 2022" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_
 cmake --build static --config Release --target install
 ```
 
+## Build options
+usage OpenSSL: -DLIVE555_ENABLE_OPENSSL=ON/OFF
+usage test application: -DLIVE555_BUILD_EXAMPLES=ON/OFF
+usage static/shared library: -DLIVE555_SHARED_LIBS=ON/OFF
+
