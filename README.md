@@ -9,33 +9,44 @@ see <http://www.live555.com/liveMedia/>
 Actually, This command makes the shared library.
 If you do not want shared library, you should modify value to BUILD_SHARED_LIBS from ON to OFF.
 
-For 32 bit Windows from dos prompt
+make default Makefile build script using cmake
+
 ```shell
 # mkdir build
 # cd build
-# cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON
+# export OUT_PATH=./install
+# cmake .. -B linux -G "Unix Makefiles"
 ```
 
-For 64 bit Windows from dos prompt
+## Build options
+usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
+usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
+usage static/shared library (default: off): -DLIVE555_SHARED_LIBS=ON/OFF (windows do not support shared library option)
+
+
 ```shell
-# mkdir build
-# cd build
-# cmake .. -G "Visual Studio 15 2017 Win64" -DBUILD_SHARED_LIBS=ON
+# cmake .. -B linux -G "Unix Makefiles" \
+  -DLIVE555_ENABLE_OPENSSL=ON \
+  -DLIVE555_BUILD_EXAMPLES=OFF \
+  -DLIVE555_SHARED_LIBS=ON
 ```
 
-For ARM from from dos prompt
+build live555 library and executable file.
 ```shell
-# mkdir build
-# cd build
-# cmake .. -G "Visual Studio 15 2017 ARM" -DBUILD_SHARED_LIBS=ON
+#cmake --build linux --config Release
 ```
 
-For Xcode
+Add "--target install" option if you want the system to be installed together. 
+```shell
+#cmake --build linux --config Release --target install
+```
+
+If you need to change options in other ways, you can set them manually as follows. 
 ```shell
 # mkdir build
 # cd build
-# cmake .. -G "XCode" \
-  -DBUILD_SHARED_LIBS=ON \
+# export OUT_PATH=./install
+# cmake .. -B linux -G "Unix Makefiles" \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
@@ -47,12 +58,52 @@ For Linux
 # mkdir build
 # cd build
 # export OUT_PATH=./install
-# cmake .. -G "Unix Makefiles" \
+# cmake .. -B linux -G "Unix Makefiles" \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+# cmake --build linux --config Release --target install
+```
+
+For Windows 32 bit Windows from dos prompt
+```shell
+# mkdir build
+# cd build
+# cmake .. -B win_32 -G "Visual Studio 15 2017" \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+# cmake --build win_32 --config Release --target install
+```
+
+For Windows 64 bit Windows from dos prompt
+```shell
+# mkdir build
+# cd build
+# cmake .. -B win_64 -G "Visual Studio 15 2017 Win64" \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+# cmake --build win_64 --config Release --target install
+```
+
+For Windows ARM from from dos prompt
+```shell
+# mkdir build
+# cd build
+# cmake .. -B win_arm -G "Visual Studio 15 2017 ARM" \
+  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
+# cmake --build win_arm --config Release --target install
+```
+
+For Xcode
+```shell
+# mkdir build
+# cd build
+# cmake .. -B osx -G "XCode" \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
-# make; make install  
+# cmake --build osx --config Release --target install
 ```
 
 For Emscripten
@@ -119,9 +170,9 @@ TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbia
 ```
 
 ## Build with examples
-If you want to build with RTSP Example from testProgs, you have to insert BUILD_EXAMPLES=ON option from cmake command like this:
+If you want to build with RTSP Example from testProgs, you have to insert LIVE555_BUILD_EXAMPLES=ON option from cmake command like this:
 ```shell
-# cmake .. -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=ON
+# cmake .. -G "Visual Studio 15 2017" -DLIVE555_BUILD_EXAMPLES=ON
 ```
 
 You can test with examples application. This examples connect to RTSP server with testRTSPClient application.
@@ -133,22 +184,22 @@ You can test with examples application. This examples connect to RTSP server wit
 
 You want to build without Visual Studio IDE or You want to build shared or static mode.
 
+Visual Studio 2017
 ```shell
-cmake . -Bshared -G "Visual Studio 15 2017" -DBUILD_SHARED_LIBS=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
-cmake --build shared --config Release --target install
+cmake . -B vs2017 -G "Visual Studio 15 2017"
+cmake --build vs2017 --config Release
 ```
 
-Or 
-
+Visual Studio 2019
 ```shell
-cmake . -Bstatic -G "Visual Studio 15 2017" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
-cmake --build static --config Release --target install
+cmake . -B vs2019 -G "Visual Studio 16 2019"
+cmake --build vs2019 --config Release
 ```
 
 Visual Studio 2022
 
 ```shell
-cmake . -Bstatic -G "Visual Studio 17 2022" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
-cmake --build static --config Release --target install
+cmake . -B vs2022 -G "Visual Studio 17 2022"
+cmake --build vs2022 --config Release
 ```
 
