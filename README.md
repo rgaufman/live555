@@ -91,7 +91,7 @@ For Linux for arm with toolchain
 For example, If you use the Raspberry PI 3 Model B arm board,
 If you installed the toolchain by referring to https://goo.gl/TtcjGb, you are installed toolchain path is pri.
 
-ref: http://www.hertaville.com/development-environment-raspberry-pi-cross-compiler.html.
+ref: https://github.com/raspberrypi/tools
 
 TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin.
 
@@ -142,6 +142,13 @@ Or
 
 ```shell
 cmake . -Bstatic -G "Visual Studio 15 2017" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
+cmake --build static --config Release --target install
+```
+
+Visual Studio 2022
+
+```shell
+cmake . -Bstatic -G "Visual Studio 17 2022" -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_EXAMPLES=ON -DCMAKE_INSTALL_PREFIX=install
 cmake --build static --config Release --target install
 ```
 
