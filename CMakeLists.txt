@@ -289,6 +289,7 @@ list ( APPEND ${PROJECT_NAME}_HEADERS_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/include/QCELPAudioRTPSource.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/QuickTimeFileSink.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/QuickTimeGenericRTPSource.hh
+   ${${PROJECT_NAME}_HOME}/liveMedia/include/RawVideoFrameParameters.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/RTCP.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPInterface.hh
    ${${PROJECT_NAME}_HOME}/liveMedia/include/RTPSink.hh
@@ -374,6 +375,7 @@ list ( APPEND ${PROJECT_NAME}_SOURCES_LIVEMEDIA
    ${${PROJECT_NAME}_HOME}/liveMedia/AC3AudioStreamFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioFileServerMediaSubsession.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioFileSource.cpp
+   ${${PROJECT_NAME}_HOME}/liveMedia/ADTSAudioStreamDiscreteFramer.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileServerMediaSubsession.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileSink.cpp
    ${${PROJECT_NAME}_HOME}/liveMedia/AMRAudioFileSource.cpp
@@ -589,8 +591,10 @@ endif ()
 target_link_libraries ( ${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_LINK_LIBRARIES} )
 if ( BUILD_SHARED_LIBS )
 	target_compile_definitions(${PROJECT_NAME} PRIVATE LIVEMEDIA_EXPORTS=1)
+	message(STATUS "build shared library.")
 else ()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE LIVEMEDIA_STATIC=1)
+	message(STATUS "build static library")
 endif ()
 
 if ( WIN32 )
@@ -610,10 +614,19 @@ endif()
 if ( BUILD_EXAMPLES )
 	include_directories(${PROJECT_NAME}_HEADERS)
 
-	if(MSVC)
+	if ( MSVC )
 		add_definitions(/FI"export.h")
-		#remove_definitions(-DLIVEMEDIA_EXPORTS)
-		#add_definitions(-DLIVEMEDIA_IMPORTS)
+      if ( BUILD_SHARED_LIBS )
+         message(STATUS "build application using shared library.")
+         remove_definitions(-DLIVEMEDIA_STATIC)
+		   remove_definitions(-DLIVEMEDIA_EXPORTS)
+		   add_definitions(-DLIVEMEDIA_IMPORTS)
+      else ()
+         message(STATUS "build application using static library.")
+         add_definitions(-DLIVEMEDIA_STATIC)
+         remove_definitions(-DLIVEMEDIA_EXPORTS)
+         remove_definitions(-DLIVEMEDIA_IMPORTS)
+      endif()
 	else()
 		# GCC or Clang
 		add_definitions(-include export.h)
