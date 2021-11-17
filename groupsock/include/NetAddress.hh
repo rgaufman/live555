@@ -69,7 +69,7 @@ void copyAddress(struct sockaddr_storage& to, NetAddress const* from);
 Boolean operator==(struct sockaddr_storage const& left, struct sockaddr_storage const& right);
     // compares the family and address parts only; not the port number or anything else
 
-class NetAddressList {
+class LIVEMEDIA_API NetAddressList {
 public:
   NetAddressList(char const* hostname, int addressFamily = AF_UNSPEC);
   NetAddressList(NetAddressList const& orig);
@@ -176,7 +176,7 @@ Boolean IsMulticastAddress(struct sockaddr_storage const& address);
 
 // A mechanism for displaying an IP (v4 or v6) address in ASCII.
 // (This encapsulates the "inet_ntop()" function.)
-class AddressString {
+class LIVEMEDIA_API AddressString {
 public:
   // IPv4 input:
   AddressString(struct sockaddr_in const& addr);

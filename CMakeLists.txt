@@ -62,7 +62,7 @@ if(EXISTS ${EMSCRIPTEN_ROOT_PATH}/emscripten-version.txt)
    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-warn-absolute-paths -s USE_PTHREADS=1 -s ASSERTIONS=1 --memory-init-file 0")
    #set (CMAKE_EXECUTABLE_SUFFIX ".wasm.js")
 endif()
-endif () # BUILD_EMSCRIPTEN
+endif (BUILD_EMSCRIPTEN) # BUILD_EMSCRIPTEN
 
 set ( ${PROJECT_NAME}_VERSION_MAJOR "2019" )
 set ( ${PROJECT_NAME}_VERSION_MINOR "12" )
@@ -80,6 +80,14 @@ endif ()
 if ( NOT DEFINED BUILD_EXAMPLES )
    set ( BUILD_EXAMPLES FALSE )
 endif ()
+
+if ( NOT DEFINED CMAKE_GETIFADDRS )
+    add_definitions(-DNO_GETIFADDRS)
+endif()
+
+if ( NOT DEFINED CMAKE_OPENSSL )
+    add_definitions(-DNO_OPENSSL)
+endif()
 
 set ( ${TEST_PROGS}_HOME ${CMAKE_CURRENT_SOURCE_DIR}/testProgs )
 

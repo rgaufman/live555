@@ -20,7 +20,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "TLSState.hh"
 #include "RTSPClient.hh"
+
+#ifndef NO_OPENSSL
 #include <openssl/err.h>
+#endif
 
 ////////// TLSState implementation //////////
 

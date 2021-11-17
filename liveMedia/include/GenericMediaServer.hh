@@ -131,7 +131,7 @@ public: // should be protected, but some old compilers complain otherwise
   };
 
   // The state of an individual client session (using one or more sequential TCP connections) handled by a server:
-  class ClientSession {
+  class LIVEMEDIA_API ClientSession {
   protected:
     ClientSession(GenericMediaServer& ourServer, u_int32_t sessionId);
     virtual ~ClientSession();

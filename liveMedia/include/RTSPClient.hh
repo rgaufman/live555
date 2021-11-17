@@ -370,7 +370,7 @@ private:
 
 typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP);
 
-class LIVEMEDIA_API LIVEMEDIA_API HandlerServerForREGISTERCommand: public RTSPServer {
+class LIVEMEDIA_API HandlerServerForREGISTERCommand: public RTSPServer {
 public:
   static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
 						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,

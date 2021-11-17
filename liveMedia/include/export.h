@@ -8,7 +8,7 @@ extern "C" {
 #if _WIN32
 #  define LIVEMEDIA_EXPORT_API __declspec (dllexport)
 #  define LIVEMEDIA_IMPORT_API __declspec (dllimport)
-#else // #if _WIN32
+#else // #ifndef _WIN32
 #  define LIVEMEDIA_EXPORT_API __attribute__ ((visibility("default")))
 #  define LIVEMEDIA_IMPORT_API __attribute__ ((visibility("default")))
 #endif // #if _WIN32

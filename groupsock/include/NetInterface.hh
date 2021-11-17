@@ -36,7 +36,7 @@ protected:
   NetInterface(); // virtual base class
 };
 
-class Socket: public NetInterface {
+class LIVEMEDIA_API Socket: public NetInterface {
 public:
   virtual ~Socket();
   void reset(); // closes the socket, and sets "fSocketNum" to -1
@@ -72,7 +72,7 @@ UsageEnvironment& operator<<(UsageEnvironment& s, const Socket& sock);
 
 // A data structure for looking up a Socket by port:
 
-class SocketLookupTable {
+class LIVEMEDIA_API SocketLookupTable {
 public:
   virtual ~SocketLookupTable();
 
@@ -90,7 +90,7 @@ private:
 
 // A data structure for counting traffic:
 
-class NetInterfaceTrafficStats {
+class LIVEMEDIA_API NetInterfaceTrafficStats {
 public:
   NetInterfaceTrafficStats();
 

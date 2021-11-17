@@ -56,7 +56,7 @@ protected:
 #endif
 };
 
-class ClientTLSState: public TLSState {
+class LIVEMEDIA_API ClientTLSState: public TLSState {
 public:
   ClientTLSState(class RTSPClient& client);
   virtual ~ClientTLSState();
