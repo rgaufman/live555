@@ -20,6 +20,8 @@ make default Makefile build script using cmake
 
 ## Build options
 * usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
+  If the openssl library is not present in your toolchain, you need to add the disable option of OPENSSL.
+  If your toolchain includes openssl, you need to create a cmake file for it.
 * usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
 * usage static/shared library (default: off): -DLIVE555_SHARED_LIBS=ON/OFF (windows do not support shared library option)
 
@@ -105,7 +107,7 @@ For Xcode
 # cmake --build osx --config Release --target install
 ```
 
-For Emscripten
+For Emscripten toolchain
 
 Install Emscripten from emsdk
 You will refer to install Emscripten environment from https://emscripten.org/docs/getting_started/downloads.html.
@@ -124,6 +126,7 @@ And you change to into the live555 source path.
 # cd emcc
 # export OUT_PATH=./install
 # emconfigure cmake .. -G "Unix Makefiles" \
+  -DLIVE555_ENABLE_OPENSSL=OFF \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
@@ -133,18 +136,15 @@ And you change to into the live555 source path.
 # emmake make; emmake make install  
 ```
 
-For Linux for arm with toolchain
+For Linux for arm or third-party toolchain
 {TOOLCHAIN_PATH} is toolchain path for ARM CPU from manufacture. 
-
-For example, If you use the Raspberry PI 3 Model B arm board,
-If you installed the toolchain by referring to https://goo.gl/TtcjGb, you are installed toolchain path is pri.
 
 ref: https://github.com/raspberrypi/tools
 
 TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin.
 
-If the openssl library is not present in your toolchain, you need to add the disable option of OPENSSL.
-If your toolchain includes openssl, you need to create a cmake file for it.
+For example, If you use the Raspberry PI 3 Model B arm board,
+If you installed the toolchain by referring to https://goo.gl/TtcjGb, you are installed toolchain path is pri.
 
 ```shell
 # mkdir build
