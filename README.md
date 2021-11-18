@@ -89,7 +89,7 @@ For Windows ARM from from dos prompt
 # mkdir build
 # cd build
 # cmake .. -B win_arm -G "Visual Studio 15 2017 ARM" \
-  -DBUILD_SHARED_LIBS=ON \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
 # cmake --build win_arm --config Release --target install
 ```
@@ -99,7 +99,6 @@ For Xcode
 # mkdir build
 # cd build
 # cmake .. -B osx -G "XCode" \
-  -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH}
@@ -125,10 +124,8 @@ And you change to into the live555 source path.
 # cd emcc
 # export OUT_PATH=./install
 # emconfigure cmake .. -G "Unix Makefiles" \
-  -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
-  -DBUILD_EXAMPLES=ON \
   -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
   -DBUILD_EMSCRIPTEN=ON \
   -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_ROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake \
@@ -152,7 +149,6 @@ TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbia
 # export OUT_PATH=./install
 # export CROSS_COMPILE=${TOOLCHAIN_PATH}/arm-linux-gnueabihf-
 # cmake .. -G "Unix Makefiles" \
-  -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_C_COMPILER=${CROSS_COMPILE}gcc \
