@@ -33,7 +33,7 @@ make default Makefile build script using cmake
 # cmake .. -B linux -G "Unix Makefiles" \
   -DLIVE555_ENABLE_OPENSSL=ON \
   -DLIVE555_BUILD_EXAMPLES=OFF \
-  -DLIVE555_SHARED_LIBS=ON
+  -DLIVE555_BUILD_SHARED_LIBS=ON
 ```
 
 *****
