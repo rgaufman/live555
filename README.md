@@ -216,20 +216,26 @@ You want to build without Visual Studio IDE or You want to build shared or stati
 
 Visual Studio 2017
 ```shell
-cmake . -B vs2017 -G "Visual Studio 15 2017"
-cmake --build vs2017 --config Release
+# mkdir build
+# cd build
+# cmake .. -B vs2017 -G "Visual Studio 15 2017"
+# cmake --build vs2017 --config Release
 ```
 
 Visual Studio 2019
 ```shell
-cmake . -B vs2019 -G "Visual Studio 16 2019"
-cmake --build vs2019 --config Release
+# mkdir build
+# cd build
+# cmake .. -B vs2019 -G "Visual Studio 16 2019"
+# cmake --build vs2019 --config Release
 ```
 
 Visual Studio 2022
 
 ```shell
-cmake . -B vs2022 -G "Visual Studio 17 2022"
-cmake --build vs2022 --config Release
+# mkdir build
+# cd build
+# cmake .. -B vs2022 -G "Visual Studio 17 2022"
+# cmake --build vs2022 --config Release
 ```
 
