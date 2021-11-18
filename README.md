@@ -26,7 +26,9 @@ make default Makefile build script using cmake
   - If the openssl library is not present in your toolchain, you need to add the disable option of OPENSSL.
   - If your toolchain includes openssl, you need to create a cmake file for it.
 * usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
-* usage static/shared library (default: off): -DLIVE555_BUILD_SHARED_LIBS=ON/OFF (windows do not support shared library option)
+* usage static/shared library (default: off):
+  - general shared library (Windows not supported): -DLIVE555_BUILD_SHARED_LIBS=ON/OFF 
+  - usage shared library (Window only): -DLIVE555_MONOLITH_BUILD=ON 
 
 
 ```shell
