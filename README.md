@@ -4,6 +4,8 @@ You can check new version from Live555.
 For documentation and instructions for building this software,
 see <http://www.live555.com/liveMedia/>
 
+*****
+
 ## Generate build project using cmake
 
 Actually, This command makes the shared library.
@@ -18,6 +20,7 @@ make default Makefile build script using cmake
 # cmake .. -B linux -G "Unix Makefiles"
 ```
 
+*****
 ## Build options
 * usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
   - If the openssl library is not present in your toolchain, you need to add the disable option of OPENSSL.
@@ -33,6 +36,7 @@ make default Makefile build script using cmake
   -DLIVE555_SHARED_LIBS=ON
 ```
 
+*****
 build live555 library and executable file.
 ```shell
 #cmake --build linux --config Release
@@ -55,6 +59,7 @@ If you need to change options in other ways, you can set them manually as follow
 # make; make install
 ```
 
+*****
 For Linux
 ```shell
 # mkdir build
@@ -66,6 +71,7 @@ For Linux
 # cmake --build linux --config Release --target install
 ```
 
+*****
 For Windows 32 bit Windows from dos prompt
 ```shell
 # mkdir build
@@ -96,6 +102,7 @@ For Windows ARM from from dos prompt
 # cmake --build win_arm --config Release --target install
 ```
 
+*****
 For Xcode
 ```shell
 # mkdir build
@@ -107,6 +114,7 @@ For Xcode
 # cmake --build osx --config Release --target install
 ```
 
+*****
 For Emscripten toolchain
 
 Install Emscripten from emsdk
@@ -136,6 +144,24 @@ And you change to into the live555 source path.
 # emmake make; emmake make install  
 ```
 
+For emscripten 2.x.x
+
+```shell
+# mkdir emcc
+# cd emcc
+# export OUT_PATH=./install
+# emcmake cmake .. -B emcc -G "Unix Makefiles" \
+  -DLIVE555_ENABLE_OPENSSL=OFF \
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DCMAKE_BUILD_TYPE=release \
+  -DCMAKE_INSTALL_PREFIX=${OUT_PATH} \
+  -DBUILD_EMSCRIPTEN=ON \
+  -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_ROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake \
+  -DEMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}
+# emmake cmake --build emcc --config Release 
+```
+
+*****
 For Linux for arm or third-party toolchain
 {TOOLCHAIN_PATH} is toolchain path for ARM CPU from manufacture. 
 
@@ -169,6 +195,7 @@ If you installed the toolchain by referring to https://goo.gl/TtcjGb, you are in
 # make; make install  
 ```
 
+*****
 ## Build with examples
 If you want to build with RTSP Example from testProgs, you have to insert LIVE555_BUILD_EXAMPLES=ON option from cmake command like this:
 ```shell
@@ -180,6 +207,7 @@ You can test with examples application. This examples connect to RTSP server wit
 # ./testRTSPClient rtsp://admin:1@192.168.123.37/profile5/media.smp
 ```
 
+*****
 ## Build using cmake file without Visual Studio IDE
 
 You want to build without Visual Studio IDE or You want to build shared or static mode.
