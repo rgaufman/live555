@@ -31,11 +31,20 @@ make default Makefile build script using cmake
   - usage shared library (Window only): -DLIVE555_MONOLITH_BUILD=ON 
 
 
+# Generic shared library
 ```shell
 # cmake .. -B linux -G "Unix Makefiles" \
   -DLIVE555_ENABLE_OPENSSL=ON \
   -DLIVE555_BUILD_EXAMPLES=OFF \
   -DLIVE555_BUILD_SHARED_LIBS=ON
+```
+
+# Windows shared library
+```shell
+# cmake .. -B vs2022 -G "Visual Studio 17 2022" \
+  -DLIVE555_ENABLE_OPENSSL=ON \
+  -DLIVE555_BUILD_EXAMPLES=OFF \
+  -DLIVE555_MONOLITH_BUILD=ON
 ```
 
 *****
@@ -62,7 +71,7 @@ If you need to change options in other ways, you can set them manually as follow
 ```
 
 *****
-For Linux
+## For Linux
 ```shell
 # mkdir build
 # cd build
@@ -74,7 +83,7 @@ For Linux
 ```
 
 *****
-For Windows 32 bit Windows from dos prompt
+##  For Windows 32 bit Windows from dos prompt
 ```shell
 # mkdir build
 # cd build
@@ -84,7 +93,7 @@ For Windows 32 bit Windows from dos prompt
 # cmake --build win_32 --config Release --target install
 ```
 
-For Windows 64 bit Windows from dos prompt
+## For Windows 64 bit Windows from dos prompt
 ```shell
 # mkdir build
 # cd build
@@ -94,7 +103,7 @@ For Windows 64 bit Windows from dos prompt
 # cmake --build win_64 --config Release --target install
 ```
 
-For Windows ARM from from dos prompt
+## For Windows ARM from from dos prompt
 ```shell
 # mkdir build
 # cd build
@@ -105,7 +114,7 @@ For Windows ARM from from dos prompt
 ```
 
 *****
-For Xcode
+## For Xcode
 ```shell
 # mkdir build
 # cd build
