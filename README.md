@@ -19,9 +19,9 @@ make default Makefile build script using cmake
 ```
 
 ## Build options
-usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
-usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
-usage static/shared library (default: off): -DLIVE555_SHARED_LIBS=ON/OFF (windows do not support shared library option)
+-- usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
+-- usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
+-- usage static/shared library (default: off): -DLIVE555_SHARED_LIBS=ON/OFF (windows do not support shared library option)
 
 
 ```shell
@@ -143,12 +143,16 @@ ref: https://github.com/raspberrypi/tools
 
 TOOLCHAIN_PATH is ~/pri/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin.
 
+If the openssl library is not present in your toolchain, you need to add the disable option of OPENSSL.
+If your toolchain includes openssl, you need to create a cmake file for it.
+
 ```shell
 # mkdir build
 # cd build
 # export OUT_PATH=./install
 # export CROSS_COMPILE=${TOOLCHAIN_PATH}/arm-linux-gnueabihf-
 # cmake .. -G "Unix Makefiles" \
+  -DLIVE555_ENABLE_OPENSSL=OFF \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DCMAKE_BUILD_TYPE=release \
   -DCMAKE_C_COMPILER=${CROSS_COMPILE}gcc \
