@@ -19,9 +19,9 @@ make default Makefile build script using cmake
 ```
 
 ## Build options
--- usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
--- usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
--- usage static/shared library (default: off): -DLIVE555_SHARED_LIBS=ON/OFF (windows do not support shared library option)
+* usage OpenSSL (default: on): -DLIVE555_ENABLE_OPENSSL=ON/OFF
+* usage test application (default: on): -DLIVE555_BUILD_EXAMPLES=ON/OFF
+* usage static/shared library (default: off): -DLIVE555_SHARED_LIBS=ON/OFF (windows do not support shared library option)
 
 
 ```shell
