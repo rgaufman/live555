@@ -115,7 +115,7 @@ For Xcode
 ```
 
 *****
-For Emscripten toolchain
+## Emscripten
 
 Install Emscripten from emsdk
 You will refer to install Emscripten environment from https://emscripten.org/docs/getting_started/downloads.html.
@@ -160,8 +160,10 @@ For emscripten 2.x.x
   -DEMSCRIPTEN_ROOT_PATH=${EMSCRIPTEN_ROOT_PATH}
 # emmake cmake --build emcc --config Release 
 ```
-
 *****
+
+## Third-party toolchain
+
 For Linux for arm or third-party toolchain
 {TOOLCHAIN_PATH} is toolchain path for ARM CPU from manufacture. 
 
