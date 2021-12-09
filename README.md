@@ -56,7 +56,9 @@ And you have to choose the architect option for win32 or win64  with -A option i
 * cmake -G "Visual Studio 17 2022" -A ARM
 * cmake -G "Visual Studio 17 2022" -A ARM64
 
-If you should be OpenSSL-Win32 or OpenSSL-Win64 binary package. you have to change the lib file names on Preferences menu from Visual Studio IDE.
+If you should be OpenSSL-Win32 or OpenSSL-Win64 binary package. you have to change the lib files names on Preferences menu from Visual Studio IDE.
+* libssl32MD(d).lib or libcrypto32MD(d).lib 
+* libssl64MD(d).lib or libcrypto64MD(d).lib 
 
 *****
 build live555 library and executable file.
