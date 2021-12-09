@@ -47,7 +47,7 @@ make default Makefile build script using cmake
   -DLIVE555_MONOLITH_BUILD=ON
 ```
 
-If you want use the OpenSSL library on windows shared library,
+If you want to use the OpenSSL library on windows for shared library,
 You have to use the OpenSSL library on vcpkg package from Microsoft.
 And you have to choose the architect option for win32 or win64  with -A option in windows.
 
