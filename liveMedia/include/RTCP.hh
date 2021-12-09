@@ -31,7 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "SRTPCryptographicContext.hh"
 #endif
 
-class LIVEMEDIA_API SDESItem {
+class SDESItem {
 public:
   SDESItem(unsigned char tag, unsigned char const* value);
 
@@ -50,7 +50,7 @@ class RTCPMemberDatabase; // forward
 
 typedef void ByeWithReasonHandlerFunc(void* clientData, char const* reason);
 
-class LIVEMEDIA_API RTCPInstance: public Medium {
+class RTCPInstance: public Medium {
 public:
   static RTCPInstance* createNew(UsageEnvironment& env, Groupsock* RTCPgs,
 				 unsigned totSessionBW, /* in kbps */

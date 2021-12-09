@@ -38,28 +38,28 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define RTSP_PARAM_STRING_MAX 200
 
-LIVEMEDIA_API Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
-			       char *resultCmdName,
-			       unsigned resultCmdNameMaxSize,
-			       char* resultURLPreSuffix,
-			       unsigned resultURLPreSuffixMaxSize,
-			       char* resultURLSuffix,
-			       unsigned resultURLSuffixMaxSize,
-			       char* resultCSeq,
-			       unsigned resultCSeqMaxSize,
-			       char* resultSessionId,
-			       unsigned resultSessionIdMaxSize,
-			       unsigned& contentLength);
+Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize, // in
+			       char *resultCmdName, // out
+			       unsigned resultCmdNameMaxSize, // in
+			       char* resultURLPreSuffix, // out
+			       unsigned resultURLPreSuffixMaxSize, // in
+			       char* resultURLSuffix, // out
+			       unsigned resultURLSuffixMaxSize, // in
+			       char* resultCSeq, // out
+			       unsigned resultCSeqMaxSize, // in
+			       char* resultSessionId, // out
+			       unsigned resultSessionIdMaxSize, // in
+			       unsigned& contentLength, Boolean& urlIsRTSPS); // out
 
-LIVEMEDIA_API Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
-LIVEMEDIA_API Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
+Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
+Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
 
-LIVEMEDIA_API Boolean parseScaleHeader(char const* buf, float& scale);
+Boolean parseScaleHeader(char const* buf, float& scale);
 
-LIVEMEDIA_API Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
+Boolean RTSPOptionIsSupported(char const* commandName, char const* optionsResponseString);
     // Returns True iff the RTSP command "commandName" is mentioned as one of the commands supported in "optionsResponseString"
     // (which should be the 'resultString' from a previous RTSP "OPTIONS" request).
 
-LIVEMEDIA_API char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
+char const* dateHeader(); // A "Date:" header that can be used in a RTSP (or HTTP) response 
 
 #endif

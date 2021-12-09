@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <Groupsock.hh>
 #endif
 
-class LIVEMEDIA_API BasicUDPSink: public MediaSink {
+class BasicUDPSink: public MediaSink {
 public:
   static BasicUDPSink* createNew(UsageEnvironment& env, Groupsock* gs,
 				  unsigned maxPayloadSize = 1450);

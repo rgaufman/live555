@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class LIVEMEDIA_API JPEG2000VideoRTPSink: public VideoRTPSink {
+class JPEG2000VideoRTPSink: public VideoRTPSink {
 public:
   static JPEG2000VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
 

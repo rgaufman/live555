@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// HandlerSet (etc.) definition //////////
 
-class LIVEMEDIA_API HandlerDescriptor {
+class HandlerDescriptor {
   HandlerDescriptor(HandlerDescriptor* nextHandler);
   virtual ~HandlerDescriptor();
 
@@ -44,7 +44,7 @@ private:
   HandlerDescriptor* fPrevHandler;
 };
 
-class LIVEMEDIA_API HandlerSet {
+class HandlerSet {
 public:
   HandlerSet();
   virtual ~HandlerSet();
@@ -61,7 +61,7 @@ private:
   HandlerDescriptor fHandlers;
 };
 
-class LIVEMEDIA_API HandlerIterator {
+class HandlerIterator {
 public:
   HandlerIterator(HandlerSet& handlerSet);
   virtual ~HandlerIterator();

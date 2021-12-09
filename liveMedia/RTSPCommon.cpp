@@ -48,8 +48,7 @@ static void decodeURL(char* url) {
   *url = '\0';
 }
 
-Boolean parseRTSPRequestString(char const* reqStr,
-			       unsigned reqStrSize,
+Boolean parseRTSPRequestString(char const* reqStr, unsigned reqStrSize,
 			       char* resultCmdName,
 			       unsigned resultCmdNameMaxSize,
 			       char* resultURLPreSuffix,
@@ -60,8 +59,9 @@ Boolean parseRTSPRequestString(char const* reqStr,
 			       unsigned resultCSeqMaxSize,
                                char* resultSessionIdStr,
                                unsigned resultSessionIdStrMaxSize,
-			       unsigned& contentLength) {
+			       unsigned& contentLength, Boolean& urlIsRTSPS) {
   // This parser is currently rather dumb; it should be made smarter #####
+  urlIsRTSPS = False; // by default
 
   // "Be liberal in what you accept": Skip over any whitespace at the start of the request:
   unsigned i;
@@ -86,28 +86,34 @@ Boolean parseRTSPRequestString(char const* reqStr,
   resultCmdName[i1] = '\0';
   if (!parseSucceeded) return False;
 
-  // Skip over the prefix of any "rtsp://" or "rtsp:/" URL that follows:
+  // Skip over the prefix of any "rtsp://" or "rtsp:/" (or "rtsps://" or "rtsps:/")
+  // URL that follows:
   unsigned j = i+1;
   while (j < reqStrSize && (reqStr[j] == ' ' || reqStr[j] == '\t')) ++j; // skip over any additional white space
   for (; (int)j < (int)(reqStrSize-8); ++j) {
     if ((reqStr[j] == 'r' || reqStr[j] == 'R')
 	&& (reqStr[j+1] == 't' || reqStr[j+1] == 'T')
 	&& (reqStr[j+2] == 's' || reqStr[j+2] == 'S')
-	&& (reqStr[j+3] == 'p' || reqStr[j+3] == 'P')
-	&& reqStr[j+4] == ':' && reqStr[j+5] == '/') {
-      j += 6;
-      if (reqStr[j] == '/') {
-	// This is a "rtsp://" URL; skip over the host:port part that follows:
+	&& (reqStr[j+3] == 'p' || reqStr[j+3] == 'P')) {
+      if (reqStr[j+4] == 's' || reqStr[j+4] == 'S') {
+	urlIsRTSPS = True;
 	++j;
-	while (j < reqStrSize && reqStr[j] != '/' && reqStr[j] != ' ') ++j;
-      } else {
-	// This is a "rtsp:/" URL; back up to the "/":
-	--j;
       }
-      i = j;
-      break;
+      if (reqStr[j+4] == ':' && reqStr[j+5] == '/') {
+	j += 6;
+	if (reqStr[j] == '/') {
+	  // This is a "rtsp(s)://" URL; skip over the host:port part that follows:
+	  ++j;
+	  while (j < reqStrSize && reqStr[j] != '/' && reqStr[j] != ' ') ++j;
+	} else {
+	  // This is a "rtsp(s):/" URL; back up to the "/":
+	  --j;
+	}
+	i = j;
+	break;
+      }
     }
-  }
+  }	
 
   // Look for the URL suffix (before the following "RTSP/"):
   parseSucceeded = False;

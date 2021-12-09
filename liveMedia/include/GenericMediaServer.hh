@@ -41,7 +41,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 typedef void lookupServerMediaSessionCompletionFunc(void* clientData,
 						    ServerMediaSession* sessionLookedUp);
 
-class LIVEMEDIA_API GenericMediaServer: public Medium {
+class GenericMediaServer: public Medium {
 public:
   void addServerMediaSession(ServerMediaSession* serverMediaSession);
 
@@ -131,7 +131,7 @@ public: // should be protected, but some old compilers complain otherwise
   };
 
   // The state of an individual client session (using one or more sequential TCP connections) handled by a server:
-  class LIVEMEDIA_API ClientSession {
+  class ClientSession {
   protected:
     ClientSession(GenericMediaServer& ourServer, u_int32_t sessionId);
     virtual ~ClientSession();
@@ -195,7 +195,7 @@ private:
 
 // A data structure used for optional user/password authentication:
 
-class LIVEMEDIA_API UserAuthenticationDatabase {
+class UserAuthenticationDatabase {
 public:
   UserAuthenticationDatabase(char const* realm = NULL,
 			     Boolean passwordsAreMD5 = False);

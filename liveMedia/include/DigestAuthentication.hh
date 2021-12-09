@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // The "realm", and "nonce" fields are supplied by the server
 // (in a "401 Unauthorized" response).
 // The "username" and "password" fields are supplied by the client.
-class LIVEMEDIA_API Authenticator {
+class Authenticator {
 public:
   Authenticator();
   Authenticator(char const* username, char const* password, Boolean passwordIsMD5 = False);

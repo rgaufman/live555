@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class RTPTransmissionStatsDB; // forward
 
-class LIVEMEDIA_API RTPSink: public MediaSink {
+class RTPSink: public MediaSink {
 public:
   static Boolean lookupByName(UsageEnvironment& env, char const* sinkName,
 			      RTPSink*& resultSink);

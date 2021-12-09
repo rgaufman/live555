@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class T140IdleFilter;
 
-class LIVEMEDIA_API T140TextRTPSink: public TextRTPSink {
+class T140TextRTPSink: public TextRTPSink {
 public:
   static T140TextRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
 
@@ -63,7 +63,7 @@ protected:
 // -  that delivers, to the "T140TextRTPSink", a continuous sequence of (possibly) empty frames.
 // (Note: This class should be used only by "T140TextRTPSink", or a subclass.)
 
-class LIVEMEDIA_API T140IdleFilter: public FramedFilter {
+class T140IdleFilter: public FramedFilter {
 public:
   T140IdleFilter(UsageEnvironment& env, FramedSource* inputSource);
   virtual ~T140IdleFilter();

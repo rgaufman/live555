@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class BufferedPacket; // forward
 class BufferedPacketFactory; // forward
 
-class LIVEMEDIA_API MultiFramedRTPSource: public RTPSource {
+class MultiFramedRTPSource: public RTPSource {
 protected:
   MultiFramedRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		       unsigned char rtpPayloadFormat,
@@ -83,7 +83,7 @@ private:
 // Note that this can be subclassed - if desired - to redefine
 // "nextEnclosedFrameParameters()".
 
-class LIVEMEDIA_API BufferedPacket {
+class BufferedPacket {
 public:
   BufferedPacket();
   virtual ~BufferedPacket();
@@ -148,7 +148,7 @@ private:
 // If you want to subclass "BufferedPacket", then you'll also
 // want to subclass this, to redefine createNewPacket()
 
-class LIVEMEDIA_API BufferedPacketFactory {
+class BufferedPacketFactory {
 public:
   BufferedPacketFactory();
   virtual ~BufferedPacketFactory();

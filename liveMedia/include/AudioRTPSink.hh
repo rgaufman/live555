@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSink.hh"
 #endif
 
-class LIVEMEDIA_API AudioRTPSink: public MultiFramedRTPSink {
+class AudioRTPSink: public MultiFramedRTPSink {
 protected:
   AudioRTPSink(UsageEnvironment& env,
 	       Groupsock* rtpgs, unsigned char rtpPayloadType,

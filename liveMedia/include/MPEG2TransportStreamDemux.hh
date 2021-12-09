@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class LIVEMEDIA_API MPEG2TransportStreamDemux: public Medium {
+class MPEG2TransportStreamDemux: public Medium {
 public:
   static MPEG2TransportStreamDemux* createNew(UsageEnvironment& env,
 					      FramedSource* inputSource,

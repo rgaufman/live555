@@ -31,7 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define PID_TABLE_SIZE 0x2000 // 2^13
 
-class LIVEMEDIA_API MPEG2TransportStreamMultiplexor: public FramedSource {
+class MPEG2TransportStreamMultiplexor: public FramedSource {
 public:
   typedef void (onEndOfSegmentFunc)(void* clientData, double segmentDuration);
   void setTimedSegmentation(unsigned segmentationDuration,

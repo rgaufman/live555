@@ -24,14 +24,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include <string.h>
 
-LIVEMEDIA_API char* strDup(char const* str);
+char* strDup(char const* str);
 // Note: strDup(NULL) returns NULL
 
-LIVEMEDIA_API char* strDupSize(char const* str);
+char* strDupSize(char const* str);
 // Like "strDup()", except that it *doesn't* copy the original.
 // (Instead, it just allocates a string of the same size as the original.)
 
-LIVEMEDIA_API char* strDupSize(char const* str, size_t& resultBufSize);
+char* strDupSize(char const* str, size_t& resultBufSize);
 // An alternative form of "strDupSize()" that also returns the size of the allocated buffer.
 
 #endif

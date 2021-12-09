@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Boolean.hh"
 #endif
 
-class LIVEMEDIA_API MIKEYState {
+class MIKEYState {
 public:
   MIKEYState(); // initialize with default parameters
   virtual ~MIKEYState();

@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Groupsock.hh"
 #endif
 
-class LIVEMEDIA_API BasicUDPSource: public FramedSource {
+class BasicUDPSource: public FramedSource {
 public:
   static BasicUDPSource* createNew(UsageEnvironment& env, Groupsock* inputGS);
 

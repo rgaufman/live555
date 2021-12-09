@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RawVideoFrameParameters.hh"
 #endif
 
-class LIVEMEDIA_API RawVideoRTPSink: public VideoRTPSink {
+class RawVideoRTPSink: public VideoRTPSink {
 public:
   static RawVideoRTPSink*
   createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,

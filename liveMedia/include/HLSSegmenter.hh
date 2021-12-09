@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSink.hh"
 #endif
 
-class LIVEMEDIA_API HLSSegmenter: public MediaSink {
+class HLSSegmenter: public MediaSink {
 public:
   typedef void (onEndOfSegmentFunc)(void* clientData,
 				    char const* segmentFileName, double segmentDuration);

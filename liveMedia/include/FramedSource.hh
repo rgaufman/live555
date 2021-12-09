@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSource.hh"
 #endif
 
-class LIVEMEDIA_API FramedSource: public MediaSource {
+class FramedSource: public MediaSource {
 public:
   static Boolean lookupByName(UsageEnvironment& env, char const* sourceName,
 			      FramedSource*& resultSource);

@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class LIVEMEDIA_API TheoraVideoRTPSource: public MultiFramedRTPSource {
+class TheoraVideoRTPSource: public MultiFramedRTPSource {
 public:
   static TheoraVideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

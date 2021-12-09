@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MatroskaFile.hh"
 #endif
 
-class LIVEMEDIA_API MatroskaFileServerDemux: public Medium {
+class MatroskaFileServerDemux: public Medium {
 public:
   typedef void (onCreationFunc)(MatroskaFileServerDemux* newDemux, void* clientData);
   static void createNew(UsageEnvironment& env, char const* fileName,

@@ -24,8 +24,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <UsageEnvironment.hh>
 #include <stdio.h>
 
-LIVEMEDIA_API FILE* OpenOutputFile(UsageEnvironment& env, char const* fileName);
+FILE* OpenOutputFile(UsageEnvironment& env, char const* fileName);
 
-LIVEMEDIA_API void CloseOutputFile(FILE* fid);
+void CloseOutputFile(FILE* fid);
 
 #endif

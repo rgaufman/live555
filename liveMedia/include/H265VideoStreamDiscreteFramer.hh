@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoStreamDiscreteFramer.hh"
 #endif
 
-class LIVEMEDIA_API H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
+class H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
 public:
   static H265VideoStreamDiscreteFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource,

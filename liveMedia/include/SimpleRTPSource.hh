@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class LIVEMEDIA_API SimpleRTPSource: public MultiFramedRTPSource {
+class SimpleRTPSource: public MultiFramedRTPSource {
 public:
   static SimpleRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
 				    unsigned char rtpPayloadFormat,

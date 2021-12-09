@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 // A data structure used to represent an interleaving
 #define MAX_CYCLE_SIZE 256
-class LIVEMEDIA_API Interleaving {
+class Interleaving {
 public:
   Interleaving(unsigned cycleSize, unsigned char const* cycleArray);
   virtual ~Interleaving();
@@ -44,7 +44,7 @@ private:
 
 // This class is used only as a base for the following two:
 
-class LIVEMEDIA_API MP3ADUinterleaverBase: public FramedFilter {
+class MP3ADUinterleaverBase: public FramedFilter {
 protected:
   MP3ADUinterleaverBase(UsageEnvironment& env,
 			FramedSource* inputSource);
@@ -66,7 +66,7 @@ protected:
 // This class is used to convert an ADU sequence from non-interleaved
 // to interleaved form:
 
-class LIVEMEDIA_API MP3ADUinterleaver: public MP3ADUinterleaverBase {
+class MP3ADUinterleaver: public MP3ADUinterleaverBase {
 public:
   static MP3ADUinterleaver* createNew(UsageEnvironment& env,
 				      Interleaving const& interleaving,
@@ -99,7 +99,7 @@ private:
 // This class is used to convert an ADU sequence from interleaved
 // to non-interleaved form:
 
-class LIVEMEDIA_API MP3ADUdeinterleaver: public MP3ADUinterleaverBase {
+class MP3ADUdeinterleaver: public MP3ADUinterleaverBase {
 public:
   static MP3ADUdeinterleaver* createNew(UsageEnvironment& env,
 					FramedSource* inputSource);

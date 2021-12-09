@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSession.hh"
 #endif
 
-class LIVEMEDIA_API AVIFileSink: public Medium {
+class AVIFileSink: public Medium {
 public:
   static AVIFileSink* createNew(UsageEnvironment& env,
 				MediaSession& inputSession,

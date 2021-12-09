@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG2TransportStreamMultiplexor.hh"
 #endif
 
-class LIVEMEDIA_API MPEG2TransportStreamFromESSource: public MPEG2TransportStreamMultiplexor {
+class MPEG2TransportStreamFromESSource: public MPEG2TransportStreamMultiplexor {
 public:
   static MPEG2TransportStreamFromESSource* createNew(UsageEnvironment& env);
 

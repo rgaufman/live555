@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSink.hh"
 #endif
 
-class LIVEMEDIA_API SimpleRTPSink: public MultiFramedRTPSink {
+class SimpleRTPSink: public MultiFramedRTPSink {
 public:
   static SimpleRTPSink*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

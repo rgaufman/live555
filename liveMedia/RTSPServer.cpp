@@ -91,12 +91,15 @@ char* RTSPServer::rtspURLPrefix(int clientSocket, Boolean useIPv6) const {
   char const* addressPrefixInURL = ourAddress.ss_family == AF_INET6 ? "[" : "";
   char const* addressSuffixInURL = ourAddress.ss_family == AF_INET6 ? "]" : "";
 
+  portNumBits defaultPortNum = fWeServeSRTP ? 322 : 554;
   portNumBits portNumHostOrder = ntohs(fServerPort.num());
-  if (portNumHostOrder == 554 /* the default port number */) {
-    sprintf(urlBuffer, "rtsp://%s%s%s/",
+  if (portNumHostOrder == defaultPortNum) {
+    sprintf(urlBuffer, "rtsp%s://%s%s%s/",
+	    fWeServeSRTP ? "s" : "",
 	    addressPrefixInURL, AddressString(ourAddress).val(), addressSuffixInURL);
   } else {
-    sprintf(urlBuffer, "rtsp://%s%s%s:%hu/",
+    sprintf(urlBuffer, "rtsp%s://%s%s%s:%hu/",
+	    fWeServeSRTP ? "s" : "",
 	    addressPrefixInURL, AddressString(ourAddress).val(), addressSuffixInURL, portNumHostOrder);
   }
   
@@ -129,9 +132,11 @@ portNumBits RTSPServer::httpServerPortNum() const {
   return ntohs(fHTTPServerPort.num());
 }
 
-void RTSPServer::setTLSState(char const* certFileName, char const* privKeyFileName) {
+void RTSPServer
+::setTLSState(char const* certFileName, char const* privKeyFileName, Boolean weServeSRTP) {
   setTLSFileNames(certFileName, privKeyFileName);
   fOurConnectionsUseTLS = True;
+  fWeServeSRTP = weServeSRTP;
 }
 
 char const* RTSPServer::allowedCommandNames() {
@@ -165,7 +170,8 @@ RTSPServer::RTSPServer(UsageEnvironment& env,
     fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)),
     fPendingRegisterOrDeregisterRequests(HashTable::create(ONE_WORD_HASH_KEYS)),
     fRegisterOrDeregisterRequestCounter(0), fAuthDB(authDatabase),
-    fAllowStreamingRTPOverTCP(True), fOurConnectionsUseTLS(False) {
+    fAllowStreamingRTPOverTCP(True),
+    fOurConnectionsUseTLS(False), fWeServeSRTP(False) {
   portNumBits serverPortNumHostOrder = ntohs(fServerPort.num());
 }
 
@@ -460,6 +466,17 @@ void RTSPServer::RTSPClientConnection::handleCmd_notSupported() {
 	   fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
 }
 
+void RTSPServer::RTSPClientConnection::handleCmd_redirect(char const* urlSuffix) {
+  snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
+	   "RTSP/1.0 301 Moved Permanently\r\n"
+	   "CSeq: %s\r\n"
+	   "%s"
+	   "Location: %s%s\r\n\r\n",
+	   fCurrentCSeq,
+	   dateHeader(),
+	   fOurRTSPServer.rtspURLPrefix(fClientInputSocket), urlSuffix);
+}
+
 void RTSPServer::RTSPClientConnection::handleCmd_notFound() {
   setRTSPResponse("404 Stream Not Found");
 }
@@ -743,6 +760,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
     char cseq[RTSP_PARAM_STRING_MAX];
     char sessionIdStr[RTSP_PARAM_STRING_MAX];
     unsigned contentLength = 0;
+    Boolean urlIsRTSPS;
     Boolean playAfterSetup = False;
     fLastCRLF[2] = '\0'; // temporarily, for parsing
     Boolean parseSucceeded = parseRTSPRequestString((char*)fRequestBuffer, fLastCRLF+2 - fRequestBuffer,
@@ -751,7 +769,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 						    urlSuffix, sizeof urlSuffix,
 						    cseq, sizeof cseq,
 						    sessionIdStr, sizeof sessionIdStr,
-						    contentLength);
+						    contentLength, urlIsRTSPS);
     fLastCRLF[2] = '\r'; // restore its value
     // Check first for a bogus "Content-Length" value that would cause a pointer wraparound:
     if (tmpPtr + 2 + contentLength < tmpPtr + 2) {
@@ -780,7 +798,15 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
       // We now have a complete RTSP request.
       // Handle the specified command (beginning with commands that are session-independent):
       fCurrentCSeq = cseq;
-      if (strcmp(cmdName, "OPTIONS") == 0) {
+
+      // If the request specified the wrong type of URL
+      // (i.e., "rtsps" instead of "rtsp", or vice versa), then send back a 'redirect':
+      if (urlIsRTSPS != fOurRTSPServer.fWeServeSRTP) {
+#ifdef DEBUG
+	fprintf(stderr, "Calling handleCmd_redirect()\n");
+#endif
+	handleCmd_redirect(urlSuffix);
+      } else if (strcmp(cmdName, "OPTIONS") == 0) {
 	// If the "OPTIONS" command included a "Session:" id for a session that doesn't exist,
 	// then treat this as an error:
 	if (requestIncludedSessionId && clientSession == NULL) {

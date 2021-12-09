@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class LIVEMEDIA_API MPEG2TransportStreamAccumulator: public FramedFilter {
+class MPEG2TransportStreamAccumulator: public FramedFilter {
 public:
   static MPEG2TransportStreamAccumulator* createNew(UsageEnvironment& env,
 						    FramedSource* inputSource,

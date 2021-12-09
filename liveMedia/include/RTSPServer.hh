@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "DigestAuthentication.hh"
 #endif
 
-class LIVEMEDIA_API RTSPServer: public GenericMediaServer {
+class RTSPServer: public GenericMediaServer {
 public:
   static RTSPServer* createNew(UsageEnvironment& env, Port ourPort = 554,
 			       UserAuthenticationDatabase* authDatabase = NULL,
@@ -109,7 +109,8 @@ public:
       //  and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
   portNumBits httpServerPortNum() const; // in host byte order.  (Returns 0 if not present.)
 
-  void setTLSState(char const* certFileName, char const* privKeyFileName);
+  void setTLSState(char const* certFileName, char const* privKeyFileName,
+		   Boolean weServeSRTP = False/*later change to True #####@@@@@*/);
 
 protected:
   RTSPServer(UsageEnvironment& env,
@@ -191,6 +192,7 @@ public: // should be protected, but some old compilers complain otherwise
         //     reimplement "RTSPServer::weImplementREGISTER()" and "RTSPServer::implementCmd_REGISTER()" instead.
     virtual void handleCmd_bad();
     virtual void handleCmd_notSupported();
+    virtual void handleCmd_redirect(char const* urlSuffix);
     virtual void handleCmd_notFound();
     virtual void handleCmd_sessionNotFound();
     virtual void handleCmd_unsupportedTransport();
@@ -237,7 +239,7 @@ public: // should be protected, but some old compilers complain otherwise
   };
 
   // The state of an individual client session (using one or more sequential TCP connections) handled by a RTSP server:
-  class LIVEMEDIA_API RTSPClientSession: public GenericMediaServer::ClientSession {
+  class RTSPClientSession: public GenericMediaServer::ClientSession {
   protected:
     RTSPClientSession(RTSPServer& ourServer, u_int32_t sessionId);
     virtual ~RTSPClientSession();
@@ -329,12 +331,13 @@ private:
   UserAuthenticationDatabase* fAuthDB;
   Boolean fAllowStreamingRTPOverTCP; // by default, True
   Boolean fOurConnectionsUseTLS; // by default, False
+  Boolean fWeServeSRTP; // used only if "fOurConnectionsUseTLS" is True
 };
 
 
 ////////// A subclass of "RTSPServer" that implements the "REGISTER" command to set up proxying on the specified URL //////////
 
-class LIVEMEDIA_API RTSPServerWithREGISTERProxying: public RTSPServer {
+class RTSPServerWithREGISTERProxying: public RTSPServer {
 public:
   static RTSPServerWithREGISTERProxying* createNew(UsageEnvironment& env, Port ourPort = 554,
 						   UserAuthenticationDatabase* authDatabase = NULL,
@@ -376,7 +379,7 @@ private:
 
 // A special version of "parseTransportHeader()", used just for parsing the "Transport:" header
 // in an incoming "REGISTER" command:
-LIVEMEDIA_API void parseTransportHeaderForREGISTER(char const* buf, // in
+void parseTransportHeaderForREGISTER(char const* buf, // in
 				     Boolean &reuseConnection, // out
 				     Boolean& deliverViaTCP, // out
 				     char*& proxyURLSuffix); // out

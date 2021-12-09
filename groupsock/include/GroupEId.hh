@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "NetAddress.hh"
 #endif
 
-class LIVEMEDIA_API GroupEId {
+class GroupEId {
 public:
   GroupEId(struct sockaddr_storage const& groupAddr,
 	   portNumBits portNum, u_int8_t ttl);

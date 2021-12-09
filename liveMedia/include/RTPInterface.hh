@@ -43,7 +43,7 @@ typedef void ServerRequestAlternativeByteHandler(void* instance, u_int8_t reques
 // the same TCP connection.  A RTSP server implementation would supply a function like this - as a parameter to
 // "ServerMediaSubsession::startStream()".
 
-class LIVEMEDIA_API RTPInterface {
+class RTPInterface {
 public:
   RTPInterface(Medium* owner, Groupsock* gs);
   virtual ~RTPInterface();

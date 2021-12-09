@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class LIVEMEDIA_API VorbisAudioRTPSource: public MultiFramedRTPSource {
+class VorbisAudioRTPSource: public MultiFramedRTPSource {
 public:
   static VorbisAudioRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,
@@ -52,7 +52,7 @@ private:
   u_int32_t fCurPacketIdent; // only the low-order 24 bits are used
 };
 
-LIVEMEDIA_API void parseVorbisOrTheoraConfigStr(char const* configStr,
+void parseVorbisOrTheoraConfigStr(char const* configStr,
 				  u_int8_t*& identificationHdr, unsigned& identificationHdrSize,
 				  u_int8_t*& commentHdr, unsigned& commentHdrSize,
 				  u_int8_t*& setupHdr, unsigned& setupHdrSize,

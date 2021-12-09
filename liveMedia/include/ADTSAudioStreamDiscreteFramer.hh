@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define ADTS_HEADER_SIZE 7 // we don't include a checksum
 
-class LIVEMEDIA_API ADTSAudioStreamDiscreteFramer: public FramedFilter {
+class ADTSAudioStreamDiscreteFramer: public FramedFilter {
 public:
   static ADTSAudioStreamDiscreteFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource, char const* configStr);

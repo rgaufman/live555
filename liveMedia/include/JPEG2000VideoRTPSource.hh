@@ -23,7 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class LIVEMEDIA_API JPEG2000VideoRTPSource: public MultiFramedRTPSource {
+class JPEG2000VideoRTPSource: public MultiFramedRTPSource {
 public:
   static JPEG2000VideoRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
 					   unsigned char rtpPayloadFormat,

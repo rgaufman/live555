@@ -35,7 +35,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTCP.hh"
 #endif
 
-class LIVEMEDIA_API OnDemandServerMediaSubsession: public ServerMediaSubsession {
+class OnDemandServerMediaSubsession: public ServerMediaSubsession {
 protected: // we're a virtual base class
   OnDemandServerMediaSubsession(UsageEnvironment& env, Boolean reuseFirstSource,
 				portNumBits initialPortNum = 6970,
@@ -151,7 +151,7 @@ private:
 // "OnDemandServerMediaSubsession", but we expose the definition here, in case subclasses of "OnDemandServerMediaSubsession"
 // want to access it.
 
-class LIVEMEDIA_API Destinations {
+class Destinations {
 public:
   Destinations(struct sockaddr_storage const& destAddr,
                Port const& rtpDestPort,
@@ -175,7 +175,7 @@ public:
   TLSState* tlsState;
 };
 
-class LIVEMEDIA_API StreamState {
+class StreamState {
 public:
   StreamState(OnDemandServerMediaSubsession& master,
               Port const& serverRTPPort, Port const& serverRTCPPort,

@@ -34,7 +34,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <openssl/ssl.h>
 #endif
 
-class LIVEMEDIA_API TLSState {
+class TLSState {
 public:
   Boolean isNeeded;
 
@@ -56,7 +56,7 @@ protected:
 #endif
 };
 
-class LIVEMEDIA_API ClientTLSState: public TLSState {
+class ClientTLSState: public TLSState {
 public:
   ClientTLSState(class RTSPClient& client);
   virtual ~ClientTLSState();
@@ -72,7 +72,7 @@ private:
 #endif
 };
 
-class LIVEMEDIA_API ServerTLSState: public TLSState {
+class ServerTLSState: public TLSState {
 public:
   ServerTLSState(UsageEnvironment& env);
   virtual ~ServerTLSState();

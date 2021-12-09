@@ -38,7 +38,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 typedef u_int32_t ipv4AddressBits;
 typedef u_int8_t ipv6AddressBits[16]; // 128 bits
 
-class LIVEMEDIA_API NetAddress {
+class NetAddress {
 public:
   NetAddress(u_int8_t const* data,
 	     unsigned length = 4 /* default: 32 bits (for IPv4); use 16 (128 bits) for IPv6 */);
@@ -69,7 +69,7 @@ void copyAddress(struct sockaddr_storage& to, NetAddress const* from);
 Boolean operator==(struct sockaddr_storage const& left, struct sockaddr_storage const& right);
     // compares the family and address parts only; not the port number or anything else
 
-class LIVEMEDIA_API NetAddressList {
+class NetAddressList {
 public:
   NetAddressList(char const* hostname, int addressFamily = AF_UNSPEC);
   NetAddressList(NetAddressList const& orig);
@@ -101,7 +101,7 @@ private:
 
 typedef u_int16_t portNumBits;
 
-class LIVEMEDIA_API Port {
+class Port {
 public:
   Port(portNumBits num /* in host byte order */);
   
@@ -118,7 +118,7 @@ UsageEnvironment& operator<<(UsageEnvironment& s, const Port& p);
 
 
 // A generic table for looking up objects by (address1, address2, port)
-class LIVEMEDIA_API AddressPortLookupTable {
+class AddressPortLookupTable {
 public:
   AddressPortLookupTable();
   virtual ~AddressPortLookupTable();
@@ -176,7 +176,7 @@ Boolean IsMulticastAddress(struct sockaddr_storage const& address);
 
 // A mechanism for displaying an IP (v4 or v6) address in ASCII.
 // (This encapsulates the "inet_ntop()" function.)
-class LIVEMEDIA_API AddressString {
+class AddressString {
 public:
   // IPv4 input:
   AddressString(struct sockaddr_in const& addr);

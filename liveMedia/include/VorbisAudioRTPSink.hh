@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class LIVEMEDIA_API VorbisAudioRTPSink: public AudioRTPSink {
+class VorbisAudioRTPSink: public AudioRTPSink {
 public:
   static VorbisAudioRTPSink*
   createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,
@@ -77,7 +77,7 @@ private:
 // a Base64-encoded 'config' string (for SDP) from "identification", "comment", "setup" headers.
 // (Note: The result string was heap-allocated, and the caller should delete[] it afterwards.)
 
-LIVEMEDIA_API char* generateVorbisOrTheoraConfigStr(u_int8_t* identificationHeader, unsigned identificationHeaderSize,
+char* generateVorbisOrTheoraConfigStr(u_int8_t* identificationHeader, unsigned identificationHeaderSize,
 				      u_int8_t* commentHeader, unsigned commentHeaderSize,
 				      u_int8_t* setupHeader, unsigned setupHeaderSize,
 				      u_int32_t identField);

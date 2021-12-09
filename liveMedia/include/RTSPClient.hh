@@ -39,7 +39,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 #endif
 
-class LIVEMEDIA_API RTSPClient: public Medium {
+class RTSPClient: public Medium {
 public:
   static RTSPClient* createNew(UsageEnvironment& env, char const* rtspURL,
 			       int verbosityLevel = 0,
@@ -196,7 +196,7 @@ public:
 
 public: // Some compilers complain if this is "private:"
   // The state of a request-in-progress:
-  class LIVEMEDIA_API RequestRecord {
+  class RequestRecord {
   public:
     RequestRecord(unsigned cseq, char const* commandName, responseHandler* handler,
 		  MediaSession* session = NULL, MediaSubsession* subsession = NULL, u_int32_t booleanFlags = 0,
@@ -256,7 +256,7 @@ private: // redefined virtual functions
   virtual Boolean isRTSPClient() const;
 
 private:
-  class LIVEMEDIA_API RequestQueue {
+  class RequestQueue {
   public:
     RequestQueue();
     RequestQueue(RequestQueue& origQueue); // moves the queue contents to the new queue
@@ -370,7 +370,7 @@ private:
 
 typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP);
 
-class LIVEMEDIA_API HandlerServerForREGISTERCommand: public RTSPServer {
+class HandlerServerForREGISTERCommand: public RTSPServer {
 public:
   static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
 						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,

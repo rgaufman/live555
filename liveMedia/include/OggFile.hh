@@ -33,7 +33,7 @@ class OggDemux; // forward
 
 typedef void OggDemuxOnDeletionFunc(void* objectToNotify, OggDemux* demuxBeingDeleted);
 
-class LIVEMEDIA_API OggFile: public Medium {
+class OggFile: public Medium {
 public:
   typedef void (onCreationFunc)(OggFile* newFile, void* clientData);
   static void createNew(UsageEnvironment& env, char const* fileName,
@@ -89,7 +89,7 @@ private:
   class OggFileParser* fParserForInitialization;
 };
 
-class LIVEMEDIA_API OggTrack {
+class OggTrack {
 public:
   OggTrack();
   virtual ~OggTrack();
@@ -128,7 +128,7 @@ public:
     }
 };
 
-class LIVEMEDIA_API OggTrackTableIterator {
+class OggTrackTableIterator {
 public:
   OggTrackTableIterator(class OggTrackTable& ourTable);
   virtual ~OggTrackTableIterator();
@@ -139,7 +139,7 @@ private:
   HashTable::Iterator* fIter;
 };
 
-class LIVEMEDIA_API OggDemux: public Medium {
+class OggDemux: public Medium {
 public:
   FramedSource* newDemuxedTrack(u_int32_t& resultTrackNumber);
     // Returns a new stream ("FramedSource" subclass) that represents the next media track

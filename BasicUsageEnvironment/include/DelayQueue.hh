@@ -32,7 +32,7 @@ typedef long time_base_seconds;
 
 ///// A "Timeval" can be either an absolute time, or a time interval /////
 
-class LIVEMEDIA_API Timeval {
+class Timeval {
 public:
   time_base_seconds seconds() const {
     return fTv.tv_sec;
@@ -101,7 +101,7 @@ class DelayInterval operator-(Timeval const& arg1, Timeval const& arg2);
 
 ///// DelayInterval /////
 
-class LIVEMEDIA_API DelayInterval: public Timeval {
+class DelayInterval: public Timeval {
 public:
   DelayInterval(time_base_seconds seconds, time_base_seconds useconds)
     : Timeval(seconds, useconds) {}
@@ -117,7 +117,7 @@ extern DelayInterval const DELAY_DAY;
 
 ///// _EventTime /////
 
-class LIVEMEDIA_API _EventTime: public Timeval {
+class _EventTime: public Timeval {
 public:
   _EventTime(unsigned secondsSinceEpoch = 0,
 	    unsigned usecondsSinceEpoch = 0)
@@ -132,7 +132,7 @@ extern _EventTime const THE_END_OF_TIME;
 
 ///// DelayQueueEntry /////
 
-class LIVEMEDIA_API DelayQueueEntry {
+class DelayQueueEntry {
 public:
   virtual ~DelayQueueEntry();
 
@@ -157,7 +157,7 @@ private:
 
 ///// DelayQueue /////
 
-class LIVEMEDIA_API DelayQueue: public DelayQueueEntry {
+class DelayQueue: public DelayQueueEntry {
 public:
   DelayQueue();
   virtual ~DelayQueue();

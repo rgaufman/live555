@@ -29,11 +29,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // The following class can be used to define specific encoder parameters
-class LIVEMEDIA_API DeviceParameters {
+class DeviceParameters {
   //%%% TO BE WRITTEN %%%
 };
 
-class LIVEMEDIA_API DeviceSource: public FramedSource {
+class DeviceSource: public FramedSource {
 public:
   static DeviceSource* createNew(UsageEnvironment& env,
 				 DeviceParameters params);

@@ -50,7 +50,7 @@ class TaskScheduler; // forward
 
 // An abstract base class, subclassed for each use of the library
 
-class LIVEMEDIA_API UsageEnvironment {
+class UsageEnvironment {
 public:
   Boolean reclaim();
       // returns True iff we were actually able to delete our object
@@ -103,7 +103,7 @@ typedef void TaskFunc(void* clientData);
 typedef void* TaskToken;
 typedef u_int32_t EventTriggerId;
 
-class LIVEMEDIA_API TaskScheduler {
+class TaskScheduler {
 public:
   virtual ~TaskScheduler();
 

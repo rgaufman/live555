@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ByteStreamFileSource.hh"
 #endif
 
-class LIVEMEDIA_API ByteStreamMultiFileSource: public FramedSource {
+class ByteStreamMultiFileSource: public FramedSource {
 public:
   static ByteStreamMultiFileSource*
   createNew(UsageEnvironment& env, char const** fileNameArray,

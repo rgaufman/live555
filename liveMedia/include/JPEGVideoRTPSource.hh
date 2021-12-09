@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define MAX_JPEG_HEADER_SIZE 1024
 
-class LIVEMEDIA_API JPEGVideoRTPSource: public MultiFramedRTPSource {
+class JPEGVideoRTPSource: public MultiFramedRTPSource {
 public:
   static JPEGVideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

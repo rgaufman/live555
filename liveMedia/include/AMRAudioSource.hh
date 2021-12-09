@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class LIVEMEDIA_API AMRAudioSource: public FramedSource {
+class AMRAudioSource: public FramedSource {
 public:
   Boolean isWideband() const { return fIsWideband; }
   unsigned numChannels() const { return fNumChannels; }

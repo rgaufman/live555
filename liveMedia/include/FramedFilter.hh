@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class LIVEMEDIA_API FramedFilter: public FramedSource {
+class FramedFilter: public FramedSource {
 public:
   FramedSource* inputSource() const { return fInputSource; }
 

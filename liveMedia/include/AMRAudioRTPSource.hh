@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AMRAudioSource.hh"
 #endif
 
-class LIVEMEDIA_API AMRAudioRTPSource {
+class AMRAudioRTPSource {
 public:
   static AMRAudioSource* createNew(UsageEnvironment& env,
 				   Groupsock* RTPgs,
