@@ -42,10 +42,21 @@ make default Makefile build script using cmake
 # Windows shared library
 ```shell
 # cmake .. -B vs2022 -G "Visual Studio 17 2022" \
-  -DLIVE555_ENABLE_OPENSSL=ON \
+  -DLIVE555_ENABLE_OPENSSL=OFF \
   -DLIVE555_BUILD_EXAMPLES=OFF \
   -DLIVE555_MONOLITH_BUILD=ON
 ```
+
+If you want use the OpenSSL library on windows shared library,
+You have to use the OpenSSL library on vcpkg package from Microsoft.
+And you have to choose the architect option for win32 or win64  with -A option in windows.
+
+* cmake -G "Visual Studio 17 2022" -A Win32
+* cmake -G "Visual Studio 17 2022" -A x64
+* cmake -G "Visual Studio 17 2022" -A ARM
+* cmake -G "Visual Studio 17 2022" -A ARM64
+
+If you should be OpenSSL-Win32 or OpenSSL-Win64 binary package. you have to change the lib file names on Preferences menu from Visual Studio IDE.
 
 *****
 build live555 library and executable file.
