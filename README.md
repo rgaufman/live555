@@ -39,7 +39,10 @@ make default Makefile build script using cmake
   -DLIVE555_BUILD_SHARED_LIBS=ON
 ```
 
-# Windows shared library
+# Windows shared library with monolith
+Windows share libbrary need to dllexport option on share library type, and application need to dllimport option.
+So, I added LIVEMDIA_API option on all hh files for shared library. So, you have to add the -DLIVE555_MONOLITH_BUILD option with ON.
+
 ```shell
 # cmake .. -B vs2022 -G "Visual Studio 17 2022" \
   -DLIVE555_ENABLE_OPENSSL=OFF \
@@ -49,7 +52,7 @@ make default Makefile build script using cmake
 
 If you want to use the OpenSSL library on windows for shared library,
 You have to use the OpenSSL library on vcpkg package from Microsoft.
-And you have to choose the architect option for win32 or win64  with -A option in windows.
+And you have to choose the architect option for win32 or win64  with -A option in windows over than Visual Studio 2019.
 
 * cmake -G "Visual Studio 17 2022" -A Win32
 * cmake -G "Visual Studio 17 2022" -A x64
