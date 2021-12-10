@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MIKEY.hh"
 #endif
 
-class SRTPCryptographicContext {
+class LIVEMEDIA_API SRTPCryptographicContext {
 public:
   SRTPCryptographicContext(MIKEYState const& mikeyState);
   virtual ~SRTPCryptographicContext();

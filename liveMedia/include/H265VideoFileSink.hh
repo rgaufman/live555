@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoFileSink.hh"
 #endif
 
-class H265VideoFileSink: public H264or5VideoFileSink {
+class LIVEMEDIA_API H265VideoFileSink: public H264or5VideoFileSink {
 public:
   static H265VideoFileSink* createNew(UsageEnvironment& env, char const* fileName,
 				      char const* sPropVPSStr = NULL,

@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OggFile.hh"
 #endif
 
-class OggFileServerDemux: public Medium {
+class LIVEMEDIA_API OggFileServerDemux: public Medium {
 public:
   typedef void (onCreationFunc)(OggFileServerDemux* newDemux, void* clientData);
   static void createNew(UsageEnvironment& env, char const* fileName,

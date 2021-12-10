@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class H264or5VideoStreamFramer: public MPEGVideoStreamFramer {
+class LIVEMEDIA_API H264or5VideoStreamFramer: public MPEGVideoStreamFramer {
 public:
   void getVPSandSPSandPPS(u_int8_t*& vps, unsigned& vpsSize,
 			  u_int8_t*& sps, unsigned& spsSize,

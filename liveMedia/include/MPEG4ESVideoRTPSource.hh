@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class MPEG4ESVideoRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API MPEG4ESVideoRTPSource: public MultiFramedRTPSource {
 public:
   static MPEG4ESVideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

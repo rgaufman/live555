@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class MP3ADURTPSink: public AudioRTPSink {
+class LIVEMEDIA_API MP3ADURTPSink: public AudioRTPSink {
 public:
   static MP3ADURTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs,
 				  unsigned char RTPPayloadType);

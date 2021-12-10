@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 ////////// 16-bit PCM (in various byte orderings) -> 8-bit u-Law //////////
 
-class uLawFromPCMAudioSource: public FramedFilter {
+class LIVEMEDIA_API uLawFromPCMAudioSource: public FramedFilter {
 public:
   static uLawFromPCMAudioSource*
   createNew(UsageEnvironment& env, FramedSource* inputSource,
@@ -65,7 +65,7 @@ private:
 
 ////////// u-Law -> 16-bit PCM (in host order) //////////
 
-class PCMFromuLawAudioSource: public FramedFilter {
+class LIVEMEDIA_API PCMFromuLawAudioSource: public FramedFilter {
 public:
   static PCMFromuLawAudioSource*
   createNew(UsageEnvironment& env, FramedSource* inputSource);
@@ -98,7 +98,7 @@ private:
 
 ////////// 16-bit values (in host order) -> 16-bit network order //////////
 
-class NetworkFromHostOrder16: public FramedFilter {
+class LIVEMEDIA_API NetworkFromHostOrder16: public FramedFilter {
 public:
   static NetworkFromHostOrder16*
   createNew(UsageEnvironment& env, FramedSource* inputSource);
@@ -126,7 +126,7 @@ private:
 
 ////////// 16-bit values (in network order) -> 16-bit host order //////////
 
-class HostFromNetworkOrder16: public FramedFilter {
+class LIVEMEDIA_API HostFromNetworkOrder16: public FramedFilter {
 public:
   static HostFromNetworkOrder16*
   createNew(UsageEnvironment& env, FramedSource* inputSource);
@@ -154,7 +154,7 @@ private:
 
 ////////// 16-bit values: little-endian <-> big-endian //////////
 
-class EndianSwap16: public FramedFilter {
+class LIVEMEDIA_API EndianSwap16: public FramedFilter {
 public:
   static EndianSwap16* createNew(UsageEnvironment& env, FramedSource* inputSource);
 
@@ -181,7 +181,7 @@ private:
 
 ////////// 24-bit values: little-endian <-> big-endian //////////
 
-class EndianSwap24: public FramedFilter {
+class LIVEMEDIA_API EndianSwap24: public FramedFilter {
 public:
   static EndianSwap24* createNew(UsageEnvironment& env, FramedSource* inputSource);
 

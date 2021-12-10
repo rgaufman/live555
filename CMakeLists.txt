@@ -1,4 +1,4 @@
-cmake_minimum_required ( VERSION 3.13 )
+cmake_minimum_required ( VERSION 3.16 )
 
 # Parse version number from the header file
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/liveMedia/include/liveMedia_version.hh contents)
@@ -23,6 +23,19 @@ option(LIVE555_ENABLE_OPENSSL "Build with OpenSSL support (rtsps, SRTP)." ON)
 option(LIVE555_MONOLITH_BUILD "Build all modules as one monolithic library" OFF)
 option(LIVE555_BUILD_SHARED_LIBS "Build shared library" OFF)
 option(LIVE555_BUILD_EMSCRIPTEN "Build emscripten" OFF)
+
+macro(get_WIN32_WINNT version)
+    if (WIN32 AND CMAKE_SYSTEM_VERSION)
+        set(ver ${CMAKE_SYSTEM_VERSION})
+        string(REGEX REPLACE "^([0-9])[.]([0-9]).*" "0\\10\\2" ver ${ver})
+        set(${version} "0x${ver}")
+    endif()
+endmacro()
+
+if (WIN32)
+get_WIN32_WINNT(ver)
+add_definitions(-DWIN32_WINNT=${ver})
+endif ()
 
 if ( CMAKE_COMPILER_IS_GNUCXX )
    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive" )
@@ -145,51 +158,6 @@ if(LIVE555_EPOLL_SUPPORT)
     add_subdirectory(EpollTaskScheduler)
 endif()
 
-if(LIVE555_MONOLITH_BUILD)
-    add_library(live555 dummy.cpp)
-    target_link_libraries(live555 PUBLIC
-        UsageEnvironment
-        groupsock
-        BasicUsageEnvironment
-        liveMedia
-    )
-    if(TARGET EpollTaskScheduler)
-        target_link_libraries(live555 PUBLIC EpollTaskScheduler)
-        add_library(live555::EpollTaskScheduler ALIAS EpollTaskScheduler)
-    endif()
-    add_library(live555::live555 ALIAS live555)
-    add_library(live555::UsageEnvironment ALIAS live555)
-    add_library(live555::groupsock ALIAS live555)
-    add_library(live555::BasicUsageEnvironment ALIAS live555)
-    add_library(live555::liveMedia ALIAS live555)
-
-    live555_target_version(live555
-        CURRENT 1
-        REVISION 0
-        AGE 0
-    )
-    set_target_properties(live555 PROPERTIES FOLDER "live555")
-else()
-    add_library(live555 INTERFACE)
-    add_library(live555::live555 ALIAS live555)
-    target_link_libraries(live555 INTERFACE
-        UsageEnvironment
-        groupsock
-        BasicUsageEnvironment
-        liveMedia
-    )
-    if(TARGET EpollTaskScheduler)
-        target_link_libraries(live555 INTERFACE EpollTaskScheduler)
-    endif()
-endif()
-
-install(TARGETS live555 EXPORT live555Target
-    INCLUDES DESTINATION include/liveMedia
-    RUNTIME DESTINATION bin/$<CONFIG>
-    LIBRARY DESTINATION lib/$<CONFIG>
-    ARCHIVE DESTINATION lib/$<CONFIG>
-)
-
 if(LIVE555_BUILD_EXAMPLES)
     add_subdirectory(testProgs)
     add_subdirectory(proxyServer)
@@ -250,7 +218,55 @@ if(live555_master_project)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
-# Installation stuff
+if(LIVE555_MONOLITH_BUILD)
+   message(STATUS "Shared library")
+   
+   add_library(live555 SHARED dummy.cpp)
+   set ( WS_LINK_LIBRARIES "" )
+   if ( WIN32 )
+      list ( APPEND WS_LINK_LIBRARIES
+         ws2_32
+      )
+      set(LIB_EXTENSION ".dll")
+   endif ()
+   target_link_libraries(live555 PUBLIC
+      UsageEnvironment
+      groupsock
+      BasicUsageEnvironment
+      liveMedia
+   )
+   if(TARGET EpollTaskScheduler)
+      target_link_libraries(live555 PUBLIC EpollTaskScheduler)
+      add_library(live555::EpollTaskScheduler ALIAS EpollTaskScheduler)
+   endif()
+   add_library(live555::live555 ALIAS live555)
+   add_library(live555::UsageEnvironment ALIAS live555)
+   add_library(live555::groupsock ALIAS live555)
+   add_library(live555::BasicUsageEnvironment ALIAS live555)
+   add_library(live555::liveMedia ALIAS live555)
+
+   live555_target_version(live555
+      CURRENT 1
+      REVISION 0
+      AGE 0
+   )
+   set_target_properties(live555 PROPERTIES FOLDER "live555")
+else()
+    add_library(live555 INTERFACE)
+    add_library(live555::live555 ALIAS live555)
+    target_link_libraries(live555 INTERFACE
+        UsageEnvironment
+        groupsock
+        BasicUsageEnvironment
+        liveMedia
+    )
+    if(TARGET EpollTaskScheduler)
+        target_link_libraries(live555 INTERFACE EpollTaskScheduler)
+    endif()
+endif()
+
+
+   # Installation stuff
 set(config_version_file ${CMAKE_CURRENT_BINARY_DIR}/live555ConfigVersion.cmake)
 
 include(CMakePackageConfigHelpers)
@@ -260,6 +276,13 @@ write_basic_package_version_file(${config_version_file}
 
 install(FILES ${config_version_file}
     DESTINATION lib/cmake/live555
+)
+
+install(TARGETS live555 EXPORT live555Target
+    INCLUDES DESTINATION include/liveMedia
+    RUNTIME DESTINATION bin/$<CONFIG>
+    LIBRARY DESTINATION lib/$<CONFIG>
+    ARCHIVE DESTINATION lib/$<CONFIG>
 )
 
 install(EXPORT live555Target

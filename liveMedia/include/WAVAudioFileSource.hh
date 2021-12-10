@@ -36,7 +36,7 @@ typedef enum {
 } WAV_AUDIO_FORMAT;
 
 
-class WAVAudioFileSource: public AudioInputDevice {
+class LIVEMEDIA_API WAVAudioFileSource: public AudioInputDevice {
 public:
 
   static WAVAudioFileSource* createNew(UsageEnvironment& env,

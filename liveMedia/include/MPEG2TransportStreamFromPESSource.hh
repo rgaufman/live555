@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2DemuxedElementaryStream.hh"
 #endif
 
-class MPEG2TransportStreamFromPESSource: public MPEG2TransportStreamMultiplexor {
+class LIVEMEDIA_API MPEG2TransportStreamFromPESSource: public MPEG2TransportStreamMultiplexor {
 public:
   static MPEG2TransportStreamFromPESSource*
   createNew(UsageEnvironment& env, MPEG1or2DemuxedElementaryStream* inputSource);

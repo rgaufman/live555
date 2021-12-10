@@ -21,7 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _RAW_VIDEO_FRAME_PARAMETERS_HH
 #define _RAW_VIDEO_FRAME_PARAMETERS_HH
 
-class RawVideoFrameParameters {
+class LIVEMEDIA_API RawVideoFrameParameters {
 public:
   RawVideoFrameParameters(unsigned width, unsigned height, unsigned depth, char const* sampling);
   virtual ~RawVideoFrameParameters();

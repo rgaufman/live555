@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTPSink.hh"
 #endif
 
-class MultiFramedRTPSink: public RTPSink {
+class LIVEMEDIA_API MultiFramedRTPSink: public RTPSink {
 public:
   void setPacketSizes(unsigned preferredPacketSize, unsigned maxPacketSize);
 

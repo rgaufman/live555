@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class JPEGVideoSource: public FramedSource {
+class LIVEMEDIA_API JPEGVideoSource: public FramedSource {
 public:
   virtual u_int8_t type() = 0;
   virtual u_int8_t qFactor() = 0;

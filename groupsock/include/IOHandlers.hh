@@ -26,6 +26,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 // Handles incoming data on sockets:
-void socketReadHandler(Socket* sock, int mask);
+LIVEMEDIA_API void socketReadHandler(Socket* sock, int mask);
 
 #endif

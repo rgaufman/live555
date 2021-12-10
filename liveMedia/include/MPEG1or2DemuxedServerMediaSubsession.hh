@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2FileServerDemux.hh"
 #endif
 
-class MPEG1or2DemuxedServerMediaSubsession: public OnDemandServerMediaSubsession{
+class LIVEMEDIA_API MPEG1or2DemuxedServerMediaSubsession: public OnDemandServerMediaSubsession{
 public:
   static MPEG1or2DemuxedServerMediaSubsession*
   createNew(MPEG1or2FileServerDemux& demux, u_int8_t streamIdTag,

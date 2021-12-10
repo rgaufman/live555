@@ -7,30 +7,35 @@ PUBLIC
     $<BUILD_INTERFACE:${live555_SOURCE_DIR}/liveMedia/include>
 )
 
-if ( BUILD_SHARED_LIBS )
+if ( LIVE555_MONOLITH_BUILD )
 	# target_compile_definitions(live555HLSProxy PRIVATE LIVEMEDIA_EXPORTS=1)
-	message(STATUS "build shared library on live555HLSProxy.")
+	message(STATUS "build monolith library on live555HLSProxy.")
+    if ( MSVC )
+        add_definitions(-DLIVEMEDIA_API=__declspec\(dllimport\))
+    else ()
+        add_definitions(-DLIVEMEDIA_API=)
+    endif ()
 else ()
-	target_compile_definitions(live555HLSProxy PRIVATE LIVEMEDIA_STATIC=1)
-	message(STATUS "build static library on live555HLSProxy")
+    add_definitions(-DLIVEMEDIA_API=)
+	# message(STATUS "build static library on live555HLSProxy")
 endif ()
 
-if ( MSVC )
-    add_definitions(/FI"export.h")
-else()
-    # GCC or Clang
-    add_definitions(-include export.h)
-endif()
+# if ( MSVC )
+#     add_definitions(/FI"export.h")
+# else()
+#     # GCC or Clang
+#     add_definitions(-include export.h)
+# endif()
 
 
-if ( WIN32 )
-    set ( LIB_EXTENSION lib )
-else ()
-    if( BUILD_SHARED_LIBS )
-        #For the shared library:
-        set ( LIB_EXTENSION so )
-    else()
-        #For the static library:
-        set ( LIB_EXTENSION a )
-    endif()
-endif()
+# if ( WIN32 )
+#     set ( LIB_EXTENSION lib )
+# else ()
+#     if( BUILD_SHARED_LIBS )
+#         #For the shared library:
+#         set ( LIB_EXTENSION so )
+#     else()
+#         #For the static library:
+#         set ( LIB_EXTENSION a )
+#     endif()
+# endif()

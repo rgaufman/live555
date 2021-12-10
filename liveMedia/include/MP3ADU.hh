@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class ADUFromMP3Source: public FramedFilter {
+class LIVEMEDIA_API ADUFromMP3Source: public FramedFilter {
 public:
   static ADUFromMP3Source* createNew(UsageEnvironment& env,
 				     FramedSource* inputSource,
@@ -63,7 +63,7 @@ private:
   unsigned fFrameCounter;
 };
 
-class MP3FromADUSource: public FramedFilter {
+class LIVEMEDIA_API MP3FromADUSource: public FramedFilter {
 public:
   static MP3FromADUSource* createNew(UsageEnvironment& env,
 				     FramedSource* inputSource,

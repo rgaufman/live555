@@ -49,8 +49,8 @@ extern "C" int initializeWinsockIfNecessary();
 #include <stdio.h>
 
 // By default, use INADDR_ANY for the sending and receiving interfaces (IPv4 only):
-ipv4AddressBits SendingInterfaceAddr = INADDR_ANY;
-ipv4AddressBits ReceivingInterfaceAddr = INADDR_ANY;
+LIVEMEDIA_API ipv4AddressBits SendingInterfaceAddr = INADDR_ANY;
+LIVEMEDIA_API ipv4AddressBits ReceivingInterfaceAddr = INADDR_ANY;
 
 static void socketErr(UsageEnvironment& env, char const* errorMsg) {
   env.setResultErrMsg(errorMsg);

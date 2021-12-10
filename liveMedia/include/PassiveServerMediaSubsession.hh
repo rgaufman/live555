@@ -33,7 +33,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTCP.hh"
 #endif
 
-class PassiveServerMediaSubsession: public ServerMediaSubsession {
+class LIVEMEDIA_API PassiveServerMediaSubsession: public ServerMediaSubsession {
 public:
   static PassiveServerMediaSubsession* createNew(RTPSink& rtpSink,
 						 RTCPInstance* rtcpInstance = NULL);

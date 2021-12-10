@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class StreamReplica; // forward
 
-class StreamReplicator: public Medium {
+class LIVEMEDIA_API StreamReplicator: public Medium {
 public:
   static StreamReplicator* createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean deleteWhenLastReplicaDies = True);
     // If "deleteWhenLastReplicaDies" is True (the default), then the "StreamReplicator" object is deleted when (and only when)

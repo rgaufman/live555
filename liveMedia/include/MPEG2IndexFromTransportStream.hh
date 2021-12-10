@@ -35,7 +35,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class IndexRecord; // forward
 
-class MPEG2IFrameIndexFromTransportStream: public FramedFilter {
+class LIVEMEDIA_API MPEG2IFrameIndexFromTransportStream: public FramedFilter {
 public:
   static MPEG2IFrameIndexFromTransportStream*
   createNew(UsageEnvironment& env, FramedSource* inputSource);

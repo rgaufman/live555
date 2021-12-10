@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class AC3AudioStreamFramer: public FramedFilter {
+class LIVEMEDIA_API AC3AudioStreamFramer: public FramedFilter {
 public:
   static AC3AudioStreamFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource,

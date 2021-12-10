@@ -25,75 +25,75 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "NetAddress.hh"
 #endif
 
-int setupDatagramSocket(UsageEnvironment& env, Port port, int domain);
-int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
+LIVEMEDIA_API int setupDatagramSocket(UsageEnvironment& env, Port port, int domain);
+LIVEMEDIA_API int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
 		      Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
 
-int readSocket(UsageEnvironment& env,
+LIVEMEDIA_API int readSocket(UsageEnvironment& env,
 	       int socket, unsigned char* buffer, unsigned bufferSize,
 	       struct sockaddr_storage& fromAddress /*set only if we're a datagram socket*/);
 
-Boolean writeSocket(UsageEnvironment& env,
+LIVEMEDIA_API Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct sockaddr_storage const& addressAndPort,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize);
 
-Boolean writeSocket(UsageEnvironment& env,
+LIVEMEDIA_API Boolean writeSocket(UsageEnvironment& env,
 		    int socket, struct sockaddr_storage const& addressAndPort,
 		    unsigned char* buffer, unsigned bufferSize);
     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
-void ignoreSigPipeOnSocket(int socketNum);
+LIVEMEDIA_API void ignoreSigPipeOnSocket(int socketNum);
 
-unsigned getSendBufferSize(UsageEnvironment& env, int socket);
-unsigned getReceiveBufferSize(UsageEnvironment& env, int socket);
-unsigned setSendBufferTo(UsageEnvironment& env,
+LIVEMEDIA_API unsigned getSendBufferSize(UsageEnvironment& env, int socket);
+LIVEMEDIA_API unsigned getReceiveBufferSize(UsageEnvironment& env, int socket);
+LIVEMEDIA_API unsigned setSendBufferTo(UsageEnvironment& env,
 			 int socket, unsigned requestedSize);
-unsigned setReceiveBufferTo(UsageEnvironment& env,
+LIVEMEDIA_API unsigned setReceiveBufferTo(UsageEnvironment& env,
 			    int socket, unsigned requestedSize);
-unsigned increaseSendBufferTo(UsageEnvironment& env,
+LIVEMEDIA_API unsigned increaseSendBufferTo(UsageEnvironment& env,
 			      int socket, unsigned requestedSize);
-unsigned increaseReceiveBufferTo(UsageEnvironment& env,
+LIVEMEDIA_API unsigned increaseReceiveBufferTo(UsageEnvironment& env,
 				 int socket, unsigned requestedSize);
 
-Boolean makeSocketNonBlocking(int sock);
-Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
+LIVEMEDIA_API Boolean makeSocketNonBlocking(int sock);
+LIVEMEDIA_API Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
   // A "writeTimeoutInMilliseconds" value of 0 means: Don't timeout
-Boolean setSocketKeepAlive(int sock);
+LIVEMEDIA_API Boolean setSocketKeepAlive(int sock);
 
-Boolean socketJoinGroup(UsageEnvironment& env, int socket,
+LIVEMEDIA_API Boolean socketJoinGroup(UsageEnvironment& env, int socket,
 			struct sockaddr_storage const& groupAddress);
-Boolean socketLeaveGroup(UsageEnvironment&, int socket,
+LIVEMEDIA_API Boolean socketLeaveGroup(UsageEnvironment&, int socket,
 			 struct sockaddr_storage const& groupAddress);
 
 // source-specific multicast join/leave
-Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
+LIVEMEDIA_API Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
 			   struct sockaddr_storage const& groupAddress,
 			   struct sockaddr_storage const& sourceFilterAddr);
-Boolean socketLeaveGroupSSM(UsageEnvironment&, int socket,
+LIVEMEDIA_API Boolean socketLeaveGroupSSM(UsageEnvironment&, int socket,
 			    struct sockaddr_storage const& groupAddress,
 			    struct sockaddr_storage const& sourceFilterAddr);
 
-Boolean getSourcePort(UsageEnvironment& env, int socket, int domain, Port& port);
+LIVEMEDIA_API Boolean getSourcePort(UsageEnvironment& env, int socket, int domain, Port& port);
 
-ipv4AddressBits ourIPv4Address(UsageEnvironment& env); // in network order
-ipv6AddressBits const& ourIPv6Address(UsageEnvironment& env);
+LIVEMEDIA_API ipv4AddressBits ourIPv4Address(UsageEnvironment& env); // in network order
+LIVEMEDIA_API ipv6AddressBits const& ourIPv6Address(UsageEnvironment& env);
 
-Boolean weHaveAnIPv4Address(UsageEnvironment& env);
-Boolean weHaveAnIPv6Address(UsageEnvironment& env);
-Boolean weHaveAnIPAddress(UsageEnvironment& env);
+LIVEMEDIA_API Boolean weHaveAnIPv4Address(UsageEnvironment& env);
+LIVEMEDIA_API Boolean weHaveAnIPv6Address(UsageEnvironment& env);
+LIVEMEDIA_API Boolean weHaveAnIPAddress(UsageEnvironment& env);
   // returns True if we have either an IPv4 or an IPv6 address
 
 // IPv4 addresses of our sending and receiving interfaces.  (By default, these
 // are INADDR_ANY (i.e., 0), specifying the default interface.)
-extern ipv4AddressBits SendingInterfaceAddr;
-extern ipv4AddressBits ReceivingInterfaceAddr;
+LIVEMEDIA_API extern ipv4AddressBits SendingInterfaceAddr;
+LIVEMEDIA_API extern ipv4AddressBits ReceivingInterfaceAddr;
 
 // Allocates a randomly-chosen IPv4 SSM (multicast) address:
-ipv4AddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
+LIVEMEDIA_API ipv4AddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
 
 // Returns a simple "hh:mm:ss" string, for use in debugging output (e.g.)
-char const* timestampString();
+LIVEMEDIA_API char const* timestampString();
 
 
 #ifdef HAVE_SOCKADDR_LEN
@@ -125,7 +125,7 @@ char const* timestampString();
 //            NoReuse dummy;
 //            ...
 //          }
-class NoReuse {
+class LIVEMEDIA_API NoReuse {
 public:
   NoReuse(UsageEnvironment& env);
   ~NoReuse();
@@ -137,24 +137,24 @@ private:
 
 // Define the "UsageEnvironment"-specific "groupsockPriv" structure:
 
-struct _groupsockPriv { // There should be only one of these allocated
+struct LIVEMEDIA_API _groupsockPriv { // There should be only one of these allocated
   HashTable* socketTable;
   int reuseFlag;
 };
-_groupsockPriv* groupsockPriv(UsageEnvironment& env); // allocates it if necessary
-void reclaimGroupsockPriv(UsageEnvironment& env);
+LIVEMEDIA_API _groupsockPriv* groupsockPriv(UsageEnvironment& env); // allocates it if necessary
+LIVEMEDIA_API void reclaimGroupsockPriv(UsageEnvironment& env);
 
 
 #if (defined(__WIN32__) || defined(_WIN32)) && !defined(__MINGW32__)
 // For Windoze, we need to implement our own gettimeofday()
-extern int gettimeofday(struct timeval*, int*);
+extern LIVEMEDIA_API int gettimeofday(struct timeval*, int*);
 #else
 #include <sys/time.h>
 #endif
 
 // The following are implemented in inet.c:
-extern "C" void our_srandom(int x);
-extern "C" long our_random();
-extern "C" u_int32_t our_random32(); // because "our_random()" returns a 31-bit number
+extern "C" LIVEMEDIA_API void our_srandom(int x);
+extern "C" LIVEMEDIA_API long our_random();
+extern "C" LIVEMEDIA_API u_int32_t our_random32(); // because "our_random()" returns a 31-bit number
 
 #endif

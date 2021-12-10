@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTPSource.hh"
 #endif
 
-class QCELPAudioRTPSource {
+class LIVEMEDIA_API QCELPAudioRTPSource {
 public:
   static FramedSource* createNew(UsageEnvironment& env,
 				 Groupsock* RTPgs,

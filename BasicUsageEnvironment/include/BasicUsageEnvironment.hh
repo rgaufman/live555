@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "BasicUsageEnvironment0.hh"
 #endif
 
-class BasicUsageEnvironment: public BasicUsageEnvironment0 {
+class LIVEMEDIA_API BasicUsageEnvironment: public BasicUsageEnvironment0 {
 public:
   static BasicUsageEnvironment* createNew(TaskScheduler& taskScheduler);
 
@@ -44,7 +44,7 @@ protected:
 };
 
 
-class BasicTaskScheduler: public BasicTaskScheduler0 {
+class LIVEMEDIA_API BasicTaskScheduler: public BasicTaskScheduler0 {
 public:
   static BasicTaskScheduler* createNew(unsigned maxSchedulerGranularity = 10000/*microseconds*/);
     // "maxSchedulerGranularity" (default value: 10 ms) specifies the maximum time that we wait (in "select()") before

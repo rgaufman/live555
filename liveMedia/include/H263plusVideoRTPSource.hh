@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define SPECIAL_HEADER_BUFFER_SIZE 1000
 
-class H263plusVideoRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API H263plusVideoRTPSource: public MultiFramedRTPSource {
 public:
   static H263plusVideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

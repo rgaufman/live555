@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG4VideoStreamFramer.hh"
 #endif
 
-class MPEG4VideoStreamDiscreteFramer: public MPEG4VideoStreamFramer {
+class LIVEMEDIA_API MPEG4VideoStreamDiscreteFramer: public MPEG4VideoStreamFramer {
 public:
   static MPEG4VideoStreamDiscreteFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean leavePresentationTimesUnmodified = False);

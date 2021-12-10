@@ -60,7 +60,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MediaSubsession; // forward
 
-class MediaSession: public Medium {
+class LIVEMEDIA_API MediaSession: public Medium {
 public:
   static MediaSession* createNew(UsageEnvironment& env,
 				 char const* sdpDescription);
@@ -154,7 +154,7 @@ protected:
 };
 
 
-class MediaSubsessionIterator {
+class LIVEMEDIA_API MediaSubsessionIterator {
 public:
   MediaSubsessionIterator(MediaSession const& session);
   virtual ~MediaSubsessionIterator();
@@ -168,7 +168,7 @@ private:
 };
 
 
-class MediaSubsession {
+class LIVEMEDIA_API MediaSubsession {
 public:
   MediaSession& parentSession() { return fParent; }
   MediaSession const& parentSession() const { return fParent; }

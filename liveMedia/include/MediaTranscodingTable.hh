@@ -31,7 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSession.hh"
 #endif
 
-class MediaTranscodingTable: public Medium {
+class LIVEMEDIA_API MediaTranscodingTable: public Medium {
 public:
   virtual FramedFilter*
   lookupTranscoder(MediaSubsession& /*inputCodecDescription*/, // in

@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Boolean.hh"
 #endif
 
-class HashTable {
+class LIVEMEDIA_API HashTable {
 public:
   virtual ~HashTable();
   

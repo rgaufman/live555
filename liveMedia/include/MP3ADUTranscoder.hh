@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class MP3ADUTranscoder: public FramedFilter {
+class LIVEMEDIA_API MP3ADUTranscoder: public FramedFilter {
 public:
   static MP3ADUTranscoder* createNew(UsageEnvironment& env,
 				  unsigned outBitrate /* in kbps */,

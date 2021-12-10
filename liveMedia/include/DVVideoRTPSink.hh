@@ -29,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "DVVideoStreamFramer.hh"
 #endif
 
-class DVVideoRTPSink: public VideoRTPSink {
+class LIVEMEDIA_API DVVideoRTPSink: public VideoRTPSink {
 public:
   static DVVideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);
   char const* auxSDPLineFromFramer(DVVideoStreamFramer* framerSource);

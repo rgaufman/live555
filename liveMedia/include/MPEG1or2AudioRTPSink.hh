@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class MPEG1or2AudioRTPSink: public AudioRTPSink {
+class LIVEMEDIA_API MPEG1or2AudioRTPSink: public AudioRTPSink {
 public:
   static MPEG1or2AudioRTPSink* createNew(UsageEnvironment& env,
 				     Groupsock* RTPgs);

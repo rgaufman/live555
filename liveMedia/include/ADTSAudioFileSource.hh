@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFileSource.hh"
 #endif
 
-class ADTSAudioFileSource: public FramedFileSource {
+class LIVEMEDIA_API ADTSAudioFileSource: public FramedFileSource {
 public:
   static ADTSAudioFileSource* createNew(UsageEnvironment& env,
 				       char const* fileName);

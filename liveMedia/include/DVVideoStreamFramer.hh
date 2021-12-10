@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define DV_SAVED_INITIAL_BLOCKS_SIZE ((DV_NUM_BLOCKS_PER_SEQUENCE+6-1)*DV_DIF_BLOCK_SIZE)
     /* enough data to ensure that it contains an intact 6-block header (which occurs at the start of a 150-block sequence) */
 
-class DVVideoStreamFramer: public FramedFilter {
+class LIVEMEDIA_API DVVideoStreamFramer: public FramedFilter {
 public:
   static DVVideoStreamFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource,

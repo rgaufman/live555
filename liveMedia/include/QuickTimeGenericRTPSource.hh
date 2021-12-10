@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class QuickTimeGenericRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API QuickTimeGenericRTPSource: public MultiFramedRTPSource {
 public:
   static QuickTimeGenericRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

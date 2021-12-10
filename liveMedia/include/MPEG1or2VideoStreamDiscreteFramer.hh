@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define VSH_MAX_SIZE 1000
 
-class MPEG1or2VideoStreamDiscreteFramer: public MPEG1or2VideoStreamFramer {
+class LIVEMEDIA_API MPEG1or2VideoStreamDiscreteFramer: public MPEG1or2VideoStreamFramer {
 public:
   static MPEG1or2VideoStreamDiscreteFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource,

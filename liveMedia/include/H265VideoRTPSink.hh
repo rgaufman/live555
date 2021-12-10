@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "H264or5VideoRTPSink.hh"
 #endif
 
-class H265VideoRTPSink: public H264or5VideoRTPSink {
+class LIVEMEDIA_API H265VideoRTPSink: public H264or5VideoRTPSink {
 public:
   static H265VideoRTPSink*
   createNew(UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat);

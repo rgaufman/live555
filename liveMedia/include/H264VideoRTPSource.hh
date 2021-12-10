@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class H264VideoRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API H264VideoRTPSource: public MultiFramedRTPSource {
 public:
   static H264VideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,
@@ -51,7 +51,7 @@ private:
   unsigned char fCurPacketNALUnitType;
 };
 
-class SPropRecord {
+class LIVEMEDIA_API SPropRecord {
 public:
   ~SPropRecord() { delete[] sPropBytes; }
 
@@ -59,7 +59,7 @@ public:
   unsigned char* sPropBytes;
 };
 
-SPropRecord* parseSPropParameterSets(char const* sPropParameterSetsStr,
+LIVEMEDIA_API SPropRecord* parseSPropParameterSets(char const* sPropParameterSetsStr,
 				     // result parameter:
 				     unsigned& numSPropRecords);
     // Returns the binary value of each 'parameter set' specified in a

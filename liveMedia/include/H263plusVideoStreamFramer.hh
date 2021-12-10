@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 
-class H263plusVideoStreamFramer: public FramedFilter {
+class LIVEMEDIA_API H263plusVideoStreamFramer: public FramedFilter {
 public:
 
   static H263plusVideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource);

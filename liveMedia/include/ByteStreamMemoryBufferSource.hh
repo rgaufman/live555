@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class ByteStreamMemoryBufferSource: public FramedSource {
+class LIVEMEDIA_API ByteStreamMemoryBufferSource: public FramedSource {
 public:
   static ByteStreamMemoryBufferSource* createNew(UsageEnvironment& env,
 						 u_int8_t* buffer, u_int64_t bufferSize,

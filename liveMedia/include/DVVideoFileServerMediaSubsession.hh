@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class DVVideoFileServerMediaSubsession: public FileServerMediaSubsession{
+class LIVEMEDIA_API DVVideoFileServerMediaSubsession: public FileServerMediaSubsession{
 public:
   static DVVideoFileServerMediaSubsession*
   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);

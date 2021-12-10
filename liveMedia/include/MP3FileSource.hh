@@ -27,7 +27,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class MP3StreamState; // forward
 
-class MP3FileSource: public FramedFileSource {
+class LIVEMEDIA_API MP3FileSource: public FramedFileSource {
 public:
   static MP3FileSource* createNew(UsageEnvironment& env, char const* fileName);
 

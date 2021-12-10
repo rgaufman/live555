@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSession.hh"
 #endif
 
-class QuickTimeFileSink: public Medium {
+class LIVEMEDIA_API QuickTimeFileSink: public Medium {
 public:
   static QuickTimeFileSink* createNew(UsageEnvironment& env,
 				      MediaSession& inputSession,

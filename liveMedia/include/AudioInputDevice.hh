@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class AudioPortNames {
+class LIVEMEDIA_API AudioPortNames {
 public:
   AudioPortNames();
   virtual ~AudioPortNames();
@@ -33,7 +33,7 @@ public:
   char** portName;
 };
 
-class AudioInputDevice: public FramedSource {
+class LIVEMEDIA_API AudioInputDevice: public FramedSource {
 public:
   unsigned char bitsPerSample() const { return fBitsPerSample; }
   unsigned char numChannels() const { return fNumChannels; }

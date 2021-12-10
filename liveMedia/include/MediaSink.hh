@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class MediaSink: public Medium {
+class LIVEMEDIA_API MediaSink: public Medium {
 public:
   static Boolean lookupByName(UsageEnvironment& env, char const* sinkName,
 			      MediaSink*& resultSink);
@@ -68,7 +68,7 @@ private:
 };
 
 // A data structure that a sink may use for an output packet:
-class OutPacketBuffer {
+class LIVEMEDIA_API OutPacketBuffer {
 public:
   OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize,
 		  unsigned maxBufferSize = 0);

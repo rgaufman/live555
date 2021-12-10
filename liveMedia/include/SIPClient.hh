@@ -34,7 +34,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Possible states in the "INVITE" transition diagram (RFC 3261, Figure 5)
 enum inviteClientState { Calling, Proceeding, Completed, Terminated };
 
-class SIPClient: public Medium {
+class LIVEMEDIA_API SIPClient: public Medium {
 public:
   static SIPClient* createNew(UsageEnvironment& env,
 			      unsigned char desiredAudioRTPPayloadFormat,

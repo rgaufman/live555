@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MediaSink.hh"
 #endif
 
-class FileSink: public MediaSink {
+class LIVEMEDIA_API FileSink: public MediaSink {
 public:
   static FileSink* createNew(UsageEnvironment& env, char const* fileName,
 			     unsigned bufferSize = 20000,

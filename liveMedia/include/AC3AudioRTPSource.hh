@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class AC3AudioRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API AC3AudioRTPSource: public MultiFramedRTPSource {
 public:
   static AC3AudioRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class MPEG1or2AudioStreamFramer: public FramedFilter {
+class LIVEMEDIA_API MPEG1or2AudioStreamFramer: public FramedFilter {
 public:
   static MPEG1or2AudioStreamFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource,

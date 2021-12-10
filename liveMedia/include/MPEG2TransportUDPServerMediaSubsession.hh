@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OnDemandServerMediaSubsession.hh"
 #endif
 
-class MPEG2TransportUDPServerMediaSubsession: public OnDemandServerMediaSubsession {
+class LIVEMEDIA_API MPEG2TransportUDPServerMediaSubsession: public OnDemandServerMediaSubsession {
 public:
   static MPEG2TransportUDPServerMediaSubsession*
   createNew(UsageEnvironment& env,

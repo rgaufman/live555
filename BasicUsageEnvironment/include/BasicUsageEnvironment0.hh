@@ -36,7 +36,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 // An abstract base class, useful for subclassing
 // (e.g., to redefine the implementation of "operator<<")
-class BasicUsageEnvironment0: public UsageEnvironment {
+class LIVEMEDIA_API BasicUsageEnvironment0: public UsageEnvironment {
 public:
   // redefined virtual functions:
   virtual MsgString getResultMsg() const;
@@ -71,7 +71,7 @@ class HandlerSet; // forward
 
 // An abstract base class, useful for subclassing
 // (e.g., to redefine the implementation of socket event handling)
-class BasicTaskScheduler0: public TaskScheduler {
+class LIVEMEDIA_API BasicTaskScheduler0: public TaskScheduler {
 public:
   virtual ~BasicTaskScheduler0();
 

@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileServerMediaSubsession.hh"
 #endif
 
-class AMRAudioFileServerMediaSubsession: public FileServerMediaSubsession{
+class LIVEMEDIA_API AMRAudioFileServerMediaSubsession: public FileServerMediaSubsession{
 public:
   static AMRAudioFileServerMediaSubsession*
   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);

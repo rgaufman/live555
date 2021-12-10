@@ -21,19 +21,30 @@ target_link_libraries(EpollTaskScheduler PUBLIC
     BasicUsageEnvironment
 )
 
-if ( BUILD_SHARED_LIBS )
-	target_compile_definitions(EpollTaskScheduler PRIVATE LIVEMEDIA_EXPORTS=1)
-	message(STATUS "build shared library on EpollTaskScheduler.")
+if ( LIVE555_MONOLITH_BUILD )
+	message(STATUS "build monolith library on EpollTaskScheduler.")
+    if ( MSVC )
+        add_definitions(-DLIVEMEDIA_API=__declspec\(dllexport\))
+        # add_definitions(/FI"export.h")
+        # target_compile_definitions(EpollTaskScheduler PRIVATE LIVEMEDIA_EXPORTS=1)
+        # remove_definitions(-DLIVEMEDIA_STATIC)
+        # remove_definitions(-DLIVEMEDIA_IMPORTS)
+        # add_definitions(-DLIVEMEDIA_EXPORTS)
+    else ()
+        add_definitions(-DLIVEMEDIA_API=)
+    endif ()
 else ()
-	target_compile_definitions(EpollTaskScheduler PRIVATE LIVEMEDIA_STATIC=1)
-	message(STATUS "build static library on EpollTaskScheduler")
+    add_definitions(-DLIVEMEDIA_API=)
+# 	target_compile_definitions(EpollTaskScheduler PRIVATE LIVEMEDIA_STATIC=1)
+# 	message(STATUS "build static library on EpollTaskScheduler")
 endif ()
-if ( MSVC )
-    add_definitions(/FI"export.h")
-else()
-    # GCC or Clang
-    add_definitions(-include export.h)
-endif()
+
+# if ( MSVC )
+#     add_definitions(/FI"export.h")
+# else()
+#     # GCC or Clang
+#     add_definitions(-include export.h)
+# endif()
 
 
 if ( WIN32 )

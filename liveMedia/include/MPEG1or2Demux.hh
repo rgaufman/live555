@@ -29,7 +29,7 @@ class MPEG1or2DemuxedElementaryStream; // forward
 
 typedef void MPEG1or2DemuxOnDeletionFunc(void* objectToNotify, class MPEG1or2Demux* demuxBeingDeleted);
 
-class MPEG1or2Demux: public Medium {
+class LIVEMEDIA_API MPEG1or2Demux: public Medium {
 public:
   static MPEG1or2Demux* createNew(UsageEnvironment& env,
 				  FramedSource* inputSource,
@@ -67,7 +67,7 @@ public:
 
   FramedSource* inputSource() const { return fInputSource; }
 
-  class SCR {
+  class LIVEMEDIA_API SCR {
   public:
     SCR();
 

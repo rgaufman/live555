@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "AudioRTPSink.hh"
 #endif
 
-class GSMAudioRTPSink: public AudioRTPSink {
+class LIVEMEDIA_API GSMAudioRTPSink: public AudioRTPSink {
 public:
   static GSMAudioRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
 

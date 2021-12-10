@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2DemuxedElementaryStream.hh"
 #endif
 
-class MPEG1or2FileServerDemux: public Medium {
+class LIVEMEDIA_API MPEG1or2FileServerDemux: public Medium {
 public:
   static MPEG1or2FileServerDemux*
   createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);

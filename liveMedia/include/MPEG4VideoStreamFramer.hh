@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class MPEG4VideoStreamFramer: public MPEGVideoStreamFramer {
+class LIVEMEDIA_API MPEG4VideoStreamFramer: public MPEGVideoStreamFramer {
 public:
   static MPEG4VideoStreamFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource);

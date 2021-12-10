@@ -36,7 +36,7 @@ class MatroskaDemux; // forward
 
 typedef void MatroskaDemuxOnDeletionFunc(void* objectToNotify, MatroskaDemux* demuxBeingDeleted);
 
-class MatroskaFile: public Medium {
+class LIVEMEDIA_API MatroskaFile: public Medium {
 public:
   typedef void (onCreationFunc)(MatroskaFile* newFile, void* clientData);
   static void createNew(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData,
@@ -138,7 +138,7 @@ private:
 #define MATROSKA_TRACK_TYPE_SUBTITLE 0x04
 #define MATROSKA_TRACK_TYPE_OTHER 0x08
 
-class MatroskaTrack {
+class LIVEMEDIA_API MatroskaTrack {
 public:
   MatroskaTrack();
   virtual ~MatroskaTrack();
@@ -169,7 +169,7 @@ public:
   Boolean haveSubframes() const { return subframeSizeSize > 0; }
 };
 
-class MatroskaDemux: public Medium {
+class LIVEMEDIA_API MatroskaDemux: public Medium {
 public:
   FramedSource* newDemuxedTrack();
   FramedSource* newDemuxedTrack(unsigned& resultTrackNumber);

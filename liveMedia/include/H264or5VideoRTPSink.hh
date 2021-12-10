@@ -28,7 +28,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedFilter.hh"
 #endif
 
-class H264or5VideoRTPSink: public VideoRTPSink {
+class LIVEMEDIA_API H264or5VideoRTPSink: public VideoRTPSink {
 protected:
   H264or5VideoRTPSink(int hNumber, // 264 or 265
 		      UsageEnvironment& env, Groupsock* RTPgs, unsigned char rtpPayloadFormat,

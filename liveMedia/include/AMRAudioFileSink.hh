@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileSink.hh"
 #endif
 
-class AMRAudioFileSink: public FileSink {
+class LIVEMEDIA_API AMRAudioFileSink: public FileSink {
 public:
   static AMRAudioFileSink* createNew(UsageEnvironment& env, char const* fileName,
 				     unsigned bufferSize = 10000,

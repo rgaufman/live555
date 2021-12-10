@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class MPEG4ESVideoRTPSink: public VideoRTPSink {
+class LIVEMEDIA_API MPEG4ESVideoRTPSink: public VideoRTPSink {
 public:
   static MPEG4ESVideoRTPSink* createNew(UsageEnvironment& env,
 					Groupsock* RTPgs, unsigned char rtpPayloadFormat,

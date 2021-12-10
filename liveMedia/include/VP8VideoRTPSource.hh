@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MultiFramedRTPSource.hh"
 #endif
 
-class VP8VideoRTPSource: public MultiFramedRTPSource {
+class LIVEMEDIA_API VP8VideoRTPSource: public MultiFramedRTPSource {
 public:
   static VP8VideoRTPSource*
   createNew(UsageEnvironment& env, Groupsock* RTPgs,

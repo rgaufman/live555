@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileSink.hh"
 #endif
 
-class H264or5VideoFileSink: public FileSink {
+class LIVEMEDIA_API H264or5VideoFileSink: public FileSink {
 protected:
   H264or5VideoFileSink(UsageEnvironment& env, FILE* fid,
 		       unsigned bufferSize, char const* perFrameFileNamePrefix,

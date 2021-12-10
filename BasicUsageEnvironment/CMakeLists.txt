@@ -21,19 +21,29 @@ target_include_directories(BasicUsageEnvironment
         $<BUILD_INTERFACE:${live555_SOURCE_DIR}/liveMedia/include>
 )
 
-if ( BUILD_SHARED_LIBS )
-	target_compile_definitions(BasicUsageEnvironment PRIVATE LIVEMEDIA_EXPORTS=1)
-	message(STATUS "build shared library on BasicUsageEnvironment.")
+if ( LIVE555_MONOLITH_BUILD )
+    message(STATUS "build monolith library on BasicUsageEnvironment.")
+    if ( MSVC )
+        add_definitions(-DLIVEMEDIA_API=__declspec\(dllexport\))
+        # add_definitions(-DLIVEMEDIA_API=__declspec\(dllimport\))
+    # add_definitions(/FI"export.h")
+	    # target_compile_definitions(BasicUsageEnvironment PRIVATE LIVEMEDIA_EXPORTS -D LIVEMEDIA_IMPORTS)
+        # target_remove_definitions(BasicUsageEnvironment PRIVATE LIVEMEDIA_STATIC)
+        # add_definitions(-DLIVEMEDIA_EXPORTS)
+    else ()
+        add_definitions(-DLIVEMEDIA_API=)
+    endif ()
 else ()
-	target_compile_definitions(BasicUsageEnvironment PRIVATE LIVEMEDIA_STATIC=1)
-	message(STATUS "build static library on BasicUsageEnvironment")
+    add_definitions(-DLIVEMEDIA_API=)
+	# message(STATUS "build static library on BasicUsageEnvironment")
 endif ()
-if ( MSVC )
-    add_definitions(/FI"export.h")
-else()
-    # GCC or Clang
-    add_definitions(-include export.h)
-endif()
+
+# if ( MSVC )
+#     add_definitions(/FI"export.h")
+# else()
+#     # GCC or Clang
+#     add_definitions(-include export.h)
+# endif()
 
 
 if ( WIN32 )

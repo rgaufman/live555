@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEGVideoStreamFramer.hh"
 #endif
 
-class MPEG1or2VideoStreamFramer: public MPEGVideoStreamFramer {
+class LIVEMEDIA_API MPEG1or2VideoStreamFramer: public MPEGVideoStreamFramer {
 public:
   static MPEG1or2VideoStreamFramer*
       createNew(UsageEnvironment& env, FramedSource* inputSource,

@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VideoRTPSink.hh"
 #endif
 
-class TheoraVideoRTPSink: public VideoRTPSink {
+class LIVEMEDIA_API TheoraVideoRTPSink: public VideoRTPSink {
 public:
   static TheoraVideoRTPSink*
   createNew(UsageEnvironment& env, Groupsock* RTPgs, u_int8_t rtpPayloadFormat,

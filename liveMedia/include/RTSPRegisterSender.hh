@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTSPClient.hh"
 #endif
 
-class RTSPRegisterOrDeregisterSender: public RTSPClient {
+class LIVEMEDIA_API RTSPRegisterOrDeregisterSender: public RTSPClient {
 public:
   virtual ~RTSPRegisterOrDeregisterSender();
 protected: // we're a virtual base class
@@ -55,7 +55,7 @@ protected:
 
 //////////
 
-class RTSPRegisterSender: public RTSPRegisterOrDeregisterSender {
+class LIVEMEDIA_API RTSPRegisterSender: public RTSPRegisterOrDeregisterSender {
 public:
   static RTSPRegisterSender*
   createNew(UsageEnvironment& env,
@@ -100,7 +100,7 @@ public: // Some compilers complain if this is "protected:"
 
 //////////
 
-class RTSPDeregisterSender: public RTSPRegisterOrDeregisterSender {
+class LIVEMEDIA_API RTSPDeregisterSender: public RTSPRegisterOrDeregisterSender {
 public:
   static RTSPDeregisterSender*
   createNew(UsageEnvironment& env,

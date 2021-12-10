@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FileSink.hh"
 #endif
 
-class OggFileSink: public FileSink {
+class LIVEMEDIA_API OggFileSink: public FileSink {
 public:
   static OggFileSink* createNew(UsageEnvironment& env, char const* fileName,
 				unsigned samplingFrequency = 0, // used for granule_position

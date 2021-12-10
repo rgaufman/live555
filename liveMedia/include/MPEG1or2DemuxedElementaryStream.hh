@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MPEG1or2Demux.hh"
 #endif
 
-class MPEG1or2DemuxedElementaryStream: public FramedSource {
+class LIVEMEDIA_API MPEG1or2DemuxedElementaryStream: public FramedSource {
 public:
   MPEG1or2Demux::SCR lastSeenSCR() const { return fLastSeenSCR; }
 

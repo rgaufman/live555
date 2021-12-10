@@ -30,7 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define INDEX_RECORD_SIZE 11
 
-class MPEG2TransportStreamIndexFile: public Medium {
+class LIVEMEDIA_API MPEG2TransportStreamIndexFile: public Medium {
 public:
   static MPEG2TransportStreamIndexFile* createNew(UsageEnvironment& env,
 						  char const* indexFileName);

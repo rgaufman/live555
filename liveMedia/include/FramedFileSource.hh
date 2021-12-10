@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "FramedSource.hh"
 #endif
 
-class FramedFileSource: public FramedSource {
+class LIVEMEDIA_API FramedFileSource: public FramedSource {
 protected:
   FramedFileSource(UsageEnvironment& env, FILE* fid); // abstract base class
   virtual ~FramedFileSource();

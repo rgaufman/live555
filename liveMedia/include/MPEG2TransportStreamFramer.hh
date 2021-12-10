@@ -31,7 +31,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "HashTable.hh"
 #endif
 
-class MPEG2TransportStreamFramer: public FramedFilter {
+class LIVEMEDIA_API MPEG2TransportStreamFramer: public FramedFilter {
 public:
   static MPEG2TransportStreamFramer*
   createNew(UsageEnvironment& env, FramedSource* inputSource);

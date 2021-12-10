@@ -32,7 +32,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define SMALL_HASH_TABLE_SIZE 4
 
-class BasicHashTable: public HashTable {
+class LIVEMEDIA_API BasicHashTable: public HashTable {
 private:
 	class TableEntry; // forward
 
