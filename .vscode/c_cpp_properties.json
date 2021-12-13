@@ -1,0 +1,63 @@
+{
+  "env": {
+      "groupsockIncludePath": [
+        "${workspaceFolder}/groupsock/include"
+      ],
+      "BasicUsageEnvironmentIncludePath": [
+        "${workspaceFolder}/BasicUsageEnvironment/include"
+      ],
+      "UsageEnvironmentIncludePath": [
+        "${workspaceFolder}/UsageEnvironment/include"
+      ],
+      "liveMediaIncludePath": [
+        "${workspaceFolder}/liveMedia/include"
+      ],
+      "sharedGeneratedIncludePaths": [],
+      // "sharedcompilerPath": "E:\\Tools\\android\\android-sdk-windows\\ndk\\19.2.5345600\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe",
+      "sharedDefines": [
+          // "CONFIG_ANDROID=1",
+          // "ANDROID"
+          // "ENABLE_AUDIO"
+          // "VK_VERSION_1_0",
+          // "VK_VERSION_1_1",
+          // "VK_KHR_android_surface",
+          // "VK_KHR_xlib_surface",
+          // "VK_MVK_macos_surface",
+          // "VK_KHR_win32_surface"
+      ]
+  },
+  "configurations": [
+    {
+        "name": "sunapi",
+        "includePath": [
+            "${default}",
+            "${groupsockIncludePath}",
+            "${BasicUsageEnvironmentIncludePath}",
+            "${UsageEnvironmentIncludePath}",
+            "${liveMediaIncludePath}",
+            "${sharedGeneratedIncludePaths}"
+        ],
+        "defines": [
+            "${sharedDefines}"
+            // "DARWINN_PORT_ANDROID_EMULATOR",
+            // "DARWINN_CHIP_NAME=beagle",
+            // "DARWINN_CHIP_TYPE=USB"
+        ],
+        "compilerPath": "${default}",
+        "cStandard": "${default}",
+        "cppStandard": "${default}",
+        "intelliSenseMode": "${default}",
+        // "compileCommands": "${workspaceFolder}/htw/sunapi/.cxx/cmake/release/arm64-v8a/compile_commands.json",
+        "configurationProvider": "vector-of-bool.cmake-tools"
+        // "forcedInclude": ["${workspaceFolder}/include/config.h"],
+        ,
+        "browse": {
+            "limitSymbolsToIncludedHeaders": false,
+            "path": [
+                "${workspaceFolder}"
+            ]
+        }
+      }
+  ],
+  "version": 4
+}
