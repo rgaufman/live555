@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2022 Live Networks, Inc.  All rights reserved.
 // A generic media server class, used to implement a RTSP server, and any other server that uses
 //  "ServerMediaSession" objects to describe media to be served.
 // C++ header
@@ -43,7 +43,7 @@ typedef void lookupServerMediaSessionCompletionFunc(void* clientData,
 
 class LIVEMEDIA_API GenericMediaServer: public Medium {
 public:
-  void addServerMediaSession(ServerMediaSession* serverMediaSession);
+  virtual void addServerMediaSession(ServerMediaSession* serverMediaSession);
 
   virtual void lookupServerMediaSession(char const* streamName,
 					lookupServerMediaSessionCompletionFunc* completionFunc,

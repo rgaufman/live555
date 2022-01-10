@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2022 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -399,6 +399,7 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
       sendResult = (tlsState != NULL && tlsState->isNeeded)
 	? tlsState->write((char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend)
 	: send(socketNum, (char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend, 0/*flags*/);
+      makeSocketNonBlocking(socketNum);
       if ((unsigned)sendResult != numBytesRemainingToSend) {
 	// The blocking "send()" failed, or timed out.  In either case, we assume that the
 	// TCP connection has failed (or is 'hanging' indefinitely), and we stop using it
@@ -411,7 +412,6 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
 	removeStreamSocket(socketNum, 0xFF);
 	return False;
       }
-      makeSocketNonBlocking(socketNum);
 
       return True;
     } else if (sendResult < 0 && envir().getErrno() != EAGAIN) {

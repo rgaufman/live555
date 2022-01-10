@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2022 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // C++ header
 
@@ -141,8 +141,9 @@ protected:
       // - this time after normal digest authentication has already taken place (and would otherwise allow access).
       // (This test can only be used to further restrict access, not to grant additional access.)
 
-private: // redefined virtual functions
+public: // redefined virtual functions
   virtual Boolean isRTSPServer() const;
+  virtual void addServerMediaSession(ServerMediaSession* serverMediaSession);
 
 public: // should be protected, but some old compilers complain otherwise
   // The state of a TCP connection used by a RTSP client:

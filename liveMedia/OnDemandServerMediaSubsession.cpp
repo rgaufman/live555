@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2022 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that creates new, unicast, "RTPSink"s
 // on demand.
 // Implementation
@@ -435,7 +435,7 @@ void OnDemandServerMediaSubsession
   if (auxSDPLine == NULL) auxSDPLine = "";
 
   char const* const sdpFmt =
-    "m=%s %u RTP/AVP %d\r\n"
+    "m=%s %u RTP/%sAVP %d\r\n"
     "c=IN %s %s\r\n"
     "b=AS:%u\r\n"
     "%s"
@@ -444,7 +444,7 @@ void OnDemandServerMediaSubsession
     "%s"
     "a=control:%s\r\n";
   unsigned sdpFmtSize = strlen(sdpFmt)
-    + strlen(mediaType) + 5 /* max short len */ + 3 /* max char len */
+    + strlen(mediaType) + 5 /* max short len */ + 1 + 3 /* max char len */
     + 3/*IP4 or IP6*/ + strlen(ipAddressStr.val())
     + 20 /* max int len */
     + strlen(rtpmapLine)
@@ -456,6 +456,7 @@ void OnDemandServerMediaSubsession
   sprintf(sdpLines, sdpFmt,
 	  mediaType, // m= <media>
 	  portNumForSDP, // m= <port>
+	  fParentSession->streamingIsEncrypted ? "S" : "",
 	  rtpPayloadType, // m= <fmt list>
 	  addressForSDP.ss_family == AF_INET ? "IP4" : "IP6", ipAddressStr.val(), // c= address
 	  estBitrate, // b=AS:<bandwidth>

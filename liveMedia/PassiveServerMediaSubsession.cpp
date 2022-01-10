@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2022 Live Networks, Inc.  All rights reserved.
 // A 'ServerMediaSubsession' object that represents an existing
 // 'RTPSink', rather than one that creates new 'RTPSink's on demand.
 // Implementation
@@ -87,7 +87,7 @@ PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/) {
     if (auxSDPLine == NULL) auxSDPLine = "";
 
     char const* const sdpFmt =
-      "m=%s %d RTP/AVP %d\r\n"
+      "m=%s %d RTP/%sAVP %d\r\n"
       "c=IN %s %s/%d\r\n"
       "b=AS:%u\r\n"
       "%s"
@@ -96,7 +96,7 @@ PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/) {
       "%s"
       "a=control:%s\r\n";
     unsigned sdpFmtSize = strlen(sdpFmt)
-      + strlen(mediaType) + 5 /* max short len */ + 3 /* max char len */
+      + strlen(mediaType) + 5 /* max short len */ + 1 + 3 /* max char len */
       + 3/*IP4 or IP6*/ + strlen(groupAddressStr.val()) + 3 /* max char len */
       + 20 /* max int len */
       + strlen(rtpmapLine)
@@ -108,6 +108,7 @@ PassiveServerMediaSubsession::sdpLines(int /*addressFamily*/) {
     sprintf(sdpLines, sdpFmt,
 	    mediaType, // m= <media>
 	    portNum, // m= <port>
+	    fParentSession->streamingIsEncrypted ? "S" : "",
 	    rtpPayloadType, // m= <fmt list>
 	    gs.groupAddress().ss_family == AF_INET ? "IP4" : "IP6", // c= address type
 	    groupAddressStr.val(), // c= <connection address>

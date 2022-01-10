@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2022 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client
 // Implementation
 
@@ -1595,7 +1595,9 @@ void RTSPClient::connectionHandler1() {
   do {
     int err = 0;
     SOCKLEN_T len = sizeof err;
-    if (getsockopt(fInputSocketNum, SOL_SOCKET, SO_ERROR, (char*)&err, &len) < 0 || err != 0) {
+    // Note: Normally "fOutputSocketNum" == "fInputSocketNum" here, except when we're connecting
+    // to the second (i.e., "POST") connection when doing RTSP-over-HTTP:
+    if (getsockopt(fOutputSocketNum, SOL_SOCKET, SO_ERROR, (char*)&err, &len) < 0 || err != 0) {
       envir().setResultErrMsg("Connection to server failed: ", err);
       if (fVerbosityLevel >= 1) envir() << "..." << envir().getResultMsg() << "\n";
       break;

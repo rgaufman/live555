@@ -66,6 +66,7 @@ endif()
 
 if ( LIVE555_ENABLE_OPENSSL )
     message(STATUS "find package OpenSSL.")
+    set(EMSCRIPTEN_ROOT_PATH "$ENV{SYSROOT}")
     find_package(OpenSSL 1.1.1 REQUIRED COMPONENTS Crypto SSL)
     target_link_libraries(live555_cxx_flags INTERFACE
         OpenSSL::Crypto
