@@ -224,6 +224,16 @@ If you installed the toolchain by referring to https://goo.gl/TtcjGb, you are in
 # make; make install  
 ```
 
+or If you have already toolchain file for cmake. You can be simplify with cmake file like this:
+
+```shell
+# cmake -B toolchain -G "Unix Makefiles" \
+  -DLIVE555_BUILD_EXAMPLES=ON \
+  -DCMAKE_TOOLCHAIN_FILE=/mnt/e/live555/toolchains/aarch64-linux-gnu.toolchain.cmake \
+  -DLIVE555_ENABLE_OPENSSL=OFF
+# cmake --build toolchain
+```
+
 *****
 ## Build with examples
 If you want to build with RTSP Example from testProgs, you have to insert LIVE555_BUILD_EXAMPLES=ON option from cmake command like this:
