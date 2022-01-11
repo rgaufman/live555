@@ -7,8 +7,8 @@ name: CMake
 #     branches: [ master ]
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: [ v103.0.0 ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
