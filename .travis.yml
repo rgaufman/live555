@@ -7,11 +7,13 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-7
+      - gcc-10
+      - g++-10
+      - lcov
 
 script:
   - export CC=gcc-7
   - export CXX=g++-7
   - cmake --version
-  - cmake CMakeLists.txt
+  - cmake -B linux 
   - cmake  --build . --target neat
