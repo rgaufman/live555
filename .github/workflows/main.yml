@@ -43,19 +43,29 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/shared -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}}_shared -DLIVE555_ENABLE_OPENSSL=ON -DLIVE555_BUILD_EXAMPLES=ON -DLIVE555_BUILD_SHARED_LIBS=ON
 
-    - name: Build
+    - name: Build Static Library
       # Build your program with the given configuration
       run: 
         cmake --build ${{github.workspace}}/static --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}_static
+
+    - name: Build Shared Library
+      # Build your program with the given configuration
+      run: 
         cmake --build ${{github.workspace}}/shared --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}_shared
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
+    - name: Test Static
+      working-directory: ${{github.workspace}}/static
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: 
-        ctest -C ${{env.BUILD_TYPE}}_static
-        ctest -C ${{env.BUILD_TYPE}}_shared
+        ctest -C ${{env.BUILD_TYPE}}
+        
+    - name: Test Shared
+      working-directory: ${{github.workspace}}/shared
+      # Execute tests defined by the CMake configuration.  
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: 
+        ctest -C ${{env.BUILD_TYPE}}
 
     - name: create-archive
       id: create_archive
