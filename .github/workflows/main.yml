@@ -15,7 +15,7 @@ env:
   BUILD_TYPE: Release
   OUT_PATH: install
   CHECKOUT_REF: 'v103.0.0'
-  ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}
+  ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.repository.tag_name }}
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
