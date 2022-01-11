@@ -1,4 +1,7 @@
 ## Live555
+
+ [![Latest release](https://img.shields.io/github/v/release/melchi45/live555)](https://github.com/melchi45/live555/releases/latest) [![CMake](https://github.com/melchi45/live555/actions/workflows/cmake.yml/badge.svg)](https://github.com/melchi45/live555/actions/workflows/cmake.yml)
+
 You can check new version from Live555.
 
 For documentation and instructions for building this software,
