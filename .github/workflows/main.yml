@@ -1,14 +1,14 @@
 name: CMake
 
-# on:
-#   push:
-#     branches: [ master ]
-#   pull_request:
-#     branches: [ master ]
-
 on:
   push:
-    tags: [ v103.0.0 ]
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# on:
+#   push:
+#     tags: [ v103.0.0 ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -25,6 +25,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        # The branch, tag or SHA to checkout. When checking out the repository that
+        # triggered a workflow, this defaults to the reference or SHA for that event.
+        # Otherwise, uses the default branch.
+        ref: 'v103.0.0' 
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -52,7 +57,7 @@ jobs:
         
     - name: create-release
       id: create_release
-      uses: melchi45/create-release@v1
+      uses: actions/create-release@v1
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -63,7 +68,7 @@ jobs:
           
     - name: upload-archive
       id: upload-release-asset 
-      uses: melchi45/upload-release-asset@v1
+      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
