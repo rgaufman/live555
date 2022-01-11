@@ -17,3 +17,6 @@ script:
   - cmake --version
   - cmake -B linux 
   - cmake  --build . --target neat
+
+after_success:
+    - codecov -t b8d88c88-b166-447d-ac79-ce589720a9fb -X gcov
