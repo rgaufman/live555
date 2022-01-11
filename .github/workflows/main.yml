@@ -9,7 +9,8 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-
+  OUT_PATH: build
+  ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
@@ -24,15 +25,45 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}}
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}
 
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
+
+    - name: create-release-archive
+      run: tar -czf ${{env.$ARCHIVE_NAME}}.tar.gz ${{env.OUT_PATH}}
+
+    - name: create-checksum
+      id: create-checksum
+      run: |
+        sha256sum ${{env.$ARCHIVE_NAME}}.tar.gz > checksum.txt
+        echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum.txt)"
+        
+    - name: upload-archive
+      id: upload-archive
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_content_type: application/gzip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
+    - name: upload-checksum
+      id: upload-checksum
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: checksum.txt
+        asset_name: checksum.txt
+        asset_content_type: text/plain
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
