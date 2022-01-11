@@ -1,6 +1,6 @@
 ## Live555
 
- [![Latest release](https://img.shields.io/github/v/release/melchi45/live555)](https://github.com/melchi45/live555/releases/latest) [![CMake](https://github.com/melchi45/live555/actions/workflows/cmake.yml/badge.svg)](https://github.com/melchi45/live555/actions/workflows/cmake.yml)
+ [![codecov](https://codecov.io/gh/melchi45/live555/branch/master/graph/badge.svg?token=C0AIRJXUGI)](https://codecov.io/gh/melchi45/live555) [![Latest release](https://img.shields.io/github/v/release/melchi45/live555)](https://github.com/melchi45/live555/releases/latest) [![CMake](https://github.com/melchi45/live555/actions/workflows/cmake.yml/badge.svg)](https://github.com/melchi45/live555/actions/workflows/cmake.yml)
 
 You can check new version from Live555.
 
