@@ -3,22 +3,19 @@ name: CMake
 on:
   push:
     # refs/remotes/origin/master
-    branches: [ master ]
+#     branches: [ master ]
     # Sequence of patterns matched against refs/tags
-#     tags:
-#       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [ master ]
-
-# on:
-#   push:
-#     tags: [ v103.0.0 ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   OUT_PATH: install
-  ARCHIVE_NAME: ${{ github.event.repository.name }}-
+  REF: 'v103.0.0'
+  ARCHIVE_NAME: ${{ github.event.repository.name }}-${{env.REF}}-${{env.BUILD_TYPE}}
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
@@ -53,12 +50,12 @@ jobs:
 
     - name: create-archive
       id: create_archive
-      run: tar -czf "$ARCHIVE_NAME"${{github.ref}}.tar.gz "$OUT_PATH"
+      run: tar -czf "$ARCHIVE_NAME".tar.gz "$OUT_PATH"
 
     - name: create-checksum
       id: create-checksum
       run: |
-        sha256sum "$ARCHIVE_NAME"${{github.ref}}.tar.gz > checksum.txt
+        sha256sum "$ARCHIVE_NAME".tar.gz > checksum.txt
         echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum.txt)"
         
     - name: create-release
@@ -79,8 +76,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.ARCHIVE_NAME }}${{github.ref}}.tar.gz
-        asset_name: ${{ env.ARCHIVE_NAME }}${{github.ref}}.tar.gz
+        asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
         asset_content_type: application/gzip
       
     - name: upload-checksum
