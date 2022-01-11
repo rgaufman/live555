@@ -43,7 +43,7 @@ jobs:
     - name: create-checksum
       id: create-checksum
       run: |
-        sha256sum ${{env.$ARCHIVE_NAME}}.tar.gz > checksum.txt
+        sha256sum "$ARCHIVE_NAME".tar.gz > checksum.txt
         echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum.txt)"
         
     - name: upload-archive
