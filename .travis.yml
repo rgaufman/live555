@@ -10,6 +10,7 @@ addons:
       - gcc-10
       - g++-10
       - lcov
+      - cmake
 
 script:
   - export CC=gcc-7
