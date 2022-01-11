@@ -37,8 +37,8 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
-    - name: create-release-archive
-      run: tar -czf ${{env.$ARCHIVE_NAME}}.tar.gz ${{env.OUT_PATH}}
+    - name: create-archive
+      run: tar -czf "$ARCHIVE_NAME".tar.gz "$ARCHIVE_NAME"
 
     - name: create-checksum
       id: create-checksum
