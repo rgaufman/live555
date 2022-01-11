@@ -57,24 +57,24 @@ jobs:
           draft: false
           prerelease: false
           
-#     - name: upload-archive
-#       id: upload-archive
-#       uses: melchi45/live555@v1
-#       with:
-#         upload_url: ${{ steps.create_release.outputs.upload_url }}
-#         asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
-#         asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
-#         asset_content_type: application/gzip
-#       env:
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: upload-archive
+      id: upload-release-asset 
+      uses: melchi45/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_content_type: application/gzip
       
-#     - name: upload-checksum
-#       id: upload-checksum
-#       uses: actions/upload-release-asset@v1
-#       with:
-#         upload_url: ${{ steps.create_release.outputs.upload_url }}
-#         asset_path: checksum.txt
-#         asset_name: checksum.txt
-#         asset_content_type: text/plain
-#       env:
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: upload-checksum
+      id: upload-checksum
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: checksum.txt
+        asset_name: checksum.txt
+        asset_content_type: text/plain
