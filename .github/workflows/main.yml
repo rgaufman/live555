@@ -48,11 +48,16 @@ jobs:
 #     - name: Create Release
 #       id: create_release
 #       uses: melchi45/live555@v1
+    - name: Create Release
+      id: create_release
+      uses: melchi45/live555@v1
+
+
     - name: upload-archive
       id: upload-archive
       uses: melchi45/live555@v1
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
         asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
         asset_content_type: application/gzip
@@ -63,7 +68,7 @@ jobs:
       id: upload-checksum
       uses: actions/upload-release-asset@v1
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: checksum.txt
         asset_name: checksum.txt
         asset_content_type: text/plain
