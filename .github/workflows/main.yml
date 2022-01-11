@@ -2,9 +2,11 @@ name: CMake
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    tags:
+      - 'v103.0.0'
+#     branches: [ master ]
+#   pull_request:
+#     branches: [ master ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -22,23 +24,23 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Configure CMake
+    - name: Configure CMake Static Library
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}}
+      run: cmake -B ${{github.workspace}}/static -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}} -DLIVE555_ENABLE_OPENSSL=ON -DLIVE555_BUILD_EXAMPLES=ON
 
-    - name: Build
+    - name: Build Static Library
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}
 
-    - name: Test
+    - name: Test Static Library
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
-    - name: create-archive
-      run: tar -czf "$ARCHIVE_NAME".tar.gz "$OUT_PATH"
+    - name: create-archive-static
+      run: tar -czf "$ARCHIVE_NAME"-static.tar.gz "$OUT_PATH"
 
     - name: create-checksum
       id: create-checksum
