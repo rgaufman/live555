@@ -38,7 +38,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
 
     - name: create-archive
-      run: tar -czf "$ARCHIVE_NAME"-release.tar.gz "$OUT_PATH"
+      run: tar -czf "$ARCHIVE_NAME".tar.gz "$OUT_PATH"
 
     - name: create-checksum
       id: create-checksum
