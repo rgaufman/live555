@@ -40,6 +40,7 @@ jobs:
       with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+          files: ./coverage1.xml,./coverage2.xml
 #     - name: Upload coverage to Codecov
 #       uses: codecov/codecov-action@v2
 #       with:
