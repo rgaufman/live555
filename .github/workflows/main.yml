@@ -33,30 +33,43 @@ jobs:
         # Otherwise, uses the default branch.
         ref: ${{env.CHECKOUT_REF}}
 
-    - name: Configure CMake
+    - name: Configure CMake Static Library
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}} -DLIVE555_ENABLE_OPENSSL=ON -DLIVE555_BUILD_EXAMPLES=ON
+      run: cmake -B ${{github.workspace}}/static -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}}_static -DLIVE555_ENABLE_OPENSSL=ON -DLIVE555_BUILD_EXAMPLES=ON
+      
+    - name: Configure CMake Shared Library
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/shared -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=${{env.OUT_PATH}}_shared -DLIVE555_ENABLE_OPENSSL=ON -DLIVE555_BUILD_EXAMPLES=ON -DLIVE555_BUILD_SHARED_LIBS=ON
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}
+      run: 
+        cmake --build ${{github.workspace}}/static --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}_static
+        cmake --build ${{github.workspace}}/shared --config ${{env.BUILD_TYPE}} --target ${{env.OUT_PATH}}_shared
 
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{env.BUILD_TYPE}}
+      run: 
+        ctest -C ${{env.BUILD_TYPE}}_static
+        ctest -C ${{env.BUILD_TYPE}}_shared
 
     - name: create-archive
       id: create_archive
-      run: tar -czf "$ARCHIVE_NAME".tar.gz "$OUT_PATH"
+      run: 
+        tar -czf "$ARCHIVE_NAME"_static.tar.gz "$OUT_PATH"_static
+        tar -czf "$ARCHIVE_NAME"_shared.tar.gz "$OUT_PATH"_shared
 
     - name: create-checksum
       id: create-checksum
       run: |
-        sha256sum "$ARCHIVE_NAME".tar.gz > checksum.txt
-        echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum.txt)"
+        sha256sum "$ARCHIVE_NAME"_static.tar.gz > checksum_static.txt
+        echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum_static.txt)"
+        sha256sum "$ARCHIVE_NAME"_shared.tar.gz > checksum_shared.txt
+        echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum_shared.txt)"
         
     - name: create-release
       id: create_release
@@ -69,24 +82,46 @@ jobs:
           draft: false
           prerelease: false
           
-    - name: upload-archive
-      id: upload-release-asset 
+    - name: upload-archive-static
+      id: upload-release-asset_static
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
-        asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_path: ${{ env.ARCHIVE_NAME }}_static.tar.gz
+        asset_name: ${{ env.ARCHIVE_NAME }}_static.tar.gz
         asset_content_type: application/gzip
-      
-    - name: upload-checksum
-      id: upload-checksum
+
+    - name: upload-archive-shared
+      id: upload-release-asset_shared
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: checksum.txt
-        asset_name: checksum.txt
+        asset_path: ${{ env.ARCHIVE_NAME }}_shared.tar.gz
+        asset_name: ${{ env.ARCHIVE_NAME }}_shared.tar.gz
+        asset_content_type: application/gzip
+    
+    - name: upload-checksum-static
+      id: upload-checksum_static
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: checksum_static.txt
+        asset_name: checksum_static.txt
+        asset_content_type: text/plain
+        
+    - name: upload-checksum-shared
+      id: upload-checksum_shared
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: checksum_shared.txt
+        asset_name: checksum_shared.txt
         asset_content_type: text/plain
