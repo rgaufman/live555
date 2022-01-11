@@ -2,7 +2,11 @@ name: CMake
 
 on:
   push:
+    # refs/remotes/origin/master
     branches: [ master ]
+    # Sequence of patterns matched against refs/tags
+#     tags:
+#       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [ master ]
 
@@ -14,7 +18,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   OUT_PATH: install
-  ARCHIVE_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}
+  ARCHIVE_NAME: ${{ github.event.repository.name }}-
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
@@ -25,6 +29,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      id: checkout
       with:
         # The branch, tag or SHA to checkout. When checking out the repository that
         # triggered a workflow, this defaults to the reference or SHA for that event.
@@ -46,20 +51,21 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
-    - name: create-archive-static
-      run: tar -czf "$ARCHIVE_NAME"-static.tar.gz "$OUT_PATH"
+    - name: create-archive
+      id: create_archive
+      run: tar -czf "$ARCHIVE_NAME"${{github.ref}}.tar.gz "$OUT_PATH"
 
     - name: create-checksum
       id: create-checksum
       run: |
-        sha256sum "$ARCHIVE_NAME".tar.gz > checksum.txt
+        sha256sum "$ARCHIVE_NAME"${{github.ref}}.tar.gz > checksum.txt
         echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum.txt)"
         
     - name: create-release
       id: create_release
       uses: actions/create-release@v1
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
       with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
@@ -70,18 +76,18 @@ jobs:
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
-        asset_name: ${{ env.ARCHIVE_NAME }}.tar.gz
+        asset_path: ${{ env.ARCHIVE_NAME }}${{github.ref}}.tar.gz
+        asset_name: ${{ env.ARCHIVE_NAME }}${{github.ref}}.tar.gz
         asset_content_type: application/gzip
       
     - name: upload-checksum
       id: upload-checksum
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token, https://github.com/settings/tokens
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: checksum.txt
