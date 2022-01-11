@@ -47,10 +47,10 @@ jobs:
         echo "::set-output name=checksum::$(cut -d ' ' -f 1 checksum.txt)"
 #     - name: Create Release
 #       id: create_release
-#       uses: melchi45/live555@v1
+#       uses: melchi45/live555@Bump_up_2022.01.06
     - name: upload-archive
       id: upload-archive
-      uses: melchi45/live555@v1
+      uses: melchi45/live555@Bump_up_2022.01.06
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_path: ${{ env.ARCHIVE_NAME }}.tar.gz
