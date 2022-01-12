@@ -267,7 +267,7 @@ else()
 endif()
 
 
-   # Installation stuff
+# Installation stuff
 set(config_version_file ${CMAKE_CURRENT_BINARY_DIR}/live555ConfigVersion.cmake)
 
 include(CMakePackageConfigHelpers)
@@ -275,16 +275,66 @@ write_basic_package_version_file(${config_version_file}
                                  VERSION ${live555_VERSION}
                                  COMPATIBILITY ExactVersion)
 
+if(LIVE555_BUILD_EXAMPLES)
+   set(bin_files ${CMAKE_CURRENT_BINARY_DIR}/testProgs/MPEG2TransportStreamIndexer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/mikeyParse
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/openRTSP
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/playSIP
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/registerRTSPStream
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/sapWatch
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testAMRAudioStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testDVVideoStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testH264VideoStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testH264VideoToHLSSegments
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testH264VideoToTransportStream
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testH265VideoStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testH265VideoToTransportStream
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMKVSplitter
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMKVStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMP3Receiver
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMP3Streamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG1or2AudioVideoStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG1or2ProgramToTransportStream
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG1or2Splitter
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG1or2VideoReceiver
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG1or2VideoStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG2TransportReceiver
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG2TransportStreamTrickPlay
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG2TransportStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testMPEG4VideoStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testOggStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testOnDemandRTSPServer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testRTSPClient
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testRelay
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testReplicator
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/testWAVAudioStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/testProgs/vobStreamer
+                 ${CMAKE_CURRENT_BINARY_DIR}/mediaServer/live555MediaServer
+                 ${CMAKE_CURRENT_BINARY_DIR}/proxyServer/live555ProxyServer
+                 ${CMAKE_CURRENT_BINARY_DIR}/hlsProxy/live555HLSProxy)
+endif()
+
 install(FILES ${config_version_file}
-    DESTINATION lib/cmake/live555
+   DESTINATION lib/cmake/live555
 )
 
 install(TARGETS live555 EXPORT live555Target
-    INCLUDES DESTINATION include/liveMedia
-    RUNTIME DESTINATION bin/$<CONFIG>
-    LIBRARY DESTINATION lib/$<CONFIG>
-    ARCHIVE DESTINATION lib/$<CONFIG>
+   INCLUDES DESTINATION include/liveMedia
+   RUNTIME DESTINATION bin/$<CONFIG>
+   LIBRARY DESTINATION lib/$<CONFIG>
+   ARCHIVE DESTINATION lib/$<CONFIG>
 )
+
+if(LIVE555_BUILD_EXAMPLES)
+install(FILES ${bin_files}
+   DESTINATION bin
+   PERMISSIONS 
+      OWNER_WRITE OWNER_READ OWNER_EXECUTE
+      GROUP_WRITE GROUP_READ GROUP_EXECUTE
+      WORLD_WRITE WORLD_READ WORLD_EXECUTE
+   COMPONENT runtime
+)
+endif()
 
 install(EXPORT live555Target
     NAMESPACE live555::
