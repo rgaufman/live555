@@ -13,8 +13,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// "mTunnel" multicast access service
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// "groupsock"
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // C++ header
 
@@ -25,21 +25,25 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "NetAddress.hh"
 #endif
 
-int setupDatagramSocket(UsageEnvironment& env, Port port);
-int setupStreamSocket(UsageEnvironment& env,
-		      Port port, Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
+int setupDatagramSocket(UsageEnvironment& env, Port port, int domain);
+int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
+		      Boolean makeNonBlocking = True, Boolean setKeepAlive = False);
 
 int readSocket(UsageEnvironment& env,
 	       int socket, unsigned char* buffer, unsigned bufferSize,
-	       struct sockaddr_in& fromAddress);
+	       struct sockaddr_storage& fromAddress /*set only if we're a datagram socket*/);
 
 Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
+		    int socket, struct sockaddr_storage const& addressAndPort,
 		    u_int8_t ttlArg,
 		    unsigned char* buffer, unsigned bufferSize);
 
 Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct in_addr address, portNumBits portNum/*network byte order*/,
+		    int socket, struct sockaddr_storage const& addressAndPort,
 		    unsigned char* buffer, unsigned bufferSize);
     // An optimized version of "writeSocket" that omits the "setsockopt()" call to set the TTL.
 
@@ -62,29 +66,36 @@ Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds = 0);
 Boolean setSocketKeepAlive(int sock);
 
 Boolean socketJoinGroup(UsageEnvironment& env, int socket,
-			netAddressBits groupAddress);
+			struct sockaddr_storage const& groupAddress);
 Boolean socketLeaveGroup(UsageEnvironment&, int socket,
-			 netAddressBits groupAddress);
+			 struct sockaddr_storage const& groupAddress);
 
 // source-specific multicast join/leave
 Boolean socketJoinGroupSSM(UsageEnvironment& env, int socket,
-			   netAddressBits groupAddress,
-			   netAddressBits sourceFilterAddr);
+			   struct sockaddr_storage const& groupAddress,
+			   struct sockaddr_storage const& sourceFilterAddr);
 Boolean socketLeaveGroupSSM(UsageEnvironment&, int socket,
-			    netAddressBits groupAddress,
-			    netAddressBits sourceFilterAddr);
+			    struct sockaddr_storage const& groupAddress,
+			    struct sockaddr_storage const& sourceFilterAddr);
 
-Boolean getSourcePort(UsageEnvironment& env, int socket, Port& port);
+Boolean getSourcePort(UsageEnvironment& env, int socket, int domain, Port& port);
 
-netAddressBits ourIPAddress(UsageEnvironment& env); // in network order
+ipv4AddressBits ourIPv4Address(UsageEnvironment& env); // in network order
+ipv6AddressBits const& ourIPv6Address(UsageEnvironment& env);
 
-// IP addresses of our sending and receiving interfaces.  (By default, these
+Boolean weHaveAnIPv4Address(UsageEnvironment& env);
+Boolean weHaveAnIPv6Address(UsageEnvironment& env);
+Boolean weHaveAnIPAddress(UsageEnvironment& env);
+  // returns True if we have either an IPv4 or an IPv6 address
+
+// IPv4 addresses of our sending and receiving interfaces.  (By default, these
 // are INADDR_ANY (i.e., 0), specifying the default interface.)
-extern netAddressBits SendingInterfaceAddr;
-extern netAddressBits ReceivingInterfaceAddr;
+extern ipv4AddressBits SendingInterfaceAddr;
+extern ipv4AddressBits ReceivingInterfaceAddr;
+extern in6_addr ReceivingInterfaceAddr6;
 
 // Allocates a randomly-chosen IPv4 SSM (multicast) address:
-netAddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
+ipv4AddressBits chooseRandomIPv4SSMAddress(UsageEnvironment& env);
 
 // Returns a simple "hh:mm:ss" string, for use in debugging output (e.g.)
 char const* timestampString();
@@ -92,8 +103,10 @@ char const* timestampString();
 
 #ifdef HAVE_SOCKADDR_LEN
 #define SET_SOCKADDR_SIN_LEN(var) var.sin_len = sizeof var
+#define SET_SOCKADDR_SIN6_LEN(var) var.sin6_len = sizeof var
 #else
 #define SET_SOCKADDR_SIN_LEN(var)
+#define SET_SOCKADDR_SIN6_LEN(var)
 #endif
 
 #define MAKE_SOCKADDR_IN(var,adr,prt) /*adr,prt must be in network order*/\
@@ -102,6 +115,13 @@ char const* timestampString();
     var.sin_addr.s_addr = (adr);\
     var.sin_port = (prt);\
     SET_SOCKADDR_SIN_LEN(var);
+#define MAKE_SOCKADDR_IN6(var,adr,prt) /*adr,prt must be in network order*/\
+    struct sockaddr_in6 var;\
+    memset(&var, 0, sizeof var);\
+    var.sin6_family = AF_INET6;\
+    var.sin6_addr=adr;\
+    var.sin6_port = (prt);\
+    SET_SOCKADDR_SIN6_LEN(var);
 
 
 // By default, we create sockets with the SO_REUSE_* flag set.
@@ -139,7 +159,6 @@ extern int gettimeofday(struct timeval*, int*);
 #endif
 
 // The following are implemented in inet.c:
-extern "C" netAddressBits our_inet_addr(char const*);
 extern "C" void our_srandom(int x);
 extern "C" long our_random();
 extern "C" u_int32_t our_random32(); // because "our_random()" returns a 31-bit number

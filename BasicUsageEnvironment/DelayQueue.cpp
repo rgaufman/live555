@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2023, Live Networks, Inc.  All rights reserved
 //	Help by Carlo Bonamico to get working for Windows
 // Delay queue
 // Implementation
@@ -92,12 +92,9 @@ const DelayInterval ETERNITY(INT_MAX, MILLION-1);
 
 ///// DelayQueueEntry /////
 
-intptr_t DelayQueueEntry::tokenCounter = 0;
-
-DelayQueueEntry::DelayQueueEntry(DelayInterval delay)
-  : fDeltaTimeRemaining(delay) {
+DelayQueueEntry::DelayQueueEntry(DelayInterval delay, intptr_t token)
+  : fDeltaTimeRemaining(delay), fToken(token) {
   fNext = fPrev = this;
-  fToken = ++tokenCounter;
 }
 
 DelayQueueEntry::~DelayQueueEntry() {
@@ -111,7 +108,7 @@ void DelayQueueEntry::handleTimeout() {
 ///// DelayQueue /////
 
 DelayQueue::DelayQueue()
-  : DelayQueueEntry(ETERNITY) {
+  : DelayQueueEntry(ETERNITY, 0) {
   fLastSyncTime = TimeNow();
 }
 

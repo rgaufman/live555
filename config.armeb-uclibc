@@ -1,5 +1,5 @@
 CROSS_COMPILE=         armeb-linux-uclibc-
-COMPILE_OPTS =          $(INCLUDES) -I. -Os -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D
+COMPILE_OPTS =          $(INCLUDES) -I/usr/local/include -I. -Os -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D
 LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
 C =                    c
 C_COMPILER =           $(CROSS_COMPILE)gcc
@@ -14,6 +14,6 @@ CONSOLE_LINK_OPTS =    $(LINK_OPTS)
 LIBRARY_LINK =         $(CROSS_COMPILE)ar cr 
 LIBRARY_LINK_OPTS =    
 LIB_SUFFIX =                   a
-LIBS_FOR_CONSOLE_APPLICATION =
+LIBS_FOR_CONSOLE_APPLICATION = -lssl -lcrypto
 LIBS_FOR_GUI_APPLICATION =
 EXE =

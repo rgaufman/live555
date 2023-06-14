@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // Implementation
@@ -45,7 +45,7 @@ private: // redefined virtual functions
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
                                     unsigned char rtpPayloadTypeIfDynamic,
                                     FramedSource* inputSource);
-  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual Groupsock* createGroupsock(struct sockaddr_storage const& addr, Port port);
   virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
 				   unsigned char const* cname, RTPSink* sink);
 
@@ -116,7 +116,7 @@ ProxyServerMediaSession
 				       tunnelOverHTTPPortNum,
 				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
 				       socketNumToServer, interPacketGapMaxTime);
-  ProxyRTSPClient::sendDESCRIBE(fProxyRTSPClient);
+  fProxyRTSPClient->sendDESCRIBE();
 }
 
 ProxyServerMediaSession::~ProxyServerMediaSession() {
@@ -139,7 +139,8 @@ char const* ProxyServerMediaSession::url() const {
   return fProxyRTSPClient == NULL ? NULL : fProxyRTSPClient->url();
 }
 
-Groupsock* ProxyServerMediaSession::createGroupsock(struct in_addr const& addr, Port port) {
+Groupsock* ProxyServerMediaSession
+::createGroupsock(struct sockaddr_storage const& addr, Port port) {
   // Default implementation; may be redefined by subclasses:
   return new Groupsock(envir(), addr, port, 255);
 }
@@ -262,10 +263,10 @@ ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession,
 }
 
 void ProxyRTSPClient::reset() {
-  envir().taskScheduler().unscheduleDelayedTask(fLivenessCommandTask); fLivenessCommandTask = NULL;
-  envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask); fDESCRIBECommandTask = NULL;
-  envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask); fSubsessionTimerTask = NULL;
-  envir().taskScheduler().unscheduleDelayedTask(fResetTask); fResetTask = NULL;
+  envir().taskScheduler().unscheduleDelayedTask(fLivenessCommandTask);
+  envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask);
+  envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask);
+  envir().taskScheduler().unscheduleDelayedTask(fResetTask);
   envir().taskScheduler().unscheduleDelayedTask(fInterPacketGapsTask); fInterPacketGapsTask = NULL;
 
   fSetupQueueHead = fSetupQueueTail = NULL;
@@ -426,6 +427,7 @@ void ProxyRTSPClient::scheduleLivenessCommand() {
 
 void ProxyRTSPClient::sendLivenessCommand(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
+  rtspClient->fLivenessCommandTask = NULL;
 
   // Note.  By default, we do not send "GET_PARAMETER" as our 'liveness notification' command, even if the server previously
   // indicated (in its response to our earlier "OPTIONS" command) that it supported "GET_PARAMETER".  This is because
@@ -490,6 +492,7 @@ void ProxyRTSPClient::scheduleReset() {
 }
 
 void ProxyRTSPClient::doReset() {
+  fResetTask = NULL;
   if (fVerbosityLevel > 0) {
     envir() << *this << "::doReset\n";
   }
@@ -498,7 +501,7 @@ void ProxyRTSPClient::doReset() {
   fOurServerMediaSession.resetDESCRIBEState();
 
   setBaseURL(fOurURL); // because we'll be sending an initial "DESCRIBE" all over again
-  sendDESCRIBE(this);
+  sendDESCRIBE();
 }
 
 void ProxyRTSPClient::doReset(void* clientData) {
@@ -524,7 +527,14 @@ void ProxyRTSPClient::scheduleDESCRIBECommand() {
 
 void ProxyRTSPClient::sendDESCRIBE(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
-  if (rtspClient != NULL) rtspClient->sendDescribeCommand(::continueAfterDESCRIBE, rtspClient->auth());
+  if (rtspClient != NULL) {
+    rtspClient->fDESCRIBECommandTask = NULL;
+    rtspClient->sendDESCRIBE();
+  }
+}
+
+void ProxyRTSPClient::sendDESCRIBE() {
+  sendDescribeCommand(::continueAfterDESCRIBE, auth());
 }
 
 void ProxyRTSPClient::subsessionTimeout(void* clientData) {
@@ -532,6 +542,7 @@ void ProxyRTSPClient::subsessionTimeout(void* clientData) {
 }
 
 void ProxyRTSPClient::handleSubsessionTimeout() {
+  fSubsessionTimerTask = NULL;
   // We still have one or more subsessions ('tracks') left to "SETUP".  But we can't wait any longer for them.  Send a "PLAY" now:
   MediaSession* sess = fOurServerMediaSession.fClientMediaSession;
   if (sess != NULL) sendPlayCommand(*sess, ::continueAfterPLAY, -1.0f, -1.0f, 1.0f, fOurAuthenticator);
@@ -674,7 +685,7 @@ FramedSource* ProxyServerMediaSubsession::createNewStreamSource(unsigned clientS
   return fClientMediaSubsession.readSource();
 }
 
-void ProxyServerMediaSubsession::closeStreamSource(FramedSource* inputSource) {
+void ProxyServerMediaSubsession::closeStreamSource(FramedSource* /*inputSource*/) {
   if (verbosityLevel() > 0) {
     envir() << *this << "::closeStreamSource()\n";
   }
@@ -688,10 +699,13 @@ void ProxyServerMediaSubsession::closeStreamSource(FramedSource* inputSource) {
     if (proxyRTSPClient->fLastCommandWasPLAY) { // so that we send only one "PAUSE"; not one for each subsession
       if (fParentSession->referenceCount() > 1) {
 	// There are other client(s) still streaming other subsessions of this stream.
-	// Therefore, we don't send a "PAUSE" for the whole stream, but only for the sub-stream:
-	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession, NULL, proxyRTSPClient->auth());
+	// Therefore, we don't send a "PAUSE" for the whole stream.
+	// In principle, we would send a "PAUSE" only for the sub-stream here, but some
+	// back-end servers might mis-handle that by pausing the entire stream.
+	// So instead, we do nothing here.
+	//proxyRTSPClient->sendPauseCommand(fClientMediaSubsession, NULL, proxyRTSPClient->auth());
       } else {
-	// Normal case: There are no other client still streaming (parts of) this stream.
+	// Normal case: There are no other clients still streaming (parts of) this stream.
 	// Send a "PAUSE" for the whole stream.
 	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession.parentSession(), NULL, proxyRTSPClient->auth());
 	proxyRTSPClient->fLastCommandWasPLAY = False;
@@ -827,7 +841,8 @@ RTPSink* ProxyServerMediaSubsession
   return newSink;
 }
 
-Groupsock* ProxyServerMediaSubsession::createGroupsock(struct in_addr const& addr, Port port) {
+Groupsock* ProxyServerMediaSubsession
+::createGroupsock(struct sockaddr_storage const& addr, Port port) {
   ProxyServerMediaSession* parentSession = (ProxyServerMediaSession*)fParentSession;
   return parentSession->createGroupsock(addr, port);
 }

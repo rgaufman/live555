@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // Basic Usage Environment: for a simple, non-scripted, console application
 // Implementation
 
@@ -25,8 +25,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class AlarmHandler: public DelayQueueEntry {
 public:
-  AlarmHandler(TaskFunc* proc, void* clientData, DelayInterval timeToDelay)
-    : DelayQueueEntry(timeToDelay), fProc(proc), fClientData(clientData) {
+  AlarmHandler(TaskFunc* proc, void* clientData, DelayInterval timeToDelay, intptr_t token)
+    : DelayQueueEntry(timeToDelay, token), fProc(proc), fClientData(clientData) {
   }
 
 private: // redefined virtual functions
@@ -44,7 +44,9 @@ private:
 ////////// BasicTaskScheduler0 //////////
 
 BasicTaskScheduler0::BasicTaskScheduler0()
-  : fLastHandledSocketNum(-1), fTriggersAwaitingHandling(0), fLastUsedTriggerMask(1), fLastUsedTriggerNum(MAX_NUM_EVENT_TRIGGERS-1) {
+  : fTokenCounter(0), fLastHandledSocketNum(-1),
+    fTriggersAwaitingHandling(0), fLastUsedTriggerMask(1),
+    fLastUsedTriggerNum(MAX_NUM_EVENT_TRIGGERS-1) {
   fHandlers = new HandlerSet;
   for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
     fTriggeredEventHandlers[i] = NULL;
@@ -57,11 +59,11 @@ BasicTaskScheduler0::~BasicTaskScheduler0() {
 }
 
 TaskToken BasicTaskScheduler0::scheduleDelayedTask(int64_t microseconds,
-						 TaskFunc* proc,
-						 void* clientData) {
+						   TaskFunc* proc,
+						   void* clientData) {
   if (microseconds < 0) microseconds = 0;
   DelayInterval timeToDelay((long)(microseconds/1000000), (long)(microseconds%1000000));
-  AlarmHandler* alarmHandler = new AlarmHandler(proc, clientData, timeToDelay);
+  AlarmHandler* alarmHandler = new AlarmHandler(proc, clientData, timeToDelay, ++fTokenCounter);
   fDelayQueue.addEntry(alarmHandler);
 
   return (void*)(alarmHandler->token());

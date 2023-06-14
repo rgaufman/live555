@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // Raw Video RTP Sources (RFC 4175)
 // Implementation
 
@@ -139,7 +139,7 @@ Boolean RawVideoRTPSource
   // Everything looks good:
   fCurrentPacketBeginsFrame
     = (fLineHeaders[0].fieldIdAndLineNumber&0x7FFF) == 0 && fLineHeaders[0].offsetWithinLine == 0;
-  fCurrentPacketCompletesFrame = packet->rtpMarkerBit();
+  // Don't set "fCurrentPacketCompletesFrame" until we've processed the last line in the packet
   resultSpecialHeaderSize = headerStart - packet->data();
   return True;
 }
@@ -172,6 +172,11 @@ void RawVideoBufferedPacket::getNextEnclosedFrameParameters(unsigned char*& /*fr
     frameSize = dataSize;
     return;
   }
+
+  // This line ('subframe') completes a frame if it's the last line in the packet,
+  // and the packet's 'M' bit was set:
+  fOurSource->fCurrentPacketCompletesFrame
+    = fOurSource->fCurPacketMarkerBit && fOurSource->fNextLine == fOurSource->fNumLines-1;
 
   frameSize = fOurSource->fLineHeaders[fOurSource->fNextLine++].length;
 }

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // Common routines used by both RTSP clients and servers
 // Implementation
 
@@ -48,8 +48,7 @@ static void decodeURL(char* url) {
   *url = '\0';
 }
 
-Boolean parseRTSPRequestString(char const* reqStr,
-			       unsigned reqStrSize,
+Boolean parseRTSPRequestString(char const* reqStr, unsigned reqStrSize,
 			       char* resultCmdName,
 			       unsigned resultCmdNameMaxSize,
 			       char* resultURLPreSuffix,
@@ -60,8 +59,9 @@ Boolean parseRTSPRequestString(char const* reqStr,
 			       unsigned resultCSeqMaxSize,
                                char* resultSessionIdStr,
                                unsigned resultSessionIdStrMaxSize,
-			       unsigned& contentLength) {
+			       unsigned& contentLength, Boolean& urlIsRTSPS) {
   // This parser is currently rather dumb; it should be made smarter #####
+  urlIsRTSPS = False; // by default
 
   // "Be liberal in what you accept": Skip over any whitespace at the start of the request:
   unsigned i;
@@ -86,28 +86,34 @@ Boolean parseRTSPRequestString(char const* reqStr,
   resultCmdName[i1] = '\0';
   if (!parseSucceeded) return False;
 
-  // Skip over the prefix of any "rtsp://" or "rtsp:/" URL that follows:
+  // Skip over the prefix of any "rtsp://" or "rtsp:/" (or "rtsps://" or "rtsps:/")
+  // URL that follows:
   unsigned j = i+1;
   while (j < reqStrSize && (reqStr[j] == ' ' || reqStr[j] == '\t')) ++j; // skip over any additional white space
   for (; (int)j < (int)(reqStrSize-8); ++j) {
     if ((reqStr[j] == 'r' || reqStr[j] == 'R')
 	&& (reqStr[j+1] == 't' || reqStr[j+1] == 'T')
 	&& (reqStr[j+2] == 's' || reqStr[j+2] == 'S')
-	&& (reqStr[j+3] == 'p' || reqStr[j+3] == 'P')
-	&& reqStr[j+4] == ':' && reqStr[j+5] == '/') {
-      j += 6;
-      if (reqStr[j] == '/') {
-	// This is a "rtsp://" URL; skip over the host:port part that follows:
+	&& (reqStr[j+3] == 'p' || reqStr[j+3] == 'P')) {
+      if (reqStr[j+4] == 's' || reqStr[j+4] == 'S') {
+	urlIsRTSPS = True;
 	++j;
-	while (j < reqStrSize && reqStr[j] != '/' && reqStr[j] != ' ') ++j;
-      } else {
-	// This is a "rtsp:/" URL; back up to the "/":
-	--j;
       }
-      i = j;
-      break;
+      if (reqStr[j+4] == ':' && reqStr[j+5] == '/') {
+	j += 6;
+	if (reqStr[j] == '/') {
+	  // This is a "rtsp(s)://" URL; skip over the host:port part that follows:
+	  ++j;
+	  while (j < reqStrSize && reqStr[j] != '/' && reqStr[j] != ' ') ++j;
+	} else {
+	  // This is a "rtsp(s):/" URL; back up to the "/":
+	  --j;
+	}
+	i = j;
+	break;
+      }
     }
-  }
+  }	
 
   // Look for the URL suffix (before the following "RTSP/"):
   parseSucceeded = False;
@@ -217,8 +223,19 @@ Boolean parseRangeParam(char const* paramStr,
   startTimeIsNow = False; // by default
   double start, end;
   int numCharsMatched1 = 0, numCharsMatched2 = 0, numCharsMatched3 = 0, numCharsMatched4 = 0;
+  int startHour = 0, startMin = 0, endHour = 0, endMin = 0;
+  double startSec = 0.0, endSec = 0.0;
   Locale l("C", Numeric);
-  if (sscanf(paramStr, "npt = %lf - %lf", &start, &end) == 2) {
+  if (sscanf(paramStr, "npt = %d:%d:%lf - %d:%d:%lf", &startHour, &startMin, &startSec, &endHour, &endMin, &endSec) == 6) {
+    rangeStart = startHour*3600 + startMin*60 + startSec;
+    rangeEnd = endHour*3600 + endMin*60 + endSec;
+  } else if (sscanf(paramStr, "npt =%lf - %d:%d:%lf", &start, &endHour, &endMin, &endSec) == 4) {
+    rangeStart = start;
+    rangeEnd = endHour*3600 + endMin*60 + endSec;
+  } else if (sscanf(paramStr, "npt = %d:%d:%lf -", &startHour, &startMin, &startSec) == 3) {
+    rangeStart = startHour*3600 + startMin*60 + startSec;
+    rangeEnd = 0.0;
+  } else if (sscanf(paramStr, "npt = %lf - %lf", &start, &end) == 2) {
     rangeStart = start;
     rangeEnd = end;
   } else if (sscanf(paramStr, "npt = %n%lf -", &numCharsMatched1, &start) == 1) {
@@ -338,7 +355,17 @@ char const* dateHeader() {
   static char buf[200];
 #if !defined(_WIN32_WCE)
   time_t tt = time(NULL);
-  strftime(buf, sizeof buf, "Date: %a, %b %d %Y %H:%M:%S GMT\r\n", gmtime(&tt));
+  tm time_tm;
+#ifdef _WIN32
+  if (gmtime_s(&time_tm, &tt) != 0) {
+      time_tm = tm{};
+  }
+#else
+  if (gmtime_r(&tt, &time_tm) == nullptr) {
+      time_tm = tm{};
+  }
+#endif
+  strftime(buf, sizeof buf, "Date: %a, %b %d %Y %H:%M:%S GMT\r\n", &time_tm);
 #else
   // WinCE apparently doesn't have "time()", "strftime()", or "gmtime()",
   // so generate the "Date:" header a different, WinCE-specific way.

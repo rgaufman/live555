@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -26,6 +26,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 #ifndef _RTP_SOURCE_HH
 #include "RTPSource.hh"
+#endif
+#ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
+#include "SRTPCryptographicContext.hh"
 #endif
 
 class SDESItem {
@@ -54,7 +57,8 @@ public:
 				 unsigned char const* cname,
 				 RTPSink* sink,
 				 RTPSource* source,
-				 Boolean isSSMSource = False);
+				 Boolean isSSMTransmitter = False,
+				 SRTPCryptographicContext* crypto = NULL);
 
   static Boolean lookupByName(UsageEnvironment& env, char const* instanceName,
                               RTCPInstance*& resultInstance);
@@ -62,6 +66,8 @@ public:
   unsigned numMembers() const;
   unsigned totSessionBW() const { return fTotSessionBW; }
 
+  void setupForSRTCP();
+  
   void setByeHandler(TaskFunc* handlerTask, void* clientData,
 		     Boolean handleActiveParticipantsOnly = True);
       // Assigns a handler routine to be called if a "BYE" arrives.
@@ -87,12 +93,12 @@ public:
       // (respectively) arrives.  Unlike "setByeHandler()", the handler will
       // be called once for each incoming "SR" or "RR".  (To turn off handling,
       // call the function again with "handlerTask" (and "clientData") as NULL.)
-  void setSpecificRRHandler(netAddressBits fromAddress, Port fromPort,
+  void setSpecificRRHandler(struct sockaddr_storage const& fromAddress, Port fromPort,
 			    TaskFunc* handlerTask, void* clientData);
       // Like "setRRHandler()", but applies only to "RR" packets that come from
       // a specific source address and port.  (Note that if both a specific
       // and a general "RR" handler function is set, then both will be called.)
-  void unsetSpecificRRHandler(netAddressBits fromAddress, Port fromPort); // equivalent to setSpecificRRHandler(..., NULL, NULL);
+  void unsetSpecificRRHandler(struct sockaddr_storage const& fromAddress, Port fromPort); // equivalent to setSpecificRRHandler(..., NULL, NULL);
   void setAppHandler(RTCPAppHandlerFunc* handlerTask, void* clientData);
       // Assigns a handler routine to be called whenever an "APP" packet arrives.  (To turn off
       // handling, call the function again with "handlerTask" (and "clientData") as NULL.)
@@ -106,8 +112,8 @@ public:
 
   Groupsock* RTCPgs() const { return fRTCPInterface.gs(); }
 
-  void setStreamSocket(int sockNum, unsigned char streamChannelId);
-  void addStreamSocket(int sockNum, unsigned char streamChannelId);
+  void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState);
+  void addStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState);
   void removeStreamSocket(int sockNum, unsigned char streamChannelId) {
     fRTCPInterface.removeStreamSocket(sockNum, streamChannelId);
   }
@@ -119,18 +125,19 @@ public:
 					    handlerClientData);
   }
 
-  void injectReport(u_int8_t const* packet, unsigned packetSize, struct sockaddr_in const& fromAddress);
+  void injectReport(u_int8_t const* packet, unsigned packetSize, struct sockaddr_storage const& fromAddress);
     // Allows an outside party to inject an RTCP report (from other than the network interface)
 
 protected:
   RTCPInstance(UsageEnvironment& env, Groupsock* RTPgs, unsigned totSessionBW,
 	       unsigned char const* cname,
 	       RTPSink* sink, RTPSource* source,
-	       Boolean isSSMSource);
+	       Boolean isSSMTransmitter,
+	       SRTPCryptographicContext* crypto);
       // called only by createNew()
   virtual ~RTCPInstance();
 
-  virtual void noteArrivingRR(struct sockaddr_in const& fromAddressAndPort,
+  virtual void noteArrivingRR(struct sockaddr_storage const& fromAddressAndPort,
 			      int tcpSocketNum, unsigned char tcpStreamChannelId);
 
   void incomingReportHandler1();
@@ -156,7 +163,7 @@ private:
   void onExpire1();
 
   static void incomingReportHandler(RTCPInstance* instance, int /*mask*/);
-  void processIncomingReport(unsigned packetSize, struct sockaddr_in const& fromAddressAndPort,
+  void processIncomingReport(unsigned packetSize, struct sockaddr_storage const& fromAddressAndPort,
 			     int tcpSocketNum, unsigned char tcpStreamChannelId);
   void onReceive(int typeOfPacket, int totPacketSize, u_int32_t ssrc);
 
@@ -168,7 +175,8 @@ private:
   unsigned fTotSessionBW;
   RTPSink* fSink;
   RTPSource* fSource;
-  Boolean fIsSSMSource;
+  Boolean fIsSSMTransmitter;
+  SRTPCryptographicContext* fCrypto;
 
   SDESItem fCNAME;
   RTCPMemberDatabase* fKnownMembers;

@@ -1,0 +1,23 @@
+@@ -114,7 +115,7 @@
+     = (*fCreateNewProxyRTSPClientFunc)(*this, inputStreamURL, username, password,
+ 				       tunnelOverHTTPPortNum,
+ 				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
+-				       socketNumToServer);
++				       socketNumToServer, interPacketGapMaxTime);
+   ProxyRTSPClient::sendDESCRIBE(fProxyRTSPClient);
+ }
+ 
+@@ -263,11 +267,13 @@
+   envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask); fDESCRIBECommandTask = NULL;
+   envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask); fSubsessionTimerTask = NULL;
+   envir().taskScheduler().unscheduleDelayedTask(fResetTask); fResetTask = NULL;
++  envir().taskScheduler().unscheduleDelayedTask(fInterPacketGapsTask); fInterPacketGapsTask = NULL;
+ 
+   fSetupQueueHead = fSetupQueueTail = NULL;
+   fNumSetupsDone = 0;
+   fNextDESCRIBEDelay = 1;
+   fLastCommandWasPLAY = False;
++  fTotNumPacketsReceived = ~0;
+   fDoneDESCRIBE = False;
+ 
+   RTSPClient::reset();

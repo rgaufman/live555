@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // RTP Sources
 // C++ header
 
@@ -26,6 +26,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 #ifndef _RTP_INTERFACE_HH
 #include "RTPInterface.hh"
+#endif
+#ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
+#include "SRTPCryptographicContext.hh"
 #endif
 
 class RTPReceptionStatsDB; // forward
@@ -44,6 +47,8 @@ public:
   Groupsock* RTPgs() const { return fRTPInterface.gs(); }
 
   virtual void setPacketReorderingThresholdTime(unsigned uSeconds) = 0;
+
+  void setCrypto(SRTPCryptographicContext* crypto) { fCrypto = crypto; }
 
   // used by RTCP:
   u_int32_t SSRC() const { return fSSRC; }
@@ -66,9 +71,9 @@ public:
   Boolean& enableRTCPReports() { return fEnableRTCPReports; }
   Boolean const& enableRTCPReports() const { return fEnableRTCPReports; }
 
-  void setStreamSocket(int sockNum, unsigned char streamChannelId) {
+  void setStreamSocket(int sockNum, unsigned char streamChannelId, TLSState* tlsState) {
     // hack to allow sending RTP over TCP (RFC 2236, section 10.12)
-    fRTPInterface.setStreamSocket(sockNum, streamChannelId);
+    fRTPInterface.setStreamSocket(sockNum, streamChannelId, tlsState);
   }
 
   void setAuxilliaryReadHandler(AuxHandlerFunc* handlerFunc,
@@ -98,6 +103,7 @@ protected:
   Boolean fCurPacketHasBeenSynchronizedUsingRTCP;
   u_int32_t fLastReceivedSSRC;
   class RTCPInstance* fRTCPInstanceForMultiplexedRTCPPackets;
+  SRTPCryptographicContext* fCrypto;
 
 private:
   // redefined virtual functions:

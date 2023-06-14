@@ -1,6 +1,10 @@
 # Comment out the following line to produce Makefiles that generate debuggable code:
 NODEBUG=1
 
+# If for some reason you wish to use the deprecated "gethostbyname()" function instead of
+# "getaddrinfo()", uncomment the following line:
+#USE_DEPRECATED_GETHOSTBYNAME = -DUSE_GETHOSTBYNAME=1
+
 # The following definition ensures that we are properly matching
 # the WinSock2 library file with the correct header files.
 # (will link with "ws2_32.lib" and include "winsock2.h" & "Ws2tcpip.h")
@@ -20,7 +24,7 @@ CONSOLE_UI_OPTS =		$(conlflags) $(conlibsdll)
 CPU=i386
 
 TOOLS32	=		c:\Program Files\DevStudio\Vc
-COMPILE_OPTS =		$(INCLUDES) $(cdebug) $(cflags) $(cvarsdll) -I. -I"$(TOOLS32)\include"
+COMPILE_OPTS =		$(INCLUDES) $(cdebug) $(cflags) $(cvarsdll) -I. -I"$(TOOLS32)\include" -DNO_OPENSSL=1 $(USE_DEPRECATED_GETHOSTBYNAME)
 C =			c
 C_COMPILER =		"$(TOOLS32)\bin\cl"
 C_FLAGS =		$(COMPILE_OPTS)

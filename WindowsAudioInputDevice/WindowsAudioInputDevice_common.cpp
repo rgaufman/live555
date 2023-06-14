@@ -65,7 +65,7 @@ void WindowsAudioInputDevice_common::doGetNextFrame() {
 
 void WindowsAudioInputDevice_common::doStopGettingFrames() {
   // Turn off the audio poller:
-  envir().taskScheduler().unscheduleDelayedTask(nextTask()); nextTask() = NULL;
+  envir().taskScheduler().unscheduleDelayedTask(nextTask());
 }
 
 double WindowsAudioInputDevice_common::getAverageLevel() const {
@@ -100,6 +100,7 @@ void WindowsAudioInputDevice_common::audioReadyPoller(void* clientData) {
 }
 
 void WindowsAudioInputDevice_common::audioReadyPoller1() {
+  nextTask() = NULL;
   if (readHead != NULL) {
     onceAudioIsReady();
   } else {

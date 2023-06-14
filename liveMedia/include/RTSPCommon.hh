@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // Common routines used by both RTSP clients and servers
 // C++ header
 
@@ -38,18 +38,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #define RTSP_PARAM_STRING_MAX 200
 
-Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize,
-			       char *resultCmdName,
-			       unsigned resultCmdNameMaxSize,
-			       char* resultURLPreSuffix,
-			       unsigned resultURLPreSuffixMaxSize,
-			       char* resultURLSuffix,
-			       unsigned resultURLSuffixMaxSize,
-			       char* resultCSeq,
-			       unsigned resultCSeqMaxSize,
-			       char* resultSessionId,
-			       unsigned resultSessionIdMaxSize,
-			       unsigned& contentLength);
+Boolean parseRTSPRequestString(char const *reqStr, unsigned reqStrSize, // in
+			       char *resultCmdName, // out
+			       unsigned resultCmdNameMaxSize, // in
+			       char* resultURLPreSuffix, // out
+			       unsigned resultURLPreSuffixMaxSize, // in
+			       char* resultURLSuffix, // out
+			       unsigned resultURLSuffixMaxSize, // in
+			       char* resultCSeq, // out
+			       unsigned resultCSeqMaxSize, // in
+			       char* resultSessionId, // out
+			       unsigned resultSessionIdMaxSize, // in
+			       unsigned& contentLength, Boolean& urlIsRTSPS); // out
 
 Boolean parseRangeParam(char const* paramStr, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);
 Boolean parseRangeHeader(char const* buf, double& rangeStart, double& rangeEnd, char*& absStartTime, char*& absEndTime, Boolean& startTimeIsNow);

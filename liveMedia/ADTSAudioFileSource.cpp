@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // A source object for AAC audio files in ADTS format
 // Implementation
 
@@ -105,7 +105,7 @@ ADTSAudioFileSource
   u_int8_t const audioObjectType = profile + 1;
   audioSpecificConfig[0] = (audioObjectType<<3) | (samplingFrequencyIndex>>1);
   audioSpecificConfig[1] = (samplingFrequencyIndex<<7) | (channelConfiguration<<3);
-  sprintf(fConfigStr, "%02X%02x", audioSpecificConfig[0], audioSpecificConfig[1]);
+  sprintf(fConfigStr, "%02X%02X", audioSpecificConfig[0], audioSpecificConfig[1]);
 }
 
 ADTSAudioFileSource::~ADTSAudioFileSource() {

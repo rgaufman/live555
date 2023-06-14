@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // RTP sink for a common kind of payload format: Those which pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // Implementation
@@ -35,8 +35,8 @@ void MultiFramedRTPSink::setPacketSizes(unsigned preferredPacketSize,
 }
 
 #ifndef RTP_PAYLOAD_MAX_SIZE
-#define RTP_PAYLOAD_MAX_SIZE 1456
-      // Default max packet size (1500, minus allowance for IP, UDP, UMTP headers)
+#define RTP_PAYLOAD_MAX_SIZE 1452
+      // Default max packet size (1500, minus allowance for IP, UDP headers)
       // (Also, make it a multiple of 4 bytes, just in case that matters.)
 #endif
 #ifndef RTP_PAYLOAD_PREFERRED_SIZE
@@ -362,15 +362,40 @@ Boolean MultiFramedRTPSink::isTooBigForAPacket(unsigned numBytes) const {
   return fOutBuf->isTooBigForAPacket(numBytes);
 }
 
+#define MAX_UDP_PACKET_SIZE 65536
+
 void MultiFramedRTPSink::sendPacketIfNecessary() {
   if (fNumFramesUsedSoFar > 0) {
     // Send the packet:
 #ifdef TEST_LOSS
     if ((our_random()%10) != 0) // simulate 10% packet loss #####
 #endif
-      if (!fRTPInterface.sendPacket(fOutBuf->packet(), fOutBuf->curPacketSize())) {
-	// if failure handler has been specified, call it
-	if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+      if (fCrypto != NULL) { // Encrypt/tag the data before sending it:
+#ifndef NO_OPENSSL
+	// Hack: Because the MKI + authentication tag at the end of the packet would
+	// overwrite any following (still to be sent) frame data, we can't encrypt/tag
+	// the packet in place.  Instead, we have to make a copy (on the stack) of
+	// the packet, before encrypting/tagging/sending it:
+	if (fOutBuf->curPacketSize() + SRTP_MKI_LENGTH + SRTP_AUTH_TAG_LENGTH > MAX_UDP_PACKET_SIZE) {
+	  fprintf(stderr, "MultiFramedRTPSink::sendPacketIfNecessary(): Fatal error: packet size %d is too large for SRTP\n", fOutBuf->curPacketSize());
+	  exit(1);
+	}
+	u_int8_t packet[MAX_UDP_PACKET_SIZE];
+	memcpy(packet, fOutBuf->packet(), fOutBuf->curPacketSize());
+	unsigned newPacketSize;
+	
+	if (fCrypto->processOutgoingSRTPPacket(packet, fOutBuf->curPacketSize(), newPacketSize)) {
+	  if (!fRTPInterface.sendPacket(packet, newPacketSize)) {
+	    // if failure handler has been specified, call it
+	    if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+	  }
+	}
+#endif
+      } else { // unencrypted
+	if (!fRTPInterface.sendPacket(fOutBuf->packet(), fOutBuf->curPacketSize())) {
+	  // if failure handler has been specified, call it
+	  if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+	}
       }
     ++fPacketCount;
     fTotalOctetCount += fOutBuf->curPacketSize();

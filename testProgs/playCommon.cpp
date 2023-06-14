@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2019, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2023, Live Networks, Inc.  All rights reserved
 // A common framework, used for the "openRTSP" and "playSIP" applications
 // Implementation
 //
@@ -77,6 +77,7 @@ Boolean outputAVIFile = False;
 AVIFileSink* aviOut = NULL;
 Boolean audioOnly = False;
 Boolean videoOnly = False;
+Boolean applicationOnly = False;
 char const* singleMedium = NULL;
 int verbosityLevel = 1; // by default, print verbose output
 double duration = 0;
@@ -212,7 +213,16 @@ int main(int argc, char** argv) {
 	*env << "Failed to find network address for \"" << argv[2] << "\"";
 	break;
       }
-      ReceivingInterfaceAddr = *(unsigned*)(addresses.firstAddress()->data());
+
+      struct sockaddr_storage interfaceAddress;
+
+      copyAddress(interfaceAddress, addresses.firstAddress());
+      if (interfaceAddress.ss_family == AF_INET) {
+	ReceivingInterfaceAddr = ((sockaddr_in&)interfaceAddress).sin_addr.s_addr;
+      }
+      if (interfaceAddress.ss_family == AF_INET6) {
+    ReceivingInterfaceAddr6 = ((sockaddr_in6&)interfaceAddress).sin6_addr;
+      }
       ++argv; --argc;
       break;
     }
@@ -226,6 +236,12 @@ int main(int argc, char** argv) {
     case 'v': { // receive/record a video stream only
       videoOnly = True;
       singleMedium = "video";
+      break;
+    }
+
+    case 'L': { // receive/record an 'application' (e.g., metadata) stream only
+      applicationOnly = True;
+      singleMedium = "application";
       break;
     }
 
@@ -569,6 +585,14 @@ int main(int argc, char** argv) {
     *env << "The -a and -v options cannot both be used!\n";
     usage();
   }
+  if (audioOnly && applicationOnly) {
+    *env << "The -a and -L options cannot both be used!\n";
+    usage();
+  }
+  if (videoOnly && applicationOnly) {
+    *env << "The -v and -L options cannot both be used!\n";
+    usage();
+  }
   if (sendOptionsRequestOnly && !sendOptionsRequest) {
     *env << "The -o and -O options cannot both be used!\n";
     usage();
@@ -613,6 +637,7 @@ int main(int argc, char** argv) {
 						   verbosityLevel, progName);
     if (handlerServerForREGISTERCommand == NULL) {
       *env << "Failed to create a server for handling incoming \"REGISTER\" commands: " << env->getResultMsg() << "\n";
+      shutdown();
     } else {
       *env << "Awaiting an incoming \"REGISTER\" command on port " << handlerServerForREGISTERCommand->serverPortNum() << "\n";
     }
@@ -905,6 +930,13 @@ void createOutputFiles(char const* periodicFilenameSuffix) {
 	} else if (strcmp(subsession->codecName(), "VORBIS") == 0 ||
 		   strcmp(subsession->codecName(), "OPUS") == 0) {
 	  createOggFileSink = True;
+	} else if (strcmp(subsession->codecName(), "MPEG4-GENERIC") == 0) {
+	  // For AAC audio, we use a regular file sink, but add a 'ADTS framer' filter
+	  // to the end of the data source, so that the resulting file is playable:
+	  FramedFilter* adtsFramer
+	    = ADTSAudioStreamDiscreteFramer::createNew(*env, subsession->readSource(),
+						       subsession->fmtp_config());
+	  subsession->addFilter(adtsFramer);
 	}
       }
       if (createOggFileSink) {
@@ -1125,7 +1157,7 @@ void subsessionByeHandler(void* clientData, char const* reason) {
   *env << "Received RTCP \"BYE\"";
   if (reason != NULL) {
     *env << " (reason:\"" << reason << "\")";
-    delete[] reason;
+    delete[] (char*)reason;
   }
   *env << " on \"" << subsession->mediumName()
 	<< "/" << subsession->codecName()
@@ -1163,6 +1195,7 @@ void sessionTimerHandler(void* /*clientData*/) {
 }
 
 void periodicFileOutputTimerHandler(void* /*clientData*/) {
+  periodicFileOutputTask = NULL;
   fileOutputSecondsSoFar += fileOutputInterval;
 
   // First, close the existing output files:
@@ -1435,6 +1468,7 @@ void signalHandlerShutdown(int /*sig*/) {
 }
 
 void checkForPacketArrival(void* /*clientData*/) {
+  arrivalCheckTimerTask = NULL;
   if (!notifyOnPacketArrival) return; // we're not checking
 
   // Check each subsession, to see whether it has received data packets:
@@ -1493,6 +1527,7 @@ void checkForPacketArrival(void* /*clientData*/) {
 }
 
 void checkInterPacketGaps(void* /*clientData*/) {
+  interPacketGapCheckTimerTask = NULL;
   if (interPacketGapMaxTime == 0) return; // we're not checking
 
   // Check each subsession, counting up how many packets have been received:

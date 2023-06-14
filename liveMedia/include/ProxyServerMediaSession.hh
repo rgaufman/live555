@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // C++ header
@@ -68,6 +68,7 @@ private:
 
   void scheduleDESCRIBECommand();
   static void sendDESCRIBE(void* clientData);
+  void sendDESCRIBE();
 
   static void subsessionTimeout(void* clientData);
   void handleSubsessionTimeout();
@@ -128,7 +129,7 @@ public:
     // initialized to 0; set to 1 when the back-end "DESCRIBE" completes.
     // (This can be used as a 'watch variable' in "doEventLoop()".)
   Boolean describeCompletedSuccessfully() const { return fClientMediaSession != NULL; }
-    // This can be used - along with "describeCompletdFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
+    // This can be used - along with "describeCompletedFlag" - to check whether the back-end "DESCRIBE" completed *successfully*.
 
 protected:
   ProxyServerMediaSession(UsageEnvironment& env, GenericMediaServer* ourMediaServer,
@@ -152,7 +153,7 @@ protected:
 
   // Subclasses may redefine the following functions, if they want "ProxyServerSubsession"s
   // to create subclassed "Groupsock" and/or "RTCPInstance" objects:
-  virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
+  virtual Groupsock* createGroupsock(struct sockaddr_storage const& addr, Port port);
   virtual RTCPInstance* createRTCP(Groupsock* RTCPgs, unsigned totSessionBW, /* in kbps */
 				   unsigned char const* cname, RTPSink* sink);
 

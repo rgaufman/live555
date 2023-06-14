@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
 // A class that encapsulates a Matroska file.
 // C++ header
 
@@ -24,12 +24,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _RTP_SINK_HH
 #include "RTPSink.hh"
 #endif
+#ifndef _FILE_SINK_HH
+#include "FileSink.hh"
+#endif
 #ifndef _HASH_TABLE_HH
 #include "HashTable.hh"
 #endif
 
 class MatroskaTrack; // forward
 class MatroskaDemux; // forward
+
+typedef void MatroskaDemuxOnDeletionFunc(void* objectToNotify, MatroskaDemux* demuxBeingDeleted);
 
 class MatroskaFile: public Medium {
 public:
@@ -42,8 +47,9 @@ public:
 
   MatroskaTrack* lookup(unsigned trackNumber) const;
 
-  // Create a demultiplexor for extracting tracks from this file.  (Separate clients will typically have separate demultiplexors.)
-  MatroskaDemux* newDemux();
+  MatroskaDemux* newDemux(MatroskaDemuxOnDeletionFunc* onDeletionFunc = NULL, void* objectToNotify = NULL);
+      // Creates a demultiplexor for extracting tracks from this file.
+      // (Separate clients will typically have separate demultiplexors.)
 
   // Parameters of the file ('Segment'); set when the file is parsed:
   unsigned timecodeScale() { return fTimecodeScale; } // in nanoseconds
@@ -62,10 +68,17 @@ public:
     // Takes a data source (which must be a demultiplexed track from this file) and returns
     // a (possibly modified) data source that can be used for streaming.
 
+  char const* trackMIMEType(unsigned trackNumber) const;
+      // in the form "<medium-name>/<CODEC-NAME>", or NULL if no such track exists
+
   RTPSink* createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock* rtpGroupsock,
 				       unsigned char rtpPayloadTypeIfDynamic);
     // Creates a "RTPSink" object that would be appropriate for streaming the specified track,
     // or NULL if no appropriate "RTPSink" exists
+
+  FileSink* createFileSinkForTrackNumber(unsigned trackNumber, char const* fileName);
+    // Creates a "FileSink" object that would be appropriate for recording the contents of
+    // the specified track, or NULL if no appropriate "FileSink" exists.
 
 private:
   MatroskaFile(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData,
@@ -82,6 +95,22 @@ private:
   void printCuePoints(FILE* fid);
 
   void removeDemux(MatroskaDemux* demux);
+
+  void getH264ConfigData(MatroskaTrack const* track,
+			 u_int8_t*& sps, unsigned& spsSize,
+			 u_int8_t*& pps, unsigned& ppsSize);
+    // "sps","pps" are dynamically allocated by this function, and must be delete[]d afterwards
+  void getH265ConfigData(MatroskaTrack const* track,
+			 u_int8_t*& vps, unsigned& vpsSize,
+			 u_int8_t*& sps, unsigned& spsSize,
+			 u_int8_t*& pps, unsigned& ppsSize);
+    // "vps","sps","pps" are dynamically allocated by this function, and must be delete[]d afterwards
+
+  void getVorbisOrTheoraConfigData(MatroskaTrack const* track,
+				   u_int8_t*& identificationHeader, unsigned& identificationHeaderSize,
+				   u_int8_t*& commentHeader, unsigned& commentHeaderSize,
+				   u_int8_t*& setupHeader, unsigned& setupHeaderSize);
+    // "identificationHeader", "commentHeader", "setupHeader" are dynamically allocated by this function, and must be delete[]d afterwards
 
 private:
   friend class MatroskaFileParser;
@@ -170,9 +199,12 @@ private:
   void removeTrack(unsigned trackNumber);
   void continueReading(); // called by a demuxed track to tell us that it has a pending read ("doGetNextFrame()")
   void seekToTime(double& seekNPT);
+  void pause();
 
   static void handleEndOfFile(void* clientData);
   void handleEndOfFile();
+
+  void resetState();
 
 private:
   MatroskaFile& fOurFile;
