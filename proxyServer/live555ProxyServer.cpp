@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 2 && argv[2][0] != '-') {
-	// The next argument is the HTTP server port number:                                                                       
+	// The next argument is the HTTP server port number:
 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
 	    && tunnelOverHTTPPortNum > 0) {
 	  ++argv; --argc;
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     }
 
     case 'p': {
-      // specify a rtsp server port number 
+      // specify a rtsp server port number
       if (argc > 2 && argv[2][0] != '-') {
         // The next argument is the rtsp server port number:
         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
       usage();
       break;
     }
-    
+
     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
       if (argc < 4) usage(); // there's no argv[3] (for the "password")
       username = argv[2];
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 
     ++argv; --argc;
   }
-  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end 
+  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end
   // Make sure that the remaining arguments appear to be "rtsp://" (or "rtsps://") URLs:
   int i;
   for (i = 1; i < argc; ++i) {

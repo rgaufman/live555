@@ -424,7 +424,7 @@ int main(int argc, char** argv) {
         // (Note: If the input UDP source is unicast rather than multicast, then change this to NULL.)
     portNumBits const inputPortNum = 1234;
         // This causes the server to take its input from the stream sent by the "testMPEG2TransportStreamer" demo application.
-    Boolean const inputStreamIsRawUDP = False;
+    Boolean const inputStreamIsRawUDP = False; 
     ServerMediaSession* sms
       = ServerMediaSession::createNew(*env, streamName, streamName,
 				      descriptionString);

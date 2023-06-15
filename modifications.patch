@@ -1,46 +1,17 @@
-diff -Naur live/README.md live-new/README.md
---- live/README.md	1970-01-01 01:00:00.000000000 +0100
-+++ live-new/README.md	2017-01-28 17:18:26.000000000 +0000
-@@ -0,0 +1,27 @@
-+# Build Instructions
-+
-+```bash
-+./genMakefiles linux
-+make -j4
-+```
-+
-+Replace "linux" with your platform, e.g. avr32-linux, cygwin, freebsd, iphoneos, linux, linux-64bit, macosx, openbsd, solaris-64bit, etc (see config.PLATFORM files)
-+
-+You will find various executables:
-+
-+ * ./testProgs - contain various programs such as testRTSPClient to receive an RTSP stream
-+ * ./proxyServer/live555ProxyServer - a great RTSP proxy server
-+ * ./mediaServer/live555MediaServer - an RTSP media server for serving static files over RTSP
-+
-+# Changes to Master
-+
-+See modifications.patch to see exactly what was changed compared to vanilla.
-+
-+### Buffer sizes
-+
-+OutPacketBuffer::maxSize is increased to 2,000,000 bytes which makes live555 work better with buggy IP cameras.
-+
-+### Force port re-use
-+
-+Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure
-+you never run multiple instances of the proxy on the same port!
-diff -Naur live/config.linux live-new/config.linux
---- live/config.linux	2017-01-26 11:33:01.000000000 +0000
-+++ live-new/config.linux	2017-01-28 17:19:24.000000000 +0000
+Binary files live/.DS_Store and live-new/.DS_Store differ
+diff --color -ruN live/config.linux live-new/config.linux
+--- live/config.linux	2023-06-14 08:05:16
++++ live-new/config.linux	2023-06-15 11:27:30
 @@ -1,4 +1,4 @@
--COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
-+COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DALLOW_RTSP_SERVER_PORT_REUSE=1
+-COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
++COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DALLOW_RTSP_SERVER_PORT_REUSE=1
  C =			c
  C_COMPILER =		cc
  C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
-diff -Naur live/liveMedia/MediaSink.cpp live-new/liveMedia/MediaSink.cpp
---- live/liveMedia/MediaSink.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/liveMedia/MediaSink.cpp	2017-01-28 17:19:49.000000000 +0000
+Binary files live/liveMedia/.DS_Store and live-new/liveMedia/.DS_Store differ
+diff --color -ruN live/liveMedia/MediaSink.cpp live-new/liveMedia/MediaSink.cpp
+--- live/liveMedia/MediaSink.cpp	2023-06-14 08:04:21
++++ live-new/liveMedia/MediaSink.cpp	2023-06-15 11:54:20
 @@ -110,7 +110,7 @@
  
  ////////// OutPacketBuffer //////////
@@ -50,10 +21,238 @@ diff -Naur live/liveMedia/MediaSink.cpp live-new/liveMedia/MediaSink.cpp
  
  OutPacketBuffer
  ::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
-diff -Naur live/mediaServer/DynamicRTSPServer.cpp live-new/mediaServer/DynamicRTSPServer.cpp
---- live/mediaServer/DynamicRTSPServer.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/mediaServer/DynamicRTSPServer.cpp	2017-01-28 17:20:30.000000000 +0000
-@@ -138,12 +138,12 @@
+diff --color -ruN live/liveMedia/ProxyServerMediaSession.cpp live-new/liveMedia/ProxyServerMediaSession.cpp
+--- live/liveMedia/ProxyServerMediaSession.cpp	2023-06-14 08:04:21
++++ live-new/liveMedia/ProxyServerMediaSession.cpp	2023-06-15 11:20:32
+@@ -75,9 +75,9 @@
+ 				    char const* rtspURL,
+ 				    char const* username, char const* password,
+ 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+-				    int socketNumToServer) {
++				    int socketNumToServer, unsigned interPacketGapMaxTime) {
+   return new ProxyRTSPClient(ourServerMediaSession, rtspURL, username, password,
+-			     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer);
++			     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer, interPacketGapMaxTime);
+ }
+ 
+ ProxyServerMediaSession* ProxyServerMediaSession
+@@ -85,10 +85,10 @@
+ 	    char const* inputStreamURL, char const* streamName,
+ 	    char const* username, char const* password,
+ 	    portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
+-	    MediaTranscodingTable* transcodingTable) {
++	    MediaTranscodingTable* transcodingTable, unsigned interPacketGapMaxTime) {
+   return new ProxyServerMediaSession(env, ourMediaServer, inputStreamURL, streamName, username, password,
+ 				     tunnelOverHTTPPortNum, verbosityLevel, socketNumToServer,
+-				     transcodingTable);
++				     transcodingTable, interPacketGapMaxTime);
+ }
+ 
+ 
+@@ -99,6 +99,7 @@
+ 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+ 			  int socketNumToServer,
+ 			  MediaTranscodingTable* transcodingTable,
++			  unsigned interPacketGapMaxTime,
+ 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc,
+ 			  portNumBits initialPortNum, Boolean multiplexRTCPWithRTP)
+   : ServerMediaSession(env, streamName, NULL, NULL, False, NULL),
+@@ -114,7 +115,7 @@
+     = (*fCreateNewProxyRTSPClientFunc)(*this, inputStreamURL, username, password,
+ 				       tunnelOverHTTPPortNum,
+ 				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
+-				       socketNumToServer);
++				       socketNumToServer, interPacketGapMaxTime);
+   fProxyRTSPClient->sendDESCRIBE();
+ }
+ 
+@@ -244,13 +245,16 @@
+ 
+ ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
+ 				 char const* username, char const* password,
+-				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer)
++				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer, 
++				 unsigned interPacketGapMaxTime)
+   : RTSPClient(ourServerMediaSession.envir(), rtspURL, verbosityLevel, "ProxyRTSPClient",
+ 	       tunnelOverHTTPPortNum == (portNumBits)(~0) ? 0 : tunnelOverHTTPPortNum, socketNumToServer),
+     fOurServerMediaSession(ourServerMediaSession), fOurURL(strDup(rtspURL)), fStreamRTPOverTCP(tunnelOverHTTPPortNum != 0),
+     fSetupQueueHead(NULL), fSetupQueueTail(NULL), fNumSetupsDone(0), fNextDESCRIBEDelay(1),
++    fTotNumPacketsReceived(~0), fInterPacketGapMaxTime(interPacketGapMaxTime),
+     fServerSupportsGetParameter(False), fLastCommandWasPLAY(False), fDoneDESCRIBE(False),
+-    fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL), fResetTask(NULL) {
++    fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL), fResetTask(NULL),
++    fInterPacketGapsTask(NULL) { 
+   if (username != NULL && password != NULL) {
+     fOurAuthenticator = new Authenticator(username, password);
+   } else {
+@@ -263,11 +267,13 @@
+   envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask);
+   envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask);
+   envir().taskScheduler().unscheduleDelayedTask(fResetTask);
++  envir().taskScheduler().unscheduleDelayedTask(fInterPacketGapsTask); fInterPacketGapsTask = NULL;
+ 
+   fSetupQueueHead = fSetupQueueTail = NULL;
+   fNumSetupsDone = 0;
+   fNextDESCRIBEDelay = 1;
+   fLastCommandWasPLAY = False;
++  fTotNumPacketsReceived = ~0;
+   fDoneDESCRIBE = False;
+ 
+   RTSPClient::reset();
+@@ -397,6 +403,7 @@
+     scheduleReset();
+     return;
+   }
++  if (fInterPacketGapsTask == NULL) checkInterPacketGaps_(True);
+ }
+ 
+ void ProxyRTSPClient::scheduleLivenessCommand() {
+@@ -438,6 +445,45 @@
+ #endif
+ }
+ 
++void ProxyRTSPClient::checkInterPacketGaps_(Boolean delayReset) {
++  if (fInterPacketGapMaxTime == 0) return; // we're not checking
++
++  // Check each subsession, counting up how many packets have been received:
++  unsigned newTotNumPacketsReceived = 0;
++
++  MediaSubsessionIterator iter(*fOurServerMediaSession.fClientMediaSession);
++  MediaSubsession* subsession;
++  while ((subsession = iter.next()) != NULL) {
++    RTPSource* src = subsession->rtpSource();
++    if (src == NULL) continue;
++    newTotNumPacketsReceived += src->receptionStatsDB().totNumPacketsReceived();
++  }
++
++  //envir() << *this << "::doLivenessCheck fTotNumPacketsReceived: " << fTotNumPacketsReceived
++  //                   << ", newTotNumPacketsReceived: " << newTotNumPacketsReceived << "\n";
++
++  if (newTotNumPacketsReceived == fTotNumPacketsReceived) {
++    // No additional packets have been received since the last time we
++    // checked, so end this stream:
++    // *env << "Closing session, because we stopped receiving packets.\n";
++    if (fVerbosityLevel > 0) {
++      envir() << *this << "::doLivenessCheck last packet received: >" << fInterPacketGapMaxTime 
++                       << " seconds ago. Resetting session\n";
++    }
++    if (delayReset) scheduleReset();
++    else doReset();
++  } else {
++    fTotNumPacketsReceived = newTotNumPacketsReceived;
++    // Check again, after the specified delay:
++    fInterPacketGapsTask = envir().taskScheduler().scheduleDelayedTask(fInterPacketGapMaxTime*MILLION, checkInterPacketGaps, this);
++  }
++}
++
++void ProxyRTSPClient::checkInterPacketGaps(void* clientData) {
++  ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
++  rtspClient->checkInterPacketGaps_(False);
++}
++
+ void ProxyRTSPClient::scheduleReset() {
+   if (fVerbosityLevel > 0) {
+     envir() << "ProxyRTSPClient::scheduleReset\n";
+@@ -663,6 +709,7 @@
+ 	// Send a "PAUSE" for the whole stream.
+ 	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession.parentSession(), NULL, proxyRTSPClient->auth());
+ 	proxyRTSPClient->fLastCommandWasPLAY = False;
++	envir().taskScheduler().unscheduleDelayedTask(proxyRTSPClient->fInterPacketGapsTask); proxyRTSPClient->fInterPacketGapsTask = NULL;
+       }
+     }
+   }
+diff --color -ruN live/liveMedia/include/ProxyServerMediaSession.hh live-new/liveMedia/include/ProxyServerMediaSession.hh
+--- live/liveMedia/include/ProxyServerMediaSession.hh	2023-06-14 08:04:21
++++ live-new/liveMedia/include/ProxyServerMediaSession.hh	2023-06-15 11:18:54
+@@ -43,7 +43,8 @@
+ public:
+   ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
+                   char const* username, char const* password,
+-                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer);
++                  portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
++                  unsigned interPacketGapMaxTime = 0);
+   virtual ~ProxyRTSPClient();
+ 
+   void continueAfterDESCRIBE(char const* sdpDescription);
+@@ -60,6 +61,8 @@
+ 
+   void scheduleLivenessCommand();
+   static void sendLivenessCommand(void* clientData);
++  void checkInterPacketGaps_(Boolean delayReset);
++  static void checkInterPacketGaps(void* clientData);
+   void doReset();
+   static void doReset(void* clientData);
+ 
+@@ -80,8 +83,10 @@
+   class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
+   unsigned fNumSetupsDone;
+   unsigned fNextDESCRIBEDelay; // in seconds
++  unsigned fTotNumPacketsReceived;
++  unsigned fInterPacketGapMaxTime; // in seconds
+   Boolean fServerSupportsGetParameter, fLastCommandWasPLAY, fDoneDESCRIBE;
+-  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fResetTask;
++  TaskToken fLivenessCommandTask, fDESCRIBECommandTask, fSubsessionTimerTask, fResetTask, fInterPacketGapsTask;
+ };
+ 
+ 
+@@ -90,13 +95,13 @@
+ 			     char const* rtspURL,
+ 			     char const* username, char const* password,
+ 			     portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+-			     int socketNumToServer);
++			     int socketNumToServer, unsigned interPacketGapMaxTime);
+ ProxyRTSPClient*
+ defaultCreateNewProxyRTSPClientFunc(ProxyServerMediaSession& ourServerMediaSession,
+ 				    char const* rtspURL,
+ 				    char const* username, char const* password,
+ 				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+-				    int socketNumToServer);
++				    int socketNumToServer, unsigned interPacketGapMaxTime);
+ 
+ class ProxyServerMediaSession: public ServerMediaSession {
+ public:
+@@ -109,7 +114,8 @@
+ 					        // for streaming the *proxied* (i.e., back-end) stream
+ 					    int verbosityLevel = 0,
+ 					    int socketNumToServer = -1,
+-					    MediaTranscodingTable* transcodingTable = NULL);
++					    MediaTranscodingTable* transcodingTable = NULL,
++					    unsigned interPacketGapMaxTime = 0);
+       // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
+       // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
+       // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
+@@ -132,6 +138,7 @@
+ 			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
+ 			  int socketNumToServer,
+ 			  MediaTranscodingTable* transcodingTable,
++			  unsigned interPacketGapMaxTime = 0,
+ 			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
+ 			  = defaultCreateNewProxyRTSPClientFunc,
+ 			  portNumBits initialPortNum = 6970,
+diff --color -ruN live/mediaServer/DynamicRTSPServer.cpp live-new/mediaServer/DynamicRTSPServer.cpp
+--- live/mediaServer/DynamicRTSPServer.cpp	2023-06-14 08:04:21
++++ live-new/mediaServer/DynamicRTSPServer.cpp	2023-06-15 11:54:19
+@@ -68,15 +68,15 @@
+ 
+     sms = NULL;
+   } else {
+-    if (smsExists && isFirstLookupInSession) { 
++    if (smsExists && isFirstLookupInSession) {
+       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
+       // file has changed in some way:
+-      removeServerMediaSession(sms); 
++      removeServerMediaSession(sms);
+       sms = NULL;
+-    } 
++    }
+ 
+     if (sms == NULL) {
+-      sms = createNewSMS(envir(), streamName, fid); 
++      sms = createNewSMS(envir(), streamName, fid);
+       addServerMediaSession(sms);
+     }
+ 
+@@ -145,12 +145,12 @@
    } else if (strcmp(extension, ".264") == 0) {
      // Assumed to be a H.264 Video Elementary Stream file:
      NEW_SMS("H.264 Video");
@@ -68,7 +267,7 @@ diff -Naur live/mediaServer/DynamicRTSPServer.cpp live-new/mediaServer/DynamicRT
      sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
    } else if (strcmp(extension, ".mp3") == 0) {
      // Assumed to be a MPEG-1 or 2 Audio file:
-@@ -199,13 +199,13 @@
+@@ -206,13 +206,13 @@
    } else if (strcmp(extension, ".dv") == 0) {
      // Assumed to be a DV Video file
      // First, make sure that the RTPSinks' buffers will be large enough to handle the huge size of DV frames (as big as 288000).
@@ -79,15 +278,31 @@ diff -Naur live/mediaServer/DynamicRTSPServer.cpp live-new/mediaServer/DynamicRT
      sms->addSubsession(DVVideoFileServerMediaSubsession::createNew(env, fileName, reuseSource));
    } else if (strcmp(extension, ".mkv") == 0 || strcmp(extension, ".webm") == 0) {
      // Assumed to be a Matroska file (note that WebM ('.webm') files are also Matroska files)
--    OutPacketBuffer::maxSize = 100000; // allow for some possibly large VP8 or VP9 frames
+-    OutPacketBuffer::maxSize = 300000; // allow for some possibly large VP8 or VP9 frames
 +    OutPacketBuffer::maxSize = 2000000; // allow for some possibly large VP8 or VP9 frames
      NEW_SMS("Matroska video+audio+(optional)subtitles");
  
      // Create a Matroska file server demultiplexor for the specified file.
-diff -Naur live/proxyServer/live555ProxyServer.cpp live-new/proxyServer/live555ProxyServer.cpp
---- live/proxyServer/live555ProxyServer.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/proxyServer/live555ProxyServer.cpp	2017-01-28 17:20:56.000000000 +0000
-@@ -58,7 +58,7 @@
+diff --color -ruN live/proxyServer/live555ProxyServer.cpp live-new/proxyServer/live555ProxyServer.cpp
+--- live/proxyServer/live555ProxyServer.cpp	2023-06-14 08:04:21
++++ live-new/proxyServer/live555ProxyServer.cpp	2023-06-15 11:54:18
+@@ -35,6 +35,7 @@
+ Boolean proxyREGISTERRequests = False;
+ char* usernameForREGISTER = NULL;
+ char* passwordForREGISTER = NULL;
++unsigned interPacketGapMaxTime = 0;
+ 
+ static RTSPServer* createRTSPServer(Port port) {
+   if (proxyREGISTERRequests) {
+@@ -51,6 +52,7 @@
+        << " [-p <rtspServer-port>]"
+        << " [-u <username> <password>]"
+        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
++       << " [-D <max-inter-packet-gap-time>]"
+        << " <rtsp-url-1> ... <rtsp-url-n>\n";
+   exit(1);
+ }
+@@ -58,7 +60,7 @@
  int main(int argc, char** argv) {
    // Increase the maximum size of video frames that we can 'proxy' without truncation.
    // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
@@ -96,10 +311,75 @@ diff -Naur live/proxyServer/live555ProxyServer.cpp live-new/proxyServer/live555P
  
    // Begin by setting up our usage environment:
    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-diff -Naur live/testProgs/testDVVideoStreamer.cpp live-new/testProgs/testDVVideoStreamer.cpp
---- live/testProgs/testDVVideoStreamer.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/testProgs/testDVVideoStreamer.cpp	2017-01-28 17:22:18.000000000 +0000
-@@ -55,7 +55,7 @@
+@@ -98,7 +100,7 @@
+     case 'T': {
+       // stream RTP and RTCP over a HTTP connection
+       if (argc > 2 && argv[2][0] != '-') {
+-	// The next argument is the HTTP server port number:                                                                       
++	// The next argument is the HTTP server port number:
+ 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
+ 	    && tunnelOverHTTPPortNum > 0) {
+ 	  ++argv; --argc;
+@@ -112,7 +114,7 @@
+     }
+ 
+     case 'p': {
+-      // specify a rtsp server port number 
++      // specify a rtsp server port number
+       if (argc > 2 && argv[2][0] != '-') {
+         // The next argument is the rtsp server port number:
+         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
+@@ -126,7 +128,7 @@
+       usage();
+       break;
+     }
+-    
++
+     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
+       if (argc < 4) usage(); // there's no argv[3] (for the "password")
+       username = argv[2];
+@@ -151,6 +153,19 @@
+       break;
+     }
+ 
++    case 'D': { // specify maximum number of seconds to wait for packets:
++      if (argc > 2 && argv[2][0] != '-') {
++        if (sscanf(argv[2], "%u", &interPacketGapMaxTime) == 1) {
++          ++argv; --argc;
++          break;
++        }
++      }
++
++      // If we get here, the option was specified incorrectly:
++      usage();
++      break;
++    }
++
+     default: {
+       usage();
+       break;
+@@ -159,7 +174,7 @@
+ 
+     ++argv; --argc;
+   }
+-  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end 
++  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end
+   // Make sure that the remaining arguments appear to be "rtsp://" (or "rtsps://") URLs:
+   int i;
+   for (i = 1; i < argc; ++i) {
+@@ -221,7 +236,7 @@
+     ServerMediaSession* sms
+       = ProxyServerMediaSession::createNew(*env, rtspServer,
+ 					   proxiedStreamURL, streamName,
+-					   username, password, tunnelOverHTTPPortNum, verbosityLevel);
++					   username, password, tunnelOverHTTPPortNum, verbosityLevel, -1, NULL, interPacketGapMaxTime);
+     rtspServer->addServerMediaSession(sms);
+ 
+     char* proxyStreamURL = rtspServer->rtspURL(sms);
+diff --color -ruN live/testProgs/testDVVideoStreamer.cpp live-new/testProgs/testDVVideoStreamer.cpp
+--- live/testProgs/testDVVideoStreamer.cpp	2023-06-14 08:04:21
++++ live-new/testProgs/testDVVideoStreamer.cpp	2023-06-15 11:54:18
+@@ -58,7 +58,7 @@
  
    // Create a 'DV Video RTP' sink from the RTP 'groupsock':
    // (But first, make sure that its buffers will be large enough to handle the huge size of DV frames (as big as 288000).)
@@ -108,10 +388,10 @@ diff -Naur live/testProgs/testDVVideoStreamer.cpp live-new/testProgs/testDVVideo
    videoSink = DVVideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff -Naur live/testProgs/testH264VideoStreamer.cpp live-new/testProgs/testH264VideoStreamer.cpp
---- live/testProgs/testH264VideoStreamer.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/testProgs/testH264VideoStreamer.cpp	2017-01-28 17:22:24.000000000 +0000
-@@ -60,7 +60,7 @@
+diff --color -ruN live/testProgs/testH264VideoStreamer.cpp live-new/testProgs/testH264VideoStreamer.cpp
+--- live/testProgs/testH264VideoStreamer.cpp	2023-06-14 08:04:21
++++ live-new/testProgs/testH264VideoStreamer.cpp	2023-06-15 11:54:17
+@@ -63,7 +63,7 @@
    rtcpGroupsock.multicastSendOnly(); // we're a SSM source
  
    // Create a 'H264 Video RTP' sink from the RTP 'groupsock':
@@ -120,10 +400,10 @@ diff -Naur live/testProgs/testH264VideoStreamer.cpp live-new/testProgs/testH264V
    videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff -Naur live/testProgs/testH265VideoStreamer.cpp live-new/testProgs/testH265VideoStreamer.cpp
---- live/testProgs/testH265VideoStreamer.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/testProgs/testH265VideoStreamer.cpp	2017-01-28 17:22:29.000000000 +0000
-@@ -61,7 +61,7 @@
+diff --color -ruN live/testProgs/testH265VideoStreamer.cpp live-new/testProgs/testH265VideoStreamer.cpp
+--- live/testProgs/testH265VideoStreamer.cpp	2023-06-14 08:04:21
++++ live-new/testProgs/testH265VideoStreamer.cpp	2023-06-15 11:54:17
+@@ -64,7 +64,7 @@
    rtcpGroupsock.multicastSendOnly(); // we're a SSM source
  
    // Create a 'H265 Video RTP' sink from the RTP 'groupsock':
@@ -132,10 +412,10 @@ diff -Naur live/testProgs/testH265VideoStreamer.cpp live-new/testProgs/testH265V
    videoSink = H265VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff -Naur live/testProgs/testOnDemandRTSPServer.cpp live-new/testProgs/testOnDemandRTSPServer.cpp
---- live/testProgs/testOnDemandRTSPServer.cpp	2017-01-26 11:29:37.000000000 +0000
-+++ live-new/testProgs/testOnDemandRTSPServer.cpp	2017-01-28 17:22:34.000000000 +0000
-@@ -265,7 +265,7 @@
+diff --color -ruN live/testProgs/testOnDemandRTSPServer.cpp live-new/testProgs/testOnDemandRTSPServer.cpp
+--- live/testProgs/testOnDemandRTSPServer.cpp	2023-06-14 08:04:21
++++ live-new/testProgs/testOnDemandRTSPServer.cpp	2023-06-15 11:54:17
+@@ -280,7 +280,7 @@
    // A DV video stream:
    {
      // First, make sure that the RTPSinks' buffers will be large enough to handle the huge size of DV frames (as big as 288000).
@@ -144,12 +424,3 @@ diff -Naur live/testProgs/testOnDemandRTSPServer.cpp live-new/testProgs/testOnDe
  
      char const* streamName = "dvVideoTest";
      char const* inputFileName = "test.dv";
-@@ -409,7 +409,7 @@
-         // (Note: If the input UDP source is unicast rather than multicast, then change this to NULL.)
-     portNumBits const inputPortNum = 1234;
-         // This causes the server to take its input from the stream sent by the "testMPEG2TransportStreamer" demo application.
--    Boolean const inputStreamIsRawUDP = False; 
-+    Boolean const inputStreamIsRawUDP = False;
-     ServerMediaSession* sms
-       = ServerMediaSession::createNew(*env, streamName, streamName,
- 				      descriptionString);

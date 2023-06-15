@@ -68,15 +68,15 @@ void DynamicRTSPServer
 
     sms = NULL;
   } else {
-    if (smsExists && isFirstLookupInSession) { 
+    if (smsExists && isFirstLookupInSession) {
       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
       // file has changed in some way:
-      removeServerMediaSession(sms); 
+      removeServerMediaSession(sms);
       sms = NULL;
-    } 
+    }
 
     if (sms == NULL) {
-      sms = createNewSMS(envir(), streamName, fid); 
+      sms = createNewSMS(envir(), streamName, fid);
       addServerMediaSession(sms);
     }
 
