@@ -20,7 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "BasicUsageEnvironment.hh"
 #include "HandlerSet.hh"
-#include <stdio.h>
+#include "CommonIO.hh"
 #if defined(_QNX4)
 #include <sys/select.h>
 #include <unix.h>
@@ -63,7 +63,7 @@ void BasicTaskScheduler::schedulerTickTask() {
 #define MILLION 1000000
 #endif
 
-void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
+void BasicTaskScheduler::SingleStep(unsigned int maxDelayTime) {
   fd_set readSet = fReadSet; // make a copy for this select() call
   fd_set writeSet = fWriteSet; // ditto
   fd_set exceptionSet = fExceptionSet; // ditto
@@ -207,6 +207,11 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
       } while (i != fLastUsedTriggerNum);
     }
   }
+
+// Give event processing some space to do the work
+#ifdef ARDUINO
+  yield();
+#endif 
 
   // Also handle any delayed event that may have come due.
   fDelayQueue.handleAlarm();

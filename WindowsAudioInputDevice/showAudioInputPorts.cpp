@@ -17,7 +17,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // A program that prints out this computer's audio input ports
 
 #include "AudioInputDevice.hh"
-#include <stdio.h>
+#include "CommonIO.hh"
 
 int main(int argc, char** argv) {
 	AudioPortNames* portNames = AudioInputDevice::getPortNames();

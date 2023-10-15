@@ -20,7 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Groupsock.hh"
 #include "GroupsockHelper.hh"
 #include "BasicUsageEnvironment.hh"
-#include <stdio.h>
+#include "CommonIO.hh"
 
 static unsigned const maxPacketSize = 65536;
 static unsigned char packet[maxPacketSize+1];

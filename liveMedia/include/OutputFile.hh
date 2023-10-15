@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define _OUTPUT_FILE_HH
 
 #include <UsageEnvironment.hh>
-#include <stdio.h>
+#include "CommonIO.hh"
 
 FILE* OpenOutputFile(UsageEnvironment& env, char const* fileName);
 

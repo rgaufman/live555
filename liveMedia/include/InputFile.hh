@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define _INPUT_FILE_HH
 
 #include <UsageEnvironment.hh>
-#include <stdio.h>
+#include "CommonIO.hh"
 
 #if (defined(__WIN32__) || defined(_WIN32) || defined(_WIN32_WCE))
 #ifndef _WIN32_WCE

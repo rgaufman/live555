@@ -21,6 +21,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _GROUPSOCK_HELPER_HH
 #define _GROUPSOCK_HELPER_HH
 
+#ifdef ARDUINO
+#include "ArduinoHelper.hh"
+#include "Config.hh"
+#endif
+
 #ifndef _NET_ADDRESS_HH
 #include "NetAddress.hh"
 #endif
@@ -159,7 +164,7 @@ extern int gettimeofday(struct timeval*, int*);
 #endif
 
 // The following are implemented in inet.c:
-extern "C" void our_srandom(int x);
+extern "C" void our_srandom(unsigned int x);
 extern "C" long our_random();
 extern "C" u_int32_t our_random32(); // because "our_random()" returns a 31-bit number
 

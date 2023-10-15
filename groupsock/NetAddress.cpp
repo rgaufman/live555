@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "GroupsockHelper.hh"
 
 #include <stddef.h>
-#include <stdio.h>
+#include "CommonIO.hh"
 
 #ifndef INADDR_NONE
 #define INADDR_NONE 0xFFFFFFFF

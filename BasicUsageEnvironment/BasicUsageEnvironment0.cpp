@@ -18,7 +18,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "BasicUsageEnvironment0.hh"
-#include <stdio.h>
+#include "CommonIO.hh"
 #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN32_WCE)
 #define snprintf _snprintf
 #endif

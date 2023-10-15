@@ -24,6 +24,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "MIKEY.hh"
 #endif
 
+#ifdef ARDUINO
+#include "Config.hh"
+#endif
+
 class SRTPCryptographicContext {
 public:
   SRTPCryptographicContext(MIKEYState const& mikeyState);

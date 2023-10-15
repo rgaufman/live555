@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "RTPInterface.hh"
 #include <GroupsockHelper.hh>
-#include <stdio.h>
+#include "CommonIO.hh"
 
 ////////// Helper Functions - Definition //////////
 

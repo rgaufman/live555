@@ -2,7 +2,7 @@
 #include "NetCommon.h"
 #endif
 
-#include <stdio.h>
+#include "CommonIO.hh"
 
 #ifdef VXWORKS
 #include <inetLib.h>

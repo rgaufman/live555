@@ -24,7 +24,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef NO_SSTREAM
 #include <sstream>
 #endif
-#include <stdio.h>
+#include "CommonIO.hh"
 
 ////////// NetInterface //////////
 

@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ourMD5.hh"
 #include <strDup.hh>
 #include <GroupsockHelper.hh> // for gettimeofday()
-#include <stdio.h>
+#include "CommonIO.hh"
 #include <stdlib.h>
 #include <string.h>
 

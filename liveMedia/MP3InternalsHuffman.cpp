@@ -19,7 +19,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "MP3InternalsHuffman.hh"
-#include <stdio.h>
+#include "CommonIO.hh"
 #include <string.h>
 #include <stdlib.h>
 

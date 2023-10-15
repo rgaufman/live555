@@ -1,6 +1,6 @@
 // Parses MIKEY data (from Base64)
 
-#include <stdio.h>
+#include "CommonIO.hh"
 #include <stdlib.h>
 #include <Base64.hh>
 #include <NetCommon.h>

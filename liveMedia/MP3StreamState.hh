@@ -34,7 +34,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "NetCommon.h"
 #endif
 
-#include <stdio.h>
+#include "CommonIO.hh"
 
 #define XING_TOC_LENGTH 100
 

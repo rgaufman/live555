@@ -62,7 +62,7 @@ protected:
 
 protected:
   // Redefined virtual functions:
-  virtual void SingleStep(unsigned maxDelayTime);
+  virtual void SingleStep(unsigned maxDelayTime=0);
 
   virtual void setBackgroundHandling(int socketNum, int conditionSet, BackgroundHandlerProc* handlerProc, void* clientData);
   virtual void moveSocketHandling(int oldSocketNum, int newSocketNum);

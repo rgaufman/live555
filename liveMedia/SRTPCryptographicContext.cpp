@@ -26,7 +26,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #ifdef DEBUG
-#include <stdio.h>
+#include "CommonIO.hh"
 #endif
 
 SRTPCryptographicContext

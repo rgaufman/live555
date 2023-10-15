@@ -37,7 +37,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _NET_COMMON_H
 #include "NetCommon.h"
 #endif
-#include <stdio.h>
+#include "CommonIO.hh"
 
 // The following makes the Borland compiler happy:
 #ifdef __BORLANDC__

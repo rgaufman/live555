@@ -25,7 +25,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <stddef.h>
 #endif
 #include <string.h>
-#include <stdio.h>
+#include "CommonIO.hh"
 
 // When there are this many entries per bucket, on average, rebuild
 // the table to increase the number of buckets

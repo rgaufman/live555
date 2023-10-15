@@ -20,6 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #ifndef _NET_COMMON_H
 #define _NET_COMMON_H
+#include "CommonIO.hh"
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN32_WCE)
 /* Windows */
@@ -66,6 +67,11 @@ typedef unsigned short u_int16_t;
 
 typedef unsigned char u_int8_t;
 
+#ifdef ARDUINO
+//#include <WiFi.h> // before lwip RE: https://github.com/espressif/arduino-esp32/issues/4405
+#define IPADDR_NONE         ((uint32_t)0xffffffffUL)
+#endif
+
 // For "uintptr_t" and "intptr_t", we assume that if they're not already defined, then this must be
 // an old, 32-bit version of Windows:
 #if !defined(_MSC_STDINT_H_) && !defined(_UINTPTR_T_DEFINED) && !defined(_UINTPTR_T_DECLARED) && !defined(_UINTPTR_T)
@@ -89,6 +95,17 @@ typedef unsigned int u_int32_t;
 typedef unsigned short u_int16_t;
 typedef unsigned char u_int8_t;
 
+#elif defined(ARDUINO_ARCH_RP2040) 
+#include "lwip/sockets.h"
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <strings.h>
+#include <ctype.h>
+#include <stdint.h>
 #else
 /* Unix */
 #include <sys/types.h>
@@ -122,5 +139,7 @@ typedef unsigned char u_int8_t;
 #ifndef SOCKLEN_T
 #define SOCKLEN_T int
 #endif
+
+
 
 #endif

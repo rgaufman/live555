@@ -21,6 +21,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _TLS_STATE_HH
 #define _TLS_STATE_HH
 
+#ifdef ARDUINO
+#include "Config.hh"
+#endif
+
 #ifndef _NET_COMMON_H
 #include "NetCommon.h"
 #endif

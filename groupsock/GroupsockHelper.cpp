@@ -27,7 +27,7 @@ extern "C" int initializeWinsockIfNecessary();
 #include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(ARDUINO)
 #include <netinet/tcp.h>
 #ifdef __ANDROID_NDK__
 #include <android/ndk-version.h>
@@ -37,16 +37,16 @@ extern "C" int initializeWinsockIfNecessary();
 #include <fcntl.h>
 #define initializeWinsockIfNecessary() 1
 #endif
-#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
+#if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4) || defined(ARDUINO)
 #else
 #include <signal.h>
 #define USE_SIGNALS 1
 #endif
-#ifndef NO_GETIFADDRS
+#if !defined(NO_GETIFADDRS) && !defined(ARDUINO)
 #include <ifaddrs.h>
 #include <net/if.h>
 #endif
-#include <stdio.h>
+#include "CommonIO.hh"
 
 // By default, use INADDR_ANY for the sending and receiving interfaces (IPv4 only):
 ipv4AddressBits SendingInterfaceAddr = INADDR_ANY;
@@ -129,7 +129,7 @@ int setupDatagramSocket(UsageEnvironment& env, Port port, int domain) {
     return -1;
   }
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__) || defined(_WIN32) || defined(ARDUINO)
   // Windoze doesn't properly handle SO_REUSEPORT or IP_MULTICAST_LOOP
 #else
 #ifdef SO_REUSEPORT
@@ -316,7 +316,7 @@ int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
   // normally don't set them.  However, if you really want to do this
   // #define REUSE_FOR_TCP
 #ifdef REUSE_FOR_TCP
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__) || defined(_WIN32) || defined(ARDUINO)
   // Windoze doesn't properly handle SO_REUSEPORT
 #else
 #ifdef SO_REUSEPORT

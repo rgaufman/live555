@@ -23,7 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "NetCommon.h"
 #include "Boolean.hh"
-#include <stdio.h>
+#include "CommonIO.hh"
 
 #define EBML_NUMBER_MAX_LEN 8
 

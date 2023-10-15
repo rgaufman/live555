@@ -25,7 +25,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #define _RTCP_FROM_SPEC_H
 
 #include <stdlib.h>
-
 /* Definitions of _ANSI_ARGS and EXTERN that will work in either
    C or C++ code:
  */
@@ -64,11 +63,14 @@ typedef void* packet;
 #define drand48 drand30
 
 /* The code calls "exit()", but we don't want to exit, so make it a noop: */
+#ifndef ARDUINO
 #define exit(n) do {} while (0)
+#endif
 
 #ifndef FALSE
 #define FALSE 0
 #endif
+
 #ifndef TRUE
 #define TRUE 1
 #endif

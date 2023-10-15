@@ -22,7 +22,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include <stdlib.h>
 #include <math.h>
-#include <stdio.h>
+#include "CommonIO.hh"
 #include <string.h>
 
 // This is crufty old code that needs to be cleaned up #####
