@@ -21,52 +21,13 @@ The biggest challenge was with the last point. Unfortunately Arduino does not pr
 - Stream Audio or Video to a Microcontroller
 - Stream Audio or Video from a Microcontroller and play it e.g. with the help of the VLC Player
 
-
-### Example Sketch
-
-I have also created a simple mp3 streaming API. Here is an example that uses the [SdFat library](https://github.com/greiman/SdFat) from Bill Greiman to access the files on a SD card:
- 
-
-```
-#include "FileAccessSdFat.hh"
-#include "SimpleStreamer.hh"
-
-SimpleMP3Streamer mp3(new FileAccessSdFat());
-
-void setup() {
-  Serial.begin(115200);
-
-  auto cfg = mp3.defaultConfig();
-  cfg.destinationAddress = "192.168.1.255";
-  cfg.filePath = "/Music/Conquistadores.mp3";
-  cfg.isAutoRestart = true;
-  cfg.ssid = "SSID";
-  cfg.password = "password";
-
-  if (mp3.begin(cfg)){
-    mp3.play();
-  }
-}
-
-
-void loop() {
-  mp3.singleStep();
-}
-```
-In the constructor of the [SimpleMP3Streamer](https://pschatzmann.github.io/live555/html/class_simple_m_p3_streamer.html) we need to indicate the file access class. For starting the streaming we need to provide __a file__ and __the destination ip__ address: ```192.168.1.255``` is a broadcast address. This is done with the help of the [SimpleStreamerConfig](https://pschatzmann.github.io/live555/html/struct_simple_streamer_config.html). 
-If we did not start the network yet we need to provide the ssid and password.  The ```cfg.isAutoRestart = true;``` is making shure that when the end of the file is reached that we restart again. I also provide the afterPlayingCallback method which can be used to select a new file and "restart playing"... 
-
-### VLC Player
-
-The VLC Player can be used to receive the streamed music. Just use -> File -> Open Network and enter the ```udp://@:6666``` address. 
-
 ### Class Documentation
 
 Here is the [generated class documentation](https://pschatzmann.github.io/arduino-live555/html/classes.html)
 
 ### Project Status
 
-I am really struggeling to make this work. The sound is breaking up and I did not find so far what is causing this.
+The RTSP Player is working fine but I am really struggeling to make the streaming work. The sound is breaking up and I did not find so far what is causing this. The 
 
 ### Installation
 
@@ -80,3 +41,5 @@ git clone pschatzmann/arduino-live555.git
 I recommend to use the git method, so that you can simply get updates by executing the ```git pull``` command in the arduino-live555 library folder.
 
 For building and running the code on your desktop, please consult the original [build instructions](https://github.com/pschatzmann/arduino-live555/blob/master/BUILD.md)
+
+Please note that this library only works properly for environments that can handle __symbolic links correctly__. 

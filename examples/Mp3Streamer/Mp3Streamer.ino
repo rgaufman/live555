@@ -17,7 +17,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // A simple demo sketch that streams a streamer file via RTP/RTCP
 
 #include "FileAccessSdFat.hh"
-#include "SimpleStreamer.hh"
+#include "RTSPSimpleStreamer.hh"
 
 SimpleMP3Streamer streamer(new FileAccessSdFat());
 

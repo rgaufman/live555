@@ -33,15 +33,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // change the following to True:
 #define REQUEST_STREAMING_OVER_TCP false
 
-// by default, print verbose output from each "RTSPClient"
-#define RTSP_CLIENT_VERBOSITY_LEVEL 1
 // Even though we're not going to be doing anything with the incoming data, we
 // still need to receive it. Define the size of the buffer that we'll use:
-#define RTSP_SINK_BUFFER_SIZE 1024
+#define RTSP_SINK_BUFFER_SIZE 2048
 
-// If you don't want to see debugging output for each received frame, then
-// comment out the following line:
-#define DEBUG_PRINT_EACH_RECEIVED_FRAME 0
 
 // Counts how many streams (i.e., "RTSPClient"s) are currently in use.
 static unsigned rtspClientCount = 0;
@@ -93,19 +88,21 @@ class OurRTSPClient : public RTSPClient {
 };
 
 /**
- * @brief Configuration for SimpleClient
+ * @brief Configuration for RTSPSimpleClient
  * @author Phil Schatzmann
  * @copyright GPLv3
  * 
 */
-struct SimpleClientConfig {
+struct RTSPSimpleClientConfig {
     const char* ssid=nullptr;
     const char* password = nullptr;
     bool is_blocking = false;
     bool is_tcp = REQUEST_STREAMING_OVER_TCP;
     uint32_t buffer_size = RTSP_SINK_BUFFER_SIZE;
     const char* url = nullptr;
+    const char* application_name = "RTSPSimpleClient";
     Print *output = nullptr;
+
 };
 
 /**
@@ -113,33 +110,45 @@ struct SimpleClientConfig {
  * @author Phil Schatzmann
  * @copyright GPLv3
 */
-class SimpleClient {
+class RTSPSimpleClient {
   public:
-    SimpleClient() = default;
+    RTSPSimpleClient() = default;
 
-    SimpleClientConfig defaultConfig() {
-        SimpleClientConfig default_config;
+    RTSPSimpleClientConfig defaultConfig() {
+        RTSPSimpleClientConfig default_config;
         return default_config;
     }
 
     /// Starts the processing
-    bool begin(SimpleClientConfig cfg) {
+    bool begin(RTSPSimpleClientConfig cfg) {
       this->cfg = cfg;
+      rtspOutput = cfg.output;
+      rtspEventLoopWatchVariable = 0;
+      rtspUseTCP = cfg.is_tcp;
+      rtspSinkReceiveBufferSize = cfg.buffer_size;
 
       if (cfg.url==nullptr) {
+        Serial.println("no url");
         return false;
       }
+
+      if (cfg.output==nullptr){
+        Serial.println("no output");
+        return false;
+      }
+
       if (!login()){
         Serial.println("wifi down");
         return false;
       }
+
       // Begin by setting up our usage environment:
       scheduler = SimpleTaskScheduler::createNew();
       env = BasicUsageEnvironment::createNew(*scheduler);
 
       // There are argc-1 URLs: argv[1] through argv[argc-1].  Open and start
       // streaming each one:
-      rtsp_client = OurRTSPClient::createNew(*env, "RTSPClient", (char const*) cfg.url);
+      rtsp_client = OurRTSPClient::createNew(*env, cfg.application_name, (char const*) cfg.url);
 
       scheduler = (SimpleTaskScheduler*) & env->taskScheduler(); 
 
@@ -173,7 +182,7 @@ class SimpleClient {
     OurRTSPClient* rtsp_client;
     UsageEnvironment* env=nullptr;
     SimpleTaskScheduler* scheduler=nullptr;
-    SimpleClientConfig cfg;
+    RTSPSimpleClientConfig cfg;
 
     /// login to wifi: optional convinience method. You can also just start Wifi the normal way
     bool login(){
@@ -276,28 +285,6 @@ class OurSink : public MediaSink {
   char* fStreamId;
 };
 
-OurRTSPClient* OurRTSPClient::createNew(UsageEnvironment& env, char const* progName, char const* rtspURL) {
-  // Begin by creating a "RTSPClient" object.  Note that there is a separate
-  // "RTSPClient" object for each stream that we wish to receive (even if more
-  // than stream uses the same "rtsp://" URL).
-  OurRTSPClient* rtspClient = OurRTSPClient::createNew(
-      env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, progName);
-  if (rtspClient == NULL) {
-    env << "Failed to create a RTSP client for URL \"" << rtspURL
-        << "\": " << env.getResultMsg() << "\n";
-    return nullptr;
-  }
-
-  ++rtspClientCount;
-
-  // Next, send a RTSP "DESCRIBE" command, to get a SDP description for the
-  // stream. Note that this command - like all RTSP commands - is sent
-  // asynchronously; we do not block, waiting for a response. Instead, the
-  // following function call returns immediately, and we handle the RTSP
-  // response later, from within the event loop:
-  rtspClient->sendDescribeCommand(continueAfterDESCRIBE);
-  return rtspClient;
-}
 
 // Implementation of the RTSP 'response handlers':
 
@@ -586,6 +573,28 @@ void shutdownStream(RTSPClient* rtspClient, int exitCode) {
 }
 
 // Implementation of "OurRTSPClient":
+OurRTSPClient* OurRTSPClient::createNew(UsageEnvironment& env, char const* progName, char const* rtspURL) {
+  // Begin by creating a "RTSPClient" object.  Note that there is a separate
+  // "RTSPClient" object for each stream that we wish to receive (even if more
+  // than stream uses the same "rtsp://" URL).
+  OurRTSPClient* rtspClient = OurRTSPClient::createNew(
+      env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, progName);
+  if (rtspClient == NULL) {
+    env << "Failed to create a RTSP client for URL \"" << rtspURL
+        << "\": " << env.getResultMsg() << "\n";
+    return nullptr;
+  }
+
+  ++rtspClientCount;
+
+  // Next, send a RTSP "DESCRIBE" command, to get a SDP description for the
+  // stream. Note that this command - like all RTSP commands - is sent
+  // asynchronously; we do not block, waiting for a response. Instead, the
+  // following function call returns immediately, and we handle the RTSP
+  // response later, from within the event loop:
+  rtspClient->sendDescribeCommand(continueAfterDESCRIBE);
+  return rtspClient;
+}
 
 OurRTSPClient* OurRTSPClient::createNew(UsageEnvironment& env,
                                         char const* rtspURL, int verbosityLevel,
@@ -682,9 +691,9 @@ void OurSink::afterGettingFrame(unsigned frameSize,
 #endif
 
   // Decode the data
-  if (rtspOutput) {
+  if (rtspOutput != nullptr) {
     size_t writtenSize = rtspOutput->write(fReceiveBuffer, frameSize);
-    assert(writtenSize == frameSize);
+    envir() << "Output: written: " <<  writtenSize << " of " << frameSize << "\n";;
   }
 
   // Then continue, to request the next frame of data:

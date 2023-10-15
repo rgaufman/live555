@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Arduino live555: SimpleStreamer Class Reference</title>
+<title>Arduino live555: RTSPSimpleStreamer Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,20 +68,20 @@ $(function() {
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_simple_streamer-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">SimpleStreamer Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
+<div class="title">RTSPSimpleStreamer Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p>Abstract base class for a Simple API for a Streamer.  
  <a href="class_simple_streamer.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="_simple_streamer_8hh_source.html">SimpleStreamer.hh</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="_simple_streamer_8hh_source.html">RTSPSimpleStreamer.hh</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for SimpleStreamer:</div>
+Inheritance diagram for RTSPSimpleStreamer:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="class_simple_streamer.png" usemap="#SimpleStreamer_map" alt=""/>
-  <map id="SimpleStreamer_map" name="SimpleStreamer_map">
+  <img src="class_simple_streamer.png" usemap="#RTSPSimpleStreamer_map" alt=""/>
+  <map id="RTSPSimpleStreamer_map" name="RTSPSimpleStreamer_map">
 <area href="class_simple_m_p3_streamer.html" title="A Simple API for a MP3 Streamer." alt="SimpleMP3Streamer" shape="rect" coords="0,56,129,80"/>
 <area href="class_simple_p_c_m_streamer.html" title="A simple API for a PCM Streamer." alt="SimplePCMStreamer" shape="rect" coords="139,56,268,80"/>
 <area href="class_simple_w_a_v_streamer.html" title="A simple API for a WAV Streamer." alt="SimpleWAVStreamer" shape="rect" coords="139,112,268,136"/>
@@ -91,16 +91,16 @@ Inheritance diagram for SimpleStreamer:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad1d202bc7442f462fbc1a6d4df7534d6"><td class="memItemLeft" align="right" valign="top"><a id="ad1d202bc7442f462fbc1a6d4df7534d6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SimpleStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> &amp;driver, int granularity=1000)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RTSPSimpleStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> &amp;driver, int granularity=1000)</td></tr>
 <tr class="separator:ad1d202bc7442f462fbc1a6d4df7534d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9db8614ea7123d96202a090386f010f1"><td class="memItemLeft" align="right" valign="top"><a id="a9db8614ea7123d96202a090386f010f1"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SimpleStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> *driver, int granularity=1000)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RTSPSimpleStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> *driver, int granularity=1000)</td></tr>
 <tr class="separator:a9db8614ea7123d96202a090386f010f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a138d3436b3a0c3d7646b50ce85450af9"><td class="memItemLeft" align="right" valign="top"><a id="a138d3436b3a0c3d7646b50ce85450af9"></a>
-virtual <a class="el" href="struct_simple_streamer_config.html">SimpleStreamerConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>defaultConfig</b> ()</td></tr>
+virtual <a class="el" href="struct_simple_streamer_config.html">RTSPSimpleStreamerConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>defaultConfig</b> ()</td></tr>
 <tr class="separator:a138d3436b3a0c3d7646b50ce85450af9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7629dae6daa0de804d1ecf41738bcb8"><td class="memItemLeft" align="right" valign="top"><a id="af7629dae6daa0de804d1ecf41738bcb8"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> (<a class="el" href="struct_simple_streamer_config.html">SimpleStreamerConfig</a> config)</td></tr>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> (<a class="el" href="struct_simple_streamer_config.html">RTSPSimpleStreamerConfig</a> config)</td></tr>
 <tr class="separator:af7629dae6daa0de804d1ecf41738bcb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9f6d073b0a95ff0da2fadbbec241482"><td class="memItemLeft" align="right" valign="top"><a id="af9f6d073b0a95ff0da2fadbbec241482"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>play</b> ()=0</td></tr>
@@ -145,7 +145,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:ab689a0fb33dd7ecea6bfcf108da84bb2"><td class="memItemLeft" align="right" valign="top"><a id="ab689a0fb33dd7ecea6bfcf108da84bb2"></a>
-<a class="el" href="struct_simple_streamer_config.html">SimpleStreamerConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cfg</b></td></tr>
+<a class="el" href="struct_simple_streamer_config.html">RTSPSimpleStreamerConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cfg</b></td></tr>
 <tr class="separator:ab689a0fb33dd7ecea6bfcf108da84bb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6d6826f1a9f940db2477d671f7e97aa"><td class="memItemLeft" align="right" valign="top"><a id="ae6d6826f1a9f940db2477d671f7e97aa"></a>
 <a class="el" href="class_usage_environment.html">UsageEnvironment</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>env</b> = nullptr</td></tr>
@@ -176,7 +176,7 @@ unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>CNAME</b> [M
 <div class="textblock"><p>Abstract base class for a Simple API for a Streamer. </p>
 <dl class="section author"><dt>Author</dt><dd>Phil Schatzmann </dd></dl>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
-<li>src/<a class="el" href="_simple_streamer_8hh_source.html">SimpleStreamer.hh</a></li>
+<li>src/<a class="el" href="_simple_streamer_8hh_source.html">RTSPSimpleStreamer.hh</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Arduino live555: SimplePCMStreamer Class Reference</title>
+<title>Arduino live555: RTSPSimpleStreamer Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -66,56 +66,45 @@ $(function() {
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
-<a href="class_simple_p_c_m_streamer-members.html">List of all members</a>  </div>
+<a href="class_r_t_s_p_simple_streamer-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">SimplePCMStreamer Class Reference</div>  </div>
+<div class="title">RTSPSimpleStreamer Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>A simple API for a PCM Streamer.  
- <a href="class_simple_p_c_m_streamer.html#details">More...</a></p>
+<p>Abstract base class for a Simple API for a Streamer.  
+ <a href="class_r_t_s_p_simple_streamer.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="_r_t_s_p_simple_streamer_8hh_source.html">RTSPSimpleStreamer.hh</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for SimplePCMStreamer:</div>
+Inheritance diagram for RTSPSimpleStreamer:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="class_simple_p_c_m_streamer.png" usemap="#SimplePCMStreamer_map" alt=""/>
-  <map id="SimplePCMStreamer_map" name="SimplePCMStreamer_map">
-<area href="class_r_t_s_p_simple_streamer.html" title="Abstract base class for a Simple API for a Streamer." alt="RTSPSimpleStreamer" shape="rect" coords="0,0,131,24"/>
-<area href="class_simple_w_a_v_streamer.html" title="A simple API for a WAV Streamer." alt="SimpleWAVStreamer" shape="rect" coords="0,112,131,136"/>
+  <img src="class_r_t_s_p_simple_streamer.png" usemap="#RTSPSimpleStreamer_map" alt=""/>
+  <map id="RTSPSimpleStreamer_map" name="RTSPSimpleStreamer_map">
+<area href="class_simple_m_p3_streamer.html" title="A Simple API for a MP3 Streamer." alt="SimpleMP3Streamer" shape="rect" coords="0,56,131,80"/>
+<area href="class_simple_p_c_m_streamer.html" title="A simple API for a PCM Streamer." alt="SimplePCMStreamer" shape="rect" coords="141,56,272,80"/>
+<area href="class_simple_w_a_v_streamer.html" title="A simple API for a WAV Streamer." alt="SimpleWAVStreamer" shape="rect" coords="141,112,272,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad350b939f767017fc7712122c2af677e"><td class="memItemLeft" align="right" valign="top"><a id="ad350b939f767017fc7712122c2af677e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SimplePCMStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> &amp;driver)</td></tr>
-<tr class="separator:ad350b939f767017fc7712122c2af677e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0e41c961146dc528e23dbeb417da6d8"><td class="memItemLeft" align="right" valign="top"><a id="ac0e41c961146dc528e23dbeb417da6d8"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SimplePCMStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> *driver)</td></tr>
-<tr class="separator:ac0e41c961146dc528e23dbeb417da6d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0a4c86940463ce1be8a87d40f8cc77a"><td class="memItemLeft" align="right" valign="top"><a id="af0a4c86940463ce1be8a87d40f8cc77a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>play</b> ()</td></tr>
-<tr class="separator:af0a4c86940463ce1be8a87d40f8cc77a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f9d89ac786fc479f034e264683360be"><td class="memItemLeft" align="right" valign="top"><a id="a9f9d89ac786fc479f034e264683360be"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setChannels</b> (unsigned int channels)</td></tr>
-<tr class="separator:a9f9d89ac786fc479f034e264683360be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad9343abb73de0d6b837ca0dd328c12c"><td class="memItemLeft" align="right" valign="top"><a id="aad9343abb73de0d6b837ca0dd328c12c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setBitsPerSample</b> (unsigned char bps)</td></tr>
-<tr class="separator:aad9343abb73de0d6b837ca0dd328c12c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b8fef0aa0a436495a958f34bee9918f"><td class="memItemLeft" align="right" valign="top"><a id="a4b8fef0aa0a436495a958f34bee9918f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setAudioFormat</b> (unsigned char fmt)</td></tr>
-<tr class="separator:a4b8fef0aa0a436495a958f34bee9918f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97c39a5f9798a3684676d0a2cc8df72a"><td class="memItemLeft" align="right" valign="top"><a id="a97c39a5f9798a3684676d0a2cc8df72a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setAudioRate</b> (int rate)</td></tr>
-<tr class="separator:a97c39a5f9798a3684676d0a2cc8df72a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a348d9ba6da172873b86431780ffb1bc5"><td class="memItemLeft" align="right" valign="top"><a id="a348d9ba6da172873b86431780ffb1bc5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RTSPSimpleStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> &amp;driver, int granularity=1000)</td></tr>
+<tr class="separator:a348d9ba6da172873b86431780ffb1bc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac167ad4a7cd2fae8080804bb57e4d028"><td class="memItemLeft" align="right" valign="top"><a id="ac167ad4a7cd2fae8080804bb57e4d028"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RTSPSimpleStreamer</b> (<a class="el" href="class_abstract_file.html">AbstractFile</a> *driver, int granularity=1000)</td></tr>
+<tr class="separator:ac167ad4a7cd2fae8080804bb57e4d028"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66b7a020be2cf69de098eae794b8c14f"><td class="memItemLeft" align="right" valign="top"><a id="a66b7a020be2cf69de098eae794b8c14f"></a>
 virtual <a class="el" href="struct_r_t_s_p_simple_streamer_config.html">RTSPSimpleStreamerConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>defaultConfig</b> ()</td></tr>
 <tr class="separator:a66b7a020be2cf69de098eae794b8c14f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68ec1a65f2ce87755187abcbbd5988b1"><td class="memItemLeft" align="right" valign="top"><a id="a68ec1a65f2ce87755187abcbbd5988b1"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> (<a class="el" href="struct_r_t_s_p_simple_streamer_config.html">RTSPSimpleStreamerConfig</a> config)</td></tr>
 <tr class="separator:a68ec1a65f2ce87755187abcbbd5988b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad11554ba1346e7090018b2d547b9db02"><td class="memItemLeft" align="right" valign="top"><a id="ad11554ba1346e7090018b2d547b9db02"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>play</b> ()=0</td></tr>
+<tr class="separator:ad11554ba1346e7090018b2d547b9db02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0c7fdf39b62d9aede0802b1c02ba600"><td class="memItemLeft" align="right" valign="top"><a id="ac0c7fdf39b62d9aede0802b1c02ba600"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_t_s_p_simple_streamer.html#ac0c7fdf39b62d9aede0802b1c02ba600">doEventLoop</a> ()</td></tr>
 <tr class="memdesc:ac0c7fdf39b62d9aede0802b1c02ba600"><td class="mdescLeft">&#160;</td><td class="mdescRight">calls the scheduler's event loop - does not return! <br /></td></tr>
@@ -130,20 +119,10 @@ virtual const char *&#160;</td><td class="memItemRight" valign="bottom"><b>hostN
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:aa4fbd91f35bd7586dc1f56b47ec2545b"><td class="memItemLeft" align="right" valign="top"><a id="aa4fbd91f35bd7586dc1f56b47ec2545b"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_simple_p_c_m_streamer.html#aa4fbd91f35bd7586dc1f56b47ec2545b">setupFileFormat</a> ()</td></tr>
-<tr class="memdesc:aa4fbd91f35bd7586dc1f56b47ec2545b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is file specific - so we do nothing here. <br /></td></tr>
-<tr class="separator:aa4fbd91f35bd7586dc1f56b47ec2545b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1ee298500b0e5a1e32b174ea420ec98"><td class="memItemLeft" align="right" valign="top"><a id="ad1ee298500b0e5a1e32b174ea420ec98"></a>
-virtual <a class="el" href="class_audio_input_device.html">AudioInputDevice</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>createSource</b> ()</td></tr>
-<tr class="separator:ad1ee298500b0e5a1e32b174ea420ec98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1744f37ba81dabfd089e77af5c525182"><td class="memItemLeft" align="right" valign="top"><a id="a1744f37ba81dabfd089e77af5c525182"></a>
-<a class="el" href="class_audio_input_device.html">AudioInputDevice</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>pcmSource</b> ()</td></tr>
-<tr class="separator:a1744f37ba81dabfd089e77af5c525182"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a582bbdc01dea7b5a164c1e30aa985d22"><td class="memItemLeft" align="right" valign="top"><a id="a582bbdc01dea7b5a164c1e30aa985d22"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_simple_p_c_m_streamer.html#a582bbdc01dea7b5a164c1e30aa985d22">setupFile</a> ()</td></tr>
-<tr class="memdesc:a582bbdc01dea7b5a164c1e30aa985d22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup a single file. <br /></td></tr>
-<tr class="separator:a582bbdc01dea7b5a164c1e30aa985d22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3071cd4ec5ba382de8f264fc8e85667"><td class="memItemLeft" align="right" valign="top"><a id="ac3071cd4ec5ba382de8f264fc8e85667"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_t_s_p_simple_streamer.html#ac3071cd4ec5ba382de8f264fc8e85667">setupFileFormat</a> ()=0</td></tr>
+<tr class="memdesc:ac3071cd4ec5ba382de8f264fc8e85667"><td class="mdescLeft">&#160;</td><td class="mdescRight">assign source and sink (creats rtcpInstance) <br /></td></tr>
+<tr class="separator:ac3071cd4ec5ba382de8f264fc8e85667"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accbee8014d3f6b2b5e6c9df3972d788f"><td class="memItemLeft" align="right" valign="top"><a id="accbee8014d3f6b2b5e6c9df3972d788f"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>setupServer</b> ()</td></tr>
 <tr class="separator:accbee8014d3f6b2b5e6c9df3972d788f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,18 +144,6 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:ae3682a247a2acd7a8ef418d6e21e5c82"><td class="memItemLeft" align="right" valign="top"><a id="ae3682a247a2acd7a8ef418d6e21e5c82"></a>
-unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>audioFormat</b> = WA_PCM</td></tr>
-<tr class="separator:ae3682a247a2acd7a8ef418d6e21e5c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad97480c03e2765a99d96f13c457c8b67"><td class="memItemLeft" align="right" valign="top"><a id="ad97480c03e2765a99d96f13c457c8b67"></a>
-unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>numChannels</b> = 2</td></tr>
-<tr class="separator:ad97480c03e2765a99d96f13c457c8b67"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a423f99e054a335f153f3cbb3dc5f13f0"><td class="memItemLeft" align="right" valign="top"><a id="a423f99e054a335f153f3cbb3dc5f13f0"></a>
-unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>bitsPerSample</b> = 16</td></tr>
-<tr class="separator:a423f99e054a335f153f3cbb3dc5f13f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a225aed1f41d7de1b5041bd7f13ac007c"><td class="memItemLeft" align="right" valign="top"><a id="a225aed1f41d7de1b5041bd7f13ac007c"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>samplingFrequency</b> = 44100</td></tr>
-<tr class="separator:a225aed1f41d7de1b5041bd7f13ac007c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76f5705f1a07a721467c9e200be78fe4"><td class="memItemLeft" align="right" valign="top"><a id="a76f5705f1a07a721467c9e200be78fe4"></a>
 <a class="el" href="struct_r_t_s_p_simple_streamer_config.html">RTSPSimpleStreamerConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cfg</b></td></tr>
 <tr class="separator:a76f5705f1a07a721467c9e200be78fe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -206,7 +173,7 @@ unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>CNAME</b> [M
 <tr class="separator:afe5d28f3515f0ea117d565bc8de18ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A simple API for a PCM Streamer. </p>
+<div class="textblock"><p>Abstract base class for a Simple API for a Streamer. </p>
 <dl class="section author"><dt>Author</dt><dd>Phil Schatzmann </dd></dl>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/<a class="el" href="_r_t_s_p_simple_streamer_8hh_source.html">RTSPSimpleStreamer.hh</a></li>

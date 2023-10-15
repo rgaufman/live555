@@ -81,14 +81,14 @@ $(function() {
 <h2><a class="anchor" id="autotoc_md1"></a>
 Use Cases</h2>
 <ul>
-<li>Stream Audio or Video from a Microcontroller and play it e.g. with the help of the VLC Player</li>
 <li>Stream Audio or Video to a Microcontroller</li>
+<li>Stream Audio or Video from a Microcontroller and play it e.g. with the help of the VLC Player</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md2"></a>
 Example Sketch</h2>
 <p>I have also created a simple mp3 streaming API. Here is an example that uses the <a href="https://github.com/greiman/SdFat">SdFat library</a> from Bill Greiman to access the files on a SD card:</p>
 <div class="fragment"><div class="line">#include &quot;FileAccessSdFat.hh&quot;</div>
-<div class="line">#include &quot;SimpleStreamer.hh&quot;</div>
+<div class="line">#include &quot;RTSPSimpleStreamer.hh&quot;</div>
 <div class="line"> </div>
 <div class="line">SimpleMP3Streamer mp3(new FileAccessSdFat());</div>
 <div class="line"> </div>
@@ -111,13 +111,13 @@ Example Sketch</h2>
 <div class="line">void loop() {</div>
 <div class="line">  mp3.singleStep();</div>
 <div class="line">}</div>
-</div><!-- fragment --><p> In the constructor of the <a href="https://pschatzmann.github.io/live555/html/class_simple_m_p3_streamer.html">SimpleMP3Streamer</a> we need to indicate the file access class. For starting the streaming we need to provide <b>a file</b> and <b>the destination ip</b> address: <code>192.168.1.255</code> is a broadcast address. This is done with the help of the <a href="https://pschatzmann.github.io/live555/html/struct_simple_streamer_config.html">SimpleStreamerConfig</a>. If we did not start the network yet we need to provide the ssid and password. The <code>cfg.isAutoRestart = true;</code> is making shure that when the end of the file is reached that we restart again. I also provide the afterPlayingCallback method which can be used to select a new file and "restart playing"...</p>
+</div><!-- fragment --><p> In the constructor of the <a href="https://pschatzmann.github.io/live555/html/class_simple_m_p3_streamer.html">SimpleMP3Streamer</a> we need to indicate the file access class. For starting the streaming we need to provide <b>a file</b> and <b>the destination ip</b> address: <code>192.168.1.255</code> is a broadcast address. This is done with the help of the <a href="https://pschatzmann.github.io/live555/html/struct_simple_streamer_config.html">RTSPSimpleStreamerConfig</a>. If we did not start the network yet we need to provide the ssid and password. The <code>cfg.isAutoRestart = true;</code> is making shure that when the end of the file is reached that we restart again. I also provide the afterPlayingCallback method which can be used to select a new file and "restart playing"...</p>
 <h2><a class="anchor" id="autotoc_md3"></a>
 VLC Player</h2>
 <p>The VLC Player can be used to receive the streamed music. Just use -&gt; File -&gt; Open Network and enter the <code>udp://@:6666</code> address.</p>
 <h2><a class="anchor" id="autotoc_md4"></a>
 Class Documentation</h2>
-<p>Here is the <a href="https://pschatzmann.github.io/live555/html/classes.html">generated class documentation</a></p>
+<p>Here is the <a href="https://pschatzmann.github.io/arduino-live555/html/classes.html">generated class documentation</a></p>
 <h2><a class="anchor" id="autotoc_md5"></a>
 Project Status</h2>
 <p>I am really struggeling to make this work. The sound is breaking up and I did not find so far what is causing this.</p>
@@ -125,9 +125,10 @@ Project Status</h2>
 Installation</h2>
 <p>For Arduino you can download the library as zip and call include Library -&gt; zip library. Or you can git clone this project into the Arduino libraries folder e.g. with</p>
 <div class="fragment"><div class="line">cd  ~/Documents/Arduino/libraries</div>
-<div class="line">git clone pschatzmann/live555.git</div>
-</div><!-- fragment --><p>I recommend to use the git method, so that you can simply get updates by executing the <code>git pull</code> command in the live555 library folder.</p>
-<p>For building and running the code on your desktop, please consult the original <a href="https://github.com/pschatzmann/live555/blob/master/BUILD.md">build instructions</a> </p>
+<div class="line">git clone pschatzmann/arduino-live555.git</div>
+</div><!-- fragment --><p>I recommend to use the git method, so that you can simply get updates by executing the <code>git pull</code> command in the arduino-live555 library folder.</p>
+<p>For building and running the code on your desktop, please consult the original <a href="https://github.com/pschatzmann/arduino-live555/blob/master/BUILD.md">build instructions</a></p>
+<p>Please note that this library only works properly for environments that can handle <b>symbolic links correctly</b>. </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->

@@ -190,31 +190,32 @@ void BasicTaskScheduler::SingleStep(unsigned int maxDelayTime) {
       EventTriggerId mask = fLastUsedTriggerMask;
 
       do {
-	i = (i+1)%MAX_NUM_EVENT_TRIGGERS;
-	mask >>= 1;
-	if (mask == 0) mask = 0x80000000;
+        i = (i+1)%MAX_NUM_EVENT_TRIGGERS;
+        mask >>= 1;
+        if (mask == 0) mask = 0x80000000;
 
-	if ((fTriggersAwaitingHandling&mask) != 0) {
-	  fTriggersAwaitingHandling &=~ mask;
-	  if (fTriggeredEventHandlers[i] != NULL) {
-	    (*fTriggeredEventHandlers[i])(fTriggeredEventClientDatas[i]);
-	  }
+        if ((fTriggersAwaitingHandling&mask) != 0) {
+          fTriggersAwaitingHandling &=~ mask;
+          if (fTriggeredEventHandlers[i] != NULL) {
+            (*fTriggeredEventHandlers[i])(fTriggeredEventClientDatas[i]);
+          }
 
-	  fLastUsedTriggerMask = mask;
-	  fLastUsedTriggerNum = i;
-	  break;
-	}
+          fLastUsedTriggerMask = mask;
+          fLastUsedTriggerNum = i;
+          break;
+        }
       } while (i != fLastUsedTriggerNum);
     }
   }
 
-// Give event processing some space to do the work
-#ifdef ARDUINO
-  yield();
-#endif 
-
   // Also handle any delayed event that may have come due.
   fDelayQueue.handleAlarm();
+
+// Give event processing some space to do the work
+#ifdef ARDUINO
+  delay(1);
+#endif 
+
 }
 
 void BasicTaskScheduler

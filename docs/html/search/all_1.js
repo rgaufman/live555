@@ -17,7 +17,7 @@ var searchData=
   ['adubufferedpacketfactory_20',['ADUBufferedPacketFactory',['../class_a_d_u_buffered_packet_factory.html',1,'']]],
   ['adudescriptor_21',['ADUdescriptor',['../class_a_d_udescriptor.html',1,'']]],
   ['adufrommp3source_22',['ADUFromMP3Source',['../class_a_d_u_from_m_p3_source.html',1,'']]],
-  ['afterplaying_23',['afterPlaying',['../class_simple_streamer.html#a623f89d2770db2da7a8f76a237d620a8',1,'SimpleStreamer']]],
+  ['afterplaying_23',['afterPlaying',['../class_r_t_s_p_simple_streamer.html#a51fd00e50e0e1ffe7c914165926ced27',1,'RTSPSimpleStreamer']]],
   ['alarmhandler_24',['AlarmHandler',['../class_alarm_handler.html',1,'']]],
   ['amraudiofileservermediasubsession_25',['AMRAudioFileServerMediaSubsession',['../class_a_m_r_audio_file_server_media_subsession.html',1,'']]],
   ['amraudiofilesink_26',['AMRAudioFileSink',['../class_a_m_r_audio_file_sink.html',1,'']]],

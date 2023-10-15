@@ -14,10 +14,10 @@
  * @brief Configuration Parameters for the SimpleMP3Streamer class
  * @author Phil Schatzmann
  */
-struct SimpleStreamerConfig {
+struct RTSPSimpleStreamerConfig {
   const char* filePath = nullptr;
   const char* destinationAddress = nullptr;
-  unsigned short rtpPort = 6666;
+  unsigned short rtpPort = 8554;
   unsigned char ttl = 1;  // use a low value, in case routers don't admin scope
   const char* ssid = nullptr;
   const char* password = nullptr;
@@ -40,28 +40,28 @@ struct SimpleStreamerConfig {
  * @brief Abstract base class for a Simple API for a Streamer
  * @author Phil Schatzmann
  */
-class SimpleStreamer {
+class RTSPSimpleStreamer {
  public:
-  SimpleStreamer(AbstractFile& driver, int granularity=1000) {
+  RTSPSimpleStreamer(AbstractFile& driver, int granularity=1000) {
     ::setFileDriver(&driver);
     // Begin by setting up our usage environment:
     TaskScheduler* scheduler = SimpleTaskScheduler::createNew(granularity);
     env = BasicUsageEnvironment::createNew(*scheduler);
   }
 
-  SimpleStreamer(AbstractFile* driver, int granularity=1000) {
+  RTSPSimpleStreamer(AbstractFile* driver, int granularity=1000) {
     ::setFileDriver(driver);
     // Begin by setting up our usage environment:
     TaskScheduler* scheduler = BasicTaskScheduler::createNew(granularity);
     env = BasicUsageEnvironment::createNew(*scheduler);
   }
 
-  virtual SimpleStreamerConfig defaultConfig() {
-    SimpleStreamerConfig cfg;
+  virtual RTSPSimpleStreamerConfig defaultConfig() {
+    RTSPSimpleStreamerConfig cfg;
     return cfg;
   }
 
-  virtual bool begin(SimpleStreamerConfig config) {
+  virtual bool begin(RTSPSimpleStreamerConfig config) {
     LOG("begin\n");
     this->cfg = config;
 
@@ -131,7 +131,7 @@ class SimpleStreamer {
   }
 
  protected:
-  SimpleStreamerConfig cfg;
+  RTSPSimpleStreamerConfig cfg;
   UsageEnvironment* env = nullptr;
   RTPSink* sink = nullptr;
   RTCPInstance* rtcpInstance = nullptr;
@@ -203,7 +203,7 @@ class SimpleStreamer {
     }
 
     // determin caller object
-    SimpleStreamer* self = (SimpleStreamer*)ptr;
+    RTSPSimpleStreamer* self = (RTSPSimpleStreamer*)ptr;
     *(self->env) << "...done streaming\n";
 
     self->sink->stopPlaying();
@@ -224,11 +224,11 @@ class SimpleStreamer {
  * @brief A Simple API for a MP3 Streamer
  * @author Phil Schatzmann
  */
-class SimpleMP3Streamer : public SimpleStreamer {
+class SimpleMP3Streamer : public RTSPSimpleStreamer {
  public:
-  SimpleMP3Streamer(AbstractFile& driver) : SimpleStreamer(driver) {}
+  SimpleMP3Streamer(AbstractFile& driver) : RTSPSimpleStreamer(driver) {}
 
-  SimpleMP3Streamer(AbstractFile* driver) : SimpleStreamer(driver) {}
+  SimpleMP3Streamer(AbstractFile* driver) : RTSPSimpleStreamer(driver) {}
 
   bool play() {
     // Open the file as a 'MP3 file source':
@@ -296,11 +296,11 @@ class SimpleMP3Streamer : public SimpleStreamer {
  * @brief A simple API for a PCM Streamer
  * @author Phil Schatzmann
  */
-class SimplePCMStreamer : public SimpleStreamer {
+class SimplePCMStreamer : public RTSPSimpleStreamer {
  public:
-  SimplePCMStreamer(AbstractFile& driver) : SimpleStreamer(driver) {}
+  SimplePCMStreamer(AbstractFile& driver) : RTSPSimpleStreamer(driver) {}
 
-  SimplePCMStreamer(AbstractFile* driver) : SimpleStreamer(driver) {}
+  SimplePCMStreamer(AbstractFile* driver) : RTSPSimpleStreamer(driver) {}
 
   bool play() {
     *env << "Beginning streaming...\n";

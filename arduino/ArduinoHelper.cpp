@@ -42,8 +42,8 @@ uint32_t localip(){
 extern "C" int gethostname(char* str, unsigned len){
     const char* name = WiFi.getHostname();
     strncpy(str, name ,len);
-    Serial.print("hostname: ");
-    Serial.println(name);
+    //Serial.print("hostname: ");
+    //Serial.println(name);
     return 1;
 }
 

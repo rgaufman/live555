@@ -8,7 +8,7 @@ var searchData=
   ['basicudpsource_49',['BasicUDPSource',['../class_basic_u_d_p_source.html',1,'']]],
   ['basicusageenvironment_50',['BasicUsageEnvironment',['../class_basic_usage_environment.html',1,'']]],
   ['basicusageenvironment0_51',['BasicUsageEnvironment0',['../class_basic_usage_environment0.html',1,'']]],
-  ['begin_52',['begin',['../class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83',1,'SimpleClient']]],
+  ['begin_52',['begin',['../class_r_t_s_p_simple_client.html#af69508b0049915c5176c53670bcaa98b',1,'RTSPSimpleClient']]],
   ['bitvector_53',['BitVector',['../class_bit_vector.html',1,'']]],
   ['bufferedpacket_54',['BufferedPacket',['../class_buffered_packet.html',1,'']]],
   ['bufferedpacketfactory_55',['BufferedPacketFactory',['../class_buffered_packet_factory.html',1,'']]],

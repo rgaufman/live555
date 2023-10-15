@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Arduino live555: src/SimpleClient.hh Source File</title>
+<title>Arduino live555: src/RTSPSimpleClient.hh Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -66,7 +66,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">SimpleClient.hh</div>  </div>
+<div class="title">RTSPSimpleClient.hh</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#pragma once</span></div>
@@ -147,7 +147,7 @@ $(function() {
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <a class="code" href="class_stream_client_state.html">StreamClientState</a> scs;</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;};</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="struct_simple_client_config.html">  101</a></span>&#160;<span class="keyword">struct </span><a class="code" href="struct_simple_client_config.html">SimpleClientConfig</a> {</div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="struct_simple_client_config.html">  101</a></span>&#160;<span class="keyword">struct </span><a class="code" href="struct_simple_client_config.html">RTSPSimpleClientConfig</a> {</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* ssid=<span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* password = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">bool</span> is_blocking = <span class="keyword">false</span>;</div>
@@ -157,16 +157,16 @@ $(function() {
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    Print *output = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;};</div>
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno"><a class="line" href="class_simple_client.html">  116</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_simple_client.html">SimpleClient</a> {</div>
+<div class="line"><a name="l00116"></a><span class="lineno"><a class="line" href="class_simple_client.html">  116</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_simple_client.html">RTSPSimpleClient</a> {</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <a class="code" href="class_simple_client.html">SimpleClient</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <a class="code" href="class_simple_client.html">RTSPSimpleClient</a>() = <span class="keywordflow">default</span>;</div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <a class="code" href="struct_simple_client_config.html">SimpleClientConfig</a> defaultConfig() {</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <a class="code" href="struct_simple_client_config.html">SimpleClientConfig</a> default_config;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <a class="code" href="struct_simple_client_config.html">RTSPSimpleClientConfig</a> defaultConfig() {</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <a class="code" href="struct_simple_client_config.html">RTSPSimpleClientConfig</a> default_config;</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keywordflow">return</span> default_config;</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    }</div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
-<div class="line"><a name="l00126"></a><span class="lineno"><a class="line" href="class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83">  126</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83">begin</a>(<a class="code" href="struct_simple_client_config.html">SimpleClientConfig</a> cfg) {</div>
+<div class="line"><a name="l00126"></a><span class="lineno"><a class="line" href="class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83">  126</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83">begin</a>(<a class="code" href="struct_simple_client_config.html">RTSPSimpleClientConfig</a> cfg) {</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;      this-&gt;cfg = cfg;</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;      <span class="keywordflow">if</span> (cfg.url==<span class="keyword">nullptr</span>) {</div>
@@ -215,7 +215,7 @@ $(function() {
 <div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <a class="code" href="class_our_r_t_s_p_client.html">OurRTSPClient</a>* rtsp_client;</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <a class="code" href="class_usage_environment.html">UsageEnvironment</a>* env=<span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <a class="code" href="class_simple_task_scheduler.html">SimpleTaskScheduler</a>* scheduler=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <a class="code" href="struct_simple_client_config.html">SimpleClientConfig</a> cfg;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <a class="code" href="struct_simple_client_config.html">RTSPSimpleClientConfig</a> cfg;</div>
 <div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
 <div class="line"><a name="l00179"></a><span class="lineno"><a class="line" href="class_simple_client.html#a964168a5100b944b0433c9cb4a23f70e">  179</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_simple_client.html#a964168a5100b944b0433c9cb4a23f70e">login</a>(){</div>
 <div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;      <span class="keywordflow">if</span>(WiFi.status() != WL_CONNECTED &amp;&amp; cfg.ssid!=<span class="keyword">nullptr</span> &amp;&amp; cfg.password!=<span class="keyword">nullptr</span>){</div>
@@ -746,17 +746,17 @@ $(function() {
 <div class="ttc" id="aclass_media_sink_html"><div class="ttname"><a href="class_media_sink.html">MediaSink</a></div><div class="ttdef"><b>Definition:</b> MediaSink.hh:28</div></div>
 <div class="ttc" id="aclass_media_subsession_html"><div class="ttname"><a href="class_media_subsession.html">MediaSubsession</a></div><div class="ttdef"><b>Definition:</b> MediaSession.hh:171</div></div>
 <div class="ttc" id="aclass_media_subsession_iterator_html"><div class="ttname"><a href="class_media_subsession_iterator.html">MediaSubsessionIterator</a></div><div class="ttdef"><b>Definition:</b> MediaSession.hh:157</div></div>
-<div class="ttc" id="aclass_our_r_t_s_p_client_html"><div class="ttname"><a href="class_our_r_t_s_p_client.html">OurRTSPClient</a></div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:75</div></div>
-<div class="ttc" id="aclass_our_sink_html"><div class="ttname"><a href="class_our_sink.html">OurSink</a></div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:247</div></div>
+<div class="ttc" id="aclass_our_r_t_s_p_client_html"><div class="ttname"><a href="class_our_r_t_s_p_client.html">OurRTSPClient</a></div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:75</div></div>
+<div class="ttc" id="aclass_our_sink_html"><div class="ttname"><a href="class_our_sink.html">OurSink</a></div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:247</div></div>
 <div class="ttc" id="aclass_r_t_s_p_client_html"><div class="ttname"><a href="class_r_t_s_p_client.html">RTSPClient</a></div><div class="ttdef"><b>Definition:</b> RTSPClient.hh:42</div></div>
-<div class="ttc" id="aclass_simple_client_html"><div class="ttname"><a href="class_simple_client.html">SimpleClient</a></div><div class="ttdoc">A simple RTSPClient using https://github.com/pschatzmann/live555</div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:116</div></div>
-<div class="ttc" id="aclass_simple_client_html_a0bd883654297c8cded795f9aed3b10a7"><div class="ttname"><a href="class_simple_client.html#a0bd883654297c8cded795f9aed3b10a7">SimpleClient::singleStep</a></div><div class="ttdeci">void singleStep()</div><div class="ttdoc">to be called in Arduino loop when blocking = false</div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:155</div></div>
-<div class="ttc" id="aclass_simple_client_html_a964168a5100b944b0433c9cb4a23f70e"><div class="ttname"><a href="class_simple_client.html#a964168a5100b944b0433c9cb4a23f70e">SimpleClient::login</a></div><div class="ttdeci">bool login()</div><div class="ttdoc">login to wifi: optional convinience method. You can also just start Wifi the normal way</div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:179</div></div>
-<div class="ttc" id="aclass_simple_client_html_ab7088846fe1d3daa40a4efe0de07bb83"><div class="ttname"><a href="class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83">SimpleClient::begin</a></div><div class="ttdeci">bool begin(SimpleClientConfig cfg)</div><div class="ttdoc">Starts the processing.</div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:126</div></div>
+<div class="ttc" id="aclass_simple_client_html"><div class="ttname"><a href="class_simple_client.html">RTSPSimpleClient</a></div><div class="ttdoc">A simple RTSPClient using https://github.com/pschatzmann/live555</div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:116</div></div>
+<div class="ttc" id="aclass_simple_client_html_a0bd883654297c8cded795f9aed3b10a7"><div class="ttname"><a href="class_simple_client.html#a0bd883654297c8cded795f9aed3b10a7">RTSPSimpleClient::singleStep</a></div><div class="ttdeci">void singleStep()</div><div class="ttdoc">to be called in Arduino loop when blocking = false</div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:155</div></div>
+<div class="ttc" id="aclass_simple_client_html_a964168a5100b944b0433c9cb4a23f70e"><div class="ttname"><a href="class_simple_client.html#a964168a5100b944b0433c9cb4a23f70e">RTSPSimpleClient::login</a></div><div class="ttdeci">bool login()</div><div class="ttdoc">login to wifi: optional convinience method. You can also just start Wifi the normal way</div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:179</div></div>
+<div class="ttc" id="aclass_simple_client_html_ab7088846fe1d3daa40a4efe0de07bb83"><div class="ttname"><a href="class_simple_client.html#ab7088846fe1d3daa40a4efe0de07bb83">RTSPSimpleClient::begin</a></div><div class="ttdeci">bool begin(RTSPSimpleClientConfig cfg)</div><div class="ttdoc">Starts the processing.</div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:126</div></div>
 <div class="ttc" id="aclass_simple_task_scheduler_html"><div class="ttname"><a href="class_simple_task_scheduler.html">SimpleTaskScheduler</a></div><div class="ttdoc">SimpleTaskScheduler for Arduino which supports SingleStep calls from the loop.</div><div class="ttdef"><b>Definition:</b> SimpleTaskScheduler.hh:8</div></div>
-<div class="ttc" id="aclass_stream_client_state_html"><div class="ttname"><a href="class_stream_client_state.html">StreamClientState</a></div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:61</div></div>
+<div class="ttc" id="aclass_stream_client_state_html"><div class="ttname"><a href="class_stream_client_state.html">StreamClientState</a></div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:61</div></div>
 <div class="ttc" id="aclass_usage_environment_html"><div class="ttname"><a href="class_usage_environment.html">UsageEnvironment</a></div><div class="ttdef"><b>Definition:</b> UsageEnvironment.hh:53</div></div>
-<div class="ttc" id="astruct_simple_client_config_html"><div class="ttname"><a href="struct_simple_client_config.html">SimpleClientConfig</a></div><div class="ttdoc">Configuration for SimpleClient.</div><div class="ttdef"><b>Definition:</b> SimpleClient.hh:101</div></div>
+<div class="ttc" id="astruct_simple_client_config_html"><div class="ttname"><a href="struct_simple_client_config.html">RTSPSimpleClientConfig</a></div><div class="ttdoc">Configuration for RTSPSimpleClient.</div><div class="ttdef"><b>Definition:</b> RTSPSimpleClient.hh:101</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

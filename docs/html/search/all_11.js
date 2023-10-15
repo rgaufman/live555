@@ -31,5 +31,9 @@ var searchData=
   ['rtspregisterorderegistersender_317',['RTSPRegisterOrDeregisterSender',['../class_r_t_s_p_register_or_deregister_sender.html',1,'']]],
   ['rtspregistersender_318',['RTSPRegisterSender',['../class_r_t_s_p_register_sender.html',1,'']]],
   ['rtspserver_319',['RTSPServer',['../class_r_t_s_p_server.html',1,'']]],
-  ['rtspserverwithregisterproxying_320',['RTSPServerWithREGISTERProxying',['../class_r_t_s_p_server_with_r_e_g_i_s_t_e_r_proxying.html',1,'']]]
+  ['rtspserverwithregisterproxying_320',['RTSPServerWithREGISTERProxying',['../class_r_t_s_p_server_with_r_e_g_i_s_t_e_r_proxying.html',1,'']]],
+  ['rtspsimpleclient_321',['RTSPSimpleClient',['../class_r_t_s_p_simple_client.html',1,'']]],
+  ['rtspsimpleclientconfig_322',['RTSPSimpleClientConfig',['../struct_r_t_s_p_simple_client_config.html',1,'']]],
+  ['rtspsimplestreamer_323',['RTSPSimpleStreamer',['../class_r_t_s_p_simple_streamer.html',1,'']]],
+  ['rtspsimplestreamerconfig_324',['RTSPSimpleStreamerConfig',['../struct_r_t_s_p_simple_streamer_config.html',1,'']]]
 ];

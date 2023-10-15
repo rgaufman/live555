@@ -36,9 +36,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     #define DEBUG
     // Activate DEBUG_ERRORS messages 
     #define DEBUG_ERRORS
+    #define DEBUG_PRINT_NPT
+    #define DEBUG_PRINT_EACH_RECEIVED_FRAME
     //#define DEBUG_SEND
     //#define DEBUG_PARSE
     #define MAX_CNAME_LEN 100
+    // by default, print verbose output from each "RTSPClient"
+    #define RTSP_CLIENT_VERBOSITY_LEVEL 1
 
     #define RTP_PAYLOAD_PREFERRED_SIZE 1456
 
