@@ -62,7 +62,7 @@ The VLC Player can be used to receive the streamed music. Just use -> File -> Op
 
 ### Class Documentation
 
-Here is the [generated class documentation](https://pschatzmann.github.io/live555/html/classes.html)
+Here is the [generated class documentation](https://pschatzmann.github.io/arduino-live555/html/classes.html)
 
 ### Project Status
 
@@ -74,9 +74,9 @@ For Arduino you can download the library as zip and call include Library -> zip 
 
 ```
 cd  ~/Documents/Arduino/libraries
-git clone pschatzmann/live555.git
+git clone pschatzmann/arduino-live555.git
 ```
 
-I recommend to use the git method, so that you can simply get updates by executing the ```git pull``` command in the live555 library folder.
+I recommend to use the git method, so that you can simply get updates by executing the ```git pull``` command in the arduino-live555 library folder.
 
-For building and running the code on your desktop, please consult the original [build instructions](https://github.com/pschatzmann/live555/blob/master/BUILD.md)
+For building and running the code on your desktop, please consult the original [build instructions](https://github.com/pschatzmann/arduino-live555/blob/master/BUILD.md)
