@@ -66,7 +66,7 @@ private:
 MultiFramedRTPSource
 ::MultiFramedRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		       unsigned char rtpPayloadFormat,
-		       unsigned rtpTimestampFrequency,
+		       u_int32_t rtpTimestampFrequency,
 		       BufferedPacketFactory* packetFactory)
   : RTPSource(env, RTPgs, rtpPayloadFormat, rtpTimestampFrequency) {
   reset();
@@ -443,7 +443,7 @@ void BufferedPacket::appendData(unsigned char* newData, unsigned numBytes) {
 
 void BufferedPacket::use(unsigned char* to, unsigned toSize,
 			 unsigned& bytesUsed, unsigned& bytesTruncated,
-			 unsigned short& rtpSeqNo, unsigned& rtpTimestamp,
+			 unsigned short& rtpSeqNo, uint32_t& rtpTimestamp,
 			 struct timeval& presentationTime,
 			 Boolean& hasBeenSyncedUsingRTCP,
 			 Boolean& rtpMarkerBit) {

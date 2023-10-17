@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 // The following are implemented in inet.c:
-ipv4AddressBits our_inet_addr(char const*);
+in_addr_t our_inet_addr(char const*);
 
 long our_random();
 

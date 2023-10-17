@@ -46,7 +46,7 @@ Boolean RTPSink::isRTPSink() const {
 
 RTPSink::RTPSink(UsageEnvironment& env,
 		 Groupsock* rtpGS, unsigned char rtpPayloadType,
-		 unsigned rtpTimestampFrequency,
+		 u_int32_t rtpTimestampFrequency,
 		 char const* rtpPayloadFormatName,
 		 unsigned numChannels)
   : MediaSink(env), fRTPInterface(this, rtpGS),

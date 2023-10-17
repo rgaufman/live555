@@ -32,6 +32,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "DelayQueue.hh"
 #endif
 
+#ifdef USE_ATOMIC_FOR_VOLATILE
+#include <atomic>
+#endif
+
 #define RESULT_MSG_BUFFER_MAX 1000
 
 // An abstract base class, useful for subclassing
@@ -105,7 +109,11 @@ protected:
   int fLastHandledSocketNum;
 
   // To implement event triggers:
+#ifdef USE_ATOMIC_FOR_VOLATILE
+  std::atomic<EventTriggerId> fTriggersAwaitingHandling;
+#else
   EventTriggerId volatile fTriggersAwaitingHandling; // implemented as a 32-bit bitmap
+#endif
   EventTriggerId fLastUsedTriggerMask; // implemented as a 32-bit bitmap
   TaskFunc* fTriggeredEventHandlers[MAX_NUM_EVENT_TRIGGERS];
   void* fTriggeredEventClientDatas[MAX_NUM_EVENT_TRIGGERS];

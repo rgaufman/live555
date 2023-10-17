@@ -33,7 +33,7 @@ class MultiFramedRTPSource: public RTPSource {
 protected:
   MultiFramedRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
 		       unsigned char rtpPayloadFormat,
-		       unsigned rtpTimestampFrequency,
+		       u_int32_t rtpTimestampFrequency,
 		       BufferedPacketFactory* packetFactory = NULL);
       // virtual base class
   virtual ~MultiFramedRTPSource();
@@ -101,7 +101,7 @@ public:
   void appendData(unsigned char* newData, unsigned numBytes);
   void use(unsigned char* to, unsigned toSize,
 	   unsigned& bytesUsed, unsigned& bytesTruncated,
-	   unsigned short& rtpSeqNo, unsigned& rtpTimestamp,
+	   unsigned short& rtpSeqNo, u_int32_t& rtpTimestamp,
 	   struct timeval& presentationTime,
 	   Boolean& hasBeenSyncedUsingRTCP, Boolean& rtpMarkerBit);
 

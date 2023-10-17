@@ -18,7 +18,7 @@
  * This confuses C++.  To overcome this, we use our own routine, implemented in C.
  */
 
-unsigned our_inet_addr(char const* cp)
+in_addr_t our_inet_addr(char const* cp)
 {
 	return inet_addr(cp);
 }

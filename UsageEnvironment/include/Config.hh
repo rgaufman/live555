@@ -45,7 +45,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     #define RTSP_CLIENT_VERBOSITY_LEVEL 1
 
     #define RTP_PAYLOAD_PREFERRED_SIZE 1456
-
+    // activate stdio abstraction layer
+    #define SOCKLEN_T uint32_t
+    // for Arduino ESP32 >= 3.0.0
+    #define USE_ATOMIC_FOR_VOLATILE
 #else
     // original 
     #define MAX_SIZE_555 2000000

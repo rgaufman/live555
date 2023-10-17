@@ -78,7 +78,7 @@ private:
   unsigned fNumVTIRBits;
       // # of bits needed to count to "vop_time_increment_resolution"
   u_int8_t fixed_vop_rate;
-  unsigned fixed_vop_time_increment; // used if 'fixed_vop_rate' is set
+  u_int32_t fixed_vop_time_increment; // used if 'fixed_vop_rate' is set
   unsigned fSecondsSinceLastTimeCode, fTotalTicksSinceLastTimeCode, fPrevNewTotalTicks;
   unsigned fPrevPictureCountDelta;
   Boolean fJustSawTimeCode;

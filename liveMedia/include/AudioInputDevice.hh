@@ -64,7 +64,7 @@ protected:
 
 protected:
   unsigned char fBitsPerSample, fNumChannels;
-  unsigned fSamplingFrequency;
+  u_int32_t fSamplingFrequency;
   unsigned fGranularityInMS;
 };
 

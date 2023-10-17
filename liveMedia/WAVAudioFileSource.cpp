@@ -135,7 +135,7 @@ WAVAudioFileSource::WAVAudioFileSource(UsageEnvironment& env, FILE* fid)
     }
 
     // FORMAT Chunk (the 4-byte header code has already been parsed):
-    unsigned formatLength;
+    u_int32_t formatLength;
     if (!get4Bytes(fid, formatLength)) break;
     unsigned short audioFormat;
     if (!get2Bytes(fid, audioFormat)) break;
@@ -174,7 +174,7 @@ WAVAudioFileSource::WAVAudioFileSource(UsageEnvironment& env, FILE* fid)
     int c = nextc;
     if (c == 'f') {
       if (nextc != 'a' || nextc != 'c' || nextc != 't') break;
-      unsigned factLength;
+      u_int32_t factLength;
       if (!get4Bytes(fid, factLength)) break;
       if (!skipBytes(fid, factLength)) break;
       c = nextc;
@@ -183,7 +183,7 @@ WAVAudioFileSource::WAVAudioFileSource(UsageEnvironment& env, FILE* fid)
     // EYRE chunk (optional):
     if (c == 'e') {
       if (nextc != 'y' || nextc != 'r' || nextc != 'e') break;
-      unsigned eyreLength;
+      u_int32_t eyreLength;
       if (!get4Bytes(fid, eyreLength)) break;
       if (!skipBytes(fid, eyreLength)) break;
       c = nextc;

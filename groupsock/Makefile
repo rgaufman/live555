@@ -1,4 +1,4 @@
-INCLUDES = -Iinclude -I../UsageEnvironment/include
+INCLUDES = -Iinclude -I../UsageEnvironment/include -I../BasicUsageEnvironment/include
 PREFIX = /usr/local
 LIBDIR = $(PREFIX)/lib
 ##### Change the following for your environment:

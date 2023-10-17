@@ -204,6 +204,11 @@ void MD5Context::zeroize() {
 #define S43 15
 #define S44 21
 
+#undef F
+#undef G
+#undef H
+#undef I
+
 // Basic MD5 functions:
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))

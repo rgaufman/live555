@@ -57,15 +57,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 /* Definitions of size-specific types: */
 typedef __int64 int64_t;
-typedef unsigned __int64 u_int64_t;
+typedef uint64_t __int64 u_int64_t;
 
 typedef int int32_t;
-typedef unsigned u_int32_t;
+typedef uint32_t u_int32_t;
 
-typedef short int16_t;
-typedef unsigned short u_int16_t;
+typedef int16_t int16_t;
+typedef uint16_t short u_int16_t;
 
-typedef unsigned char u_int8_t;
+typedef uint8_t char u_int8_t;
 
 #ifdef ARDUINO
 //#include <WiFi.h> // before lwip RE: https://github.com/espressif/arduino-esp32/issues/4405

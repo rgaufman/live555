@@ -262,9 +262,9 @@ unsigned MPEG1or2VideoStreamParser
   save4Bytes(first4Bytes);
 
   // Next, extract the size and rate parameters from the next 8 bytes
-  unsigned paramWord1 = get4Bytes();
+  u_int32_t paramWord1 = get4Bytes();
   save4Bytes(paramWord1);
-  unsigned next4Bytes = get4Bytes();
+  u_int32_t next4Bytes = get4Bytes();
 #ifdef DEBUG
   unsigned short horizontal_size_value   = (paramWord1&0xFFF00000)>>(32-12);
   unsigned short vertical_size_value     = (paramWord1&0x000FFF00)>>8;
@@ -306,7 +306,7 @@ unsigned MPEG1or2VideoStreamParser::parseGOPHeader(Boolean haveSeenStartCode) {
 #ifdef DEBUG
   fprintf(stderr, "parsing GOP header\n");
 #endif
-  unsigned first4Bytes;
+  u_int32_t first4Bytes;
   if (!haveSeenStartCode) {
     while ((first4Bytes = test4Bytes()) != GROUP_START_CODE) {
 #ifdef DEBUG
@@ -323,7 +323,7 @@ unsigned MPEG1or2VideoStreamParser::parseGOPHeader(Boolean haveSeenStartCode) {
   save4Bytes(first4Bytes);
 
   // Next, extract the (25-bit) time code from the next 4 bytes:
-  unsigned next4Bytes = get4Bytes();
+  u_int32_t next4Bytes = get4Bytes();
   unsigned time_code = (next4Bytes&0xFFFFFF80)>>(32-25);
 #if defined(DEBUG) || defined(DEBUG_TIMESTAMPS)
   Boolean drop_frame_flag     = (time_code&0x01000000) != 0;
@@ -374,7 +374,7 @@ unsigned MPEG1or2VideoStreamParser::parsePictureHeader() {
 #endif
   // Note that we've already read the PICTURE_START_CODE
   // Next, extract the temporal reference from the next 4 bytes:
-  unsigned next4Bytes = get4Bytes();
+  u_int32_t next4Bytes = get4Bytes();
   unsigned short temporal_reference = (next4Bytes&0xFFC00000)>>(32-10);
   unsigned char picture_coding_type = (next4Bytes&0x00380000)>>19;
 #ifdef DEBUG
@@ -417,7 +417,7 @@ unsigned MPEG1or2VideoStreamParser::parsePictureHeader() {
 
 unsigned MPEG1or2VideoStreamParser::parseSlice() {
   // Note that we've already read the slice_start_code:
-  unsigned next4Bytes = PICTURE_START_CODE|fCurrentSliceNumber;
+  u_int32_t next4Bytes = PICTURE_START_CODE|fCurrentSliceNumber;
 #ifdef DEBUG_SLICE
   fprintf(stderr, "parsing slice: 0x%08x\n", next4Bytes);
 #endif

@@ -70,7 +70,7 @@ u_int64_t GetFileSize(char const* fileName, FILE* fid) {
   return fileSize;
 }
 
-int64_t SeekFile64(FILE *fid, int64_t offset, int whence) {
+int64_t SeekFile64(FILE* fid, int64_t offset, int whence) {
   if (fid == NULL) return -1;
 
   clearerr(fid);
@@ -86,7 +86,7 @@ int64_t SeekFile64(FILE *fid, int64_t offset, int whence) {
 #endif
 }
 
-int64_t TellFile64(FILE *fid) {
+int64_t TellFile64(FILE* fid) {
   if (fid == NULL) return -1;
 
   clearerr(fid);
@@ -102,7 +102,7 @@ int64_t TellFile64(FILE *fid) {
 #endif
 }
 
-Boolean FileIsSeekable(FILE *fid) {
+Boolean FileIsSeekable(FILE* fid) {
   if (SeekFile64(fid, 1, SEEK_CUR) < 0) {
     return False;
   }
