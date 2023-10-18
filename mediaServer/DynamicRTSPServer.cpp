@@ -52,7 +52,11 @@ void DynamicRTSPServer
 			   void* completionClientData,
 			   Boolean isFirstLookupInSession) {
   // First, check whether the specified "streamName" exists as a local file:
+#ifdef ARDUINO
+  FILE* fid = open555File(streamName, "rb");
+#else
   FILE* fid = fopen(streamName, "rb");
+#endif
   Boolean const fileExists = fid != NULL;
 
   // Next, check whether we already have a "ServerMediaSession" for this file:

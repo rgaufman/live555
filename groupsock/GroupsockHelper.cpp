@@ -166,11 +166,11 @@ int setupDatagramSocket(UsageEnvironment& env, Port port, int domain) {
       if (port.num() == 0) addr = ReceivingInterfaceAddr;
       MAKE_SOCKADDR_IN(name, addr, port.num());
       if (bind(newSocket, (struct sockaddr*)&name, sizeof name) != 0) {
-	char tmpBuffer[100];
-	sprintf(tmpBuffer, "IPv4 bind() error (port number: %d): ", ntohs(port.num()));
-	socketErr(env, tmpBuffer);
-	closeSocket(newSocket);
-	return -1;
+        char tmpBuffer[100];
+        sprintf(tmpBuffer, "IPv4 bind() error (port number: %d): ", ntohs(port.num()));
+        socketErr(env, tmpBuffer);
+        closeSocket(newSocket);
+        return -1;
       }
 #if defined(__WIN32__) || defined(_WIN32)
 #else
@@ -186,11 +186,11 @@ int setupDatagramSocket(UsageEnvironment& env, Port port, int domain) {
 
       MAKE_SOCKADDR_IN6(name, addr, port.num());
       if (bind(newSocket, (struct sockaddr*)&name, sizeof name) != 0) {
-	char tmpBuffer[100];
-	sprintf(tmpBuffer, "IPv6 bind() error (port number: %d): ", ntohs(port.num()));
-	socketErr(env, tmpBuffer);
-	closeSocket(newSocket);
-	return -1;
+        char tmpBuffer[100];
+        sprintf(tmpBuffer, "IPv6 bind() error (port number: %d): ", ntohs(port.num()));
+        socketErr(env, tmpBuffer);
+        closeSocket(newSocket);
+        return -1;
       }
     }
   }
@@ -478,12 +478,16 @@ void ignoreSigPipeOnSocket(int socketNum) {
 static unsigned getBufferSize(UsageEnvironment& env, int bufOptName,
 			      int socket) {
   unsigned curSize;
+#if defined(ARDUINO) && defined(ESP32) 
+  curSize = 1460;
+#else
   SOCKLEN_T sizeSize = sizeof curSize;
   if (getsockopt(socket, SOL_SOCKET, bufOptName,
 		 (char*)&curSize, &sizeSize) < 0) {
     socketErr(env, "getBufferSize() error: ");
     return 0;
   }
+#endif
 
   return curSize;
 }
@@ -815,7 +819,13 @@ ipv4AddressBits ourIPv4Address(UsageEnvironment& env) {
   }
 
   if (!_weHaveAnIPv4Address) {
+#ifdef ARDUINO
+    _ourIPv4Address = localip();;
+#else
     getOurIPAddresses(env);
+#endif
+
+
   }
 
   return _ourIPv4Address;
@@ -904,16 +914,17 @@ void getOurIPAddresses(UsageEnvironment& env) {
       
       // We take the first IPv4 and first IPv6 addresses:
       if (p->ifa_addr->sa_family == AF_INET && addressIsNull(foundIPv4Address)) {
-	copyAddress(foundIPv4Address, p->ifa_addr);
-	getifaddrsWorks = True;
+        copyAddress(foundIPv4Address, p->ifa_addr);
+        getifaddrsWorks = True;
       } else if (p->ifa_addr->sa_family == AF_INET6 && addressIsNull(foundIPv6Address)) {
-	copyAddress(foundIPv6Address, p->ifa_addr);
-	getifaddrsWorks = True;
+        copyAddress(foundIPv6Address, p->ifa_addr);
+        getifaddrsWorks = True;
       }
     }
     freeifaddrs(ifap);
   }
 #endif
+
 
     if (!getifaddrsWorks) do {
       // We couldn't find our address using "getifaddrs()",
@@ -923,8 +934,8 @@ void getOurIPAddresses(UsageEnvironment& env) {
       hostname[0] = '\0';
       int result = gethostname(hostname, sizeof hostname);
       if (result != 0 || hostname[0] == '\0') {
-	env.setResultErrMsg("initial gethostname() failed");
-	break;
+        env.setResultErrMsg("initial gethostname() failed");
+        break;
       }
 
       // Try to resolve "hostname" to one or more IP addresses:
@@ -935,18 +946,19 @@ void getOurIPAddresses(UsageEnvironment& env) {
       // We take the first IPv4 and first IPv6 addresses, if any.
       NetAddress const* address;
       while ((address = iter.nextAddress()) != NULL) {
-	if (isBadAddressForUs(*address)) continue;
+        if (isBadAddressForUs(*address)) continue;
 
-	if (address->length() == sizeof (ipv4AddressBits) && addressIsNull(foundIPv4Address)) {
-	  copyAddress(foundIPv4Address, address);
-	} else if (address->length() == sizeof (ipv6AddressBits) && addressIsNull(foundIPv6Address)) {
-	  copyAddress(foundIPv6Address, address);
-	}
+        if (address->length() == sizeof (ipv4AddressBits) && addressIsNull(foundIPv4Address)) {
+          copyAddress(foundIPv4Address, address);
+        } else if (address->length() == sizeof (ipv6AddressBits) && addressIsNull(foundIPv6Address)) {
+          copyAddress(foundIPv6Address, address);
+        }
       }
     } while (0);
 
     // Note the IPv4 and IPv6 addresses that we found:
     _ourIPv4Address = ((sockaddr_in&)foundIPv4Address).sin_addr.s_addr;
+
 
     for (unsigned i = 0; i < 16; ++i) {
       _ourIPv6Address[i] = ((sockaddr_in6&)foundIPv6Address).sin6_addr.s6_addr[i];

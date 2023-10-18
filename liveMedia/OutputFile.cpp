@@ -30,6 +30,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "OutputFile.hh"
 
 FILE* OpenOutputFile(UsageEnvironment& env, char const* fileName) {
+#if defined(ARDUINO) && defined(ESP32)  
+  return open555File(fileName, "wb");
+#endif  
+
   FILE* fid;
 
   // Check for special case 'file names': "stdout" and "stderr"

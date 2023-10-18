@@ -299,7 +299,7 @@ char* ServerMediaSession::generateSDPDescription(int addressFamily) {
     if (sdp == NULL) break;
 
     // Generate the SDP prefix (session-level lines):
-    snprintf(sdp, sdpLength, sdpPrefixFmt,
+    int len = snprintf(sdp, sdpLength, sdpPrefixFmt,
 	     fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
 	     1, // o= <version> // (needs to change if params are modified)
 	     addressFamily == AF_INET ? "IP4" : "IP6", // o= <address family>

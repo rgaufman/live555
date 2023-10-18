@@ -18,120 +18,123 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // stdio replacement using the SD library
 
 #pragma once
-#if defined(ARDUINO) && defined(USE_STREAM)
-#define DEACTIVATE_STDIO_ABSTRACTION
-#include <SPI.h>
-#include "SdFat.h"
-#include "sdios.h"
-#include "ArduinoStdio.hh"
+
+#include "Stream.h"
+#include "FileAccess.hh"
 
 /**
  * @brief stdio Access using an single Arduino Stream 
  */
 
-class FileAccessStream : public AbstractFile {
+class FileAccessStream : public File555 {
     public:
         FileAccessStream(Stream &stream){
+            setStream(stream);
+        }
+        void setStream(Stream &stream){
+            p_stream = &stream;
+            fopen(nullptr, nullptr);
         }
 
-        virtual void* fopen(const char *path, const char *mode) override {
+        void fopen(const char *path, const char *mode) override {
             is_open = true;
             current_pos = 0;
-            return this;
         }
 
-        virtual int fclose(void *fp) override {
+        int fclose(void) override {
             is_open = true;
-            return (checkFile(fp)) ? 0 : EOF;
+            return 0;
         }
 
         /// not implemented
-        virtual int fgetc(void *fp) override {
-            LOG("fgetc not implemented\n");
-            return EOF;
+        int fgetc(void) override {
+            return -1;
         }
 
-        virtual int fputc(int c, void *fp) override {
-            LOG("fputc not implemented\n");
-            return EOF;
+        int fputc(int c) override {
+            return -1;
         }
 
         // not needed, so not implemented
-        virtual int fseek(void *fp, long offset, int origin) override{
-            LOG("fseek not implemented\n");
-            return EOF;
+        int fseek(long offset, int origin) override{
+            return -1;
         }
 
-        virtual long int ftell(void *fp) override {
-            if (!checkFile(fp)) return EOF;
+        long int ftell(void) override {
             return current_pos;
         }
 
-        virtual size_t fread(void *ptr, size_t size, size_t count, void *fp)override {
-            if (!checkFile(fp)) return 0;
-            int actual_read = p_stream->readBytes(ptr, size*count);
+        size_t fread(void *ptr, size_t size, size_t count)override {
+            int actual_read = p_stream->readBytes((uint8_t*)ptr, size*count);
             current_pos += actual_read;
             return actual_read;
         }
 
-        virtual size_t fwrite(const void *ptr, size_t size, size_t count, void *fp) override {
+        size_t fwrite(const void *ptr, size_t size, size_t count) override {
             size_t result = 0;
             // write to stream
-            size_t actual_written = p_stream->write(ptr, size*count);
+            size_t actual_written = p_stream->write((const uint8_t*)ptr, size*count);
             current_pos += actual_written;
             return actual_written;
         }
 
         /// A non-zero value is returned in the case that the error indicator associated with the stream is set
-        virtual int ferror(void *fp) override {
+        int ferror(void) override {
             return has_error;
         }
 
-        virtual void clearerr(void *fp) {
-            if (!checkFile(fp)) return;
+        void clearerr(void) override {
             has_error = false;
         }
 
-
         /// Not implemented
-        virtual int ungetc(int c, void *fp) override {
+        int ungetc(int c) override {
             LOG("ungetc not implemented\n");
-            return EOF;
+            return -1;
         };
 
         // This function returns a non-zero value when End-of-File 
-        virtual int feof(void *fp) override {
-            if (!checkFile(fp)) return EOF;
+        int feof(void) override {
             bool hasData = p_stream->available()>0;
             return !hasData;
         }
 
-        virtual void rewind(void *fp) override {
+        void rewind(void) override {
             LOG("rewind not implemented\n");
         }
 
-        virtual int fflush(void *fp) {
+        int fflush(void) {
             p_stream->flush();
             return 0;
         }
 
-        virtual size_t fileSize(void *ptr) {
-            if (!checkFile(fp)) return 0;
+        size_t size() override {
+            if (!is_open) return 0;
             // a stream is theoretically open ended - so we just return a big number
             return 100000000;
         }
 
-    protected:
-        Stream *p_stream=nullptr;
-        bool is_open=false;
-        int current_pos = 0;
-        bool has_error = false;
-
-
-        bool checkFile(void *ptr){
-            return ptr==this && is_open();
+        bool isOpen() override {
+            return is_open;
         }
-};
-#undef DEACTIVATE_STDIO_ABSTRACTION
 
-#endif
+    protected:
+        Stream *p_stream = nullptr;
+        bool is_open=false;
+        bool has_error = false;
+        int current_pos = 0;
+
+};
+
+/**
+ * Driver for FileAccessStream
+ */
+class FileDriverStream {
+public:
+  FileAccessStream *fopen(Stream &stream) {
+    return new FileAccessStream(stream);
+  };
+
+};
+
+

@@ -20,14 +20,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "Config.hh"
 #ifdef ARDUINO
     #include "ArduinoStdio.hh"
-    // activate stdio abstraction layer
-    #include "ArduinoStdioReplace.hh"
-#define SOCKLEN_T uint32_t
 #else
     #include "stdio.h"
     // We use the original logic with printf(stderr,...)
-    //#define LOG(...) fprintf(stderr,__VA_ARGS__)
-    //#define LOGFLUSH() fflush(stderr)
     #define LOG(...) printf(__VA_ARGS__)
     #define LOGFLUSH() fflush(stdout)
 

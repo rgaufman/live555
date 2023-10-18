@@ -12,9 +12,7 @@ I have also adapted plenty of files so that they compile by addressing the follo
 - Used a [file astraction layer](https://pschatzmann.github.io/live555/html/class_abstract_file.html#details) to replace the stdio.h operations so that we can use different SD libraries
 
 The biggest challange was with the last point. Unfortunatly Arduino does not provide a proper stdio.h implementation 
-that can be used to access files. On the other hand most projects assume that stdio.h is available and therfore do not use any additional abstraction layer: live555 is here not an exception. I tried to redefine the relevant methods 
-with some simple #define commands. 
-
-You can find all the adapted files which contain some additional Arduino specific logic by searching for ARDUINO.
+that can be used to access files. On the other hand most projects assume that stdio.h is available and therfore do
+not use any additional abstraction layer: live555 is here not an exception. 
 
 For the time beeing I concentrate to make the ESP32 compile.

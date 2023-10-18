@@ -22,6 +22,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include <string.h>
 
 FILE* OpenInputFile(UsageEnvironment& env, char const* fileName) {
+
+#if defined(ARDUINO) && defined(ESP32)  
+  return open555File(fileName, "rb");
+#endif  
   FILE* fid;
 
   // Check for a special case file name: "stdin"
@@ -48,25 +52,39 @@ void CloseInputFile(FILE* fid) {
 u_int64_t GetFileSize(char const* fileName, FILE* fid) {
   u_int64_t fileSize = 0; // by default
 
+#if defined(ARDUINO)
+  if (fileName != NULL) {
+    fileSize = get555FileSize(fileName);
+  } else {
+    if (fid != NULL && SeekFile64(fid, 0, SEEK_END) >= 0) {
+      fileSize = (u_int64_t)TellFile64(fid);
+      if (fileSize == (u_int64_t)-1) fileSize = 0; // TellFile64() failed
+      SeekFile64(fid, 0, SEEK_SET);
+    }
+  }
+#elif defined(_WIN32_WCE)
   if (fid != stdin) {
-#if !defined(_WIN32_WCE)
-    if (fileName == NULL) {
-#endif
       if (fid != NULL && SeekFile64(fid, 0, SEEK_END) >= 0) {
-	fileSize = (u_int64_t)TellFile64(fid);
-	if (fileSize == (u_int64_t)-1) fileSize = 0; // TellFile64() failed
-	SeekFile64(fid, 0, SEEK_SET);
+        fileSize = (u_int64_t)TellFile64(fid);
+        if (fileSize == (u_int64_t)-1) fileSize = 0; // TellFile64() failed
+        SeekFile64(fid, 0, SEEK_SET);
       }
-#if !defined(_WIN32_WCE)
+#else
+  if (fid != stdin) {
+    if (fileName == NULL) {
+      if (fid != NULL && SeekFile64(fid, 0, SEEK_END) >= 0) {
+        fileSize = (u_int64_t)TellFile64(fid);
+        if (fileSize == (u_int64_t)-1) fileSize = 0; // TellFile64() failed
+        SeekFile64(fid, 0, SEEK_SET);
+      }
     } else {
       struct stat sb;
       if (stat(fileName, &sb) == 0) {
-	fileSize = sb.st_size;
+      	fileSize = sb.st_size;
       }
     }
-#endif
   }
-
+#endif
   return fileSize;
 }
 
@@ -78,11 +96,11 @@ int64_t SeekFile64(FILE* fid, int64_t offset, int whence) {
 #if (defined(__WIN32__) || defined(_WIN32)) && !defined(_WIN32_WCE)
   return _lseeki64(_fileno(fid), offset, whence) == (int64_t)-1 ? -1 : 0;
 #else
-#if defined(_WIN32_WCE)
-  return fseek(fid, (long)(offset), whence);
-#else
-  return fseeko(fid, (off_t)(offset), whence);
-#endif
+  #if defined(_WIN32_WCE)
+    return fseek(fid, (long)(offset), whence);
+  #else
+    return fseeko(fid, (off_t)(offset), whence);
+  #endif
 #endif
 }
 
@@ -94,11 +112,11 @@ int64_t TellFile64(FILE* fid) {
 #if (defined(__WIN32__) || defined(_WIN32)) && !defined(_WIN32_WCE)
   return _telli64(_fileno(fid));
 #else
-#if defined(_WIN32_WCE)
-  return ftell(fid);
-#else
-  return ftello(fid);
-#endif
+  #if defined(_WIN32_WCE)
+    return ftell(fid);
+  #else
+    return ftello(fid);
+  #endif
 #endif
 }
 

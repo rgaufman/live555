@@ -468,7 +468,11 @@ void segmentationCallback(void* /*clientData*/,
   }
 
   // Open our ".m3u8" file for output, and write the prefix:
+#ifdef ARDUINO
+  FILE* ourM3U8Fid = open555File(ourM3U8FileName, "wb");
+#else
   FILE* ourM3U8Fid = fopen(ourM3U8FileName, "wb");
+#endif
   if (ourM3U8Fid == NULL) {
     *env << "Failed to open file \"" << ourM3U8FileName << "\": " << env->getResultMsg();
     exit(1);

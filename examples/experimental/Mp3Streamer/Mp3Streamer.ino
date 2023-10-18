@@ -16,13 +16,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Copyright (c) 2021 Phil Schatzmann
 // A simple demo sketch that streams a streamer file via RTP/RTCP
 
-#include "FileAccessSdFat.hh"
+#include "FileAccess.hh"
 #include "RTSPSimpleStreamer.hh"
 
+#define PIN_SD_CARD_CS 13  
+#define PIN_SD_CARD_MISO 2
+#define PIN_SD_CARD_MOSI 15
+#define PIN_SD_CARD_CLK  14
+
 SimpleMP3Streamer streamer(new FileAccessSdFat());
+FileDriverSD fd(PIN_SD_CARD_CS, "/sd/test/"); // use files in /test subdirectory
 
 void setup() {
   Serial.begin(115200);
+
+  // setup vfs for SD on the ESP32
+  SPI.begin(PIN_SD_CARD_CLK, PIN_SD_CARD_MISO, PIN_SD_CARD_MOSI, PIN_SD_CARD_CS);
+  set555FileDriver(fd);
 
   auto cfg = streamer.defaultConfig();
   cfg.destinationAddress = "192.168.1.255";

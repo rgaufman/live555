@@ -68,7 +68,6 @@ typedef uint16_t short u_int16_t;
 typedef uint8_t char u_int8_t;
 
 #ifdef ARDUINO
-//#include <WiFi.h> // before lwip RE: https://github.com/espressif/arduino-esp32/issues/4405
 #define IPADDR_NONE         ((uint32_t)0xffffffffUL)
 #endif
 

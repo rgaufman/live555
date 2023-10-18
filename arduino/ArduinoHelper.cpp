@@ -18,20 +18,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #ifdef ARDUINO
 #include "ArduinoHelper.hh"
-#include "WiFi.h"
 
 // Allocate memory for error messages
 char error_msg[ERROR_MSG_SIZE];
 
-// /// Arduino does not support the exit method - we just stop the processing
-// void stop(int rc) {
-//     if (rc!=0){
-//         Serial.print("return code: ");
-//         Serial.println(rc);
-//     }
-//     Serial.println("THE END!");
-//     while(true);
-// }
+/// Arduino does not support the exit method - we just stop the processing
+void stop(int rc) {
+    if (rc!=0){
+        Serial.print("return code: ");
+        Serial.println(rc);
+    }
+    Serial.println("THE END!");
+    while(true);
+}
 
 // get local IP address
 uint32_t localip(){
@@ -42,8 +41,8 @@ uint32_t localip(){
 extern "C" int gethostname(char* str, unsigned len){
     const char* name = WiFi.getHostname();
     strncpy(str, name ,len);
-    //Serial.print("hostname: ");
-    //Serial.println(name);
+    Serial.print("hostname: ");
+    Serial.println(name);
     return 1;
 }
 

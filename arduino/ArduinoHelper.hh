@@ -17,14 +17,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#ifdef ESP32
-#include "esp_wifi.h"
-#endif
-
 #ifdef ARDUINO
+#include "WiFi.h"
 #include <string.h>
 #include <stdio.h>
-#include "Arduino.h"
+//#include "Arduino.h"
 #include "Config.hh"
 #undef F
 
@@ -32,7 +29,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 extern char error_msg[ERROR_MSG_SIZE];
 
 // Logging support for Arduino: we just user Serial.print()
-#define LOG(...) { snprintf(error_msg, ERROR_MSG_SIZE,__VA_ARGS__); Serial.print(error_msg); }
+#define LOG(...) { snprintf(error_msg, ERROR_MSG_SIZE,__VA_ARGS__); Serial.println(error_msg); }
 #define LOGFLUSH() Serial.flush()
 
 // Comment out try catch
@@ -42,7 +39,7 @@ extern char error_msg[ERROR_MSG_SIZE];
 // Use this to stop the processing
 // void stop(int rc=0);
 
-// Use stop insted of eit in Arduino
+// Use stop insted of exit in Arduino
 #ifndef exit
 #  define exit(rc) while(true);
 #endif

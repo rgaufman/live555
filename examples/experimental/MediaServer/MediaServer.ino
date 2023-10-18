@@ -18,22 +18,35 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // main program
 
 #include "DynamicRTSPServer.hh"
+#include "BasicUsageEnvironment.hh"
+#include "SimpleTaskScheduler.hh"
+#include "FileAccess.hh"
 #include "WiFi.h"
 #include "ESPmDNS.h"
 #include "version.hh"
-#include <BasicUsageEnvironment.hh>
+#include "SPI.h"
+#include "SD.h"
+
+#define PIN_SD_CARD_CS 13  
+#define PIN_SD_CARD_MISO 2
+#define PIN_SD_CARD_MOSI 15
+#define PIN_SD_CARD_CLK  14
 
 const char *ssid = "ssid";
 const char *password = "password";
-TaskScheduler *scheduler;
-UsageEnvironment *env;
-UserAuthenticationDatabase *authDB = NULL;
+FileDriverSD fd(PIN_SD_CARD_CS, "/sd/test/"); // use files in /test subdirectory
+SimpleTaskScheduler *scheduler = nullptr;
+UsageEnvironment *env = nullptr;
+UserAuthenticationDatabase *authDB = nullptr;
 
 void setup() {
   Serial.begin(115200);
+  // setup vfs for SD on the ESP32
+  SPI.begin(PIN_SD_CARD_CLK, PIN_SD_CARD_MISO, PIN_SD_CARD_MOSI, PIN_SD_CARD_CS);
+  set555FileDriver(fd);
 
   // Begin by setting up our usage environment:
-  scheduler = BasicTaskScheduler::createNew();
+  scheduler = SimpleTaskScheduler::createNew();
   env = BasicUsageEnvironment::createNew(*scheduler);
 
   // start WIFI
@@ -42,8 +55,8 @@ void setup() {
     delay(500);
     *env << "Connecting to WiFi..\n";
   }
-  esp_wifi_set_ps(WIFI_PS_NONE);
-  *env << "connected with IP: " << AddressString(WiFi.localIP()).val() << "\n";
+  WiFi.setSleep(false);
+  *env << "connected with IP: " << AddressString(ourIPv4Address(*env)).val() << "\n";
 
   // Create the RTSP server.  Try first with the default port number (554),
   // and then with the alternative port number (8554):
@@ -118,5 +131,5 @@ void setup() {
 }
 
 void loop() {
-  scheduler->singleStep(); 
+  scheduler->SingleStep(); 
 }

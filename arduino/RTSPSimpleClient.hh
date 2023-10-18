@@ -197,6 +197,7 @@ class RTSPSimpleClient {
         Serial.print("Local Address: ");
         Serial.println(WiFi.localIP());
       }
+      WiFi.setSleep(false);
       return WiFi.status() == WL_CONNECTED;
     }
 };

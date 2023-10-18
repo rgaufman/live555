@@ -62,7 +62,7 @@ NetAddress::~NetAddress() {
 }
 
 void NetAddress::assign(u_int8_t const* data, unsigned length) {
-  fData = new u_int8_t[length];
+  fData = new u_int8_t[length]();
   if (fData == NULL) {
     fLength = 0;
     return;
@@ -483,12 +483,12 @@ AddressString::AddressString(struct sockaddr_storage const& addr) {
 }
 
 void AddressString::init(ipv4AddressBits const& addr) {
-  fVal = new char[INET_ADDRSTRLEN];
+  fVal = new char[INET_ADDRSTRLEN]();
   inet_ntop(AF_INET, &addr, fVal, INET_ADDRSTRLEN);
 }
 
 void AddressString::init(ipv6AddressBits const& addr) {
-  fVal = new char[INET6_ADDRSTRLEN];
+  fVal = new char[INET6_ADDRSTRLEN]();
   inet_ntop(AF_INET6, &addr, fVal, INET6_ADDRSTRLEN);
 }
 

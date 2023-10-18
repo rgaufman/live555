@@ -1,23 +1,21 @@
 #pragma once
-#include "inet.hh"
-#include "WiFi.h"
+
 #include "ArduinoHelper.hh"
 #include "BasicUsageEnvironment.hh"
 #include "GroupsockHelper.hh"
 #include "inet.hh"
 #include "liveMedia.hh"
 #include "ESPmDNS.h"
-#include "SimpleTaskScheduler.hh"
 
 
 /**
  * @brief Configuration Parameters for the SimpleMP3Streamer class
  * @author Phil Schatzmann
  */
-struct RTSPSimpleStreamerConfig {
+struct SimpleStreamerConfig {
   const char* filePath = nullptr;
   const char* destinationAddress = nullptr;
-  unsigned short rtpPort = 8554;
+  unsigned short rtpPort = 6666;
   unsigned char ttl = 1;  // use a low value, in case routers don't admin scope
   const char* ssid = nullptr;
   const char* password = nullptr;
@@ -35,33 +33,32 @@ struct RTSPSimpleStreamerConfig {
 
 };
 
-
 /**
  * @brief Abstract base class for a Simple API for a Streamer
  * @author Phil Schatzmann
  */
-class RTSPSimpleStreamer {
+class SimpleStreamer {
  public:
-  RTSPSimpleStreamer(AbstractFile& driver, int granularity=1000) {
+  SimpleStreamer(AbstractFile& driver, int granularity=1000) {
     ::set555FileDriver(&driver);
     // Begin by setting up our usage environment:
-    TaskScheduler* scheduler = SimpleTaskScheduler::createNew(granularity);
+    TaskScheduler* scheduler = BasicTaskScheduler::createNew(granularity);
     env = BasicUsageEnvironment::createNew(*scheduler);
   }
 
-  RTSPSimpleStreamer(AbstractFile* driver, int granularity=1000) {
+  SimpleStreamer(AbstractFile* driver, int granularity=1000) {
     ::set555FileDriver(driver);
     // Begin by setting up our usage environment:
     TaskScheduler* scheduler = BasicTaskScheduler::createNew(granularity);
     env = BasicUsageEnvironment::createNew(*scheduler);
   }
 
-  virtual RTSPSimpleStreamerConfig defaultConfig() {
-    RTSPSimpleStreamerConfig cfg;
+  virtual SimpleStreamerConfig defaultConfig() {
+    SimpleStreamerConfig cfg;
     return cfg;
   }
 
-  virtual bool begin(RTSPSimpleStreamerConfig config) {
+  virtual bool begin(SimpleStreamerConfig config) {
     LOG("begin\n");
     this->cfg = config;
 
@@ -87,10 +84,8 @@ class RTSPSimpleStreamer {
     // diplay address
     *env << "Using rtp address:" << cfg.destinationAddress << ":" << cfg.rtpPort << "\n";
 
-    struct sockaddr_storage destinationAddress;
-    destinationAddress.ss_family = AF_INET;
-    ((sockaddr_in&)destinationAddress).sin_addr.s_addr = our_inet_addr(cfg.destinationAddress);;
-
+    struct in_addr destinationAddress;
+    destinationAddress.s_addr = our_inet_addr(cfg.destinationAddress);
     const Port rtpPort(cfg.rtpPort);
     const unsigned short rtcpPortNum = cfg.rtcpPort();
     const Port rtcpPort(rtcpPortNum);
@@ -124,14 +119,14 @@ class RTSPSimpleStreamer {
   virtual void doEventLoop() { env->taskScheduler().doEventLoop(); }
 
   /// execute singleStep for ARDUINO loop()
-  virtual void singleStep(unsigned delay=0) { static_cast<SimpleTaskScheduler&>(env->taskScheduler()).SingleStep(delay);}
+  virtual void singleStep(unsigned delay=0) { env->taskScheduler().singleStep(delay);}
 
   virtual const char* hostName() {
     return (const char*)CNAME;
   }
 
  protected:
-  RTSPSimpleStreamerConfig cfg;
+  SimpleStreamerConfig cfg;
   UsageEnvironment* env = nullptr;
   RTPSink* sink = nullptr;
   RTCPInstance* rtcpInstance = nullptr;
@@ -175,9 +170,7 @@ class RTSPSimpleStreamer {
           delay(1000);
           *env << "Connecting to WiFi..\n";
         }
-        //esp_wifi_set_ps(WIFI_PS_NONE);
-        WiFi.setSleep(false);
-
+        esp_wifi_set_ps(WIFI_PS_NONE);
         *env << "connected with IP: " << AddressString(WiFi.localIP()).val() << "\n";
     }
   }
@@ -203,7 +196,7 @@ class RTSPSimpleStreamer {
     }
 
     // determin caller object
-    RTSPSimpleStreamer* self = (RTSPSimpleStreamer*)ptr;
+    SimpleStreamer* self = (SimpleStreamer*)ptr;
     *(self->env) << "...done streaming\n";
 
     self->sink->stopPlaying();
@@ -224,11 +217,11 @@ class RTSPSimpleStreamer {
  * @brief A Simple API for a MP3 Streamer
  * @author Phil Schatzmann
  */
-class SimpleMP3Streamer : public RTSPSimpleStreamer {
+class SimpleMP3Streamer : public SimpleStreamer {
  public:
-  SimpleMP3Streamer(AbstractFile& driver) : RTSPSimpleStreamer(driver) {}
+  SimpleMP3Streamer(AbstractFile& driver) : SimpleStreamer(driver) {}
 
-  SimpleMP3Streamer(AbstractFile* driver) : RTSPSimpleStreamer(driver) {}
+  SimpleMP3Streamer(AbstractFile* driver) : SimpleStreamer(driver) {}
 
   bool play() {
     // Open the file as a 'MP3 file source':
@@ -296,11 +289,11 @@ class SimpleMP3Streamer : public RTSPSimpleStreamer {
  * @brief A simple API for a PCM Streamer
  * @author Phil Schatzmann
  */
-class SimplePCMStreamer : public RTSPSimpleStreamer {
+class SimplePCMStreamer : public SimpleStreamer {
  public:
-  SimplePCMStreamer(AbstractFile& driver) : RTSPSimpleStreamer(driver) {}
+  SimplePCMStreamer(AbstractFile& driver) : SimpleStreamer(driver) {}
 
-  SimplePCMStreamer(AbstractFile* driver) : RTSPSimpleStreamer(driver) {}
+  SimplePCMStreamer(AbstractFile* driver) : SimpleStreamer(driver) {}
 
   bool play() {
     *env << "Beginning streaming...\n";
