@@ -1,1 +1,3 @@
-../liveMedia/H265VideoFileSink.cpp
+// link to original location
+#include "../liveMedia/H265VideoFileSink.cpp"
+

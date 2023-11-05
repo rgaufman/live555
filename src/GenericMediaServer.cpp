@@ -1,1 +1,3 @@
-../liveMedia/GenericMediaServer.cpp
+// link to original location
+#include "../liveMedia/GenericMediaServer.cpp"
+

@@ -1,1 +1,4 @@
-../liveMedia/include/OggFileSink.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/OggFileSink.hh"
+

@@ -1,1 +1,3 @@
-../liveMedia/MPEG1or2VideoStreamFramer.cpp
+// link to original location
+#include "../liveMedia/MPEG1or2VideoStreamFramer.cpp"
+

@@ -1,1 +1,3 @@
-../liveMedia/H263plusVideoRTPSource.cpp
+// link to original location
+#include "../liveMedia/H263plusVideoRTPSource.cpp"
+

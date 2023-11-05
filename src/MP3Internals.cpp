@@ -1,1 +1,3 @@
-../liveMedia/MP3Internals.cpp
+// link to original location
+#include "../liveMedia/MP3Internals.cpp"
+

@@ -1,1 +1,3 @@
-../liveMedia/MPEG2TransportUDPServerMediaSubsession.cpp
+// link to original location
+#include "../liveMedia/MPEG2TransportUDPServerMediaSubsession.cpp"
+

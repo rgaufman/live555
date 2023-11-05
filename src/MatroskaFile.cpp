@@ -1,1 +1,3 @@
-../liveMedia/MatroskaFile.cpp
+// link to original location
+#include "../liveMedia/MatroskaFile.cpp"
+

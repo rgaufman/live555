@@ -1,1 +1,3 @@
-../liveMedia/RTSPClient.cpp
+// link to original location
+#include "../liveMedia/RTSPClient.cpp"
+

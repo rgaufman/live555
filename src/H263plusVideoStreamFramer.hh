@@ -1,1 +1,4 @@
-../liveMedia/include/H263plusVideoStreamFramer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/H263plusVideoStreamFramer.hh"
+

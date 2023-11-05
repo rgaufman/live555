@@ -1,1 +1,3 @@
-../liveMedia/ProxyServerMediaSession.cpp
+// link to original location
+#include "../liveMedia/ProxyServerMediaSession.cpp"
+

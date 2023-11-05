@@ -130,6 +130,9 @@ OutPacketBuffer::~OutPacketBuffer() {
 }
 
 void OutPacketBuffer::enqueue(unsigned char const* from, unsigned numBytes) {
+#ifdef DEBUG
+    fprintf(stderr, "OutPacketBuffer::enqueue(): %d > %d\n", numBytes, totalBytesAvailable());
+#endif
   if (numBytes > totalBytesAvailable()) {
 #ifdef DEBUG
     fprintf(stderr, "OutPacketBuffer::enqueue() warning: %d > %d\n", numBytes, totalBytesAvailable());
@@ -143,7 +146,7 @@ void OutPacketBuffer::enqueue(unsigned char const* from, unsigned numBytes) {
 
 void OutPacketBuffer::enqueueWord(u_int32_t word) {
   u_int32_t nWord = htonl(word);
-  enqueue((unsigned char*)&nWord, 4);
+  enqueue((unsigned char const*)&nWord, 4);
 }
 
 void OutPacketBuffer::insert(unsigned char const* from, unsigned numBytes,

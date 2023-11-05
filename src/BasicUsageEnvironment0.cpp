@@ -1,1 +1,3 @@
-../BasicUsageEnvironment/BasicUsageEnvironment0.cpp
+// link to original location
+#include "../BasicUsageEnvironment/BasicUsageEnvironment0.cpp"
+

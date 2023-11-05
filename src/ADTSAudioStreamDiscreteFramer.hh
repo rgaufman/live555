@@ -1,1 +1,4 @@
-../liveMedia/include/ADTSAudioStreamDiscreteFramer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/ADTSAudioStreamDiscreteFramer.hh"
+

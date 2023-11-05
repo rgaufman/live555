@@ -1,1 +1,3 @@
-../liveMedia/StreamReplicator.cpp
+// link to original location
+#include "../liveMedia/StreamReplicator.cpp"
+

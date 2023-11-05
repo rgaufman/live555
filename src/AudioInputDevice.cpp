@@ -1,1 +1,3 @@
-../liveMedia/AudioInputDevice.cpp
+// link to original location
+#include "../liveMedia/AudioInputDevice.cpp"
+

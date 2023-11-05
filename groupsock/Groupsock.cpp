@@ -43,9 +43,15 @@ OutputSocket::~OutputSocket() {
 Boolean OutputSocket::write(struct sockaddr_storage const& addressAndPort, u_int8_t ttl,
 			    unsigned char* buffer, unsigned bufferSize) {
   if ((unsigned)ttl == fLastSentTTL) {
+#ifdef DEBUG_SEND
+    fprintf(stderr, "writeSocket(%u)\n", bufferSize);
+#endif
     // Optimization: Don't do a 'set TTL' system call again
     if (!writeSocket(env(), socketNum(), addressAndPort, buffer, bufferSize)) return False;
   } else {
+#ifdef DEBUG_SEND
+    fprintf(stderr, "writeSocket ttl(%u)\n", bufferSize);
+#endif
     if (!writeSocket(env(), socketNum(), addressAndPort, ttl, buffer, bufferSize)) return False;
     fLastSentTTL = (unsigned)ttl;
   }
@@ -255,12 +261,15 @@ void Groupsock::multicastSendOnly() {
 
 Boolean Groupsock::output(UsageEnvironment& env, unsigned char* buffer, unsigned bufferSize) {
   do {
+#ifdef DEBUG_SEND
+    fprintf(stderr, "Groupsock::output(%u)\n", bufferSize);
+#endif
     // First, do the datagram send, to each destination:
     Boolean writeSuccess = True;
     for (destRecord* dests = fDests; dests != NULL; dests = dests->fNext) {
       if (!write(dests->fGroupEId.groupAddress(), dests->fGroupEId.ttl(), buffer, bufferSize)) {
-	writeSuccess = False;
-	break;
+        writeSuccess = False;
+        break;
       }
     }
     if (!writeSuccess) break;

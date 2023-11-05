@@ -1,1 +1,4 @@
-../liveMedia/include/AC3AudioStreamFramer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/AC3AudioStreamFramer.hh"
+

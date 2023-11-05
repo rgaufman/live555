@@ -1,1 +1,3 @@
-../liveMedia/HLSSegmenter.cpp
+// link to original location
+#include "../liveMedia/HLSSegmenter.cpp"
+

@@ -1,1 +1,3 @@
-../groupsock/NetAddress.cpp
+// link to original location
+#include "../groupsock/NetAddress.cpp"
+

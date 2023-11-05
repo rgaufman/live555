@@ -1,1 +1,3 @@
-../liveMedia/TheoraVideoRTPSource.cpp
+// link to original location
+#include "../liveMedia/TheoraVideoRTPSource.cpp"
+

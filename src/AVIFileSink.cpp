@@ -1,1 +1,3 @@
-../liveMedia/AVIFileSink.cpp
+// link to original location
+#include "../liveMedia/AVIFileSink.cpp"
+

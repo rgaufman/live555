@@ -1,1 +1,3 @@
-../liveMedia/VP8VideoRTPSource.cpp
+// link to original location
+#include "../liveMedia/VP8VideoRTPSource.cpp"
+

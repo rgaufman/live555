@@ -1,1 +1,4 @@
-../BasicUsageEnvironment/include/HandlerSet.hh
+#pragma once
+// link to original location
+#include "../BasicUsageEnvironment/include/HandlerSet.hh"
+

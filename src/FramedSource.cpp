@@ -1,1 +1,3 @@
-../liveMedia/FramedSource.cpp
+// link to original location
+#include "../liveMedia/FramedSource.cpp"
+

@@ -1,1 +1,3 @@
-../liveMedia/rtcp_from_spec.c
+// link to original location
+#include "../liveMedia/rtcp_from_spec.c"
+

@@ -1,1 +1,4 @@
-../UsageEnvironment/include/UsageEnvironment_version.hh
+#pragma once
+// link to original location
+#include "../UsageEnvironment/include/UsageEnvironment_version.hh"
+

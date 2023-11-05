@@ -1,1 +1,3 @@
-../liveMedia/QuickTimeGenericRTPSource.cpp
+// link to original location
+#include "../liveMedia/QuickTimeGenericRTPSource.cpp"
+

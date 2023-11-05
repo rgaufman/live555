@@ -1,1 +1,3 @@
-../liveMedia/OutputFile.cpp
+// link to original location
+#include "../liveMedia/OutputFile.cpp"
+

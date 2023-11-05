@@ -1,1 +1,3 @@
-../liveMedia/RTPInterface.cpp
+// link to original location
+#include "../liveMedia/RTPInterface.cpp"
+

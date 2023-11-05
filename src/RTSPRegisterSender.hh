@@ -1,1 +1,4 @@
-../liveMedia/include/RTSPRegisterSender.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/RTSPRegisterSender.hh"
+

@@ -149,8 +149,8 @@ protected:
   char* fControlPath; // holds optional a=control: string
 
   // Optional key management and crypto state:
-  MIKEYState* fMIKEYState;
-  SRTPCryptographicContext* fCrypto;
+  MIKEYState* fMIKEYState = nullptr;
+  SRTPCryptographicContext* fCrypto = nullptr;
 };
 
 

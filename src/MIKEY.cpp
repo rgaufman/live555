@@ -1,1 +1,3 @@
-../liveMedia/MIKEY.cpp
+// link to original location
+#include "../liveMedia/MIKEY.cpp"
+

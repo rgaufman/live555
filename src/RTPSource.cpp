@@ -1,1 +1,3 @@
-../liveMedia/RTPSource.cpp
+// link to original location
+#include "../liveMedia/RTPSource.cpp"
+

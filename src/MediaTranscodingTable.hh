@@ -1,1 +1,4 @@
-../liveMedia/include/MediaTranscodingTable.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/MediaTranscodingTable.hh"
+

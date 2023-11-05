@@ -1,1 +1,4 @@
-../liveMedia/include/TheoraVideoRTPSink.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/TheoraVideoRTPSink.hh"
+

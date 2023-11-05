@@ -1,1 +1,3 @@
-../groupsock/GroupEId.cpp
+// link to original location
+#include "../groupsock/GroupEId.cpp"
+

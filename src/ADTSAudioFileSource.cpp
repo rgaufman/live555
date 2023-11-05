@@ -1,1 +1,3 @@
-../liveMedia/ADTSAudioFileSource.cpp
+// link to original location
+#include "../liveMedia/ADTSAudioFileSource.cpp"
+

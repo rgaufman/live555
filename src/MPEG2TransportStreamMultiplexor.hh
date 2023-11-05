@@ -1,1 +1,4 @@
-../liveMedia/include/MPEG2TransportStreamMultiplexor.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/MPEG2TransportStreamMultiplexor.hh"
+

@@ -1,1 +1,3 @@
-../liveMedia/SRTPCryptographicContext.cpp
+// link to original location
+#include "../liveMedia/SRTPCryptographicContext.cpp"
+

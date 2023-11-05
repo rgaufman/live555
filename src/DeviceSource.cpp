@@ -1,1 +1,3 @@
-../liveMedia/DeviceSource.cpp
+// link to original location
+#include "../liveMedia/DeviceSource.cpp"
+

@@ -392,10 +392,10 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
 	}
 #endif
       } else { // unencrypted
-	if (!fRTPInterface.sendPacket(fOutBuf->packet(), fOutBuf->curPacketSize())) {
-	  // if failure handler has been specified, call it
-	  if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
-	}
+        if (!fRTPInterface.sendPacket(fOutBuf->packet(), fOutBuf->curPacketSize())) {
+          // if failure handler has been specified, call it
+          if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+        }
       }
     ++fPacketCount;
     fTotalOctetCount += fOutBuf->curPacketSize();

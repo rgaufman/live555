@@ -1,1 +1,3 @@
-../liveMedia/MatroskaFileParser.cpp
+// link to original location
+#include "../liveMedia/MatroskaFileParser.cpp"
+

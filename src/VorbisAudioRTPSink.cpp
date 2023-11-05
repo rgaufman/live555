@@ -1,1 +1,3 @@
-../liveMedia/VorbisAudioRTPSink.cpp
+// link to original location
+#include "../liveMedia/VorbisAudioRTPSink.cpp"
+

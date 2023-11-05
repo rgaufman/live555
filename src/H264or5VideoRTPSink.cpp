@@ -1,1 +1,3 @@
-../liveMedia/H264or5VideoRTPSink.cpp
+// link to original location
+#include "../liveMedia/H264or5VideoRTPSink.cpp"
+

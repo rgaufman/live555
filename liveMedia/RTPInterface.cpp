@@ -232,6 +232,9 @@ void RTPInterface::clearServerRequestAlternativeByteHandler(UsageEnvironment& en
 
 Boolean RTPInterface::sendPacket(unsigned char* packet, unsigned packetSize) {
   Boolean success = True; // we'll return False instead if any of the sends fail
+#ifdef DEBUG_SEND
+      fprintf(stderr, "RTPInterface::sendPacket: %u\n", packetSize); fflush(stderr);
+#endif
 
   // Normal case: Send as a UDP packet:
   if (!fGS->output(envir(), packet, packetSize)) success = False;
@@ -247,6 +250,9 @@ Boolean RTPInterface::sendPacket(unsigned char* packet, unsigned packetSize) {
     }
   }
 
+#ifdef DEBUG_SEND
+      fprintf(stderr, "RTPInterface::sendPacket: %u -> %d\n", packetSize, success); fflush(stderr);
+#endif
   return success;
 }
 
@@ -397,8 +403,8 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
 #endif
       makeSocketBlocking(socketNum, RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS);
       sendResult = (tlsState != NULL && tlsState->isNeeded)
-	? tlsState->write((char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend)
-	: send(socketNum, (char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend, MSG_NOSIGNAL/*flags*/);
+          ? tlsState->write((char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend)
+          : send(socketNum, (char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend, MSG_NOSIGNAL/*flags*/);
       makeSocketNonBlocking(socketNum);
       if ((unsigned)sendResult != numBytesRemainingToSend) {
 	// The blocking "send()" failed, or timed out.  In either case, we assume that the
@@ -407,10 +413,10 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
 	// (If we kept using the socket here, the RTP or RTCP packet write would be in an
 	//  incomplete, inconsistent state.)
 #ifdef DEBUG_SEND
-	fprintf(stderr, "sendDataOverTCP: blocking send() failed (delivering %d bytes out of %d); closing socket %d\n", sendResult, numBytesRemainingToSend, socketNum); fflush(stderr);
+      fprintf(stderr, "sendDataOverTCP: blocking send() failed (delivering %d bytes out of %d); closing socket %d\n", sendResult, numBytesRemainingToSend, socketNum); fflush(stderr);
 #endif
-	removeStreamSocket(socketNum, 0xFF);
-	return False;
+        removeStreamSocket(socketNum, 0xFF);
+        return False;
       }
 
       return True;

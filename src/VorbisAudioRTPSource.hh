@@ -1,1 +1,4 @@
-../liveMedia/include/VorbisAudioRTPSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/VorbisAudioRTPSource.hh"
+

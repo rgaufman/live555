@@ -42,4 +42,3 @@ I recommend to use the git method, so that you can simply get updates by executi
 
 For building and running the code on your desktop, please consult the original [build instructions](https://github.com/pschatzmann/arduino-live555/blob/master/BUILD.md)
 
-Please note that this library only works properly for environments that can handle __symbolic links correctly__. 

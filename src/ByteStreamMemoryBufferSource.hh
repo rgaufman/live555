@@ -1,1 +1,4 @@
-../liveMedia/include/ByteStreamMemoryBufferSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/ByteStreamMemoryBufferSource.hh"
+

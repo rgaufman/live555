@@ -1,1 +1,3 @@
-../liveMedia/BasicUDPSink.cpp
+// link to original location
+#include "../liveMedia/BasicUDPSink.cpp"
+

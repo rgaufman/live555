@@ -1,1 +1,3 @@
-../liveMedia/AC3AudioStreamFramer.cpp
+// link to original location
+#include "../liveMedia/AC3AudioStreamFramer.cpp"
+

@@ -1,1 +1,4 @@
-../liveMedia/include/H265VideoStreamDiscreteFramer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/H265VideoStreamDiscreteFramer.hh"
+

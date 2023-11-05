@@ -1,1 +1,3 @@
-../liveMedia/MediaSession.cpp
+// link to original location
+#include "../liveMedia/MediaSession.cpp"
+

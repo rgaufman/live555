@@ -1,1 +1,3 @@
-../liveMedia/MPEGVideoStreamParser.cpp
+// link to original location
+#include "../liveMedia/MPEGVideoStreamParser.cpp"
+

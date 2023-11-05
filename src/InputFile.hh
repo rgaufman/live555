@@ -1,1 +1,4 @@
-../liveMedia/include/InputFile.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/InputFile.hh"
+

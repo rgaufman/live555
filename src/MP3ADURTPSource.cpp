@@ -1,1 +1,3 @@
-../liveMedia/MP3ADURTPSource.cpp
+// link to original location
+#include "../liveMedia/MP3ADURTPSource.cpp"
+

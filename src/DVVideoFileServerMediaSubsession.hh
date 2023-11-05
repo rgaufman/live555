@@ -1,1 +1,4 @@
-../liveMedia/include/DVVideoFileServerMediaSubsession.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/DVVideoFileServerMediaSubsession.hh"
+

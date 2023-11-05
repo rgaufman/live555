@@ -1,1 +1,3 @@
-../liveMedia/JPEGVideoSource.cpp
+// link to original location
+#include "../liveMedia/JPEGVideoSource.cpp"
+

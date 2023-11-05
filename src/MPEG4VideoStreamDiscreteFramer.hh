@@ -1,1 +1,4 @@
-../liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/MPEG4VideoStreamDiscreteFramer.hh"
+

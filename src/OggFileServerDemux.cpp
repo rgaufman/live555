@@ -1,1 +1,3 @@
-../liveMedia/OggFileServerDemux.cpp
+// link to original location
+#include "../liveMedia/OggFileServerDemux.cpp"
+

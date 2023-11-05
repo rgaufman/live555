@@ -214,6 +214,9 @@ int setupDatagramSocket(UsageEnvironment& env, Port port, int domain) {
 }
 
 Boolean makeSocketNonBlocking(int sock) {
+#ifdef DEBUG_SEND
+      fprintf(stderr, "makeSocketNonBlocking\n"); fflush(stderr);
+#endif
 #if defined(__WIN32__) || defined(_WIN32)
   unsigned long arg = 1;
   return ioctlsocket(sock, FIONBIO, &arg) == 0;
@@ -227,6 +230,9 @@ Boolean makeSocketNonBlocking(int sock) {
 }
 
 Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds) {
+#ifdef DEBUG_SEND
+      fprintf(stderr, "makeSocketBlocking\n"); fflush(stderr);
+#endif
   Boolean result;
 #if defined(__WIN32__) || defined(_WIN32)
   unsigned long arg = 0;
@@ -257,6 +263,9 @@ Boolean makeSocketBlocking(int sock, unsigned writeTimeoutInMilliseconds) {
 }
 
 Boolean setSocketKeepAlive(int sock) {
+#ifdef DEBUG_SEND
+      fprintf(stderr, "setSocketKeepAlive\n"); fflush(stderr);
+#endif
 #if defined(__WIN32__) || defined(_WIN32)
   // How do we do this in Windows?  For now, just make this a no-op in Windows:
 #else
@@ -292,6 +301,9 @@ Boolean setSocketKeepAlive(int sock) {
 
 int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
 		      Boolean makeNonBlocking, Boolean setKeepAlive) {
+#ifdef DEBUG_SEND
+      fprintf(stderr, "setupStreamSocket\n"); fflush(stderr);
+#endif
   if (!initializeWinsockIfNecessary()) {
     socketErr(env, "Failed to initialize 'winsock': ");
     return -1;
@@ -422,17 +434,19 @@ int readSocket(UsageEnvironment& env,
   return bytesRead;
 }
 
-Boolean writeSocket(UsageEnvironment& env,
-		    int socket, struct sockaddr_storage const& addressAndPort,
-		    u_int8_t ttlArg,
-		    unsigned char* buffer, unsigned bufferSize) {
-  // Before sending, set the socket's TTL (IPv4 only):
-  if (addressAndPort.ss_family == AF_INET) {
+
 #if defined(__WIN32__) || defined(_WIN32)
 #define TTL_TYPE int
 #else
 #define TTL_TYPE u_int8_t
 #endif
+Boolean writeSocket(UsageEnvironment& env,
+		    int socket, struct sockaddr_storage const& addressAndPort,
+		    u_int8_t ttlArg,
+		    unsigned char* buffer, unsigned bufferSize) {
+  // Before sending, set the socket's TTL (IPv4 only):
+//#ifndef ARDUINO
+  if (addressAndPort.ss_family == AF_INET) {
     TTL_TYPE ttl = (TTL_TYPE)ttlArg;
     if (setsockopt(socket, IPPROTO_IP, IP_MULTICAST_TTL,
 		   (const char*)&ttl, sizeof ttl) < 0) {
@@ -440,6 +454,7 @@ Boolean writeSocket(UsageEnvironment& env,
       return False;
     }
   }
+//#endif
   
   return writeSocket(env, socket, addressAndPort, buffer, bufferSize);
 }
@@ -449,6 +464,11 @@ Boolean writeSocket(UsageEnvironment& env,
 		    unsigned char* buffer, unsigned bufferSize) {
   do {
     SOCKLEN_T dest_len = addressSize(addressAndPort);
+
+#ifdef DEBUG_SEND
+    fprintf(stderr, "sendto (%u)\n", bufferSize); fflush(stderr);
+#endif
+
     int bytesSent = sendto(socket, (char*)buffer, bufferSize, MSG_NOSIGNAL,
 			   (struct sockaddr const*)&addressAndPort, dest_len);
     if (bytesSent != (int)bufferSize) {
@@ -457,7 +477,11 @@ Boolean writeSocket(UsageEnvironment& env,
       socketErr(env, tmpBuf);
       break;
     }
-    
+
+#ifdef DEBUG_SEND
+    fprintf(stderr, "sendto (%u) -> %u \n", bufferSize, bytesSent); fflush(stderr);
+#endif
+
     return True;
   } while (0);
 
@@ -465,6 +489,9 @@ Boolean writeSocket(UsageEnvironment& env,
 }
 
 void ignoreSigPipeOnSocket(int socketNum) {
+#ifdef DEBUG_SEND
+    fprintf(stderr, "ignoreSigPipeOnSocket\n"); fflush(stderr);
+#endif
   #ifdef USE_SIGNALS
   #ifdef SO_NOSIGPIPE
   int set_option = 1;
@@ -525,6 +552,9 @@ static unsigned increaseBufferTo(UsageEnvironment& env, int bufOptName,
   // or to some smaller size, if that's not possible:
   while (requestedSize > curSize) {
     SOCKLEN_T sizeSize = sizeof requestedSize;
+#ifdef DEBUG_SEND
+    fprintf(stderr, "increaseBufferTo %u\n", requestedSize); fflush(stderr);
+#endif
     if (setsockopt(socket, SOL_SOCKET, bufOptName,
 		   (char*)&requestedSize, sizeSize) >= 0) {
       // success
@@ -545,6 +575,9 @@ unsigned increaseReceiveBufferTo(UsageEnvironment& env,
 }
 
 static void clearMulticastAllSocketOption(int socket, int domain) {
+#ifdef DEBUG_SEND
+    fprintf(stderr, "clearMulticastAllSocketOption\n"); fflush(stderr);
+#endif
 #ifdef IP_MULTICAST_ALL
   // This option is defined in modern versions of Linux to overcome a bug in the Linux kernel's default behavior.
   // When set to 0, it ensures that we receive only packets that were sent to the specified IP multicast address,
@@ -560,6 +593,10 @@ static void clearMulticastAllSocketOption(int socket, int domain) {
 
 Boolean socketJoinGroup(UsageEnvironment& env, int socket,
 			struct sockaddr_storage const& groupAddress){
+#ifdef DEBUG_SEND
+    fprintf(stderr, "socketJoinGroup\n"); fflush(stderr);
+#endif
+
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   int level, option_name;
@@ -613,6 +650,9 @@ Boolean socketJoinGroup(UsageEnvironment& env, int socket,
 
 Boolean socketLeaveGroup(UsageEnvironment&, int socket,
 			 struct sockaddr_storage const& groupAddress) {
+#ifdef DEBUG_SEND
+    fprintf(stderr, "socketLeaveGroup\n"); fflush(stderr);
+#endif
   if (!IsMulticastAddress(groupAddress)) return True; // ignore this case
 
   int level, option_name;

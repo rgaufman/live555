@@ -1,1 +1,3 @@
-../liveMedia/SIPClient.cpp
+// link to original location
+#include "../liveMedia/SIPClient.cpp"
+

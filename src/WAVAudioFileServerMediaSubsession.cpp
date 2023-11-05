@@ -1,1 +1,3 @@
-../liveMedia/WAVAudioFileServerMediaSubsession.cpp
+// link to original location
+#include "../liveMedia/WAVAudioFileServerMediaSubsession.cpp"
+

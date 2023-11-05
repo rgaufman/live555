@@ -1,1 +1,4 @@
-../liveMedia/include/GenericMediaServer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/GenericMediaServer.hh"
+

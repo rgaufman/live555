@@ -1,1 +1,3 @@
-../liveMedia/QCELPAudioRTPSource.cpp
+// link to original location
+#include "../liveMedia/QCELPAudioRTPSource.cpp"
+

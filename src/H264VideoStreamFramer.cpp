@@ -1,1 +1,3 @@
-../liveMedia/H264VideoStreamFramer.cpp
+// link to original location
+#include "../liveMedia/H264VideoStreamFramer.cpp"
+

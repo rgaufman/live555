@@ -1,1 +1,4 @@
-../liveMedia/include/SRTPCryptographicContext.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/SRTPCryptographicContext.hh"
+

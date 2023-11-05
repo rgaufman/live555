@@ -1,1 +1,3 @@
-../liveMedia/MPEG2TransportStreamMultiplexor.cpp
+// link to original location
+#include "../liveMedia/MPEG2TransportStreamMultiplexor.cpp"
+

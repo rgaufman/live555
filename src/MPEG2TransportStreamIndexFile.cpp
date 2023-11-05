@@ -1,1 +1,3 @@
-../liveMedia/MPEG2TransportStreamIndexFile.cpp
+// link to original location
+#include "../liveMedia/MPEG2TransportStreamIndexFile.cpp"
+

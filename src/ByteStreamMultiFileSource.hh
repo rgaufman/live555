@@ -1,1 +1,4 @@
-../liveMedia/include/ByteStreamMultiFileSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/ByteStreamMultiFileSource.hh"
+

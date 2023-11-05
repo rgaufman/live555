@@ -1,1 +1,4 @@
-../liveMedia/include/RawVideoFrameParameters.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/RawVideoFrameParameters.hh"
+

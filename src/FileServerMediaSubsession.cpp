@@ -1,1 +1,3 @@
-../liveMedia/FileServerMediaSubsession.cpp
+// link to original location
+#include "../liveMedia/FileServerMediaSubsession.cpp"
+

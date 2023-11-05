@@ -1,1 +1,3 @@
-../liveMedia/EBMLNumber.cpp
+// link to original location
+#include "../liveMedia/EBMLNumber.cpp"
+

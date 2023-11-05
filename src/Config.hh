@@ -1,1 +1,4 @@
-../UsageEnvironment/include/Config.hh
+#pragma once
+// link to original location
+#include "../UsageEnvironment/include/Config.hh"
+

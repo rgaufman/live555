@@ -1,1 +1,4 @@
-../liveMedia/include/TLSState.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/TLSState.hh"
+

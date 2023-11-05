@@ -1,1 +1,3 @@
-../liveMedia/OggFileParser.cpp
+// link to original location
+#include "../liveMedia/OggFileParser.cpp"
+

@@ -1,1 +1,3 @@
-../BasicUsageEnvironment/DelayQueue.cpp
+// link to original location
+#include "../BasicUsageEnvironment/DelayQueue.cpp"
+

@@ -1,1 +1,3 @@
-../groupsock/NetInterface.cpp
+// link to original location
+#include "../groupsock/NetInterface.cpp"
+

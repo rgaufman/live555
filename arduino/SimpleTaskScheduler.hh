@@ -1,5 +1,7 @@
 #pragma once
 #include "BasicUsageEnvironment.hh"
+#include "GroupsockHelper.hh"
+
 /**
  * @brief SimpleTaskScheduler for Arduino which supports SingleStep calls from the loop
  * @author Phil Schatzmann

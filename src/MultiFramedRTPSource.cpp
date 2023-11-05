@@ -1,1 +1,3 @@
-../liveMedia/MultiFramedRTPSource.cpp
+// link to original location
+#include "../liveMedia/MultiFramedRTPSource.cpp"
+

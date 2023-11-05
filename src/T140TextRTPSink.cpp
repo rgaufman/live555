@@ -1,1 +1,3 @@
-../liveMedia/T140TextRTPSink.cpp
+// link to original location
+#include "../liveMedia/T140TextRTPSink.cpp"
+

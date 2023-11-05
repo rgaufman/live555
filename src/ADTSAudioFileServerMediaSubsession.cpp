@@ -1,1 +1,3 @@
-../liveMedia/ADTSAudioFileServerMediaSubsession.cpp
+// link to original location
+#include "../liveMedia/ADTSAudioFileServerMediaSubsession.cpp"
+

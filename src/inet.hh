@@ -1,1 +1,4 @@
-../groupsock/include/inet.hh
+#pragma once
+// link to original location
+#include "../groupsock/include/inet.hh"
+

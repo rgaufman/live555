@@ -1,1 +1,4 @@
-../liveMedia/include/MatroskaFile.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/MatroskaFile.hh"
+

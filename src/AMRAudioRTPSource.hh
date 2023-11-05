@@ -1,1 +1,4 @@
-../liveMedia/include/AMRAudioRTPSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/AMRAudioRTPSource.hh"
+

@@ -1,1 +1,4 @@
-../liveMedia/include/MP3ADUinterleaving.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/MP3ADUinterleaving.hh"
+

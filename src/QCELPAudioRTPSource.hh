@@ -1,1 +1,4 @@
-../liveMedia/include/QCELPAudioRTPSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/QCELPAudioRTPSource.hh"
+

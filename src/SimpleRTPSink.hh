@@ -1,1 +1,4 @@
-../liveMedia/include/SimpleRTPSink.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/SimpleRTPSink.hh"
+

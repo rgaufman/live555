@@ -1,1 +1,4 @@
-../liveMedia/include/ADTSAudioFileServerMediaSubsession.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/ADTSAudioFileServerMediaSubsession.hh"
+

@@ -1,1 +1,3 @@
-../UsageEnvironment/strDup.cpp
+// link to original location
+#include "../UsageEnvironment/strDup.cpp"
+

@@ -1,1 +1,4 @@
-../liveMedia/include/MPEG2TransportStreamFromPESSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/MPEG2TransportStreamFromPESSource.hh"
+

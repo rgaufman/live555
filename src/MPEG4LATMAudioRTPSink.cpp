@@ -1,1 +1,3 @@
-../liveMedia/MPEG4LATMAudioRTPSink.cpp
+// link to original location
+#include "../liveMedia/MPEG4LATMAudioRTPSink.cpp"
+

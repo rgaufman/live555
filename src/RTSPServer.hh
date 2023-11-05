@@ -1,1 +1,4 @@
-../liveMedia/include/RTSPServer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/RTSPServer.hh"
+

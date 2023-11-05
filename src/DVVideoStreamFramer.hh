@@ -1,1 +1,4 @@
-../liveMedia/include/DVVideoStreamFramer.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/DVVideoStreamFramer.hh"
+

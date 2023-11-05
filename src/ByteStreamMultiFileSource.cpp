@@ -1,1 +1,3 @@
-../liveMedia/ByteStreamMultiFileSource.cpp
+// link to original location
+#include "../liveMedia/ByteStreamMultiFileSource.cpp"
+

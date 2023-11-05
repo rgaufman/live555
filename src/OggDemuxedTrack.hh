@@ -1,1 +1,4 @@
-../liveMedia/OggDemuxedTrack.hh
+#pragma once
+// link to original location
+#include "../liveMedia/OggDemuxedTrack.hh"
+

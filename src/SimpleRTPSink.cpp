@@ -1,1 +1,3 @@
-../liveMedia/SimpleRTPSink.cpp
+// link to original location
+#include "../liveMedia/SimpleRTPSink.cpp"
+

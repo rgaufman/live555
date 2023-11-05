@@ -1,1 +1,4 @@
-../liveMedia/include/JPEGVideoRTPSource.hh
+#pragma once
+// link to original location
+#include "../liveMedia/include/JPEGVideoRTPSource.hh"
+

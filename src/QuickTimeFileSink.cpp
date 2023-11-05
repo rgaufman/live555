@@ -1,1 +1,3 @@
-../liveMedia/QuickTimeFileSink.cpp
+// link to original location
+#include "../liveMedia/QuickTimeFileSink.cpp"
+

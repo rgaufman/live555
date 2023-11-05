@@ -1,1 +1,3 @@
-../liveMedia/WAVAudioFileSource.cpp
+// link to original location
+#include "../liveMedia/WAVAudioFileSource.cpp"
+

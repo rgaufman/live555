@@ -41,7 +41,9 @@ protected:
       result.append("/");
     }
     result.append(file);
+#ifdef DEBUG
     LOG("==> file name: %s", result.c_str());
+#endif
     return result;
   }
 
