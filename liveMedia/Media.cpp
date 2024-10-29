@@ -14,12 +14,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // Media
 // Implementation
 
 #include "Media.hh"
 #include "HashTable.hh"
+
+////////// library version constants //////////
+
+extern char const* const liveMediaLibraryVersionStr = LIVEMEDIA_LIBRARY_VERSION_STRING;
+extern int const liveMediaLibraryVersionInt = LIVEMEDIA_LIBRARY_VERSION_INT;
 
 ////////// Medium //////////
 

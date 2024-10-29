@@ -13,12 +13,17 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // Basic Usage Environment: for a simple, non-scripted, console application
 // Implementation
 
 #include "BasicUsageEnvironment.hh"
 #include <stdio.h>
+
+////////// library version constants //////////
+
+extern char const* const BasicUsageEnvironmentLibraryVersionStr = BASICUSAGEENVIRONMENT_LIBRARY_VERSION_STRING;
+extern int const BasicUsageEnvironmentLibraryVersionInt = BASICUSAGEENVIRONMENT_LIBRARY_VERSION_INT;
 
 ////////// BasicUsageEnvironment //////////
 

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // Implementation
 
@@ -40,8 +40,123 @@ Boolean RTPSink::lookupByName(UsageEnvironment& env, char const* sinkName,
   return True;
 }
 
+void RTPSink::setupForSRTP(Boolean useEncryption, u_int32_t roc) {
+  // Set up keying state for streaming via SRTP:
+  if (fMIKEYState == NULL) fMIKEYState = MIKEYState::createNew(useEncryption);
+  fMIKEYState->setROC(roc);
+
+  delete fCrypto; fCrypto = new SRTPCryptographicContext(*fMIKEYState);
+}
+
+u_int8_t* RTPSink::setupForSRTP(Boolean useEncryption, u_int32_t roc,
+				unsigned& resultMIKEYStateMessageSize) {
+  // Set up keying state for streaming via SRTP:
+  setupForSRTP(useEncryption, roc);
+
+  return fMIKEYState->generateMessage(resultMIKEYStateMessageSize);
+}
+
+void RTPSink::setupForSRTP(u_int8_t const* MIKEYStateMessage, unsigned MIKEYStateMessageSize,
+			   u_int32_t roc) {
+  // Set up keying state for streaming via SRTP:
+  delete fMIKEYState; fMIKEYState = MIKEYState::createNew(MIKEYStateMessage, MIKEYStateMessageSize);
+  fMIKEYState->setROC(roc);
+
+  delete fCrypto; fCrypto = new SRTPCryptographicContext(*fMIKEYState);
+}
+
+char const* RTPSink::sdpMediaType() const {
+  return "data";
+  // default SDP media (m=) type, unless redefined by subclasses
+}
+
+char* RTPSink::rtpmapLine() const {
+  if (rtpPayloadType() >= 96) { // the payload format type is dynamic
+    char* encodingParamsPart;
+    if (numChannels() != 1) {
+      encodingParamsPart = new char[1 + 20 /* max int len */];
+      sprintf(encodingParamsPart, "/%d", numChannels());
+    } else {
+      encodingParamsPart = strDup("");
+    }
+    char const* const rtpmapFmt = "a=rtpmap:%d %s/%d%s\r\n";
+    unsigned rtpmapLineSize = strlen(rtpmapFmt)
+      + 3 /* max char len */ + strlen(rtpPayloadFormatName())
+      + 20 /* max int len */ + strlen(encodingParamsPart);
+    char* rtpmapLine = new char[rtpmapLineSize];
+    sprintf(rtpmapLine, rtpmapFmt,
+	    rtpPayloadType(), rtpPayloadFormatName(),
+	    rtpTimestampFrequency(), encodingParamsPart);
+    delete[] encodingParamsPart;
+
+    return rtpmapLine;
+  } else {
+    // The payload format is static, so there's no "a=rtpmap:" line:
+    return strDup("");
+  }
+}
+
+char* RTPSink::keyMgmtLine() {
+  u_int8_t* mikeyMessage;
+  unsigned mikeyMessageSize;
+  if (fMIKEYState != NULL &&
+      (mikeyMessage = fMIKEYState->generateMessage(mikeyMessageSize)) != NULL) {
+    char const* const keyMgmtFmt = "a=key-mgmt:mikey %s\r\n";
+    char* base64EncodedData = base64Encode((char*)mikeyMessage, mikeyMessageSize);
+    delete[] mikeyMessage;
+    
+    unsigned keyMgmtLineSize = strlen(keyMgmtFmt) + strlen(base64EncodedData);
+    char* keyMgmtLine = new char[keyMgmtLineSize];
+    sprintf(keyMgmtLine, keyMgmtFmt, base64EncodedData);
+    delete[] base64EncodedData;
+
+    return keyMgmtLine;
+  } else { // no "a=key-mgmt:" line
+    return strDup("");
+  }
+}
+
+char const* RTPSink::auxSDPLine() {
+  return NULL; // by default
+}
+
+u_int32_t RTPSink::presetNextTimestamp() {
+  struct timeval timeNow;
+  gettimeofday(&timeNow, NULL);
+
+  u_int32_t tsNow = convertToRTPTimestamp(timeNow);
+  if (!groupsockBeingUsed().hasMultipleDestinations()) {
+    // Don't adjust the timestamp stream if we already have another destination ongoing
+    fTimestampBase = tsNow;
+    fNextTimestampHasBeenPreset = True;
+  }
+
+  return tsNow;
+}
+
+void RTPSink::getTotalBitrate(unsigned& outNumBytes, double& outElapsedTime) {
+  struct timeval timeNow;
+  gettimeofday(&timeNow, NULL);
+
+  outNumBytes = fTotalOctetCount;
+  outElapsedTime = (double)(timeNow.tv_sec-fTotalOctetCountStartTime.tv_sec)
+    + (timeNow.tv_usec-fTotalOctetCountStartTime.tv_usec)/1000000.0;
+
+  fTotalOctetCount = 0;
+  fTotalOctetCountStartTime = timeNow;
+}
+
+void RTPSink::resetPresentationTimes() {
+  fInitialPresentationTime.tv_sec = fMostRecentPresentationTime.tv_sec = 0;
+  fInitialPresentationTime.tv_usec = fMostRecentPresentationTime.tv_usec = 0;
+}
+
 Boolean RTPSink::isRTPSink() const {
   return True;
+}
+
+u_int32_t RTPSink::srtpROC() const {
+  return fCrypto == NULL ? 0 : fCrypto->sendingROC();
 }
 
 RTPSink::RTPSink(UsageEnvironment& env,
@@ -98,114 +213,6 @@ u_int32_t RTPSink::convertToRTPTimestamp(struct timeval tv) {
 #endif
 
   return rtpTimestamp;
-}
-
-u_int32_t RTPSink::presetNextTimestamp() {
-  struct timeval timeNow;
-  gettimeofday(&timeNow, NULL);
-
-  u_int32_t tsNow = convertToRTPTimestamp(timeNow);
-  if (!groupsockBeingUsed().hasMultipleDestinations()) {
-    // Don't adjust the timestamp stream if we already have another destination ongoing
-    fTimestampBase = tsNow;
-    fNextTimestampHasBeenPreset = True;
-  }
-
-  return tsNow;
-}
-
-void RTPSink::getTotalBitrate(unsigned& outNumBytes, double& outElapsedTime) {
-  struct timeval timeNow;
-  gettimeofday(&timeNow, NULL);
-
-  outNumBytes = fTotalOctetCount;
-  outElapsedTime = (double)(timeNow.tv_sec-fTotalOctetCountStartTime.tv_sec)
-    + (timeNow.tv_usec-fTotalOctetCountStartTime.tv_usec)/1000000.0;
-
-  fTotalOctetCount = 0;
-  fTotalOctetCountStartTime = timeNow;
-}
-
-void RTPSink::resetPresentationTimes() {
-  fInitialPresentationTime.tv_sec = fMostRecentPresentationTime.tv_sec = 0;
-  fInitialPresentationTime.tv_usec = fMostRecentPresentationTime.tv_usec = 0;
-}
-
-void RTPSink::setupForSRTP(Boolean useEncryption) {
-  // Set up keying state for streaming via SRTP:
-  delete fCrypto; delete fMIKEYState;
-  fMIKEYState = new MIKEYState(useEncryption);
-  fCrypto = new SRTPCryptographicContext(*fMIKEYState);
-}
-
-u_int8_t* RTPSink::setupForSRTP(Boolean useEncryption, unsigned& resultMIKEYStateMessageSize) {
-  // Set up keying state for streaming via SRTP:
-  setupForSRTP(useEncryption);
-
-  u_int8_t* MIKEYStateMessage = fMIKEYState->generateMessage(resultMIKEYStateMessageSize);
-  return MIKEYStateMessage;
-}
-
-void RTPSink::setupForSRTP(u_int8_t const* MIKEYStateMessage, unsigned MIKEYStateMessageSize) {
-  // Set up keying state for streaming via SRTP:
-  delete fCrypto; delete fMIKEYState;
-  fMIKEYState = MIKEYState::createNew(MIKEYStateMessage, MIKEYStateMessageSize);
-  fCrypto = new SRTPCryptographicContext(*fMIKEYState);
-}
-
-char const* RTPSink::sdpMediaType() const {
-  return "data";
-  // default SDP media (m=) type, unless redefined by subclasses
-}
-
-char* RTPSink::rtpmapLine() const {
-  if (rtpPayloadType() >= 96) { // the payload format type is dynamic
-    char* encodingParamsPart;
-    if (numChannels() != 1) {
-      encodingParamsPart = new char[1 + 20 /* max int len */];
-      sprintf(encodingParamsPart, "/%d", numChannels());
-    } else {
-      encodingParamsPart = strDup("");
-    }
-    char const* const rtpmapFmt = "a=rtpmap:%d %s/%d%s\r\n";
-    unsigned rtpmapLineSize = strlen(rtpmapFmt)
-      + 3 /* max char len */ + strlen(rtpPayloadFormatName())
-      + 20 /* max int len */ + strlen(encodingParamsPart);
-    char* rtpmapLine = new char[rtpmapLineSize];
-    sprintf(rtpmapLine, rtpmapFmt,
-	    rtpPayloadType(), rtpPayloadFormatName(),
-	    rtpTimestampFrequency(), encodingParamsPart);
-    delete[] encodingParamsPart;
-
-    return rtpmapLine;
-  } else {
-    // The payload format is static, so there's no "a=rtpmap:" line:
-    return strDup("");
-  }
-}
-
-char* RTPSink::keyMgmtLine() {
-  u_int8_t* mikeyMessage;
-  unsigned mikeyMessageSize;
-  if (fMIKEYState != NULL &&
-      (mikeyMessage = fMIKEYState->generateMessage(mikeyMessageSize)) != NULL) {
-    char const* const keyMgmtFmt = "a=key-mgmt:mikey %s\r\n";
-    char* base64EncodedData = base64Encode((char*)mikeyMessage, mikeyMessageSize);
-    delete[] mikeyMessage;
-    
-    unsigned keyMgmtLineSize = strlen(keyMgmtFmt) + strlen(base64EncodedData);
-    char* keyMgmtLine = new char[keyMgmtLineSize];
-    sprintf(keyMgmtLine, keyMgmtFmt, base64EncodedData);
-    delete[] base64EncodedData;
-
-    return keyMgmtLine;
-  } else { // no "a=key-mgmt:" line
-    return strDup("");
-  }
-}
-
-char const* RTPSink::auxSDPLine() {
-  return NULL; // by default
 }
 
 

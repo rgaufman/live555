@@ -235,6 +235,7 @@ our_srandom(unsigned int x)
 	}
 }
 
+#if 0
 /*
  * our_initstate:
  *
@@ -357,6 +358,7 @@ our_setstate(arg_state)
 	end_ptr = &state[rand_deg];		/* set end_ptr too */
 	return(ostate);
 }
+#endif
 
 /*
  * random:

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -434,6 +434,7 @@ SocketDescriptor::SocketDescriptor(UsageEnvironment& env, int socketNum, TLSStat
 }
 
 SocketDescriptor::~SocketDescriptor() {
+  fDeleteMyselfNext = False;
   fEnv.taskScheduler().turnOffBackgroundReadHandling(fOurSocketNum);
   removeSocketDescription(fEnv, fOurSocketNum);
 
@@ -510,10 +511,14 @@ void SocketDescriptor
 void SocketDescriptor::tcpReadHandler(SocketDescriptor* socketDescriptor, int mask) {
   // Call the read handler until it returns false, with a limit to avoid starving other sockets
   unsigned count = 2000;
+  Boolean areInRecursiveCall = socketDescriptor->fAreInReadHandlerLoop;
+
   socketDescriptor->fAreInReadHandlerLoop = True;
   while (!socketDescriptor->fDeleteMyselfNext && socketDescriptor->tcpReadHandler1(mask) && --count > 0) {}
-  socketDescriptor->fAreInReadHandlerLoop = False;
-  if (socketDescriptor->fDeleteMyselfNext) delete socketDescriptor;
+  if (!areInRecursiveCall) {
+    socketDescriptor->fAreInReadHandlerLoop = False;
+    if (socketDescriptor->fDeleteMyselfNext) delete socketDescriptor;
+  }
 }
 
 Boolean SocketDescriptor::tcpReadHandler1(int mask) {

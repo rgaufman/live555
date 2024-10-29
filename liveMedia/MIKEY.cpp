@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A data structure that implements a MIKEY message (RFC 3830)
 // Implementation
 
@@ -33,7 +33,9 @@ public:
 
   virtual ~MIKEYPayload();
 
-  u_int8_t const* data() const { return fData; }
+  u_int8_t payloadType() const { return fPayloadType; }
+
+  u_int8_t* data() const { return fData; }
   unsigned dataSize() const { return fDataSize; }
 
   MIKEYPayload* next() const { return fNext; }
@@ -72,6 +74,7 @@ MIKEYState::MIKEYState(Boolean useEncryption)
   fEncryptSRTP(useEncryption),
   fEncryptSRTCP(useEncryption),
   fMKI(our_random32()),
+  fInitialROC(0),
   fUseAuthentication(True),
 
   fHeaderPayload(NULL), fTailPayload(NULL), fTotalPayloadByteCount(0) {
@@ -106,6 +109,10 @@ MIKEYState::~MIKEYState() {
   delete fHeaderPayload; // which will delete all the other payloads as well
 }
 
+MIKEYState* MIKEYState::createNew(Boolean useEncryption) {
+  return new MIKEYState(useEncryption);
+}
+
 MIKEYState* MIKEYState::createNew(u_int8_t const* messageToParse, unsigned messageSize) {
   Boolean parsedOK;
   MIKEYState* newMIKEYState = new MIKEYState(messageToParse, messageSize, parsedOK);
@@ -134,6 +141,30 @@ u_int8_t* MIKEYState::generateMessage(unsigned& messageSize) const {
   }
 
   return resultMessage;
+}
+
+void MIKEYState::setROC(u_int32_t roc) {
+  // Look for a HDR payload; set its ROC field
+  MIKEYPayload* payload;
+
+  for (payload = fHeaderPayload; payload != NULL; payload = payload->next()) {
+    if (payload->payloadType() == HDR) break;
+  }
+
+  u_int8_t* data = payload->data();
+  unsigned dataSize = payload->dataSize();
+  
+  do {
+    if (dataSize < 10) break;
+    u_int8_t numCryptoSessions = data[8];
+
+    if (numCryptoSessions == 0 || dataSize < 10 + numCryptoSessions*(1+4+4)) break;
+    u_int8_t* rocPtr = &data[10 + (1+4)];
+    rocPtr[0] = roc>>24;
+    rocPtr[1] = roc>>16;
+    rocPtr[2] = roc>>8;
+    rocPtr[3] = roc;
+  } while (0);
 }
 
 MIKEYState::MIKEYState(u_int8_t const* messageToParse, unsigned messageSize, Boolean& parsedOK)
@@ -184,6 +215,11 @@ Boolean MIKEYState
 
     unsigned payloadSize = 10 + numCryptoSessions*(1+4+4);
     testSize(payloadSize);
+
+    if (numCryptoSessions >= 1) {
+      u_int8_t const* rocPtr = &ptr[10 + (1+4)];
+      fInitialROC = (rocPtr[0]<<24)|(rocPtr[1]<<16)|(rocPtr[2]<<8)|rocPtr[3];
+    }
 
     addNewPayload(new MIKEYPayload(*this, HDR, ptr, payloadSize));
     ptr += payloadSize;
@@ -452,7 +488,8 @@ static void add1BytePolicyParam(u_int8_t*& p, u_int8_t type, u_int8_t value) {
   *p++ = value;
 }
 
-MIKEYPayload::MIKEYPayload(MIKEYState& ourMIKEYState, u_int8_t payloadType)
+MIKEYPayload
+::MIKEYPayload(MIKEYState& ourMIKEYState, u_int8_t payloadType)
   : fOurMIKEYState(ourMIKEYState), fPayloadType(payloadType), fNext(NULL) {
   switch (payloadType) {
     case HDR: { // RFC 3830, section 6.1
@@ -469,7 +506,7 @@ MIKEYPayload::MIKEYPayload(MIKEYState& ourMIKEYState, u_int8_t payloadType)
       *p++ = 0; // CS ID map type: SRTP-ID
       *p++ = 0; // Policy_no_1
       addWord(p, our_random32()); // SSRC_1
-      addWord(p, 0x00000000); // ROC_1
+      addWord(p, 0); // ROC_1
       break;
     }
     case T: { // RFC 3830, section 6.6

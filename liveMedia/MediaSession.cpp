@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // Implementation
@@ -864,7 +864,7 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
       // to us in the SDP description, then create it now:
       ourCrypto = getCrypto();
       if (ourCrypto == NULL) { // then fMIKEYState is also NULL; create both
-	fMIKEYState = new MIKEYState();
+	fMIKEYState = MIKEYState::createNew();
 	ourCrypto = fCrypto = new SRTPCryptographicContext(*fMIKEYState);
       }
 

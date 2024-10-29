@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // Basic Usage Environment: for a simple, non-scripted, console application
 // Implementation
 
@@ -45,10 +45,15 @@ private:
 
 BasicTaskScheduler0::BasicTaskScheduler0()
   : fTokenCounter(0), fLastHandledSocketNum(-1),
-    fTriggersAwaitingHandling(0), fLastUsedTriggerMask(1),
-    fLastUsedTriggerNum(MAX_NUM_EVENT_TRIGGERS-1) {
+    fLastUsedTriggerMask(1), fLastUsedTriggerNum(MAX_NUM_EVENT_TRIGGERS-1),
+    fEventTriggersAreBeingUsed(False) {
   fHandlers = new HandlerSet;
   for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
+#ifndef NO_STD_LIB
+    fTriggersAwaitingHandling[i].clear();
+#else
+    fTriggersAwaitingHandling[i] = False;
+#endif
     fTriggeredEventHandlers[i] = NULL;
     fTriggeredEventClientDatas[i] = NULL;
   }
@@ -85,12 +90,12 @@ void BasicTaskScheduler0::doEventLoop(char volatile* watchVariable) {
 
 EventTriggerId BasicTaskScheduler0::createEventTrigger(TaskFunc* eventHandlerProc) {
   unsigned i = fLastUsedTriggerNum;
-  EventTriggerId mask = fLastUsedTriggerMask;
+  u_int32_t mask = fLastUsedTriggerMask;
 
   do {
     i = (i+1)%MAX_NUM_EVENT_TRIGGERS;
     mask >>= 1;
-    if (mask == 0) mask = 0x80000000;
+    if (mask == 0) mask = EVENT_TRIGGER_ID_HIGH_BIT;
 
     if (fTriggeredEventHandlers[i] == NULL) {
       // This trigger number is free; use it:
@@ -99,6 +104,7 @@ EventTriggerId BasicTaskScheduler0::createEventTrigger(TaskFunc* eventHandlerPro
 
       fLastUsedTriggerMask = mask;
       fLastUsedTriggerNum = i;
+      fEventTriggersAreBeingUsed = True;
 
       return mask;
     }
@@ -109,39 +115,43 @@ EventTriggerId BasicTaskScheduler0::createEventTrigger(TaskFunc* eventHandlerPro
 }
 
 void BasicTaskScheduler0::deleteEventTrigger(EventTriggerId eventTriggerId) {
-  fTriggersAwaitingHandling &=~ eventTriggerId;
+  // "eventTriggerId" should have just one bit set.
+  // However, we do the reasonable thing if the user happened to 'or' together two or more "EventTriggerId"s:
+  EventTriggerId mask = EVENT_TRIGGER_ID_HIGH_BIT;
+  Boolean eventTriggersAreBeingUsed = False;
 
-  if (eventTriggerId == fLastUsedTriggerMask) { // common-case optimization:
-    fTriggeredEventHandlers[fLastUsedTriggerNum] = NULL;
-    fTriggeredEventClientDatas[fLastUsedTriggerNum] = NULL;
-  } else {
-    // "eventTriggerId" should have just one bit set.
-    // However, we do the reasonable thing if the user happened to 'or' together two or more "EventTriggerId"s:
-    EventTriggerId mask = 0x80000000;
-    for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
-      if ((eventTriggerId&mask) != 0) {
-	fTriggeredEventHandlers[i] = NULL;
-	fTriggeredEventClientDatas[i] = NULL;
-      }
-      mask >>= 1;
-    }
-  }
-}
-
-void BasicTaskScheduler0::triggerEvent(EventTriggerId eventTriggerId, void* clientData) {
-  // First, record the "clientData".  (Note that we allow "eventTriggerId" to be a combination of bits for multiple events.)
-  EventTriggerId mask = 0x80000000;
   for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
     if ((eventTriggerId&mask) != 0) {
-      fTriggeredEventClientDatas[i] = clientData;
+#ifndef NO_STD_LIB
+      fTriggersAwaitingHandling[i].clear();
+#else
+      fTriggersAwaitingHandling[i] = False;
+#endif
+      fTriggeredEventHandlers[i] = NULL;
+      fTriggeredEventClientDatas[i] = NULL;
+    } else if (fTriggeredEventHandlers[i] != NULL) {
+      eventTriggersAreBeingUsed = True;
     }
     mask >>= 1;
   }
 
-  // Then, note this event as being ready to be handled.
-  // (Note that because this function (unlike others in the library) can be called from an external thread, we do this last, to
-  //  reduce the risk of a race condition.)
-  fTriggersAwaitingHandling |= eventTriggerId;
+  fEventTriggersAreBeingUsed = eventTriggersAreBeingUsed;
+}
+
+void BasicTaskScheduler0::triggerEvent(EventTriggerId eventTriggerId, void* clientData) {
+  // First, record the "clientData".  (Note that we allow "eventTriggerId" to be a combination of bits for multiple events.)
+  EventTriggerId mask = EVENT_TRIGGER_ID_HIGH_BIT;
+  for (unsigned i = 0; i < MAX_NUM_EVENT_TRIGGERS; ++i) {
+    if ((eventTriggerId&mask) != 0) {
+      fTriggeredEventClientDatas[i] = clientData;
+#ifndef NO_STD_LIB
+      (void)fTriggersAwaitingHandling[i].test_and_set();
+#else
+      fTriggersAwaitingHandling[i] = True;
+#endif
+    }
+    mask >>= 1;
+  }
 }
 
 

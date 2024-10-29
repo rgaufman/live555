@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // Usage Environment
 // C++ header
 
@@ -154,8 +154,12 @@ public:
       // Causes the (previously-registered) handler function for the specified event to be handled (from the event loop).
       // The handler function is called with "clientData" as parameter.
       // Note: This function (unlike other library functions) may be called from an external thread
-      // - to signal an external event.  (However, "triggerEvent()" should not be called with the
-      // same 'event trigger id' from different threads.)
+      // - to signal an external event.
+      // (In fact, this is the *only* LIVE555 function that can be called from a non-LIVE555 thread.)
+      // (However, "triggerEvent()" should not be called with the same 'event trigger id' from
+      // different threads.  Also, once "triggerEvent()" is called with one 'event trigger id',
+      // it should not be called again with the same 'event trigger id' until after its event
+      // has been handled.)
 
   // The following two functions are deprecated, and are provided for backwards-compatibility only:
   void turnOnBackgroundReadHandling(int socketNum, BackgroundHandlerProc* handlerProc, void* clientData) {

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // State encapsulating a TLS connection
 // Implementation
 
@@ -228,7 +228,7 @@ Boolean ServerTLSState::setup(int socketNum) {
 
     if (SSL_CTX_set_ecdh_auto(fCtx, 1) != 1) break;
 
-    if (SSL_CTX_use_certificate_file(fCtx, fCertificateFileName, SSL_FILETYPE_PEM) != 1) break;
+    if (SSL_CTX_use_certificate_chain_file(fCtx, fCertificateFileName) != 1) break;
 
     if (SSL_CTX_use_PrivateKey_file(fCtx, fPrivateKeyFileName, SSL_FILETYPE_PEM) != 1) break;
 

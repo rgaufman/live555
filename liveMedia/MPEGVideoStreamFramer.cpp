@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up an MPEG video elementary stream into
 //   headers and frames
 // Implementation
@@ -31,7 +31,7 @@ TimeCode::TimeCode()
 TimeCode::~TimeCode() {
 }
 
-int TimeCode::operator==(TimeCode const& arg2) {
+int TimeCode::operator==(TimeCode const& arg2) const {
   return pictures == arg2.pictures && seconds == arg2.seconds
     && minutes == arg2.minutes && hours == arg2.hours && days == arg2.days;
 }

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A data structure that represents a session that consists of
 // potentially multiple (audio and/or video) sub-sessions
 // (This data structure is used for media *streamers* - i.e., servers.
@@ -56,7 +56,6 @@ Boolean ServerMediaSession
 }
 
 static char const* const libNameStr = "LIVE555 Streaming Media v";
-char const* const libVersionStr = LIVEMEDIA_LIBRARY_VERSION_STRING;
 
 ServerMediaSession::ServerMediaSession(UsageEnvironment& env,
 				       char const* streamName,
@@ -71,8 +70,8 @@ ServerMediaSession::ServerMediaSession(UsageEnvironment& env,
 
   char* libNamePlusVersionStr = NULL; // by default
   if (info == NULL || description == NULL) {
-    libNamePlusVersionStr = new char[strlen(libNameStr) + strlen(libVersionStr) + 1];
-    sprintf(libNamePlusVersionStr, "%s%s", libNameStr, libVersionStr);
+    libNamePlusVersionStr = new char[strlen(libNameStr) + strlen(liveMediaLibraryVersionStr) + 1];
+    sprintf(libNamePlusVersionStr, "%s%s", libNameStr, liveMediaLibraryVersionStr);
   }
   fInfoSDPString = strDup(info == NULL ? libNamePlusVersionStr : info);
   fDescriptionSDPString = strDup(description == NULL ? libNamePlusVersionStr : description);
@@ -272,7 +271,7 @@ char* ServerMediaSession::generateSDPDescription(int addressFamily) {
 
     char const* const sdpPrefixFmt =
       "v=0\r\n"
-      "o=- %ld%06ld %d IN %s %s\r\n"
+      "o=- %lld%06lld %d IN %s %s\r\n"
       "s=%s\r\n"
       "i=%s\r\n"
       "t=0 0\r\n"
@@ -288,7 +287,7 @@ char* ServerMediaSession::generateSDPDescription(int addressFamily) {
       + 20 + 6 + 20 + 3/*IP4 or IP6*/ + ipAddressStrSize
       + strlen(fDescriptionSDPString)
       + strlen(fInfoSDPString)
-      + strlen(libNameStr) + strlen(libVersionStr)
+      + strlen(libNameStr) + strlen(liveMediaLibraryVersionStr)
       + strlen(sourceFilterLine)
       + strlen(rangeLine)
       + strlen(fDescriptionSDPString)
@@ -300,13 +299,13 @@ char* ServerMediaSession::generateSDPDescription(int addressFamily) {
 
     // Generate the SDP prefix (session-level lines):
     snprintf(sdp, sdpLength, sdpPrefixFmt,
-	     fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
+	     (long long)fCreationTime.tv_sec, (long long)fCreationTime.tv_usec, // o= <session id>
 	     1, // o= <version> // (needs to change if params are modified)
 	     addressFamily == AF_INET ? "IP4" : "IP6", // o= <address family>
 	     ipAddressStr.val(), // o= <address>
 	     fDescriptionSDPString, // s= <description>
 	     fInfoSDPString, // i= <info>
-	     libNameStr, libVersionStr, // a=tool:
+	     libNameStr, liveMediaLibraryVersionStr, // a=tool:
 	     sourceFilterLine, // a=source-filter: incl (if a SSM session)
 	     rangeLine, // a=range: line
 	     fDescriptionSDPString, // a=x-qt-text-nam: line
@@ -360,7 +359,7 @@ void ServerMediaSubsessionIterator::reset() {
 
 ServerMediaSubsession::ServerMediaSubsession(UsageEnvironment& env)
   : Medium(env),
-    fParentSession(NULL), fNext(NULL), fTrackNumber(0), fTrackId(NULL) {
+    fParentSession(NULL), fSRTP_ROC(0), fNext(NULL), fTrackNumber(0), fTrackId(NULL) {
 }
 
 ServerMediaSubsession::~ServerMediaSubsession() {

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // Implementation
 
@@ -327,6 +327,8 @@ void RTSPServer::stopTCPStreamingOnSocket(int socketNum) {
     } while (sotcp != NULL);
     fTCPStreamingDatabase->Remove((char const*)socketNum);
   }
+
+  RTPInterface::clearServerRequestAlternativeByteHandler(envir(), socketNum);
 }
 
 
@@ -339,7 +341,7 @@ RTSPServer::RTSPClientConnection
   : GenericMediaServer::ClientConnection(ourServer, clientSocket, clientAddr, useTLS),
     fOurRTSPServer(ourServer), fClientInputSocket(fOurSocket), fClientOutputSocket(fOurSocket),
     fPOSTSocketTLS(envir()), fAddressFamily(clientAddr.ss_family),
-    fIsActive(True), fRecursionCount(0), fOurSessionCookie(NULL), fScheduledDelayedTask(0) {
+    fIsActive(True), fRecursionCount(0), fCurrentCSeq(NULL), fOurSessionCookie(NULL), fScheduledDelayedTask(0) {
   resetRequestBuffer();
 }
 
@@ -351,6 +353,7 @@ RTSPServer::RTSPClientConnection::~RTSPClientConnection() {
   }
   
   closeSocketsRTSP();
+  delete[] fCurrentCSeq;
 }
 
 // Handler routines for specific RTSP commands:
@@ -828,7 +831,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
     
       // We now have a complete RTSP request.
       // Handle the specified command (beginning with commands that are session-independent):
-      fCurrentCSeq = cseq;
+      delete[] fCurrentCSeq; fCurrentCSeq = strDup(cseq);
 
       // If the request specified the wrong type of URL
       // (i.e., "rtsps" instead of "rtsp", or vice versa), then send back a 'redirect':

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A filter that passes through (unchanged) chunks that contain an integral number
 // of MPEG-2 Transport Stream packets, but returning (in "fDurationInMicroseconds")
 // an updated estimate of the time gap between chunks.
@@ -257,7 +257,8 @@ Boolean MPEG2TransportStreamFramer::updateTSPacketDurationEstimate(unsigned char
 
     if (fTSPacketDurationEstimate == 0.0) { // we've just started
       fTSPacketDurationEstimate = durationPerPacket;
-    } else if (discontinuity_indicator == 0 && durationPerPacket >= 0.0) {
+    } else if (discontinuity_indicator == 0 && durationPerPacket >= 0.0
+	       && durationPerPacket < 2*fTSPacketDurationEstimate) {
       fTSPacketDurationEstimate
 	= durationPerPacket*NEW_DURATION_WEIGHT
 	+ fTSPacketDurationEstimate*(1-NEW_DURATION_WEIGHT);

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A class encapsulating the state of a MP3 stream
 // Implementation
 
@@ -195,7 +195,9 @@ void MP3StreamState::getAttributes(char* buffer, unsigned bufferSize) const {
 Boolean MP3StreamState::findNextFrame() {
   unsigned char hbuf[8];
   unsigned l; int i;
+#ifdef DEBUG_ERRORS
   int attempt = 0;
+#endif
 
  read_again:
   if (readFromStream(hbuf, 4) != 4) return False;
@@ -283,7 +285,9 @@ Boolean MP3StreamState::findNextFrame() {
 	 track within a short time (and hopefully without
 	 too much distortion in the audio output).  */
       do {
+#ifdef DEBUG_ERRORS
 	attempt++;
+#endif
 	memmove (&hbuf[0], &hbuf[1], 7);
 	if (readFromStream(&hbuf[3],1) != 1) {
 	  return False;

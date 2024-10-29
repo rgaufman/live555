@@ -19,13 +19,8 @@ You will find various executables:
 OutPacketBuffer::maxSize is increased to 2,000,000 bytes which makes live555 work better with buggy IP cameras.
 
 ### Force port re-use
-Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure
-you never run multiple instances of the proxy on the same port!
+Added -DALLOW_RTSP_SERVER_PORT_REUSE=1 to force reusing existing port (e.g. when restarting the proxy). Please ensure you never run multiple instances of the proxy on the same port!
 
 ### Quit on TCP Errors
-liveMedia/RTCP.cpp#431 changed break to exit(1); - this ensures that live555 does not flood the screen and/or log with:
-The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!
-
-### Add -d option
-See Proxyserver_check_interPacketGap_2017.01.26.patch - This allows specifying a number of seconds of inactivity
-before timing out the connection.
+Note, you may want to edit liveMedia/RTCP.cpp#442 to change break to exit(1); - this ensures that live555 does not flood the screen and/or log with:
+"The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!"

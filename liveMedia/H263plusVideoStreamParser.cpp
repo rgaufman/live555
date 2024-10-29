@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // Author Bernhard Feiten
 // A filter that breaks up an H.263plus video stream into frames.
 // Based on MPEG4IP/mp4creator/h263.c
@@ -197,7 +197,7 @@ int H263plusVideoStreamParser::parseH263Frame( )
             ((row = fStates[(unsigned char)row][*(bufferIndex++)]) != -1)); // Start code was not found
 
    if (row != -1) {
-      fprintf(stderr, "%s: Buffer too small (%u)\n",
+      fprintf(stderr, "%s: Buffer too small (%ld)\n",
          "h263reader:", bufferEnd - fTo + ADDITIONAL_BYTES_NEEDED);
       return 0;
    }

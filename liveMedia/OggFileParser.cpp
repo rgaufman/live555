@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2023 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
 // A parser for an Ogg file.
 // Implementation
 
@@ -356,8 +356,6 @@ static Boolean parseVorbisSetup_codebook(LEBitVector& bv) {
       }
 #ifdef DEBUG_SETUP_HEADER
       fprintf(stderr, "\t\t\t\tcodeword length[%d]:\t%d\n", i, codewordLength);
-#else
-      codewordLength = codewordLength; // to prevent compiler warning
 #endif
     }
   } else { // ordered
