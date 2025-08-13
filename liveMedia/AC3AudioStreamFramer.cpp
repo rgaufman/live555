@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up an AC3 audio elementary stream into frames
 // Implementation
 
@@ -73,7 +73,7 @@ private:
   Boolean fHaveParsedAFrame;
   unsigned char* fSavedFrame;
   unsigned fSavedFrameSize;
-  char fSavedFrameFlag;
+  EventLoopWatchVariable fSavedFrameFlag;
 
   // Parameters of the most recently read frame:
   AC3FrameParams fCurrentFrame;

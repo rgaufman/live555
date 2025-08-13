@@ -30,7 +30,7 @@ install1: $(USAGE_ENVIRONMENT_LIB)
 	  install -d $(DESTDIR)$(PREFIX)/include/UsageEnvironment $(DESTDIR)$(LIBDIR)
 	  install -m 644 include/*.hh $(DESTDIR)$(PREFIX)/include/UsageEnvironment
 	  install -m 644 $(USAGE_ENVIRONMENT_LIB) $(DESTDIR)$(LIBDIR)
-install_shared_libraries: $(USAGE_ENVIRONMENT_LIB)
+install_shared_libraries: install1
 	  ln -fs $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).$(SHORT_LIB_SUFFIX)
 	  ln -fs $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).so
 

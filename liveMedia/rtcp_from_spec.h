@@ -15,9 +15,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 /* 
  * "liveMedia"
- * Copyright (c) 1996-2024, Live Networks, Inc.  All rights reserved
+ * Copyright (c) 1996-2025, Live Networks, Inc.  All rights reserved
  *
- * RTCP code taken directly from the most recent RTP specification: RFC 3550
+ * RTCP code derived from the 'pseudo code' in the RTP specification: RFC 3550
  * C header
  */
 

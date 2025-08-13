@@ -438,7 +438,7 @@ install1: $(LIVEMEDIA_LIB)
 	 install -d $(DESTDIR)$(PREFIX)/include/liveMedia $(DESTDIR)$(LIBDIR)
 	 install -m 644 include/*.hh $(DESTDIR)$(PREFIX)/include/liveMedia
 	 install -m 644 $(LIVEMEDIA_LIB) $(DESTDIR)$(LIBDIR)
-install_shared_libraries: $(LIVEMEDIA_LIB)
+install_shared_libraries: install1
 	 ln -fs $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).$(SHORT_LIB_SUFFIX)
 	 ln -fs $(NAME).$(LIB_SUFFIX) $(DESTDIR)$(LIBDIR)/$(NAME).so
 

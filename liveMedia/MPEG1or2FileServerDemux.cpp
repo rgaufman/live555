@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // A server demultiplexer for a MPEG 1 or 2 Program Stream
 // Implementation
 
@@ -179,7 +179,7 @@ public:
   MFSD_DummySink(MPEG1or2Demux& demux, Boolean returnFirstSeenCode);
   virtual ~MFSD_DummySink();
 
-  char watchVariable;
+  EventLoopWatchVariable watchVariable;
 
 private:
   // redefined virtual function:
