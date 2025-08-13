@@ -1,5 +1,23 @@
-/* RTCP code taken directly from the most recent RTP specification: RFC 3550
- *         Copyright (C) The Internet Society (2003).  All Rights Reserved.
+/**********
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
+option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
+
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+**********/
+/*
+ * "liveMedia"
+ * Copyright (c) 1996-2025, Live Networks, Inc.  All rights reserved
+ *
+ * RTCP code derived from the 'pseudo code' in the RTP specification: RFC 3550
  * Implementation
  */
 
@@ -119,7 +137,7 @@ A.7 Computing the RTCP Transmission Interval
         * the RTCP bandwidth equally.
         */
        n = members;
-       if (senders > 0 && senders < members * RTCP_SENDER_BW_FRACTION) {
+       if (senders > 0 && senders < members*RTCP_SENDER_BW_FRACTION) {
            if (we_sent) {
                rtcp_bw *= RTCP_SENDER_BW_FRACTION;
                n = senders;
@@ -138,7 +156,7 @@ A.7 Computing the RTCP Transmission Interval
         * time interval we send one report so this time is also our
         * average time between reports.
         */
-       t = avg_rtcp_size * n / rtcp_bw;
+       t = (avg_rtcp_size*n)/rtcp_bw;
        if (t < rtcp_min_time) t = rtcp_min_time;
 
        /*
@@ -146,8 +164,8 @@ A.7 Computing the RTCP Transmission Interval
         * other sites, we then pick our actual next report interval as a
         * random number uniformly distributed between 0.5*t and 1.5*t.
         */
-       t = t * (drand48() + 0.5);
-       t = t / COMPENSATION;
+       t = t*(drand48() + 0.5);
+       t = t/COMPENSATION;
        return t;
    }
 
@@ -156,11 +174,11 @@ A.7 Computing the RTCP Transmission Interval
                  int    senders,
                  double rtcp_bw,
                  int    we_sent,
-                 double *avg_rtcp_size,
-                 int    *initial,
+                 double* avg_rtcp_size,
+                 int*    initial,
                  time_tp   tc,
-                 time_tp   *tp,
-                 int    *pmembers)
+                 time_tp*   tp,
+                 int* pmembers)
    {
        /* This function is responsible for deciding whether to send
         * an RTCP report or BYE packet now, or to reschedule transmission.
@@ -200,8 +218,7 @@ A.7 Computing the RTCP Transmission Interval
 
            if (tn <= tc) {
                SendRTCPReport(e);
-               *avg_rtcp_size = (1./16.)*SentPacketSize(e) +
-                   (15./16.)*(*avg_rtcp_size);
+               *avg_rtcp_size = (1./16.)*SentPacketSize(e) + (15./16.)*(*avg_rtcp_size);
                *tp = tc;
 
                /* We must redraw the interval. Don't reuse the
@@ -229,11 +246,11 @@ A.7 Computing the RTCP Transmission Interval
 
    void OnReceive(packet p,
                   event e,
-                  int *members,
-                  int *pmembers,
-                  int *senders,
-                  double *avg_rtcp_size,
-                  double *tp,
+                  int* members,
+                  int* pmembers,
+                  int* senders,
+                  double* avg_rtcp_size,
+                  double* tp,
                   double tc,
                   double tn)
    {
@@ -246,8 +263,7 @@ A.7 Computing the RTCP Transmission Interval
                AddMember(p);
                *members += 1;
            }
-           *avg_rtcp_size = (1./16.)*ReceivedPacketSize(p) +
-               (15./16.)*(*avg_rtcp_size);
+           *avg_rtcp_size = (1./16.)*ReceivedPacketSize(p) + (15./16.)*(*avg_rtcp_size);
        } else if (PacketType(p) == PACKET_RTP) {
            if (NewMember(p) && (TypeOfEvent(e) == EVENT_REPORT)) {
                AddMember(p);
@@ -258,8 +274,7 @@ A.7 Computing the RTCP Transmission Interval
                *senders += 1;
            }
        } else if (PacketType(p) == PACKET_BYE) {
-           *avg_rtcp_size = (1./16.)*ReceivedPacketSize(p) +
-               (15./16.)*(*avg_rtcp_size);
+           *avg_rtcp_size = (1./16.)*ReceivedPacketSize(p) + (15./16.)*(*avg_rtcp_size);
 
            if (TypeOfEvent(e) == EVENT_REPORT) {
                if (NewSender(p) == FALSE) {

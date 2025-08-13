@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // RTP source for a common kind of payload format: Those that pack multiple,
 // complete codec frames (as many as possible) into each RTP packet.
 // Implementation
@@ -358,7 +358,20 @@ BufferedPacket::BufferedPacket()
 }
 
 BufferedPacket::~BufferedPacket() {
-  delete fNextPacket;
+  /////
+  // Replace tail recursion with iteration, in case the compiler isn't smart enough to do this.
+  // I.e., replace:
+  //    delete fNextPacket;
+  // with:
+  BufferedPacket* nextPacket = fNextPacket;
+  while (nextPacket != NULL) {
+    BufferedPacket* tmpPacket = nextPacket;
+    nextPacket = tmpPacket->fNextPacket;
+    tmpPacket->fNextPacket = NULL;
+    delete tmpPacket;
+  }
+  /////
+
   delete[] fBuf;
 }
 

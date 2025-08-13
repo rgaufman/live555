@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // A generic media server class, used to implement a RTSP server, and any other server that uses
 //  "ServerMediaSession" objects to describe media to be served.
 // Implementation
@@ -306,7 +306,12 @@ void GenericMediaServer::ClientConnection::incomingRequestHandler(void* instance
 
 void GenericMediaServer::ClientConnection::incomingRequestHandler() {
   if (fInputTLS->tlsAcceptIsNeeded) { // we need to successfully call fInputTLS->accept() first:
-    if (fInputTLS->accept(fOurSocket) <= 0) return; // either an error, or we need to try again later
+    int tlsAcceptResult = fInputTLS->accept(fOurSocket);
+    if (tlsAcceptResult <= 0) { // either an error, or we need to try again later
+      if (tlsAcceptResult < 0) delete this; // an error; this connection cannot continue
+
+      return;
+    }
 
     fInputTLS->tlsAcceptIsNeeded = False;
     // We can now read data, as usual:

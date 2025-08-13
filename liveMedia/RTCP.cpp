@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // RTCP
 // Implementation
 
@@ -284,7 +284,7 @@ unsigned RTCPInstance::numMembers() const {
 }
 
 void RTCPInstance::setupForSRTCP() {
-  if (fCrypto == NULL && fSink != NULL) { // take crypto state (if any) from the sink instead:
+  if (fSink != NULL) { // take crypto state (if any) from the sink:
     fCrypto = fSink->getCrypto();
   }
 }
@@ -439,7 +439,11 @@ void RTCPInstance::incomingReportHandler1() {
       envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
 	      << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
 	      << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
-      break;
+      envir() << "RTCPInstance: Resetting buffer state and returning to prevent CPU spinning. Will retry when new data arrives.\n";
+      // Reset the buffer state to prevent infinite loop
+      fNumBytesAlreadyRead = 0;
+      // Don't immediately retry - return to prevent CPU spinning, the handler will be called again when new data arrives
+      return;
     }
 
     unsigned numBytesRead;

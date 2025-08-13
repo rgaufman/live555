@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2025, Live Networks, Inc.  All rights reserved
 //
 // The SRTP 'Cryptographic Context', used in all of our uses of SRTP.
 // Implementation
@@ -33,7 +33,9 @@ SRTPCryptographicContext
 ::SRTPCryptographicContext(MIKEYState const& mikeyState)
 #ifndef NO_OPENSSL
   : fMIKEYState(mikeyState),
-    fHaveReceivedSRTPPackets(False), fHaveSentSRTPPackets(False), fSRTCPIndex(0) {
+    fHaveReceivedSRTPPackets(False),
+    fHaveSentSRTPPackets(False), fSendingROC(mikeyState.initialROC()),
+    fSRTCPIndex(0) {
   // Begin by doing a key derivation, to generate the keying data that we need:
   performKeyDerivation();
 #else
@@ -76,6 +78,7 @@ Boolean SRTPCryptographicContext
       // First time:
       nextROC = thisPacketsROC = fReceptionROC = fMIKEYState.initialROC();
       nextHighRTPSeqNum = rtpSeqNum;
+      fHaveReceivedSRTPPackets = True; // for the future
     } else {
       // Check whether the sequence number has rolled over, or is out-of-order:
       u_int16_t const SEQ_NUM_THRESHOLD = 0x1000;
@@ -122,7 +125,6 @@ Boolean SRTPCryptographicContext
     // Now that we've verified the packet, set the 'index values' for next time:
     fReceptionROC = nextROC;
     fPreviousHighRTPSeqNum = nextHighRTPSeqNum;
-    fHaveReceivedSRTPPackets = True;
 
     if (weEncryptSRTP()) {
       // Decrypt the SRTP packet.  It has the index "thisPacketsROC" with "rtpSeqNum":
@@ -275,7 +277,6 @@ Boolean SRTPCryptographicContext
       // Figure out this packet's 'index' (ROC|rtpSeqNum):
       u_int16_t const rtpSeqNum = (buffer[2]<<8)|buffer[3];
       if (!fHaveSentSRTPPackets) {
-	fSendingROC = 0;
 	fHaveSentSRTPPackets = True; // for the future
       } else {
 	if (rtpSeqNum == 0) ++fSendingROC; // increment the ROC when the RTP seq num rolls over

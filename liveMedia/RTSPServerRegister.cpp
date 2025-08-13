@@ -417,7 +417,7 @@ void RTSPServerWithREGISTERProxying
     ServerMediaSession* sms
       = ProxyServerMediaSession::createNew(envir(), this, url, proxyStreamName,
 					   fBackEndUsername, fBackEndPassword,
-					   tunnelOverHTTPPortNum, fVerbosityLevelForProxying, socketToRemoteServer);
+					   tunnelOverHTTPPortNum, fVerbosityLevelForProxying, socketToRemoteServer, NULL, 0);
     addServerMediaSession(sms);
   
     // (Regardless of the verbosity level) announce the fact that we're proxying this new stream, and the URL to use to access it:

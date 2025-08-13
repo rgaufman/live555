@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // State encapsulating a TLS connection
 // Implementation
 
@@ -145,9 +145,25 @@ Boolean ClientTLSState::setup(int socketNum) {
     fCon = SSL_new(fCtx);
     if (fCon == NULL) break;
 
-    BIO* bio = BIO_new_socket(socketNum, BIO_NOCLOSE);
-    SSL_set_bio(fCon, bio, bio);
+#ifdef CLIENT_TLS_SETUP_EXTRA
+    // (Note the comment in the "TLSState.hh" header file.)
+    return setupExtra(socketNum);
+#else
+    return setupContinue(socketNum);
+#endif
+  } while (0);
 
+  // An error occurred:
+  reset();
+  return False;
+}
+
+Boolean ClientTLSState::setupContinue(int socketNum) {
+  do {
+    BIO* bio = BIO_new_socket(socketNum, BIO_NOCLOSE);
+    if (bio == NULL) break;
+
+    SSL_set_bio(fCon, bio, bio);
     SSL_set_connect_state(fCon);
 
     fHasBeenSetup = True;
@@ -158,6 +174,7 @@ Boolean ClientTLSState::setup(int socketNum) {
   reset();
   return False;
 }
+  
 #endif
 
 

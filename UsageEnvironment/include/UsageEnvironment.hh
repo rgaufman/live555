@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2024 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
 // Usage Environment
 // C++ header
 
@@ -39,6 +39,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #ifndef NULL
 #define NULL 0
+#endif
+
+#ifndef NO_STD_LIB
+#ifndef _LIBCPP_ATOMIC
+#include <atomic>
+#endif
 #endif
 
 #ifdef __BORLANDC__
@@ -103,6 +109,12 @@ typedef void TaskFunc(void* clientData);
 typedef void* TaskToken;
 typedef u_int32_t EventTriggerId;
 
+#ifndef NO_STD_LIB
+typedef std::atomic_char EventLoopWatchVariable;
+#else
+typedef char volatile EventLoopWatchVariable;
+#endif
+
 class TaskScheduler {
 public:
   virtual ~TaskScheduler();
@@ -140,7 +152,7 @@ public:
   virtual void moveSocketHandling(int oldSocketNum, int newSocketNum) = 0;
         // Changes any socket handling for "oldSocketNum" so that occurs with "newSocketNum" instead.
 
-  virtual void doEventLoop(char volatile* watchVariable = NULL) = 0;
+  virtual void doEventLoop(EventLoopWatchVariable* watchVariable = NULL) = 0;
       // Causes further execution to take place within the event loop.
       // Delayed tasks, background I/O handling, and other events are handled, sequentially (as a single thread of control).
       // (If "watchVariable" is not NULL, then we return from this routine when *watchVariable != 0)

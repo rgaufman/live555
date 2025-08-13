@@ -13,7 +13,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
-// Copyright (c) 1996-2024, Live Networks, Inc.  All rights reserved
+// Copyright (c) 1996-2025, Live Networks, Inc.  All rights reserved
 // LIVE555 Proxy Server
 // main program
 
@@ -35,6 +35,7 @@ char* password = NULL;
 Boolean proxyREGISTERRequests = False;
 char* usernameForREGISTER = NULL;
 char* passwordForREGISTER = NULL;
+unsigned interPacketGapMaxTime = 10;
 
 static RTSPServer* createRTSPServer(Port port) {
   if (proxyREGISTERRequests) {
@@ -51,6 +52,7 @@ void usage() {
        << " [-p <rtspServer-port>]"
        << " [-u <username> <password>]"
        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
+       << " [-D <max-inter-packet-gap-time>]"
        << " <rtsp-url-1> ... <rtsp-url-n>\n";
   exit(1);
 }
@@ -98,7 +100,7 @@ int main(int argc, char** argv) {
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 2 && argv[2][0] != '-') {
-	// The next argument is the HTTP server port number:
+	// The next argument is the HTTP server port number:                                                                       
 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
 	    && tunnelOverHTTPPortNum > 0) {
 	  ++argv; --argc;
@@ -112,7 +114,7 @@ int main(int argc, char** argv) {
     }
 
     case 'p': {
-      // specify a rtsp server port number
+      // specify a rtsp server port number 
       if (argc > 2 && argv[2][0] != '-') {
         // The next argument is the rtsp server port number:
         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
@@ -126,7 +128,7 @@ int main(int argc, char** argv) {
       usage();
       break;
     }
-
+    
     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
       if (argc < 4) usage(); // there's no argv[3] (for the "password")
       username = argv[2];
@@ -151,6 +153,19 @@ int main(int argc, char** argv) {
       break;
     }
 
+    case 'D': { // specify maximum number of seconds to wait for packets:
+      if (argc > 2 && argv[2][0] != '-') {
+        if (sscanf(argv[2], "%u", &interPacketGapMaxTime) == 1) {
+          ++argv; --argc;
+          break;
+        }
+      }
+
+      // If we get here, the option was specified incorrectly:
+      usage();
+      break;
+    }
+
     default: {
       usage();
       break;
@@ -159,7 +174,7 @@ int main(int argc, char** argv) {
 
     ++argv; --argc;
   }
-  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end
+  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end 
   // Make sure that the remaining arguments appear to be "rtsp://" (or "rtsps://") URLs:
   int i;
   for (i = 1; i < argc; ++i) {
@@ -221,7 +236,7 @@ int main(int argc, char** argv) {
     ServerMediaSession* sms
       = ProxyServerMediaSession::createNew(*env, rtspServer,
 					   proxiedStreamURL, streamName,
-					   username, password, tunnelOverHTTPPortNum, verbosityLevel);
+					   username, password, tunnelOverHTTPPortNum, verbosityLevel, -1, NULL, interPacketGapMaxTime);
     rtspServer->addServerMediaSession(sms);
 
     char* proxyStreamURL = rtspServer->rtspURL(sms);
