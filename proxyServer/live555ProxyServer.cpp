@@ -37,6 +37,19 @@ char* usernameForREGISTER = NULL;
 char* passwordForREGISTER = NULL;
 unsigned interPacketGapMaxTime = 10;
 
+// -e: custom stream-name prefix exposed to downstream clients. When serving a
+// single rtsp:// URL the proxy publishes it as "rtsp://.../<prefix>"; for N
+// URLs each gets "<prefix>-1" .. "<prefix>-N". Capped to keep the final
+// stream name comfortably short and printable-URL-safe.
+#define PROXY_STREAM_NAME_PREFIX_MAX 50
+char const* streamNamePrefix = "proxyStream";
+
+// -C: credentials required of downstream RTSP clients connecting to this
+// proxy. Separate from -u, which are the credentials this proxy presents to
+// the back-end (proxied) camera. Populated into authDB below.
+char* clientAuthUsername = NULL;
+char* clientAuthPassword = NULL;
+
 static RTSPServer* createRTSPServer(Port port) {
   if (proxyREGISTERRequests) {
     return RTSPServerWithREGISTERProxying::createNew(*env, port, authDB, authDBForREGISTER, 65, streamRTPOverTCP, verbosityLevel, username, password);
@@ -50,10 +63,19 @@ void usage() {
        << " [-v|-V]"
        << " [-t|-T <http-port>]"
        << " [-p <rtspServer-port>]"
-       << " [-u <username> <password>]"
+       << " [-u <back-end-username> <back-end-password>]"
        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
        << " [-D <max-inter-packet-gap-time>]"
-       << " <rtsp-url-1> ... <rtsp-url-n>\n";
+       << " [-e <stream-name-prefix>]"
+       << " [-C <client-username> <client-password>]"
+       << " <rtsp-url-1> ... <rtsp-url-n>\n"
+       << "  -e <stream-name-prefix>   Publish streams as <prefix> (single URL) or\n"
+       << "                             <prefix>-1..-n (multiple). Max "
+       << PROXY_STREAM_NAME_PREFIX_MAX
+       << " chars. Default: \"proxyStream\".\n"
+       << "  -C <user> <pass>          Require downstream RTSP clients to authenticate\n"
+       << "                             with these credentials (digest auth). Separate\n"
+       << "                             from -u, which is for the back-end/proxied stream.\n";
   exit(1);
 }
 
@@ -153,6 +175,27 @@ int main(int argc, char** argv) {
       break;
     }
 
+    case 'e': { // specify a custom stream-name prefix
+      if (argc < 3 || argv[2][0] == '-' || argv[2][0] == '\0') usage();
+      size_t len = strlen(argv[2]);
+      if (len == 0 || len > PROXY_STREAM_NAME_PREFIX_MAX) {
+        *env << "Invalid stream-name prefix (must be 1.."
+             << PROXY_STREAM_NAME_PREFIX_MAX << " characters)\n";
+        usage();
+      }
+      streamNamePrefix = argv[2];
+      ++argv; --argc;
+      break;
+    }
+
+    case 'C': { // credentials required of downstream clients connecting to this proxy
+      if (argc < 4) usage(); // there's no argv[3] (for the "password")
+      clientAuthUsername = argv[2];
+      clientAuthPassword = argv[3];
+      argv += 2; argc -= 2;
+      break;
+    }
+
     case 'D': { // specify maximum number of seconds to wait for packets:
       if (argc > 2 && argv[2][0] != '-') {
         if (sscanf(argv[2], "%u", &interPacketGapMaxTime) == 1) {
@@ -196,10 +239,19 @@ int main(int argc, char** argv) {
 
 #ifdef ACCESS_CONTROL
   // To implement client access control to the RTSP server, do the following:
-  authDB = new UserAuthenticationDatabase;
+  if (authDB == NULL) authDB = new UserAuthenticationDatabase;
   authDB->addUserRecord("username1", "password1"); // replace these with real strings
       // Repeat this line with each <username>, <password> that you wish to allow access to the server.
 #endif
+
+  // If "-C <user> <pass>" was given, require downstream RTSP clients to
+  // authenticate with these credentials (digest auth, via live555's standard
+  // UserAuthenticationDatabase — same mechanism RTSPServer already uses when
+  // any authDB is non-null).
+  if (clientAuthUsername != NULL) {
+    if (authDB == NULL) authDB = new UserAuthenticationDatabase;
+    authDB->addUserRecord(clientAuthUsername, clientAuthPassword);
+  }
 
   // Create the RTSP server. Try first with the configured port number,
   // and then with the default port number (554) if different,
@@ -224,14 +276,16 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  // Create a proxy for each "rtsp://" URL specified on the command line:
+  // Create a proxy for each "rtsp://" URL specified on the command line.
+  // Stream name is "<prefix>" for a single URL and "<prefix>-<i>" for many.
+  // Buffer holds up to PROXY_STREAM_NAME_PREFIX_MAX + "-" + 10-digit index + NUL.
   for (i = 1; i < argc; ++i) {
     char const* proxiedStreamURL = argv[i];
-    char streamName[30];
+    char streamName[PROXY_STREAM_NAME_PREFIX_MAX + 16];
     if (argc == 2) {
-      sprintf(streamName, "%s", "proxyStream"); // there's just one stream; give it this name
+      snprintf(streamName, sizeof streamName, "%s", streamNamePrefix);
     } else {
-      sprintf(streamName, "proxyStream-%d", i); // there's more than one stream; distinguish them by name
+      snprintf(streamName, sizeof streamName, "%s-%d", streamNamePrefix, i);
     }
     ServerMediaSession* sms
       = ProxyServerMediaSession::createNew(*env, rtspServer,

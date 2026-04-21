@@ -139,8 +139,15 @@ void OnDemandServerMediaSubsession
     ++((StreamState*)fLastStreamToken)->referenceCount();
     streamToken = fLastStreamToken;
   } else {
-    // Normal case: Create a new media source:
-    unsigned streamBitrate;
+    // Normal case: Create a new media source.
+    // Defensive: streamBitrate is a pure out-parameter from createNewStreamSource(),
+    // but some subclass overrides don't write it before early-returning on e.g. a
+    // missing source file. Initialising to 0 here prevents a downstream uninit
+    // read in the "rtpBufSize = streamBitrate * 25 / 2" computation below
+    // (valgrind: "Conditional jump or move depends on uninitialised value(s)"
+    //  at increaseBufferTo via OnDemandServerMediaSubsession::getStreamParameters,
+    //  reported against this fork as issue #65).
+    unsigned streamBitrate = 0;
     FramedSource* mediaSource
       = createNewStreamSource(clientSessionId, streamBitrate);
 
