@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // A subclass of "ServerMediaSession" that can be used to create a (unicast) RTSP servers that acts as a 'proxy' for
 // another (unicast or multicast) RTSP/RTP stream.
 // Implementation
@@ -245,7 +245,7 @@ UsageEnvironment& operator<<(UsageEnvironment& env, const ProxyRTSPClient& proxy
 
 ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
 				 char const* username, char const* password,
-				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer, 
+				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
 				 unsigned interPacketGapMaxTime)
   : RTSPClient(ourServerMediaSession.envir(), rtspURL, verbosityLevel, "ProxyRTSPClient",
 	       tunnelOverHTTPPortNum == (portNumBits)(~0) ? 0 : tunnelOverHTTPPortNum, socketNumToServer),
@@ -445,6 +445,42 @@ void ProxyRTSPClient::sendLivenessCommand(void* clientData) {
 #endif
 }
 
+void ProxyRTSPClient::checkInterPacketGaps_(Boolean delayReset) {
+  if (fInterPacketGapMaxTime == 0) return; // we're not checking
+
+  // Check each subsession, counting up how many packets have been received:
+  unsigned newTotNumPacketsReceived = 0;
+
+  MediaSubsessionIterator iter(*fOurServerMediaSession.fClientMediaSession);
+  MediaSubsession* subsession;
+  while ((subsession = iter.next()) != NULL) {
+    RTPSource* src = subsession->rtpSource();
+    if (src == NULL) continue;
+    newTotNumPacketsReceived += src->receptionStatsDB().totNumPacketsReceived();
+  }
+
+  if (newTotNumPacketsReceived == fTotNumPacketsReceived) {
+    // No additional packets have been received since the last time we
+    // checked, so end this stream:
+    if (fVerbosityLevel > 0) {
+      envir() << *this << "::checkInterPacketGaps last packet received: >" << fInterPacketGapMaxTime
+                       << " seconds ago. Resetting session\n";
+    }
+    if (delayReset) scheduleReset();
+    else doReset();
+  } else {
+    fTotNumPacketsReceived = newTotNumPacketsReceived;
+    // Check again, after the specified delay:
+    fInterPacketGapsTask = envir().taskScheduler().scheduleDelayedTask(fInterPacketGapMaxTime*MILLION, checkInterPacketGaps, this);
+  }
+}
+
+void ProxyRTSPClient::checkInterPacketGaps(void* clientData) {
+  ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
+  rtspClient->fInterPacketGapsTask = NULL;
+  rtspClient->checkInterPacketGaps_(False);
+}
+
 void ProxyRTSPClient::scheduleReset() {
   if (fVerbosityLevel > 0) {
     envir() << "ProxyRTSPClient::scheduleReset\n";
@@ -468,42 +504,6 @@ void ProxyRTSPClient::doReset() {
 void ProxyRTSPClient::doReset(void* clientData) {
   ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
   rtspClient->doReset();
-}
-
-void ProxyRTSPClient::checkInterPacketGaps_(Boolean delayReset) {
-  if (fInterPacketGapMaxTime == 0) return; // we're not checking
-
-  // Check each subsession, counting up how many packets have been received:
-  unsigned newTotNumPacketsReceived = 0;
-
-  MediaSubsessionIterator iter(*fOurServerMediaSession.fClientMediaSession);
-  MediaSubsession* subsession;
-  while ((subsession = iter.next()) != NULL) {
-    RTPSource* src = subsession->rtpSource();
-    if (src == NULL) continue;
-    newTotNumPacketsReceived += src->receptionStatsDB().totNumPacketsReceived();
-  }
-
-  if (newTotNumPacketsReceived == fTotNumPacketsReceived) {
-    // No additional packets have been received since the last time we
-    // checked, so end this stream:
-    if (fVerbosityLevel > 0) {
-      envir() << *this << "::checkInterPacketGaps last packet received: >" << fInterPacketGapMaxTime 
-                       << " seconds ago. Resetting session\n";
-    }
-    if (delayReset) scheduleReset();
-    else doReset();
-  } else {
-    fTotNumPacketsReceived = newTotNumPacketsReceived;
-    // Check again, after the specified delay:
-    fInterPacketGapsTask = envir().taskScheduler().scheduleDelayedTask(fInterPacketGapMaxTime*MILLION, checkInterPacketGaps, this);
-  }
-}
-
-void ProxyRTSPClient::checkInterPacketGaps(void* clientData) {
-  ProxyRTSPClient* rtspClient = (ProxyRTSPClient*)clientData;
-  rtspClient->fInterPacketGapsTask = NULL;
-  rtspClient->checkInterPacketGaps_(False);
 }
 
 void ProxyRTSPClient::scheduleDESCRIBECommand() {

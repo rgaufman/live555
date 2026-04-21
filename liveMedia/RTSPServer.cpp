@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // Implementation
 
@@ -156,13 +156,6 @@ char const* RTSPServer::allowedCommandNames() {
 UserAuthenticationDatabase* RTSPServer::getAuthenticationDatabaseForCommand(char const* /*cmdName*/) {
   // default implementation
   return fAuthDB;
-}
-
-Boolean RTSPServer::specialClientAccessCheck(int /*clientSocket*/,
-					     struct sockaddr_storage const& /*clientAddr*/,
-					     char const* /*urlSuffix*/) {
-  // default implementation
-  return True;
 }
 
 Boolean RTSPServer::specialClientUserAccessCheck(int /*clientSocket*/,
@@ -1083,11 +1076,6 @@ static Boolean parseAuthorizationHeader(char const* buf,
 
 Boolean RTSPServer::RTSPClientConnection
 ::authenticationOK(char const* cmdName, char const* urlSuffix, char const* fullRequestStr) {
-  if (!fOurRTSPServer.specialClientAccessCheck(fClientInputSocket, fClientAddr, urlSuffix)) {
-    setRTSPResponse("401 Unauthorized");
-    return False;
-  }
-  
   // If we weren't set up with an authentication database, we're OK:
   UserAuthenticationDatabase* authDB = fOurRTSPServer.getAuthenticationDatabaseForCommand(cmdName);
   if (authDB == NULL) return True;
@@ -1587,7 +1575,9 @@ void RTSPServer::RTSPClientSession
     
     subsession->getStreamParameters(fOurSessionId, fOurClientConnection->fClientAddr,
 				    clientRTPPort, clientRTCPPort,
-				    fStreamStates[trackNum].tcpSocketNum, rtpChannelId, rtcpChannelId,
+				    streamingMode == RTP_TCP
+				    ? fStreamStates[trackNum].tcpSocketNum : -1,
+				    rtpChannelId, rtcpChannelId,
                                     &fOurClientConnection->fTLS,
 				    destinationAddress, destinationTTL, fIsMulticast,
 				    serverRTPPort, serverRTCPPort,

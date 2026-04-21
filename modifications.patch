@@ -1,45 +1,23 @@
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/config.linux live555/config.linux
---- live/config.linux	2024-10-24 18:50:34.000000000 +0100
-+++ live555/config.linux	2024-10-29 16:25:59.933532116 +0000
-@@ -1,4 +1,4 @@
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.linux /Users/hackeron/Development/TetherX/live555/config.linux
+--- live-upstream/live/config.linux	2026-04-01 19:34:37.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/config.linux	2026-04-21 14:15:31.401074507 +1000
+@@ -1,10 +1,10 @@
 -COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
 +COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DALLOW_RTSP_SERVER_PORT_REUSE=1
  C =			c
  C_COMPILER =		cc
  C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liveMedia/RTCP.cpp live555/liveMedia/RTCP.cpp
---- live/liveMedia/RTCP.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/liveMedia/RTCP.cpp	2025-01-13 12:00:00.000000000 +0000
-@@ -439,7 +439,10 @@ void RTCPInstance::incomingReportHandler1() {
-     if (fNumBytesAlreadyRead >= maxRTCPPacketSize) {
-       envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
- 	      << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
- 	      << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
--      break;
-+      envir() << "RTCPInstance: Resetting buffer state and returning to prevent CPU spinning. Will retry when new data arrives.\n";
-+      // Reset the buffer state to prevent infinite loop
-+      fNumBytesAlreadyRead = 0;
-+      // Don't immediately retry - return to prevent CPU spinning, the handler will be called again when new data arrives
-+      return;
-     }
- 
-     unsigned numBytesRead;
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liveMedia/MediaSink.cpp live555/liveMedia/MediaSink.cpp
---- live/liveMedia/MediaSink.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/liveMedia/MediaSink.cpp	2024-10-29 16:24:08.523077243 +0000
-@@ -110,7 +110,7 @@
- 
- ////////// OutPacketBuffer //////////
- 
--unsigned OutPacketBuffer::maxSize = 60000; // by default
-+unsigned OutPacketBuffer::maxSize = 2000000; // by default
- 
- OutPacketBuffer
- ::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liveMedia/include/ProxyServerMediaSession.hh live555/liveMedia/include/ProxyServerMediaSession.hh
---- live/liveMedia/include/ProxyServerMediaSession.hh	2024-10-24 18:50:15.000000000 +0100
-+++ live555/liveMedia/include/ProxyServerMediaSession.hh	2025-01-13 12:00:00.000000000 +0000
-@@ -43,7 +43,8 @@ class ProxyRTSPClient: public RTSPClient
+ CPP =			cpp
+ CPLUSPLUS_COMPILER =	c++
+-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
++CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
+ OBJ =			o
+ LINK =			c++ -o
+ LINK_OPTS =		-L. $(LDFLAGS)
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/ProxyServerMediaSession.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/ProxyServerMediaSession.hh
+--- live-upstream/live/liveMedia/include/ProxyServerMediaSession.hh	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/ProxyServerMediaSession.hh	2026-04-21 14:00:29.178107324 +1000
+@@ -43,7 +43,8 @@
  public:
    ProxyRTSPClient(class ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
                    char const* username, char const* password,
@@ -49,7 +27,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
    virtual ~ProxyRTSPClient();
  
    void continueAfterDESCRIBE(char const* sdpDescription);
-@@ -60,6 +61,8 @@ private:
+@@ -60,6 +61,8 @@
  
    void scheduleLivenessCommand();
    static void sendLivenessCommand(void* clientData);
@@ -58,7 +36,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
    void doReset();
    static void doReset(void* clientData);
  
-@@ -79,8 +82,10 @@ private:
+@@ -80,8 +83,10 @@
    class ProxyServerMediaSubsession *fSetupQueueHead, *fSetupQueueTail;
    unsigned fNumSetupsDone;
    unsigned fNextDESCRIBEDelay; // in seconds
@@ -70,7 +48,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  };
  
  
-@@ -89,13 +94,13 @@ createNewProxyRTSPClientFunc(ProxyServer
+@@ -90,13 +95,13 @@
  			     char const* rtspURL,
  			     char const* username, char const* password,
  			     portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
@@ -86,7 +64,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  
  class ProxyServerMediaSession: public ServerMediaSession {
  public:
-@@ -108,7 +113,8 @@ public:
+@@ -109,7 +114,8 @@
  					        // for streaming the *proxied* (i.e., back-end) stream
  					    int verbosityLevel = 0,
  					    int socketNumToServer = -1,
@@ -96,7 +74,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
        // Hack: "tunnelOverHTTPPortNum" == 0xFFFF (i.e., all-ones) means: Stream RTP/RTCP-over-TCP, but *not* using HTTP
        // "verbosityLevel" == 1 means display basic proxy setup info; "verbosityLevel" == 2 means display RTSP client protocol also.
        // If "socketNumToServer" is >= 0, then it is the socket number of an already-existing TCP connection to the server.
-@@ -131,6 +137,7 @@ protected:
+@@ -132,6 +138,7 @@
  			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
  			  int socketNumToServer,
  			  MediaTranscodingTable* transcodingTable,
@@ -104,10 +82,101 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
  			  = defaultCreateNewProxyRTSPClientFunc,
  			  portNumBits initialPortNum = 6970,
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liveMedia/ProxyServerMediaSession.cpp live555/liveMedia/ProxyServerMediaSession.cpp
---- live/liveMedia/ProxyServerMediaSession.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/liveMedia/ProxyServerMediaSession.cpp	2025-01-13 12:00:00.000000000 +0000
-@@ -75,9 +75,9 @@ defaultCreateNewProxyRTSPClientFunc(Prox
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RateLimitedLog.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RateLimitedLog.hh
+--- live-upstream/live/liveMedia/include/RateLimitedLog.hh	1970-01-01 10:00:00.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/RateLimitedLog.hh	2026-04-21 14:54:04.741337108 +1000
+@@ -0,0 +1,55 @@
++// Rate-limited logger.
++//
++// Two variants:
++//   - rateLimitedLog: global window across all events using the same state.
++//     Use when you want a single aggregate view.
++//   - rateLimitedLogPerKey: independent window per key (typically socket fd).
++//     Use when you want per-socket diagnostics — each socket's events throttle
++//     independently, so a stall on socket A doesn't suppress logs for socket B.
++//
++// Both return N>0 if the caller should log now (N = events accumulated since
++// the previous log, including this one), or 0 to suppress. Logs at most once
++// every `windowSecs` wall-clock seconds.
++
++#ifndef _RATE_LIMITED_LOG_HH
++#define _RATE_LIMITED_LOG_HH
++
++#include <time.h>
++#include <map>
++
++inline unsigned long rateLimitedLog(time_t& lastSec, unsigned long& pending,
++                                    time_t windowSecs) {
++  ++pending;
++  time_t now = time(NULL);
++  if (lastSec == 0 || now - lastSec >= windowSecs) {
++    lastSec = now;
++    unsigned long n = pending;
++    pending = 0;
++    return n;
++  }
++  return 0;
++}
++
++struct RateLimitEntry {
++  time_t lastSec;
++  unsigned long pending;
++  RateLimitEntry() : lastSec(0), pending(0) {}
++};
++
++// The tracker map grows unbounded over process lifetime. For live555 use
++// this is fine — tens of sockets per proxy lifetime, not millions.
++inline unsigned long rateLimitedLogPerKey(std::map<int, RateLimitEntry>& tracker,
++                                          int key, time_t windowSecs) {
++  RateLimitEntry& e = tracker[key];
++  ++e.pending;
++  time_t now = time(NULL);
++  if (e.lastSec == 0 || now - e.lastSec >= windowSecs) {
++    e.lastSec = now;
++    unsigned long n = e.pending;
++    e.pending = 0;
++    return n;
++  }
++  return 0;
++}
++
++#endif
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RTCP.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTCP.hh
+--- live-upstream/live/liveMedia/include/RTCP.hh	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTCP.hh	2026-04-21 14:41:38.092383212 +1000
+@@ -30,6 +30,7 @@
+ #ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
+ #include "SRTPCryptographicContext.hh"
+ #endif
++#include <time.h>
+ 
+ class SDESItem {
+ public:
+@@ -170,6 +171,8 @@
+ private:
+   u_int8_t* fInBuf;
+   unsigned fNumBytesAlreadyRead;
++  time_t fOverflowLastLogSec;
++  unsigned long fOverflowPending;
+   OutPacketBuffer* fOutBuf;
+   RTPInterface fRTCPInterface;
+   unsigned fTotSessionBW;
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/MediaSink.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/MediaSink.cpp
+--- live-upstream/live/liveMedia/MediaSink.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/MediaSink.cpp	2026-04-21 13:59:36.833304113 +1000
+@@ -110,7 +110,7 @@
+ 
+ ////////// OutPacketBuffer //////////
+ 
+-unsigned OutPacketBuffer::maxSize = 60000; // by default
++unsigned OutPacketBuffer::maxSize = 2000000; // by default
+ 
+ OutPacketBuffer
+ ::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/ProxyServerMediaSession.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/ProxyServerMediaSession.cpp
+--- live-upstream/live/liveMedia/ProxyServerMediaSession.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/ProxyServerMediaSession.cpp	2026-04-21 14:01:48.842479634 +1000
+@@ -75,9 +75,9 @@
  				    char const* rtspURL,
  				    char const* username, char const* password,
  				    portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
@@ -119,7 +188,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  }
  
  ProxyServerMediaSession* ProxyServerMediaSession
-@@ -85,10 +85,10 @@ ProxyServerMediaSession* ProxyServerMedi
+@@ -85,10 +85,10 @@
  	    char const* inputStreamURL, char const* streamName,
  	    char const* username, char const* password,
  	    portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
@@ -132,7 +201,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  }
  
  
-@@ -99,6 +99,7 @@ ProxyServerMediaSession
+@@ -99,6 +99,7 @@
  			  portNumBits tunnelOverHTTPPortNum, int verbosityLevel,
  			  int socketNumToServer,
  			  MediaTranscodingTable* transcodingTable,
@@ -140,21 +209,21 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc,
  			  portNumBits initialPortNum, Boolean multiplexRTCPWithRTP)
    : ServerMediaSession(env, streamName, NULL, NULL, False, NULL),
-@@ -114,7 +115,7 @@ ProxyServerMediaSession
+@@ -114,7 +115,7 @@
      = (*fCreateNewProxyRTSPClientFunc)(*this, inputStreamURL, username, password,
  				       tunnelOverHTTPPortNum,
  				       verbosityLevel > 0 ? verbosityLevel-1 : verbosityLevel,
 -				       socketNumToServer);
 +				       socketNumToServer, interPacketGapMaxTime);
-   ProxyRTSPClient::sendDESCRIBE(fProxyRTSPClient);
+   fProxyRTSPClient->sendDESCRIBE();
  }
  
-@@ -243,13 +244,16 @@ UsageEnvironment& operator<<(UsageEnviro
+@@ -244,13 +245,16 @@
  
  ProxyRTSPClient::ProxyRTSPClient(ProxyServerMediaSession& ourServerMediaSession, char const* rtspURL,
  				 char const* username, char const* password,
 -				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer)
-+				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer, 
++				 portNumBits tunnelOverHTTPPortNum, int verbosityLevel, int socketNumToServer,
 +				 unsigned interPacketGapMaxTime)
    : RTSPClient(ourServerMediaSession.envir(), rtspURL, verbosityLevel, "ProxyRTSPClient",
  	       tunnelOverHTTPPortNum == (portNumBits)(~0) ? 0 : tunnelOverHTTPPortNum, socketNumToServer),
@@ -164,11 +233,11 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
      fServerSupportsGetParameter(False), fLastCommandWasPLAY(False), fDoneDESCRIBE(False),
 -    fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL), fResetTask(NULL) {
 +    fLivenessCommandTask(NULL), fDESCRIBECommandTask(NULL), fSubsessionTimerTask(NULL), fResetTask(NULL),
-+    fInterPacketGapsTask(NULL) { 
++    fInterPacketGapsTask(NULL) {
    if (username != NULL && password != NULL) {
      fOurAuthenticator = new Authenticator(username, password);
    } else {
-@@ -262,11 +266,13 @@ void ProxyRTSPClient::reset() {
+@@ -263,11 +267,13 @@
    envir().taskScheduler().unscheduleDelayedTask(fDESCRIBECommandTask);
    envir().taskScheduler().unscheduleDelayedTask(fSubsessionTimerTask);
    envir().taskScheduler().unscheduleDelayedTask(fResetTask);
@@ -182,7 +251,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
    fDoneDESCRIBE = False;
  
    RTSPClient::reset();
-@@ -397,6 +403,7 @@ void ProxyRTSPClient::continueAfterPLAY(
+@@ -397,6 +403,7 @@
      scheduleReset();
      return;
    }
@@ -190,7 +259,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  }
  
  void ProxyRTSPClient::scheduleLivenessCommand() {
-@@ -437,6 +444,45 @@ void ProxyRTSPClient::sendLivenessComman
+@@ -438,6 +445,42 @@
  #endif
  }
  
@@ -212,7 +281,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
 +    // No additional packets have been received since the last time we
 +    // checked, so end this stream:
 +    if (fVerbosityLevel > 0) {
-+      envir() << *this << "::checkInterPacketGaps last packet received: >" << fInterPacketGapMaxTime 
++      envir() << *this << "::checkInterPacketGaps last packet received: >" << fInterPacketGapMaxTime
 +                       << " seconds ago. Resetting session\n";
 +    }
 +    if (delayReset) scheduleReset();
@@ -233,7 +302,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  void ProxyRTSPClient::scheduleReset() {
    if (fVerbosityLevel > 0) {
      envir() << "ProxyRTSPClient::scheduleReset\n";
-@@ -650,6 +696,7 @@ void ProxyServerMediaSubsession::closeSt
+@@ -663,6 +706,7 @@
  	// Send a "PAUSE" for the whole stream.
  	proxyRTSPClient->sendPauseCommand(fClientMediaSubsession.parentSession(), NULL, proxyRTSPClient->auth());
  	proxyRTSPClient->fLastCommandWasPLAY = False;
@@ -241,10 +310,212 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
        }
      }
    }
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liveMedia/RTSPServerRegister.cpp live555/liveMedia/RTSPServerRegister.cpp
---- live/liveMedia/RTSPServerRegister.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/liveMedia/RTSPServerRegister.cpp	2025-01-13 12:00:00.000000000 +0000
-@@ -417,7 +417,7 @@ void RTSPServerWithREGISTERProxying::im
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTCP.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTCP.cpp
+--- live-upstream/live/liveMedia/RTCP.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTCP.cpp	2026-04-21 14:55:15.590791725 +1000
+@@ -21,6 +21,7 @@
+ #include "RTCP.hh"
+ #include "GroupsockHelper.hh"
+ #include "rtcp_from_spec.h"
++#include "RateLimitedLog.hh"
+ #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
+ #define snprintf _snprintf
+ #endif
+@@ -157,6 +158,8 @@
+   fInBuf = new unsigned char[maxRTCPPacketSize];
+   if (fKnownMembers == NULL || fInBuf == NULL) return;
+   fNumBytesAlreadyRead = 0;
++  fOverflowLastLogSec = 0;
++  fOverflowPending = 0;
+ 
+   fOutBuf = new OutPacketBuffer(preferredRTCPPacketSize, maxRTCPPacketSize, 1500);
+   if (fOutBuf == NULL) return;
+@@ -436,10 +439,21 @@
+ void RTCPInstance::incomingReportHandler1() {
+   do {
+     if (fNumBytesAlreadyRead >= maxRTCPPacketSize) {
+-      envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
+-	      << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
+-	      << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
+-      break;
++      // Reset the buffer state to prevent an infinite read loop, and return so the
++      // scheduler can run other tasks before we're re-invoked by the next socket event.
++      // Rate-limit the log — some buggy endpoints (e.g. certain Hikvision firmware)
++      // will trigger this dozens of times per second and otherwise flood the log.
++      unsigned long n = rateLimitedLog(fOverflowLastLogSec, fOverflowPending, 5);
++      if (n > 0) {
++        envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
++                << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
++                << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!";
++        if (n > 1) envir() << " (" << (unsigned)n << " events in the last 5s)";
++        envir() << "\n";
++        envir() << "RTCPInstance: Resetting buffer state and returning to prevent CPU spinning. Will retry when new data arrives.\n";
++      }
++      fNumBytesAlreadyRead = 0;
++      return;
+     }
+ 
+     unsigned numBytesRead;
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTPInterface.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTPInterface.cpp
+--- live-upstream/live/liveMedia/RTPInterface.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTPInterface.cpp	2026-04-21 15:18:53.722399684 +1000
+@@ -21,6 +21,7 @@
+ // Implementation
+ 
+ #include "RTPInterface.hh"
++#include "RateLimitedLog.hh"
+ #include <GroupsockHelper.hh>
+ #include <stdio.h>
+ 
+@@ -176,6 +177,18 @@
+   // Also, make sure this new socket is set up for receiving RTP/RTCP-over-TCP:
+   SocketDescriptor* socketDescriptor = lookupSocketDescriptor(envir(), sockNum, tlsState);
+   socketDescriptor->registerRTPInterface(streamChannelId, this);
++
++  unsigned destCount = 0;
++  for (tcpStreamRecord* s = fTCPStreams; s != NULL; s = s->fNext) ++destCount;
++  static time_t lastSec = 0; static unsigned long pending = 0;
++  unsigned long n = rateLimitedLog(lastSec, pending, 5);
++  if (n > 0) {
++    envir() << "RTPInterface::addStreamSocket: added channel " << (int)streamChannelId
++	    << "/socket " << sockNum << " (this interface now fanning out to "
++	    << destCount << " TCP destination" << (destCount == 1 ? "" : "s") << ")";
++    if (n > 1) envir() << " (" << (unsigned)n << " attaches in last 5s)";
++    envir() << "\n";
++  }
+ }
+ 
+ static void deregisterSocket(UsageEnvironment& env, int sockNum, unsigned char streamChannelId) {
+@@ -351,6 +364,7 @@
+   // (If the initial "send()" of '$<streamChannelId><packetSize>' succeeds, then we force
+   // the subsequent "send()" for the <packet> data to succeed, even if we have to do so with
+   // a blocking "send()".)
++  Boolean framingOk = False;
+   do {
+     u_int8_t framingHeader[4];
+     framingHeader[0] = '$';
+@@ -358,6 +372,7 @@
+     framingHeader[2] = (u_int8_t) ((packetSize&0xFF00)>>8);
+     framingHeader[3] = (u_int8_t) (packetSize&0xFF);
+     if (!sendDataOverTCP(socketNum, tlsState, framingHeader, 4, False)) break;
++    framingOk = True;
+ 
+     if (!sendDataOverTCP(socketNum, tlsState, packet, packetSize, True)) break;
+ #ifdef DEBUG_SEND
+@@ -367,9 +382,31 @@
+     return True;
+   } while (0);
+ 
+-#ifdef DEBUG_SEND
+-  fprintf(stderr, "sendRTPorRTCPPacketOverTCP: failed! (errno %d)\n", envir().getErrno()); fflush(stderr);
+-#endif
++  {
++    // Failed before a full RTP/RTCP packet reached this destination. `framingOk`
++    // tells us where: False => 4-byte framing header was skipped (clean drop,
++    // socket still in sync); True => we wrote the framing header but the
++    // body couldn't be completed and the socket was closed inside sendDataOverTCP.
++    // Skip logging on EBADF/EPIPE — those are teardown races where the socket
++    // is already gone on one side and the extra send attempt is just cleanup
++    // noise, not a real drop we care about. Per-fd rate limit — each socket's
++    // drops throttle independently so a stalled destination doesn't mask drops
++    // on a different one.
++    int err = envir().getErrno();
++    if (err != EBADF && err != EPIPE) {
++      static std::map<int, RateLimitEntry> tracker;
++      unsigned long n = rateLimitedLogPerKey(tracker, socketNum, 5);
++      if (n > 0) {
++	envir() << "RTPInterface::sendRTPorRTCPPacketOverTCP: dropping " << packetSize
++		<< "-byte packet on channel " << (int)streamChannelId
++		<< "/socket " << socketNum
++		<< " (" << (framingOk ? "body incomplete, socket closed" : "framing header skipped")
++		<< ", errno=" << err << ")";
++	if (n > 1) envir() << " (" << (unsigned)n << " events on this socket in last 5s)";
++	envir() << "\n";
++      }
++    }
++  }
+   return False;
+ }
+ 
+@@ -392,9 +429,21 @@
+       // the capacity of the TCP connection!).
+       // Force this data write to succeed, by blocking if necessary until it does:
+       unsigned numBytesRemainingToSend = dataSize - numBytesSentSoFar;
+-#ifdef DEBUG_SEND
+-      fprintf(stderr, "sendDataOverTCP: resending %d-byte send (blocking)\n", numBytesRemainingToSend); fflush(stderr);
+-#endif
++      {
++	// TCP send buffer full — we had to fall back to a blocking send, which stalls the
++	// entire event loop (up to RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS). Log so stalls
++	// that starve upstream reads are visible. Per-fd so a stalled consumer doesn't
++	// mask a different consumer also stalling.
++	static std::map<int, RateLimitEntry> tracker;
++	unsigned long n = rateLimitedLogPerKey(tracker, socketNum, 5);
++	if (n > 0) {
++	  envir() << "RTPInterface::sendDataOverTCP: TCP send buffer full on socket " << socketNum
++		  << " (blocking " << numBytesRemainingToSend << "/" << dataSize << " bytes"
++		  << ", force=" << (forceSendToSucceed ? "Y" : "N") << ")";
++	  if (n > 1) envir() << " (" << (unsigned)n << " events on this socket in last 5s)";
++	  envir() << "\n";
++	}
++      }
+       makeSocketBlocking(socketNum, RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS);
+       sendResult = (tlsState != NULL && tlsState->isNeeded)
+ 	? tlsState->write((char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend)
+@@ -406,9 +455,20 @@
+ 	// (for both RTP and RTP).
+ 	// (If we kept using the socket here, the RTP or RTCP packet write would be in an
+ 	//  incomplete, inconsistent state.)
+-#ifdef DEBUG_SEND
+-	fprintf(stderr, "sendDataOverTCP: blocking send() failed (delivering %d bytes out of %d); closing socket %d\n", sendResult, numBytesRemainingToSend, socketNum); fflush(stderr);
+-#endif
++	// Terminal — closes socket. Rate-limit globally (5s) to defend against
++	// reconnect loops that rapidly cycle sockets. Skip EBADF/EPIPE teardown noise.
++	int err = envir().getErrno();
++	if (err != EBADF && err != EPIPE) {
++	  static time_t lastSec = 0; static unsigned long pending = 0;
++	  unsigned long n = rateLimitedLog(lastSec, pending, 5);
++	  if (n > 0) {
++	    envir() << "RTPInterface::sendDataOverTCP: blocking send failed on socket " << socketNum
++		    << " (delivered " << sendResult << "/" << numBytesRemainingToSend << " bytes"
++		    << ", errno=" << err << "). Closing socket.";
++	    if (n > 1) envir() << " (" << (unsigned)n << " similar events in last 5s)";
++	    envir() << "\n";
++	  }
++	}
+ 	removeStreamSocket(socketNum, 0xFF);
+ 	return False;
+       }
+@@ -416,9 +476,24 @@
+       return True;
+     } else if (sendResult < 0 && envir().getErrno() != EAGAIN) {
+       // Because the "send()" call failed, assume that the socket is now unusable, so stop
+-      // using it (for both RTP and RTCP):
++      // using it (for both RTP and RTCP). Terminal — same reconnect-loop defense as above.
++      // Skip EBADF/EPIPE teardown noise.
++      int err = envir().getErrno();
++      if (err != EBADF && err != EPIPE) {
++	static time_t lastSec = 0; static unsigned long pending = 0;
++	unsigned long n = rateLimitedLog(lastSec, pending, 5);
++	if (n > 0) {
++	  envir() << "RTPInterface::sendDataOverTCP: send error on socket " << socketNum
++		  << " (errno=" << err << "). Closing socket.";
++	  if (n > 1) envir() << " (" << (unsigned)n << " similar events in last 5s)";
++	  envir() << "\n";
++	}
++      }
+       removeStreamSocket(socketNum, 0xFF);
+     }
++    // EAGAIN with 0 bytes sent and !forceSendToSucceed falls through silently —
++    // the caller (sendRTPorRTCPPacketOverTCP) logs the whole-packet drop with
++    // more context (packet size, channel, framingOk), so no duplicate log here.
+ 
+     return False;
+   }
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTSPServerRegister.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServerRegister.cpp
+--- live-upstream/live/liveMedia/RTSPServerRegister.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServerRegister.cpp	2026-04-21 14:01:56.306800856 +1000
+@@ -417,7 +417,7 @@
      ServerMediaSession* sms
        = ProxyServerMediaSession::createNew(envir(), this, url, proxyStreamName,
  					   fBackEndUsername, fBackEndPassword,
@@ -253,9 +524,9 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
      addServerMediaSession(sms);
    
      // (Regardless of the verbosity level) announce the fact that we're proxying this new stream, and the URL to use to access it:
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liveMedia/StreamParser.cpp live555/liveMedia/StreamParser.cpp
---- live/liveMedia/StreamParser.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/liveMedia/StreamParser.cpp	2024-10-29 16:36:34.924622728 +0000
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/StreamParser.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/StreamParser.cpp
+--- live-upstream/live/liveMedia/StreamParser.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/StreamParser.cpp	2026-04-21 13:59:37.195780042 +1000
 @@ -23,7 +23,7 @@
  #include <string.h>
  #include <stdlib.h>
@@ -265,29 +536,9 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/liv
  
  void StreamParser::flushInput() {
    fCurParserIndex = fSavedParserIndex = 0;
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/mediaServer/DynamicRTSPServer.cpp live555/mediaServer/DynamicRTSPServer.cpp
---- live/mediaServer/DynamicRTSPServer.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/mediaServer/DynamicRTSPServer.cpp	2024-10-29 16:24:07.355674689 +0000
-@@ -68,15 +68,15 @@
- 
-     sms = NULL;
-   } else {
--    if (smsExists && isFirstLookupInSession) { 
-+    if (smsExists && isFirstLookupInSession) {
-       // Remove the existing "ServerMediaSession" and create a new one, in case the underlying
-       // file has changed in some way:
--      removeServerMediaSession(sms); 
-+      removeServerMediaSession(sms);
-       sms = NULL;
--    } 
-+    }
- 
-     if (sms == NULL) {
--      sms = createNewSMS(envir(), streamName, fid); 
-+      sms = createNewSMS(envir(), streamName, fid);
-       addServerMediaSession(sms);
-     }
- 
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/mediaServer/DynamicRTSPServer.cpp /Users/hackeron/Development/TetherX/live555/mediaServer/DynamicRTSPServer.cpp
+--- live-upstream/live/mediaServer/DynamicRTSPServer.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/mediaServer/DynamicRTSPServer.cpp	2026-04-21 15:52:20.608879823 +1000
 @@ -145,12 +145,12 @@
    } else if (strcmp(extension, ".264") == 0) {
      // Assumed to be a H.264 Video Elementary Stream file:
@@ -319,10 +570,10 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/med
      NEW_SMS("Matroska video+audio+(optional)subtitles");
  
      // Create a Matroska file server demultiplexor for the specified file.
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/proxyServer/live555ProxyServer.cpp live555/proxyServer/live555ProxyServer.cpp
---- live/proxyServer/live555ProxyServer.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/proxyServer/live555ProxyServer.cpp	2025-01-13 12:00:00.000000000 +0000
-@@ -35,6 +35,7 @@ char* password = NULL;
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/proxyServer/live555ProxyServer.cpp /Users/hackeron/Development/TetherX/live555/proxyServer/live555ProxyServer.cpp
+--- live-upstream/live/proxyServer/live555ProxyServer.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/proxyServer/live555ProxyServer.cpp	2026-04-21 14:02:10.821691011 +1000
+@@ -35,6 +35,7 @@
  Boolean proxyREGISTERRequests = False;
  char* usernameForREGISTER = NULL;
  char* passwordForREGISTER = NULL;
@@ -330,7 +581,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/pro
  
  static RTSPServer* createRTSPServer(Port port) {
    if (proxyREGISTERRequests) {
-@@ -51,6 +52,7 @@ void usage() {
+@@ -51,6 +52,7 @@
         << " [-p <rtspServer-port>]"
         << " [-u <username> <password>]"
         << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
@@ -338,7 +589,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/pro
         << " <rtsp-url-1> ... <rtsp-url-n>\n";
    exit(1);
  }
-@@ -58,7 +60,7 @@ void usage() {
+@@ -58,7 +60,7 @@
  int main(int argc, char** argv) {
    // Increase the maximum size of video frames that we can 'proxy' without truncation.
    // (Such frames are unreasonably large; the back-end servers should really not be sending frames this large!)
@@ -347,34 +598,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/pro
  
    // Begin by setting up our usage environment:
    TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-@@ -98,7 +100,7 @@ int main(int argc, char** argv) {
-     case 'T': {
-       // stream RTP and RTCP over a HTTP connection
-       if (argc > 2 && argv[2][0] != '-') {
--	// The next argument is the HTTP server port number:                                                                       
-+	// The next argument is the HTTP server port number:
- 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
- 	    && tunnelOverHTTPPortNum > 0) {
- 	  ++argv; --argc;
-@@ -112,7 +114,7 @@ int main(int argc, char** argv) {
-     }
- 
-     case 'p': {
--      // specify a rtsp server port number 
-+      // specify a rtsp server port number
-       if (argc > 2 && argv[2][0] != '-') {
-         // The next argument is the rtsp server port number:
-         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
-@@ -126,7 +128,7 @@ int main(int argc, char** argv) {
-       usage();
-       break;
-     }
--    
-+
-     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
-       if (argc < 4) usage(); // there's no argv[3] (for the "password")
-       username = argv[2];
-@@ -154,12 +156,25 @@ int main(int argc, char** argv) {
+@@ -151,6 +153,19 @@
        break;
      }
  
@@ -394,17 +618,7 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/pro
      default: {
        usage();
        break;
-     }
-     }
- 
-     ++argv; --argc;
-   }
--  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end 
-+  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one URL at the end
-   // Make sure that the remaining arguments appear to be "rtsp://" (or "rtsps://") URLs:
-   int i;
-   for (i = 1; i < argc; ++i) {
-@@ -221,7 +236,7 @@ int main(int argc, char** argv) {
+@@ -221,7 +236,7 @@
      ServerMediaSession* sms
        = ProxyServerMediaSession::createNew(*env, rtspServer,
  					   proxiedStreamURL, streamName,
@@ -413,20 +627,9 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/pro
      rtspServer->addServerMediaSession(sms);
  
      char* proxyStreamURL = rtspServer->rtspURL(sms);
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/testProgs/playCommon.cpp live555/testProgs/playCommon.cpp
---- live/testProgs/playCommon.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/testProgs/playCommon.cpp	2024-10-29 16:37:42.764899604 +0000
-@@ -114,7 +114,7 @@ unsigned movieFPS = 15; // default
- Boolean movieFPSOptionSet = False;
- char const* fileNamePrefix = "";
--unsigned fileSinkBufferSize = 100000;
-+unsigned fileSinkBufferSize = 600000;
- unsigned socketInputBufferSize = 0;
- Boolean packetLossCompensate = False;
- Boolean syncStreams = False;
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/testProgs/testDVVideoStreamer.cpp live555/testProgs/testDVVideoStreamer.cpp
---- live/testProgs/testDVVideoStreamer.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/testProgs/testDVVideoStreamer.cpp	2024-10-29 16:24:05.345390500 +0000
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testDVVideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testDVVideoStreamer.cpp
+--- live-upstream/live/testProgs/testDVVideoStreamer.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/testProgs/testDVVideoStreamer.cpp	2026-04-21 15:52:04.999909877 +1000
 @@ -58,7 +58,7 @@
  
    // Create a 'DV Video RTP' sink from the RTP 'groupsock':
@@ -436,9 +639,9 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/tes
    videoSink = DVVideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/testProgs/testH264VideoStreamer.cpp live555/testProgs/testH264VideoStreamer.cpp
---- live/testProgs/testH264VideoStreamer.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/testProgs/testH264VideoStreamer.cpp	2024-10-29 16:24:04.972535953 +0000
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testH264VideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testH264VideoStreamer.cpp
+--- live-upstream/live/testProgs/testH264VideoStreamer.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/testProgs/testH264VideoStreamer.cpp	2026-04-21 15:52:06.745345764 +1000
 @@ -63,7 +63,7 @@
    rtcpGroupsock.multicastSendOnly(); // we're a SSM source
  
@@ -448,9 +651,9 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/tes
    videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/testProgs/testH265VideoStreamer.cpp live555/testProgs/testH265VideoStreamer.cpp
---- live/testProgs/testH265VideoStreamer.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/testProgs/testH265VideoStreamer.cpp	2024-10-29 16:24:04.597527758 +0000
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testH265VideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testH265VideoStreamer.cpp
+--- live-upstream/live/testProgs/testH265VideoStreamer.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/testProgs/testH265VideoStreamer.cpp	2026-04-21 15:52:08.051533627 +1000
 @@ -64,7 +64,7 @@
    rtcpGroupsock.multicastSendOnly(); // we're a SSM source
  
@@ -460,9 +663,9 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/tes
    videoSink = H265VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/testProgs/testOnDemandRTSPServer.cpp live555/testProgs/testOnDemandRTSPServer.cpp
---- live/testProgs/testOnDemandRTSPServer.cpp	2024-10-24 18:50:15.000000000 +0100
-+++ live555/testProgs/testOnDemandRTSPServer.cpp	2024-10-29 16:24:04.170857007 +0000
+diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testOnDemandRTSPServer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testOnDemandRTSPServer.cpp
+--- live-upstream/live/testProgs/testOnDemandRTSPServer.cpp	2026-04-01 19:34:26.000000000 +1100
++++ /Users/hackeron/Development/TetherX/live555/testProgs/testOnDemandRTSPServer.cpp	2026-04-21 15:52:10.180748273 +1000
 @@ -280,7 +280,7 @@
    // A DV video stream:
    {
@@ -472,12 +675,3 @@ diff --color -ruN '--exclude=modifications.patch' '--exclude=README.md' live/tes
  
      char const* streamName = "dvVideoTest";
      char const* inputFileName = "test.dv";
-@@ -424,7 +424,7 @@
-         // (Note: If the input UDP source is unicast rather than multicast, then change this to NULL.)
-     portNumBits const inputPortNum = 1234;
-         // This causes the server to take its input from the stream sent by the "testMPEG2TransportStreamer" demo application.
--    Boolean const inputStreamIsRawUDP = False; 
-+    Boolean const inputStreamIsRawUDP = False;
-     ServerMediaSession* sms
-       = ServerMediaSession::createNew(*env, streamName, streamName,
- 				      descriptionString);

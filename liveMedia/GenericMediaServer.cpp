@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // A generic media server class, used to implement a RTSP server, and any other server that uses
 //  "ServerMediaSession" objects to describe media to be served.
 // Implementation
@@ -403,7 +403,9 @@ GenericMediaServer::ClientSession* GenericMediaServer::createNewClientSessionWit
   // because that has a special use by some servers.  Similarly, we avoid choosing the same
   // session id twice in a row.)
   do {
-    sessionId = (u_int32_t)our_random32();
+    struct timeval timeNow;
+    gettimeofday(&timeNow, NULL);
+    sessionId = (u_int32_t)(our_random32() ^ timeNow.tv_sec ^ timeNow.tv_usec);
     snprintf(sessionIdStr, sizeof sessionIdStr, "%08X", sessionId);
   } while (sessionId == 0 || sessionId == fPreviousClientSessionId
 	   || lookupClientSession(sessionIdStr) != NULL);

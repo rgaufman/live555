@@ -14,13 +14,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // RTCP
 // Implementation
 
 #include "RTCP.hh"
 #include "GroupsockHelper.hh"
 #include "rtcp_from_spec.h"
+#include "RateLimitedLog.hh"
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
@@ -157,6 +158,8 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
   fInBuf = new unsigned char[maxRTCPPacketSize];
   if (fKnownMembers == NULL || fInBuf == NULL) return;
   fNumBytesAlreadyRead = 0;
+  fOverflowLastLogSec = 0;
+  fOverflowPending = 0;
 
   fOutBuf = new OutPacketBuffer(preferredRTCPPacketSize, maxRTCPPacketSize, 1500);
   if (fOutBuf == NULL) return;
@@ -436,13 +439,20 @@ void RTCPInstance::incomingReportHandler(RTCPInstance* instance,
 void RTCPInstance::incomingReportHandler1() {
   do {
     if (fNumBytesAlreadyRead >= maxRTCPPacketSize) {
-      envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
-	      << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
-	      << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!\n";
-      envir() << "RTCPInstance: Resetting buffer state and returning to prevent CPU spinning. Will retry when new data arrives.\n";
-      // Reset the buffer state to prevent infinite loop
+      // Reset the buffer state to prevent an infinite read loop, and return so the
+      // scheduler can run other tasks before we're re-invoked by the next socket event.
+      // Rate-limit the log — some buggy endpoints (e.g. certain Hikvision firmware)
+      // will trigger this dozens of times per second and otherwise flood the log.
+      unsigned long n = rateLimitedLog(fOverflowLastLogSec, fOverflowPending, 5);
+      if (n > 0) {
+        envir() << "RTCPInstance error: Hit limit when reading incoming packet over TCP. (fNumBytesAlreadyRead ("
+                << fNumBytesAlreadyRead << ") >= maxRTCPPacketSize (" << maxRTCPPacketSize
+                << ")).  The remote endpoint is using a buggy implementation of RTP/RTCP-over-TCP.  Please upgrade it!";
+        if (n > 1) envir() << " (" << (unsigned)n << " events in the last 5s)";
+        envir() << "\n";
+        envir() << "RTCPInstance: Resetting buffer state and returning to prevent CPU spinning. Will retry when new data arrives.\n";
+      }
       fNumBytesAlreadyRead = 0;
-      // Don't immediately retry - return to prevent CPU spinning, the handler will be called again when new data arrives
       return;
     }
 

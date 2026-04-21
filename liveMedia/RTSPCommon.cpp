@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // Common routines used by both RTSP clients and servers
 // Implementation
 
@@ -30,8 +30,8 @@ static void decodeURL(char* url) {
   char* cursor = url;
   while (*cursor) {
     if ((cursor[0] == '%') &&
-	cursor[1] && isxdigit(cursor[1]) &&
-	cursor[2] && isxdigit(cursor[2])) {
+	cursor[1] && isxdigit((unsigned char)cursor[1]) &&
+	cursor[2] && isxdigit((unsigned char)cursor[2])) {
       // We saw a % followed by 2 hex digits, so we copy the literal hex value into the URL, then advance the cursor past it:
       char hex[3];
       hex[0] = cursor[1];
@@ -67,7 +67,8 @@ Boolean parseRTSPRequestString(char const* reqStr, unsigned reqStrSize,
   unsigned i;
   for (i = 0; i < reqStrSize; ++i) {
     char c = reqStr[i];
-    if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\0')) break;
+    if (c == '\0') return False; // the NULL character isn't allowed
+    if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) break;
   }
   if (i == reqStrSize) return False; // The request consisted of nothing but whitespace!
 
@@ -166,9 +167,9 @@ Boolean parseRTSPRequestString(char const* reqStr, unsigned reqStrSize,
       for (n = 0; n < resultCSeqMaxSize-1 && j < reqStrSize; ++n,++j) {
 	char c = reqStr[j];
 	if (c == '\r' || c == '\n') {
-	  parseSucceeded = True;
+	  if (n > 0) parseSucceeded = True; // The CSeq string must be non-empty
 	  break;
-	}
+	} else if (!(c >= '0' && c <= '9')) break; // The CSeq string must be numeric
 
 	resultCSeq[n] = c;
       }

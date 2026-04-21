@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "groupsock"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // Helper routines to implement 'group sockets'
 // Implementation
 
@@ -52,6 +52,9 @@ extern "C" int initializeWinsockIfNecessary();
 ipv4AddressBits SendingInterfaceAddr = INADDR_ANY;
 ipv4AddressBits ReceivingInterfaceAddr = INADDR_ANY;
 in6_addr ReceivingInterfaceAddr6 = IN6ADDR_ANY_INIT;
+#ifdef SO_BINDTODEVICE
+char InterfaceBindToDevice[128] = {0};
+#endif
 
 static void socketErr(UsageEnvironment& env, char const* errorMsg) {
   env.setResultErrMsg(errorMsg);
@@ -119,6 +122,16 @@ int setupDatagramSocket(UsageEnvironment& env, Port port, int domain) {
     socketErr(env, "unable to create datagram socket: ");
     return newSocket;
   }
+
+#ifdef SO_BINDTODEVICE
+  if (InterfaceBindToDevice[0] != '\0') {
+    if (setsockopt(newSocket, SOL_SOCKET, SO_BINDTODEVICE, InterfaceBindToDevice, strlen(InterfaceBindToDevice)) < 0) {
+      socketErr(env, "setsockopt(SO_BINDTODEVICE) error: ");
+      closeSocket(newSocket);
+      return -1;
+    }
+  }
+#endif
 
   int reuseFlag = groupsockPriv(env)->reuseFlag;
   reclaimGroupsockPriv(env);
@@ -302,6 +315,16 @@ int setupStreamSocket(UsageEnvironment& env, Port port, int domain,
     socketErr(env, "unable to create stream socket: ");
     return newSocket;
   }
+
+#ifdef SO_BINDTODEVICE
+  if (InterfaceBindToDevice[0] != '\0') {
+    if (setsockopt(newSocket, SOL_SOCKET, SO_BINDTODEVICE, InterfaceBindToDevice, strlen(InterfaceBindToDevice)) < 0) {
+      socketErr(env, "setsockopt(SO_BINDTODEVICE) error: ");
+      closeSocket(newSocket);
+      return -1;
+    }
+  }
+#endif
 
   int reuseFlag = groupsockPriv(env)->reuseFlag;
   reclaimGroupsockPriv(env);

@@ -14,13 +14,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
 // Implementation
 
 #include "RTPInterface.hh"
+#include "RateLimitedLog.hh"
 #include <GroupsockHelper.hh>
 #include <stdio.h>
 
@@ -176,6 +177,18 @@ void RTPInterface::addStreamSocket(int sockNum, unsigned char streamChannelId,
   // Also, make sure this new socket is set up for receiving RTP/RTCP-over-TCP:
   SocketDescriptor* socketDescriptor = lookupSocketDescriptor(envir(), sockNum, tlsState);
   socketDescriptor->registerRTPInterface(streamChannelId, this);
+
+  unsigned destCount = 0;
+  for (tcpStreamRecord* s = fTCPStreams; s != NULL; s = s->fNext) ++destCount;
+  static time_t lastSec = 0; static unsigned long pending = 0;
+  unsigned long n = rateLimitedLog(lastSec, pending, 5);
+  if (n > 0) {
+    envir() << "RTPInterface::addStreamSocket: added channel " << (int)streamChannelId
+	    << "/socket " << sockNum << " (this interface now fanning out to "
+	    << destCount << " TCP destination" << (destCount == 1 ? "" : "s") << ")";
+    if (n > 1) envir() << " (" << (unsigned)n << " attaches in last 5s)";
+    envir() << "\n";
+  }
 }
 
 static void deregisterSocket(UsageEnvironment& env, int sockNum, unsigned char streamChannelId) {
@@ -351,6 +364,7 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
   // (If the initial "send()" of '$<streamChannelId><packetSize>' succeeds, then we force
   // the subsequent "send()" for the <packet> data to succeed, even if we have to do so with
   // a blocking "send()".)
+  Boolean framingOk = False;
   do {
     u_int8_t framingHeader[4];
     framingHeader[0] = '$';
@@ -358,6 +372,7 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
     framingHeader[2] = (u_int8_t) ((packetSize&0xFF00)>>8);
     framingHeader[3] = (u_int8_t) (packetSize&0xFF);
     if (!sendDataOverTCP(socketNum, tlsState, framingHeader, 4, False)) break;
+    framingOk = True;
 
     if (!sendDataOverTCP(socketNum, tlsState, packet, packetSize, True)) break;
 #ifdef DEBUG_SEND
@@ -367,9 +382,31 @@ Boolean RTPInterface::sendRTPorRTCPPacketOverTCP(u_int8_t* packet, unsigned pack
     return True;
   } while (0);
 
-#ifdef DEBUG_SEND
-  fprintf(stderr, "sendRTPorRTCPPacketOverTCP: failed! (errno %d)\n", envir().getErrno()); fflush(stderr);
-#endif
+  {
+    // Failed before a full RTP/RTCP packet reached this destination. `framingOk`
+    // tells us where: False => 4-byte framing header was skipped (clean drop,
+    // socket still in sync); True => we wrote the framing header but the
+    // body couldn't be completed and the socket was closed inside sendDataOverTCP.
+    // Skip logging on EBADF/EPIPE — those are teardown races where the socket
+    // is already gone on one side and the extra send attempt is just cleanup
+    // noise, not a real drop we care about. Per-fd rate limit — each socket's
+    // drops throttle independently so a stalled destination doesn't mask drops
+    // on a different one.
+    int err = envir().getErrno();
+    if (err != EBADF && err != EPIPE) {
+      static std::map<int, RateLimitEntry> tracker;
+      unsigned long n = rateLimitedLogPerKey(tracker, socketNum, 5);
+      if (n > 0) {
+	envir() << "RTPInterface::sendRTPorRTCPPacketOverTCP: dropping " << packetSize
+		<< "-byte packet on channel " << (int)streamChannelId
+		<< "/socket " << socketNum
+		<< " (" << (framingOk ? "body incomplete, socket closed" : "framing header skipped")
+		<< ", errno=" << err << ")";
+	if (n > 1) envir() << " (" << (unsigned)n << " events on this socket in last 5s)";
+	envir() << "\n";
+      }
+    }
+  }
   return False;
 }
 
@@ -392,9 +429,21 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
       // the capacity of the TCP connection!).
       // Force this data write to succeed, by blocking if necessary until it does:
       unsigned numBytesRemainingToSend = dataSize - numBytesSentSoFar;
-#ifdef DEBUG_SEND
-      fprintf(stderr, "sendDataOverTCP: resending %d-byte send (blocking)\n", numBytesRemainingToSend); fflush(stderr);
-#endif
+      {
+	// TCP send buffer full — we had to fall back to a blocking send, which stalls the
+	// entire event loop (up to RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS). Log so stalls
+	// that starve upstream reads are visible. Per-fd so a stalled consumer doesn't
+	// mask a different consumer also stalling.
+	static std::map<int, RateLimitEntry> tracker;
+	unsigned long n = rateLimitedLogPerKey(tracker, socketNum, 5);
+	if (n > 0) {
+	  envir() << "RTPInterface::sendDataOverTCP: TCP send buffer full on socket " << socketNum
+		  << " (blocking " << numBytesRemainingToSend << "/" << dataSize << " bytes"
+		  << ", force=" << (forceSendToSucceed ? "Y" : "N") << ")";
+	  if (n > 1) envir() << " (" << (unsigned)n << " events on this socket in last 5s)";
+	  envir() << "\n";
+	}
+      }
       makeSocketBlocking(socketNum, RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS);
       sendResult = (tlsState != NULL && tlsState->isNeeded)
 	? tlsState->write((char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend)
@@ -406,9 +455,20 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
 	// (for both RTP and RTP).
 	// (If we kept using the socket here, the RTP or RTCP packet write would be in an
 	//  incomplete, inconsistent state.)
-#ifdef DEBUG_SEND
-	fprintf(stderr, "sendDataOverTCP: blocking send() failed (delivering %d bytes out of %d); closing socket %d\n", sendResult, numBytesRemainingToSend, socketNum); fflush(stderr);
-#endif
+	// Terminal — closes socket. Rate-limit globally (5s) to defend against
+	// reconnect loops that rapidly cycle sockets. Skip EBADF/EPIPE teardown noise.
+	int err = envir().getErrno();
+	if (err != EBADF && err != EPIPE) {
+	  static time_t lastSec = 0; static unsigned long pending = 0;
+	  unsigned long n = rateLimitedLog(lastSec, pending, 5);
+	  if (n > 0) {
+	    envir() << "RTPInterface::sendDataOverTCP: blocking send failed on socket " << socketNum
+		    << " (delivered " << sendResult << "/" << numBytesRemainingToSend << " bytes"
+		    << ", errno=" << err << "). Closing socket.";
+	    if (n > 1) envir() << " (" << (unsigned)n << " similar events in last 5s)";
+	    envir() << "\n";
+	  }
+	}
 	removeStreamSocket(socketNum, 0xFF);
 	return False;
       }
@@ -416,9 +476,24 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, TLSState* tlsState,
       return True;
     } else if (sendResult < 0 && envir().getErrno() != EAGAIN) {
       // Because the "send()" call failed, assume that the socket is now unusable, so stop
-      // using it (for both RTP and RTCP):
+      // using it (for both RTP and RTCP). Terminal — same reconnect-loop defense as above.
+      // Skip EBADF/EPIPE teardown noise.
+      int err = envir().getErrno();
+      if (err != EBADF && err != EPIPE) {
+	static time_t lastSec = 0; static unsigned long pending = 0;
+	unsigned long n = rateLimitedLog(lastSec, pending, 5);
+	if (n > 0) {
+	  envir() << "RTPInterface::sendDataOverTCP: send error on socket " << socketNum
+		  << " (errno=" << err << "). Closing socket.";
+	  if (n > 1) envir() << " (" << (unsigned)n << " similar events in last 5s)";
+	  envir() << "\n";
+	}
+      }
       removeStreamSocket(socketNum, 0xFF);
     }
+    // EAGAIN with 0 bytes sent and !forceSendToSucceed falls through silently —
+    // the caller (sendRTPorRTCPPacketOverTCP) logs the whole-packet drop with
+    // more context (packet size, channel, framingOk), so no duplicate log here.
 
     return False;
   }

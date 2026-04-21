@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2026 Live Networks, Inc.  All rights reserved.
 // RTCP
 // C++ header
 
@@ -30,6 +30,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
 #include "SRTPCryptographicContext.hh"
 #endif
+#include <time.h>
 
 class SDESItem {
 public:
@@ -170,6 +171,8 @@ private:
 private:
   u_int8_t* fInBuf;
   unsigned fNumBytesAlreadyRead;
+  time_t fOverflowLastLogSec;
+  unsigned long fOverflowPending;
   OutPacketBuffer* fOutBuf;
   RTPInterface fRTCPInterface;
   unsigned fTotSessionBW;
