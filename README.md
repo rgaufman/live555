@@ -36,6 +36,12 @@ Buggy RTP/RTCP-over-TCP implementations (certain Hikvision firmware) can pin a C
 ### OnDemand RTSP uninitialised-read fix
 Defensive init in `OnDemandServerMediaSubsession::getStreamParameters` for the local `streamBitrate` out-parameter. Several subclass overrides of `createNewStreamSource()` (Matroska, Ogg) return `NULL` on demuxer-track lookup failure without writing the out-parameter, leaving the caller to multiply it into an `increaseSendBufferTo()` call. Reported against the fork as [#65](https://github.com/rgaufman/live555/issues/65) with a valgrind trace; the same bug is present in upstream `live.2026.04.01` and should be reported to the live-devel list.
 
+### RTSP server: Content-Length slow-read cap
+`RTSPServer.cpp` rejects a request whose `Content-Length` is `>= REQUEST_BUFFER_SIZE` (20000) with `400 Bad Request`, instead of holding the connection open waiting for body bytes that can never fit the fixed request buffer. Closes a low-effort slow-read DoS where a client declares a huge body and then stalls. The existing pointer-wraparound check (the only prior guard) is a no-op on 64-bit, so absurd values like `999999999` previously hung the connection until the buffer filled.
+
+### RTSP server: `Require:` / `Proxy-Require:` → `551 Option not supported`
+We implement no server-side RTSP option-tags, so any `Require:` (or `Proxy-Require:`) header names an option we can't honour. Per RFC 2326 §12.32 we now reject such requests with `551 Option not supported` and echo the tag(s) in an `Unsupported:` header, rather than silently processing the request as though the requirement were satisfied. Both single and comma-separated multi-token headers are handled.
+
 ### Inter-packet gap / dead-stream detection
 `live555ProxyServer` gets a `-D <seconds>` flag (default 10) that resets the upstream connection if no packets are received for that long. Detection latency is 1–2× the configured value because the check samples cumulative packet counts at that interval. `-D 0` disables it.
 

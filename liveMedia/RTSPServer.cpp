@@ -488,6 +488,15 @@ void RTSPServer::RTSPClientConnection::handleCmd_notSupported() {
 	   fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
 }
 
+void RTSPServer::RTSPClientConnection::handleCmd_optionNotSupported(char const* unsupportedOptions) {
+  // The request carried a "Require:" (or "Proxy-Require:") header naming one or more option-tags
+  // that we don't support.  Per RFC 2326 section 12.32, reject it with "551 Option not supported"
+  // and echo the unsupported option-tag(s) in an "Unsupported:" header.
+  snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
+	   "RTSP/1.0 551 Option not supported\r\nCSeq: %s\r\n%sUnsupported: %s\r\n\r\n",
+	   fCurrentCSeq, dateHeader(), unsupportedOptions);
+}
+
 void RTSPServer::RTSPClientConnection::handleCmd_redirect(char const* urlSuffix) {
   char* urlPrefix = fOurRTSPServer.rtspURLPrefix(fClientInputSocket);
   snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
@@ -798,8 +807,12 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 						    sessionIdStr, sizeof sessionIdStr,
 						    contentLength, urlIsRTSPS);
     fLastCRLF[2] = '\r'; // restore its value
-    // Check first for a bogus "Content-Length" value that would cause a pointer wraparound:
-    if (tmpPtr + 2 + contentLength < tmpPtr + 2) {
+    // Check first for a bogus "Content-Length" value: either one that would cause a pointer
+    // wraparound, or one too large to ever fit in our (fixed-size) "fRequestBuffer".  The latter
+    // can never be satisfied, so - rather than hold the connection open waiting for body data that
+    // will never arrive (a slow-read DoS) - we reject it immediately.  A real RTSP request body
+    // (e.g. SDP for ANNOUNCE, parameters for SET_PARAMETER) is small, well under REQUEST_BUFFER_SIZE.
+    if (tmpPtr + 2 + contentLength < tmpPtr + 2 || contentLength >= REQUEST_BUFFER_SIZE) {
 #ifdef DEBUG
       fprintf(stderr, "parseRTSPRequestString() returned a bogus \"Content-Length:\" value: 0x%x (%d)\n", contentLength, (int)contentLength);
 #endif
@@ -826,9 +839,23 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
       // Handle the specified command (beginning with commands that are session-independent):
       delete[] fCurrentCSeq; fCurrentCSeq = strDup(cseq);
 
+      // If the request carried a "Require:" (or "Proxy-Require:") header, then - because we
+      // implement no server-side RTSP option-tags - any option named in it is unsupported.
+      // Reject such a request with "551 Option not supported" (RFC 2326, section 12.32), rather
+      // than silently processing it as though the requirement had been satisfied.
+      // ("lookForHeader" matches "Require" as the suffix of "Proxy-Require" too, so both are caught.)
+      char requireTags[RTSP_PARAM_STRING_MAX];
+      lookForHeader("Require", (char const*)fRequestBuffer, fLastCRLF+2 - fRequestBuffer,
+		    requireTags, sizeof requireTags);
+
       // If the request specified the wrong type of URL
       // (i.e., "rtsps" instead of "rtsp", or vice versa), then send back a 'redirect':
-      if (urlIsRTSPS != fOurRTSPServer.fOurConnectionsUseTLS) {
+      if (requireTags[0] != '\0') {
+#ifdef DEBUG
+	fprintf(stderr, "Calling handleCmd_optionNotSupported() for Require: %s\n", requireTags);
+#endif
+	handleCmd_optionNotSupported(requireTags);
+      } else if (urlIsRTSPS != fOurRTSPServer.fOurConnectionsUseTLS) {
 #ifdef DEBUG
 	fprintf(stderr, "Calling handleCmd_redirect()\n");
 #endif

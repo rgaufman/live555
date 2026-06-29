@@ -194,6 +194,7 @@ public: // should be protected, but some old compilers complain otherwise
         //     reimplement "RTSPServer::weImplementREGISTER()" and "RTSPServer::implementCmd_REGISTER()" instead.
     virtual void handleCmd_bad();
     virtual void handleCmd_notSupported();
+    virtual void handleCmd_optionNotSupported(char const* unsupportedOptions);
     virtual void handleCmd_redirect(char const* urlSuffix);
     virtual void handleCmd_notFound();
     virtual void handleCmd_sessionNotFound();
