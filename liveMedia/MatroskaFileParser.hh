@@ -78,12 +78,16 @@ private:
 
   Boolean parseEBMLNumber(EBMLNumber& num);
   Boolean parseEBMLIdAndSize(EBMLId& id, EBMLDataSize& size);
-  Boolean parseEBMLVal_unsigned64(EBMLDataSize& size, u_int64_t& result);
-  Boolean parseEBMLVal_unsigned(EBMLDataSize& size, unsigned& result);
-  Boolean parseEBMLVal_float(EBMLDataSize& size, float& result);
-  Boolean parseEBMLVal_string(EBMLDataSize& size, char*& result);
+  Boolean parseEBMLVal_unsigned64(EBMLDataSize const& size, u_int64_t& result);
+  Boolean parseEBMLVal_unsigned(EBMLDataSize const& size, unsigned& result);
+  Boolean parseEBMLVal_float(EBMLDataSize const& size, float& result);
+  Boolean parseEBMLVal_string(EBMLDataSize const& size, char*& result);
     // Note: "result" is dynamically allocated; the caller must delete[] it later
-  Boolean parseEBMLVal_binary(EBMLDataSize& size, u_int8_t*& result);
+  Boolean parseEBMLVal_binary(EBMLDataSize const& size, u_int8_t*& result);
+    // Note: "result" is dynamically allocated; the caller must delete[] it later
+  Boolean parseEBMLVal_binary_constrainSize(EBMLDataSize const& size, u_int32_t& length, u_int8_t*& result);
+    // A version of "parseEBMLVal_binary()" where the result size is constrained to fit
+    // into a "u_int32_t".
     // Note: "result" is dynamically allocated; the caller must delete[] it later
   void skipHeader(EBMLDataSize const& size);
   void skipRemainingHeaderBytes(Boolean isContinuation);

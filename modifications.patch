@@ -1,22 +1,15 @@
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.linux /Users/hackeron/Development/TetherX/live555/config.linux
---- live-upstream/live/config.linux	2026-04-01 19:34:37.000000000 +1100
-+++ /Users/hackeron/Development/TetherX/live555/config.linux	2026-04-21 14:15:31.401074507 +1000
-@@ -1,10 +1,10 @@
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.linux /Users/hackeron/Development/TetherX/live555/config.linux
+--- live-upstream/live/config.linux	2026-06-25 08:45:32.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/config.linux	2026-06-29 12:55:12.478601921 +1000
+@@ -1,4 +1,4 @@
 -COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
 +COMPILE_OPTS =		$(INCLUDES) -I/usr/local/include -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DALLOW_RTSP_SERVER_PORT_REUSE=1
  C =			c
  C_COMPILER =		cc
  C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
- CPP =			cpp
- CPLUSPLUS_COMPILER =	c++
--CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
-+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
- OBJ =			o
- LINK =			c++ -o
- LINK_OPTS =		-L. $(LDFLAGS)
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.macosx-bigsur /Users/hackeron/Development/TetherX/live555/config.macosx-bigsur
---- live-upstream/live/config.macosx-bigsur	2026-04-01 19:34:37.000000000 +1100
-+++ /Users/hackeron/Development/TetherX/live555/config.macosx-bigsur	2026-04-21 16:45:04.961889944 +1000
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.macosx-bigsur /Users/hackeron/Development/TetherX/live555/config.macosx-bigsur
+--- live-upstream/live/config.macosx-bigsur	2026-06-25 08:45:32.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/config.macosx-bigsur	2026-06-29 12:55:37.258781485 +1000
 @@ -1,10 +1,10 @@
  COMPILE_OPTS =		$(INCLUDES) -I. -I/usr/local/include $(EXTRA_LDFLAGS) -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int -DNEED_XLOCALE_H=1
  C =			c
@@ -25,14 +18,14 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
 +C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
  CPP =			cpp
  CPLUSPLUS_COMPILER =	c++
--CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall
-+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall $(CPPFLAGS) $(CXXFLAGS)
+-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall
++CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall $(CPPFLAGS) $(CXXFLAGS)
  OBJ =			o
  LINK =			c++ -o 
  LINK_OPTS =		-L. -L/usr/local/ssl/lib
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.macosx-catalina /Users/hackeron/Development/TetherX/live555/config.macosx-catalina
---- live-upstream/live/config.macosx-catalina	2026-04-01 19:34:37.000000000 +1100
-+++ /Users/hackeron/Development/TetherX/live555/config.macosx-catalina	2026-04-21 16:45:17.610208094 +1000
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.macosx-catalina /Users/hackeron/Development/TetherX/live555/config.macosx-catalina
+--- live-upstream/live/config.macosx-catalina	2026-06-25 08:45:32.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/config.macosx-catalina	2026-06-29 12:55:37.258969862 +1000
 @@ -1,10 +1,10 @@
  COMPILE_OPTS =		$(INCLUDES) -I. -I/usr/local/include $(EXTRA_LDFLAGS) -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int -DNEED_XLOCALE_H=1
  C =			c
@@ -41,14 +34,14 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
 +C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
  CPP =			cpp
  CPLUSPLUS_COMPILER =	c++
--CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall
-+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall $(CPPFLAGS) $(CXXFLAGS)
+-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall
++CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall $(CPPFLAGS) $(CXXFLAGS)
  OBJ =			o
  LINK =			c++ -o 
  LINK_OPTS =		-L.
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.macosx-no-openssl /Users/hackeron/Development/TetherX/live555/config.macosx-no-openssl
---- live-upstream/live/config.macosx-no-openssl	2026-04-01 19:34:37.000000000 +1100
-+++ /Users/hackeron/Development/TetherX/live555/config.macosx-no-openssl	2026-04-21 16:45:22.425330279 +1000
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/config.macosx-no-openssl /Users/hackeron/Development/TetherX/live555/config.macosx-no-openssl
+--- live-upstream/live/config.macosx-no-openssl	2026-06-25 08:45:32.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/config.macosx-no-openssl	2026-06-29 12:55:37.259136614 +1000
 @@ -1,10 +1,10 @@
  COMPILE_OPTS =		$(INCLUDES) -I. -I/usr/local/include $(EXTRA_LDFLAGS) -DBSD=1 -O -DSOCKLEN_T=socklen_t -DHAVE_SOCKADDR_LEN=1 -DTIME_BASE=int -DNEED_XLOCALE_H=1 -DNO_OPENSSL=1
  C =			c
@@ -57,13 +50,13 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
 +C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
  CPP =			cpp
  CPLUSPLUS_COMPILER =	c++
--CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall
-+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall $(CPPFLAGS) $(CXXFLAGS)
+-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall
++CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall $(CPPFLAGS) $(CXXFLAGS)
  OBJ =			o
  LINK =			c++ -o 
  LINK_OPTS =		-L.
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/ProxyServerMediaSession.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/ProxyServerMediaSession.hh
---- live-upstream/live/liveMedia/include/ProxyServerMediaSession.hh	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/ProxyServerMediaSession.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/ProxyServerMediaSession.hh
+--- live-upstream/live/liveMedia/include/ProxyServerMediaSession.hh	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/ProxyServerMediaSession.hh	2026-04-21 14:00:29.178107324 +1000
 @@ -43,7 +43,8 @@
  public:
@@ -130,7 +123,7 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
  			  createNewProxyRTSPClientFunc* ourCreateNewProxyRTSPClientFunc
  			  = defaultCreateNewProxyRTSPClientFunc,
  			  portNumBits initialPortNum = 6970,
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RateLimitedLog.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RateLimitedLog.hh
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RateLimitedLog.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RateLimitedLog.hh
 --- live-upstream/live/liveMedia/include/RateLimitedLog.hh	1970-01-01 10:00:00.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/RateLimitedLog.hh	2026-04-21 14:54:04.741337108 +1000
 @@ -0,0 +1,55 @@
@@ -189,8 +182,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
 +}
 +
 +#endif
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RTCP.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTCP.hh
---- live-upstream/live/liveMedia/include/RTCP.hh	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RTCP.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTCP.hh
+--- live-upstream/live/liveMedia/include/RTCP.hh	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTCP.hh	2026-04-21 14:41:38.092383212 +1000
 @@ -30,6 +30,7 @@
  #ifndef _SRTP_CRYPTOGRAPHIC_CONTEXT_HH
@@ -209,8 +202,19 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
    OutPacketBuffer* fOutBuf;
    RTPInterface fRTCPInterface;
    unsigned fTotSessionBW;
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/MediaSink.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/MediaSink.cpp
---- live-upstream/live/liveMedia/MediaSink.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/include/RTSPServer.hh /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTSPServer.hh
+--- live-upstream/live/liveMedia/include/RTSPServer.hh	2026-06-25 08:45:17.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/include/RTSPServer.hh	2026-06-29 12:55:12.466158171 +1000
+@@ -194,6 +194,7 @@
+         //     reimplement "RTSPServer::weImplementREGISTER()" and "RTSPServer::implementCmd_REGISTER()" instead.
+     virtual void handleCmd_bad();
+     virtual void handleCmd_notSupported();
++    virtual void handleCmd_optionNotSupported(char const* unsupportedOptions);
+     virtual void handleCmd_redirect(char const* urlSuffix);
+     virtual void handleCmd_notFound();
+     virtual void handleCmd_sessionNotFound();
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/MediaSink.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/MediaSink.cpp
+--- live-upstream/live/liveMedia/MediaSink.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/MediaSink.cpp	2026-04-21 13:59:36.833304113 +1000
 @@ -110,7 +110,7 @@
  
@@ -221,8 +225,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
  
  OutPacketBuffer
  ::OutPacketBuffer(unsigned preferredPacketSize, unsigned maxPacketSize, unsigned maxBufferSize)
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/OnDemandServerMediaSubsession.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/OnDemandServerMediaSubsession.cpp
---- live-upstream/live/liveMedia/OnDemandServerMediaSubsession.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/OnDemandServerMediaSubsession.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/OnDemandServerMediaSubsession.cpp
+--- live-upstream/live/liveMedia/OnDemandServerMediaSubsession.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/OnDemandServerMediaSubsession.cpp	2026-04-21 17:27:22.207716437 +1000
 @@ -139,8 +139,15 @@
      ++((StreamState*)fLastStreamToken)->referenceCount();
@@ -242,8 +246,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
      FramedSource* mediaSource
        = createNewStreamSource(clientSessionId, streamBitrate);
  
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/ProxyServerMediaSession.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/ProxyServerMediaSession.cpp
---- live-upstream/live/liveMedia/ProxyServerMediaSession.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/ProxyServerMediaSession.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/ProxyServerMediaSession.cpp
+--- live-upstream/live/liveMedia/ProxyServerMediaSession.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/ProxyServerMediaSession.cpp	2026-04-21 14:01:48.842479634 +1000
 @@ -75,9 +75,9 @@
  				    char const* rtspURL,
@@ -379,8 +383,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
        }
      }
    }
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTCP.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTCP.cpp
---- live-upstream/live/liveMedia/RTCP.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTCP.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTCP.cpp
+--- live-upstream/live/liveMedia/RTCP.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTCP.cpp	2026-04-21 14:55:15.590791725 +1000
 @@ -21,6 +21,7 @@
  #include "RTCP.hh"
@@ -425,8 +429,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
      }
  
      unsigned numBytesRead;
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTPInterface.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTPInterface.cpp
---- live-upstream/live/liveMedia/RTPInterface.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTPInterface.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTPInterface.cpp
+--- live-upstream/live/liveMedia/RTPInterface.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTPInterface.cpp	2026-04-21 15:18:53.722399684 +1000
 @@ -21,6 +21,7 @@
  // Implementation
@@ -581,8 +585,67 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
  
      return False;
    }
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTSPServerRegister.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServerRegister.cpp
---- live-upstream/live/liveMedia/RTSPServerRegister.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTSPServer.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServer.cpp
+--- live-upstream/live/liveMedia/RTSPServer.cpp	2026-06-25 08:45:17.000000000 +1000
++++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServer.cpp	2026-06-29 12:55:12.453912006 +1000
+@@ -517,6 +517,15 @@
+ 	   fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
+ }
+ 
++void RTSPServer::RTSPClientConnection::handleCmd_optionNotSupported(char const* unsupportedOptions) {
++  // The request carried a "Require:" (or "Proxy-Require:") header naming one or more option-tags
++  // that we don't support.  Per RFC 2326 section 12.32, reject it with "551 Option not supported"
++  // and echo the unsupported option-tag(s) in an "Unsupported:" header.
++  snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 551 Option not supported\r\nCSeq: %s\r\n%sUnsupported: %s\r\n\r\n",
++	   fCurrentCSeq, dateHeader(), unsupportedOptions);
++}
++
+ void RTSPServer::RTSPClientConnection::handleCmd_redirect(char const* urlSuffix) {
+   char* urlPrefix = fOurRTSPServer.rtspURLPrefix(fClientInputSocket);
+   snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
+@@ -827,8 +836,12 @@
+ 						    sessionIdStr, sizeof sessionIdStr,
+ 						    contentLength, urlIsRTSPS);
+     fLastCRLF[2] = '\r'; // restore its value
+-    // Check first for a bogus "Content-Length" value that would cause a pointer wraparound:
+-    if (tmpPtr + 2 + contentLength < tmpPtr + 2) {
++    // Check first for a bogus "Content-Length" value: either one that would cause a pointer
++    // wraparound, or one too large to ever fit in our (fixed-size) "fRequestBuffer".  The latter
++    // can never be satisfied, so - rather than hold the connection open waiting for body data that
++    // will never arrive (a slow-read DoS) - we reject it immediately.  A real RTSP request body
++    // (e.g. SDP for ANNOUNCE, parameters for SET_PARAMETER) is small, well under REQUEST_BUFFER_SIZE.
++    if (tmpPtr + 2 + contentLength < tmpPtr + 2 || contentLength >= REQUEST_BUFFER_SIZE) {
+ #ifdef DEBUG
+       fprintf(stderr, "parseRTSPRequestString() returned a bogus \"Content-Length:\" value: 0x%x (%d)\n", contentLength, (int)contentLength);
+ #endif
+@@ -855,9 +868,23 @@
+       // Handle the specified command (beginning with commands that are session-independent):
+       delete[] fCurrentCSeq; fCurrentCSeq = strDup(cseq);
+ 
++      // If the request carried a "Require:" (or "Proxy-Require:") header, then - because we
++      // implement no server-side RTSP option-tags - any option named in it is unsupported.
++      // Reject such a request with "551 Option not supported" (RFC 2326, section 12.32), rather
++      // than silently processing it as though the requirement had been satisfied.
++      // ("lookForHeader" matches "Require" as the suffix of "Proxy-Require" too, so both are caught.)
++      char requireTags[RTSP_PARAM_STRING_MAX];
++      lookForHeader("Require", (char const*)fRequestBuffer, fLastCRLF+2 - fRequestBuffer,
++		    requireTags, sizeof requireTags);
++
+       // If the request specified the wrong type of URL
+       // (i.e., "rtsps" instead of "rtsp", or vice versa), then send back a 'redirect':
+-      if (urlIsRTSPS != fOurRTSPServer.fOurConnectionsUseTLS) {
++      if (requireTags[0] != '\0') {
++#ifdef DEBUG
++	fprintf(stderr, "Calling handleCmd_optionNotSupported() for Require: %s\n", requireTags);
++#endif
++	handleCmd_optionNotSupported(requireTags);
++      } else if (urlIsRTSPS != fOurRTSPServer.fOurConnectionsUseTLS) {
+ #ifdef DEBUG
+ 	fprintf(stderr, "Calling handleCmd_redirect()\n");
+ #endif
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/RTSPServerRegister.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServerRegister.cpp
+--- live-upstream/live/liveMedia/RTSPServerRegister.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/RTSPServerRegister.cpp	2026-04-21 14:01:56.306800856 +1000
 @@ -417,7 +417,7 @@
      ServerMediaSession* sms
@@ -593,8 +656,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
      addServerMediaSession(sms);
    
      // (Regardless of the verbosity level) announce the fact that we're proxying this new stream, and the URL to use to access it:
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/StreamParser.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/StreamParser.cpp
---- live-upstream/live/liveMedia/StreamParser.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/liveMedia/StreamParser.cpp /Users/hackeron/Development/TetherX/live555/liveMedia/StreamParser.cpp
+--- live-upstream/live/liveMedia/StreamParser.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/liveMedia/StreamParser.cpp	2026-04-21 13:59:37.195780042 +1000
 @@ -23,7 +23,7 @@
  #include <string.h>
@@ -605,8 +668,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
  
  void StreamParser::flushInput() {
    fCurParserIndex = fSavedParserIndex = 0;
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/mediaServer/DynamicRTSPServer.cpp /Users/hackeron/Development/TetherX/live555/mediaServer/DynamicRTSPServer.cpp
---- live-upstream/live/mediaServer/DynamicRTSPServer.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/mediaServer/DynamicRTSPServer.cpp /Users/hackeron/Development/TetherX/live555/mediaServer/DynamicRTSPServer.cpp
+--- live-upstream/live/mediaServer/DynamicRTSPServer.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/mediaServer/DynamicRTSPServer.cpp	2026-04-21 16:45:28.894588336 +1000
 @@ -142,15 +142,15 @@
      // Assumed to be a MPEG-4 Video Elementary Stream file:
@@ -644,8 +707,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
      NEW_SMS("Matroska video+audio+(optional)subtitles");
  
      // Create a Matroska file server demultiplexor for the specified file.
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/proxyServer/live555ProxyServer.cpp /Users/hackeron/Development/TetherX/live555/proxyServer/live555ProxyServer.cpp
---- live-upstream/live/proxyServer/live555ProxyServer.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/proxyServer/live555ProxyServer.cpp /Users/hackeron/Development/TetherX/live555/proxyServer/live555ProxyServer.cpp
+--- live-upstream/live/proxyServer/live555ProxyServer.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/proxyServer/live555ProxyServer.cpp	2026-04-21 17:06:29.938273310 +1000
 @@ -35,6 +35,20 @@
  Boolean proxyREGISTERRequests = False;
@@ -788,8 +851,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
      rtspServer->addServerMediaSession(sms);
  
      char* proxyStreamURL = rtspServer->rtspURL(sms);
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testDVVideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testDVVideoStreamer.cpp
---- live-upstream/live/testProgs/testDVVideoStreamer.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testDVVideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testDVVideoStreamer.cpp
+--- live-upstream/live/testProgs/testDVVideoStreamer.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/testProgs/testDVVideoStreamer.cpp	2026-04-21 15:52:04.999909877 +1000
 @@ -58,7 +58,7 @@
  
@@ -800,8 +863,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
    videoSink = DVVideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testH264VideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testH264VideoStreamer.cpp
---- live-upstream/live/testProgs/testH264VideoStreamer.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testH264VideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testH264VideoStreamer.cpp
+--- live-upstream/live/testProgs/testH264VideoStreamer.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/testProgs/testH264VideoStreamer.cpp	2026-04-21 15:52:06.745345764 +1000
 @@ -63,7 +63,7 @@
    rtcpGroupsock.multicastSendOnly(); // we're a SSM source
@@ -812,8 +875,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
    videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testH265VideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testH265VideoStreamer.cpp
---- live-upstream/live/testProgs/testH265VideoStreamer.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testH265VideoStreamer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testH265VideoStreamer.cpp
+--- live-upstream/live/testProgs/testH265VideoStreamer.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/testProgs/testH265VideoStreamer.cpp	2026-04-21 15:52:08.051533627 +1000
 @@ -64,7 +64,7 @@
    rtcpGroupsock.multicastSendOnly(); // we're a SSM source
@@ -824,8 +887,8 @@ diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=REA
    videoSink = H265VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
  
    // Create (and start) a 'RTCP instance' for this RTP sink:
-diff --color '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testOnDemandRTSPServer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testOnDemandRTSPServer.cpp
---- live-upstream/live/testProgs/testOnDemandRTSPServer.cpp	2026-04-01 19:34:26.000000000 +1100
+diff '--color=never' -ruN '--exclude=modifications.patch' '--exclude=README.md' '--exclude=.git' '--exclude=.claude' '--exclude=.DS_Store' '--exclude=.gitignore' '--exclude=.vscode' '--exclude=.ruby-lsp' '--exclude=CLAUDE.md' '--exclude=*.save' '--exclude=*.new' '--exclude=*.test' '--exclude=tmp' live-upstream/live/testProgs/testOnDemandRTSPServer.cpp /Users/hackeron/Development/TetherX/live555/testProgs/testOnDemandRTSPServer.cpp
+--- live-upstream/live/testProgs/testOnDemandRTSPServer.cpp	2026-06-25 08:45:17.000000000 +1000
 +++ /Users/hackeron/Development/TetherX/live555/testProgs/testOnDemandRTSPServer.cpp	2026-04-21 15:52:10.180748273 +1000
 @@ -280,7 +280,7 @@
    // A DV video stream:

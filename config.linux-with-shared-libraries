@@ -3,8 +3,8 @@
 # At least one interface changes, or is removed => CURRENT += 1; REVISION = 0; AGE = 0
 # One or more interfaces were added, but no existing interfaces were changed or removed => CURRENT += 1; REVISION = 0; AGE += 1
 
-libliveMedia_VERSION_CURRENT=117
-libliveMedia_VERSION_REVISION=3
+libliveMedia_VERSION_CURRENT=120
+libliveMedia_VERSION_REVISION=0
 libliveMedia_VERSION_AGE=0
 libliveMedia_LIB_SUFFIX=so.$(shell expr $(libliveMedia_VERSION_CURRENT) - $(libliveMedia_VERSION_AGE)).$(libliveMedia_VERSION_AGE).$(libliveMedia_VERSION_REVISION)
 
@@ -30,7 +30,7 @@ C_COMPILER =		$(CC)
 C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
 CPP =			cpp
 CPLUSPLUS_COMPILER =	$(CXX)
-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
 OBJ =			o
 LINK =			$(CXX) -o
 LINK_OPTS =		-L. $(LDFLAGS)

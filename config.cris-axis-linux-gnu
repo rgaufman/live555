@@ -3,7 +3,7 @@
 # See http://developer.axis.com/doc/software/apps/apps-howto.html
 # for more information.
 AXIS_DIR = $(AXIS_TOP_DIR)/target/cris-axis-linux-gnu
-COMPILE_OPTS = $(INCLUDES) -I. -mlinux -isystem $(AXIS_DIR)/include -I/usr/local/include -Wall -O2 -DSOCKLEN_T=socklen_t -DCRIS -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
+COMPILE_OPTS = $(INCLUDES) -I. -mlinux -isystem $(AXIS_DIR)/include -I/usr/local/include -std=c++20 -Wall -O2 -DSOCKLEN_T=socklen_t -DCRIS -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
 C =			c
 C_COMPILER =		gcc-cris
 C_FLAGS =		$(COMPILE_OPTS)

@@ -39,7 +39,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Typedef for a handler function that gets called when "lookupServerMediaSession()"
 // (defined below) completes:
 typedef void lookupServerMediaSessionCompletionFunc(void* clientData,
-						    ServerMediaSession* sessionLookedUp);
+						    ServerMediaSession* smsLookedUp);
 
 class GenericMediaServer: public Medium {
 public:
@@ -101,6 +101,9 @@ protected:
 public: // should be protected, but some old compilers complain otherwise
   // The state of a TCP connection used by a client:
   class ClientConnection {
+  public:
+    unsigned id() const { return fConnectionId; }
+    
   protected:
     ClientConnection(GenericMediaServer& ourServer,
 		     int clientSocket, struct sockaddr_storage const& clientAddr,
@@ -119,6 +122,7 @@ public: // should be protected, but some old compilers complain otherwise
     friend class GenericMediaServer;
     friend class ClientSession;
     friend class RTSPServer; // needed to make some broken Windows compilers work; remove this in the future when we end support for Windows
+    unsigned fConnectionId;
     GenericMediaServer& fOurServer;
     int fOurSocket;
     struct sockaddr_storage fClientAddr;
@@ -131,6 +135,8 @@ public: // should be protected, but some old compilers complain otherwise
     ServerTLSState* fInputTLS; // by default, just points to "fTLS", but subclasses may change
     ServerTLSState* fOutputTLS; // ditto
   };
+
+  ClientConnection* lookupClientConnection(u_int32_t connectionId) const;
 
   // The state of an individual client session (using one or more sequential TCP connections) handled by a server:
   class ClientSession {

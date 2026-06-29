@@ -4,7 +4,7 @@ C_COMPILER =		gcc
 C_FLAGS =		$(COMPILE_OPTS) -DUSE_OUR_BZERO=1 -D_WIN32 -mno-cygwin
 CPP =			cpp
 CPLUSPLUS_COMPILER =	c++
-CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1 -D_WIN32 -Wno-deprecated -mno-cygwin
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -std=c++20 -Wall -DBSD=1 -D_WIN32 -Wno-deprecated -mno-cygwin
 OBJ =			o
 LINK =			c++ -o
 LINK_OPTS =		-L.

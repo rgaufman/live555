@@ -61,7 +61,7 @@ void usage(UsageEnvironment& env, char const* progName) {
   env << "\t(where each <rtsp-url-i> is a \"rtsp://\" URL)\n";
 }
 
-EventLoopWatchVariable eventLoopWatchVariable = 0;
+EventLoopWatchVariable eventLoopWatchVariable(0);
 
 int main(int argc, char** argv) {
   // Begin by setting up our usage environment:

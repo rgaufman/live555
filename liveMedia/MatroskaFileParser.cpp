@@ -340,7 +340,8 @@ Boolean MatroskaFileParser::parseTrack() {
 #ifdef DEBUG
 	  fprintf(stderr, "\tTrack Number %d\n", trackNumber);
 #endif
-	  if (track != NULL && trackNumber != 0) {
+	  if (track != NULL && trackNumber != 0
+	      && track->trackNumber == 0 /* this track doesn't already have a number */) {
 	    track->trackNumber = trackNumber;
 	    fOurFile.addTrack(track, trackNumber);
 	  }
@@ -489,12 +490,11 @@ Boolean MatroskaFileParser::parseTrack() {
       }
       case MATROSKA_ID_CODEC_PRIVATE: {
 	u_int8_t* codecPrivate;
-	unsigned codecPrivateSize;
-	if (parseEBMLVal_binary(size, codecPrivate)) {
-	  codecPrivateSize = (unsigned)size.val();
+	u_int32_t codecPrivateSize;
+	if (parseEBMLVal_binary_constrainSize(size, codecPrivateSize, codecPrivate)) {
 #ifdef DEBUG
 	  fprintf(stderr, "\tCodec Private: ");
-	  for (unsigned i = 0; i < codecPrivateSize; ++i) fprintf(stderr, "%02x:", codecPrivate[i]);
+	  for (u_int32_t i = 0; i < codecPrivateSize; ++i) fprintf(stderr, "%02x:", codecPrivate[i]);
 	  fprintf(stderr, "\n");
 #endif
 	  if (track != NULL) {
@@ -654,12 +654,11 @@ Boolean MatroskaFileParser::parseTrack() {
       }
       case MATROSKA_ID_CONTENT_COMP_SETTINGS: {
 	u_int8_t* headerStrippedBytes;
-	unsigned headerStrippedBytesSize;
-	if (parseEBMLVal_binary(size, headerStrippedBytes)) {
-	  headerStrippedBytesSize = (unsigned)size.val();
+	u_int32_t headerStrippedBytesSize;
+	if (parseEBMLVal_binary_constrainSize(size, headerStrippedBytesSize, headerStrippedBytes)) {
 #ifdef DEBUG
 	  fprintf(stderr, "\tHeader Stripped Bytes: ");
-	  for (unsigned i = 0; i < headerStrippedBytesSize; ++i) fprintf(stderr, "%02x:", headerStrippedBytes[i]);
+	  for (u_int32_t i = 0; i < headerStrippedBytesSize; ++i) fprintf(stderr, "%02x:", headerStrippedBytes[i]);
 	  fprintf(stderr, "\n");
 #endif
 	  if (track != NULL) {
@@ -678,9 +677,8 @@ Boolean MatroskaFileParser::parseTrack() {
       }
       case MATROSKA_ID_COLOR_SPACE: {
 	u_int8_t* colourSpace;
-	unsigned colourSpaceSize;
-	if (parseEBMLVal_binary(size, colourSpace)) {
-	  colourSpaceSize = (unsigned)size.val();
+	u_int32_t colourSpaceSize;
+	if (parseEBMLVal_binary_constrainSize(size, colourSpaceSize, colourSpace)) {
 #ifdef DEBUG
 	  fprintf(stderr, "\tColor space : %02x %02x %02x %02x\n", colourSpace[0], colourSpace[1], colourSpace[2], colourSpace[3]);
 #endif
@@ -1354,7 +1352,7 @@ Boolean MatroskaFileParser::parseEBMLIdAndSize(EBMLId& id, EBMLDataSize& size) {
   return parseEBMLNumber(id) && parseEBMLNumber(size);
 }
 
-Boolean MatroskaFileParser::parseEBMLVal_unsigned64(EBMLDataSize& size, u_int64_t& result) {
+Boolean MatroskaFileParser::parseEBMLVal_unsigned64(EBMLDataSize const& size, u_int64_t& result) {
   u_int64_t sv = size.val();
   if (sv > 8) return False; // size too large
 
@@ -1371,7 +1369,7 @@ Boolean MatroskaFileParser::parseEBMLVal_unsigned64(EBMLDataSize& size, u_int64_
   return True;
 }
 
-Boolean MatroskaFileParser::parseEBMLVal_unsigned(EBMLDataSize& size, unsigned& result) {
+Boolean MatroskaFileParser::parseEBMLVal_unsigned(EBMLDataSize const& size, unsigned& result) {
   if (size.val() > 4) return False; // size too large
 
   u_int64_t result64;
@@ -1382,7 +1380,7 @@ Boolean MatroskaFileParser::parseEBMLVal_unsigned(EBMLDataSize& size, unsigned& 
   return True;
 }
 
-Boolean MatroskaFileParser::parseEBMLVal_float(EBMLDataSize& size, float& result) {
+Boolean MatroskaFileParser::parseEBMLVal_float(EBMLDataSize const& size, float& result) {
   if (size.val() == 4) {
     // Normal case.  Read the value as if it were a 4-byte integer, then copy it to the 'float' result:
     unsigned resultAsUnsigned;
@@ -1408,13 +1406,13 @@ Boolean MatroskaFileParser::parseEBMLVal_float(EBMLDataSize& size, float& result
   }
 }
 
-Boolean MatroskaFileParser::parseEBMLVal_string(EBMLDataSize& size, char*& result) {
-  unsigned resultLength = (unsigned)size.val();
+Boolean MatroskaFileParser::parseEBMLVal_string(EBMLDataSize const& size, char*& result) {
+  u_int64_t resultLength = size.val();
   result = new char[resultLength + 1]; // allow for the trailing '\0'
   if (result == NULL) return False;
 
   char* p = result;
-  unsigned i;
+  u_int64_t i;
   for (i = 0; i < resultLength; ++i) {
     if (fLimitOffsetInFile > 0 && fCurOffsetInFile > fLimitOffsetInFile) break; // We've hit our pre-set limit
 
@@ -1433,13 +1431,13 @@ Boolean MatroskaFileParser::parseEBMLVal_string(EBMLDataSize& size, char*& resul
   return True;
 }
 
-Boolean MatroskaFileParser::parseEBMLVal_binary(EBMLDataSize& size, u_int8_t*& result) {
-  unsigned resultLength = (unsigned)size.val();
+Boolean MatroskaFileParser::parseEBMLVal_binary(EBMLDataSize const& size, u_int8_t*& result) {
+  u_int64_t resultLength = size.val();
   result = new u_int8_t[resultLength];
   if (result == NULL) return False;
 
   u_int8_t* p = result;
-  unsigned i;
+  u_int64_t i;
   for (i = 0; i < resultLength; ++i) {
     if (fLimitOffsetInFile > 0 && fCurOffsetInFile > fLimitOffsetInFile) break; // We've hit our pre-set limit
 
@@ -1449,11 +1447,28 @@ Boolean MatroskaFileParser::parseEBMLVal_binary(EBMLDataSize& size, u_int8_t*& r
     *p++ = c;
   }
   if (i < resultLength) { // an error occurred
-    delete[] result;
-    result = NULL;
+    delete[] result; result = NULL;
     return False;
   }
 
+  return True;
+}
+
+Boolean MatroskaFileParser
+::parseEBMLVal_binary_constrainSize(EBMLDataSize const& size, u_int32_t& length, u_int8_t*& result) {
+  if (!parseEBMLVal_binary(size, result)) {
+    length = 0;
+    return False;
+  }
+
+  if (size.val() > (u_int64_t)0xFFFFFFFF) {
+    // size would not fit into 32 bits => reject this
+    delete[] result; result = NULL;
+    length = 0;
+    return False;
+  }
+
+  length = (u_int32_t)size.val();
   return True;
 }
 

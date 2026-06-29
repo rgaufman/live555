@@ -54,9 +54,9 @@ struct lsmsMemberFunctionRecord {
   void (GenericMediaServer::*fMemberFunc)(ServerMediaSession*);
 };
 
-static void lsmsMemberFunctionCompletionFunc(void* clientData, ServerMediaSession* sessionLookedUp) {
+static void lsmsMemberFunctionCompletionFunc(void* clientData, ServerMediaSession* smsLookedUp) {
   lsmsMemberFunctionRecord* memberFunctionRecord = (lsmsMemberFunctionRecord*)clientData;
-  (memberFunctionRecord->fServer->*(memberFunctionRecord->fMemberFunc))(sessionLookedUp);
+  (memberFunctionRecord->fServer->*(memberFunctionRecord->fMemberFunc))(smsLookedUp);
   delete memberFunctionRecord;
 }
 
@@ -259,6 +259,8 @@ void GenericMediaServer
 
 ////////// GenericMediaServer::ClientConnection implementation //////////
 
+static u_int32_t lastClientConnectionId = 0; // identifies each connection (can wrap around)
+
 GenericMediaServer::ClientConnection
 ::ClientConnection(GenericMediaServer& ourServer,
 		   int clientSocket, struct sockaddr_storage const& clientAddr,
@@ -267,7 +269,10 @@ GenericMediaServer::ClientConnection
   fInputTLS = fOutputTLS = &fTLS;
 
   // Add ourself to our 'client connections' table:
-  fOurServer.fClientConnections->Add((char const*)this, this);
+  do {
+    fConnectionId = ++lastClientConnectionId;
+  } while (fOurServer.fClientConnections->Lookup((char const*)fConnectionId) != NULL);
+  fOurServer.fClientConnections->Add((char const*)fConnectionId, this);
   
   if (useTLS) {
     // Perform extra processing to handle a TLS connection:
@@ -286,7 +291,7 @@ GenericMediaServer::ClientConnection
 
 GenericMediaServer::ClientConnection::~ClientConnection() {
   // Remove ourself from the server's 'client connections' hash table before we go:
-  fOurServer.fClientConnections->Remove((char const*)this);
+  fOurServer.fClientConnections->Remove((char const*)fConnectionId);
   
   closeSockets();
 }
@@ -331,6 +336,11 @@ void GenericMediaServer::ClientConnection::incomingRequestHandler() {
 void GenericMediaServer::ClientConnection::resetRequestBuffer() {
   fRequestBytesAlreadySeen = 0;
   fRequestBufferBytesLeft = sizeof fRequestBuffer;
+}
+
+GenericMediaServer::ClientConnection* GenericMediaServer
+::lookupClientConnection(u_int32_t connectionId) const {
+  return (class ClientConnection*)(fClientConnections->Lookup((char const*)connectionId));
 }
 
 

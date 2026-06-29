@@ -2,10 +2,10 @@ CROSS_COMPILER=        bfin-uclinux-
 COMPILE_OPTS =        $(INCLUDES) -I/usr/local/include -I. -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -DUCLINUX -D_FILE_OFFSET_BITS=64
 C =            c
 C_COMPILER =        $(CROSS_COMPILER)gcc
-C_FLAGS =        $(COMPILE_OPTS) -Wall
+C_FLAGS =        $(COMPILE_OPTS) -std=c++20 -Wall
 CPP =            cpp
 CPLUSPLUS_COMPILER =    $(CROSS_COMPILER)g++
-CPLUSPLUS_FLAGS =    $(COMPILE_OPTS) -Wall
+CPLUSPLUS_FLAGS =    $(COMPILE_OPTS) -std=c++20 -Wall
 OBJ =            o
 LINK =            $(CROSS_COMPILER)g++ -Wl,-elf2flt -o
 LINK_OPTS =        -L.

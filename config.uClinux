@@ -6,7 +6,7 @@ CFLAGS +=        $(COMPILE_OPTS)
 C_FLAGS = $(CFLAGS)
 CPP =            cpp
 CPLUSPLUS_COMPILER =    $(CROSS_COMPILE)g++
-CPLUSPLUS_FLAGS =    $(COMPILE_OPTS) -Wall -DBSD=1
+CPLUSPLUS_FLAGS =    $(COMPILE_OPTS) -std=c++20 -Wall -DBSD=1
 CPLUSPLUS_FLAGS += $(CPPFLAGS) -fexceptions
 OBJ =            o
 LINK =            $(CROSS_COMPILE)g++ -o

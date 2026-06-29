@@ -132,7 +132,9 @@ u_int8_t OggFileParser::parseInitialPage() {
   OggTrack* track;
   if ((header_type_flag&0x02) != 0) { // BOS
     char const* mimeType = NULL; // if unknown
-    if (fPacketSizeTable != NULL && fPacketSizeTable->size[0] >= 8) { // sanity check
+    if (fPacketSizeTable != NULL
+	&& fPacketSizeTable->numCompletedPackets > 0
+	&& fPacketSizeTable->size[0] >= 8) { // sanity check
       char buf[8];
       testBytes((u_int8_t*)buf, 8);
 

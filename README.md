@@ -8,7 +8,7 @@
 
 Enhanced fork of the live555 streaming media library for production use.
 
-**Upstream base:** `live.2026.04.01` (from https://download.live555.com/)
+**Upstream base:** `live.2026.06.24` (from https://download.live555.com/)
 **Patch file:** [`modifications.patch`](modifications.patch) — unified diff of every change we apply on top of upstream.
 
 ## Build
@@ -18,7 +18,7 @@ Enhanced fork of the live555 streaming media library for production use.
 make -j4
 ```
 
-Replace `linux` with your platform — see the `config.*` files. Our `config.linux` pins `-std=c++20` because upstream uses `std::atomic_flag::test()`; if you use another platform that builds against GCC <13, add the same flag.
+Replace `linux` with your platform — see the `config.*` files. As of the `live.2026.06.24` base, upstream pins `-std=c++20` across its `config.*` files (it uses `std::atomic_flag::test()`); we keep that on the macOS configs too. If you build with a toolchain that defaults to an older C++ standard, add `-std=c++20` yourself.
 
 Key executables after build: `testProgs/testRTSPClient`, `testProgs/openRTSP`, `proxyServer/live555ProxyServer`, `mediaServer/live555MediaServer`.
 

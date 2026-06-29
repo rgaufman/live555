@@ -4,7 +4,7 @@ C_COMPILER =           $(CC)
 C_FLAGS =              $(COMPILE_OPTS) -DUSE_OUR_BZERO=1 -D__MINGW32__
 CPP =                  cpp
 CPLUSPLUS_COMPILER =   $(CXX)
-CPLUSPLUS_FLAGS =      $(COMPILE_OPTS) -D__MINGW32__ -Wall -Wno-deprecated
+CPLUSPLUS_FLAGS =      $(COMPILE_OPTS) -D__MINGW32__ -std=c++20 -Wall -Wno-deprecated
 OBJ =                  o
 LINK =                 $(CXX) -o 
 LINK_OPTS =            -L.

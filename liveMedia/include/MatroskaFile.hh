@@ -154,11 +154,11 @@ public:
   unsigned samplingFrequency;
   unsigned numChannels;
   char const* mimeType;
-  unsigned codecPrivateSize;
+  u_int32_t codecPrivateSize;
   u_int8_t* codecPrivate;
   Boolean codecPrivateUsesH264FormatForH265; // a hack specifically for H.265 video tracks
   Boolean codecIsOpus; // a hack for Opus audio
-  unsigned headerStrippedBytesSize;
+  u_int32_t headerStrippedBytesSize;
   u_int8_t* headerStrippedBytes;
   char const* colorSampling;
   char const* colorimetry;

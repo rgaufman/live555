@@ -20,6 +20,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _MEDIA_SERVER_VERSION_HH
 #define _MEDIA_SERVER_VERSION_HH
 
-#define MEDIA_SERVER_VERSION_STRING "1.13"
+#define MEDIA_SERVER_VERSION_STRING "1.14"
 
 #endif
