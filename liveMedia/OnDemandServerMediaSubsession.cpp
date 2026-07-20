@@ -167,6 +167,7 @@ void OnDemandServerMediaSubsession
 	  serverRTPPort = serverPortNum;
 	  rtpGroupsock = createGroupsock(nullAddress(destinationAddress.ss_family), serverRTPPort);
 	  if (rtpGroupsock->socketNum() >= 0) break; // success
+	  delete rtpGroupsock; // bind failed on this port -> free the groupsock+fd before trying the next
 	}
 
 	udpSink = BasicUDPSink::createNew(envir(), rtpGroupsock);
@@ -240,7 +241,11 @@ void OnDemandServerMediaSubsession
   } else { // TCP
     destinations = new Destinations(tcpSocketNum, rtpChannelId, rtcpChannelId, tlsState);
   }
-  fDestinationsHashTable->Add((char const*)clientSessionId, destinations);
+  // HashTable::Add returns the PRE-EXISTING value for a duplicate key without replacing our new one
+  // by identity — a client re-issuing SETUP for the same session (no intervening TEARDOWN) would
+  // otherwise orphan the previous Destinations. Free any displaced entry.
+  Destinations* previous = (Destinations*)fDestinationsHashTable->Add((char const*)clientSessionId, destinations);
+  delete previous;
 }
 
 void OnDemandServerMediaSubsession::startStream(unsigned clientSessionId,

@@ -117,8 +117,47 @@ static double dTimeNow() {
     return (double) (timeNow.tv_sec + timeNow.tv_usec/1000000.0);
 }
 
-static unsigned const maxRTCPPacketSize = 1438;
-	// bytes (1500, minus some allowance for IP, UDP headers; SRTCP trailers)
+// RAISED 1438 -> 65536 (2026-07-19). This is the READ buffer for an incoming RTCP-over-TCP
+// packet. Stock 1438 (one Ethernet MTU) assumes RTCP never exceeds a single datagram — an
+// assumption modern cameras violate, exactly as they violate the old 60000-byte
+// OutPacketBuffer::maxSize (which we raised to 2 MB for 1080p/4K I-frames — same class of fix).
+//
+// PROVEN failure against Merit-Lilin 4K IP cameras streaming RTP-over-TCP (-V log):
+// the camera sends an interleaved RTCP frame > 1438; live555 reads the RFC-2326 interleave
+// length header, tries to read the whole frame into a 1438 buffer, hits the limit, and our
+// mitigation resets `fNumBytesAlreadyRead = 0; return;` — but the rest of that frame is STILL
+// pending in the TCP stream, so the next read starts mid-frame => the stream DESYNCS. It then
+// loops "Hit limit ..." 100+/5s, no RTP is parsed, `checkInterPacketGaps` fires at >15s and
+// resets the whole session — the flap. So the SMALL buffer CAUSES the desync; it is not (as the
+// stock/live-devel note claimed) a pre-existing desync that a bigger buffer would worsen.
+//
+// 65536 is the correct ceiling, and it is a HARD protocol limit, not a tuning knob:
+// RTP/RTCP-over-TCP interleaved framing (RFC 2326 §10.12) prefixes each frame with a 2-byte
+// length, so NO interleaved frame can exceed 65535 bytes. A 65536-byte buffer can therefore
+// always read any legal frame whole and stay in sync. (2 MB would be pointless here; that is
+// the reassembled-OUTPUT path — OutPacketBuffer::maxSize — a different buffer entirely.)
+//
+// How other RTSP stacks size this same read buffer (all confirmed from their source), which is
+// why stock live555's 1438 is the outlier, not our 65536:
+//   - GStreamer  (gst-rtsp-connection / rtspsrc): allocates per interleaved frame up to the full
+//                16-bit length — i.e. up to 65536. Identical intent to this value.
+//   - FFmpeg     (libavformat/rtsp.c): a fixed RECVBUF_SIZE of 81920. That is NOT a per-frame
+//                cap — it is a generous single recv() scratch buffer that then parses out the
+//                2-byte-framed sub-frame. We deliberately do NOT copy 81920: no legal interleaved
+//                frame can be >65535, so bytes 65536..81919 can never belong to one frame and
+//                buying them adds only per-instance memory (one alloc per RTCP source, ×49 cams).
+//                65536 is the tight, provably-sufficient bound.
+//   - retina (Rust): grows a dynamic buffer to the announced 16-bit length. Same ceiling, reached
+//                dynamically instead of pre-allocated.
+// Only stock live555 caps at one Ethernet MTU (1438) and assumes RTCP never spans datagrams — an
+// assumption modern 4K cameras violate. The 2016 live-devel note that argued a bigger buffer would
+// merely "worsen a pre-existing desync" (lists.live555.com/pipermail/live-devel/2016-April/020033.html)
+// had the causation backwards: PROVEN here by A/B vs 1438 on a real force-TCP camera, the small
+// buffer is what CAUSES the desync (truncated frame -> leftover bytes -> next read starts
+// mid-frame). Bigger buffer = the fix, not the aggravation.
+static unsigned const maxRTCPPacketSize = 65536;
+	// bytes — 16-bit RTP-over-TCP interleave length ceiling (RFC 2326 §10.12); see note above
+	// for why 65536 (not FFmpeg's 81920) is the tight, provably-sufficient bound.
 static unsigned const preferredRTCPPacketSize = 1000; // bytes
 
 RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
@@ -154,12 +193,16 @@ RTCPInstance::RTCPInstance(UsageEnvironment& env, Groupsock* RTCPgs,
   double timeNow = dTimeNow();
   fPrevReportTime = fNextReportTime = timeNow;
 
-  fKnownMembers = new RTCPMemberDatabase(*this);
-  fInBuf = new unsigned char[maxRTCPPacketSize];
-  if (fKnownMembers == NULL || fInBuf == NULL) return;
+  // Initialize the read/overflow-rate-limit scalars BEFORE the allocations' early return: they don't
+  // depend on the allocations, and a nothrow/overloaded `new` build that took the `return` would
+  // otherwise leave them uninitialized while incomingReportHandler1 reads them.
   fNumBytesAlreadyRead = 0;
   fOverflowLastLogSec = 0;
   fOverflowPending = 0;
+
+  fKnownMembers = new RTCPMemberDatabase(*this);
+  fInBuf = new unsigned char[maxRTCPPacketSize];
+  if (fKnownMembers == NULL || fInBuf == NULL) return;
 
   fOutBuf = new OutPacketBuffer(preferredRTCPPacketSize, maxRTCPPacketSize, 1500);
   if (fOutBuf == NULL) return;

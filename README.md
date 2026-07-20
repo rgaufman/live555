@@ -8,8 +8,7 @@
 
 Enhanced fork of the live555 streaming media library for production use.
 
-**Upstream base:** `live.2026.06.24` (from https://download.live555.com/)
-**Patch file:** [`modifications.patch`](modifications.patch) — unified diff of every change we apply on top of upstream.
+**Forked from:** `live.2026.06.24` (from https://download.live555.com/). This fork now **evolves independently** — we no longer maintain a byte-for-byte patch against upstream. Upstream continues to maintain the library and ship fixes, and we still track their releases and backport anything worthwhile. Our divergence is a difference in philosophy rather than a criticism: we make changes upstream would reasonably decline, and some would be suboptimal in a perfect world. We optimise for one thing — running reliably against the real mix of legacy and current IP cameras we have to connect to, many of which deviate from the RFCs in their own particular ways. That trade lets us move toward cleaner, better-tested code for our use case. Upstream is welcome to adopt anything here (see [Security reports](#security-reports)).
 
 ## Build
 
@@ -111,7 +110,7 @@ The upstream maintainer triages, fixes and discloses vulnerabilities for the cor
 
 **This repo is also a fine place to report**, especially if:
 - You'd like help reproducing, narrowing down the root cause, or drafting a patch — we sometimes get to things faster than the upstream maintainer and are happy to PR fixes back upstream once written.
-- The issue is specific to something we changed in [`modifications.patch`](modifications.patch) (fork-introduced regressions are squarely our responsibility).
+- The issue is specific to something this fork changed (see [Enhancements over upstream](#enhancements-over-upstream)) — fork-introduced regressions are squarely our responsibility.
 - You just want to keep other fork users informed after upstream has released a fix.
 
 **For serious vulnerabilities with a PoC** we'd suggest: email the upstream maintainer (addresses on the live-devel list) with the full technical details, and open a terse tracking issue here ("security issue disclosed to upstream on YYYY-MM-DD, details withheld until fix lands") so fork users know something is in flight without the details being public. Once the upstream fix is released, the full details can be shared publicly here too.

@@ -19,6 +19,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // Implementation
 
 #include "RTSPClient.hh"
+#include "RTSPKeepAlive.hh"   // rtspInterleavedChannelsExhausted() (header-only, unit-tested)
+#include "DigestAuthParams.hh" // tolerant WWW-Authenticate parsing (header-only, unit-tested)
+#include "StreamFaultCodes.hh" // TX_CODE_UNEXPECTED
 #include "RTSPCommon.hh"
 #include "Base64.hh"
 #include "Locale.hh"
@@ -128,11 +131,27 @@ unsigned RTSPClient::sendSetParameterCommand(MediaSession& session, responseHand
                                              char const* parameterName, char const* parameterValue,
                                              Authenticator* authenticator) {
   if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
-  char* paramString = new char[strlen(parameterName) + strlen(parameterValue) + 10];
-  sprintf(paramString, "%s: %s\r\n", parameterName, parameterValue);
+  // Capture the allocation size so snprintf can be bounded by the SAME expression that sized the
+  // buffer. (`sizeof paramString` would be the pointer width, 8 — silently truncating every value
+  // to 7 characters. That is the trap in a blind sprintf->snprintf sweep, so each site here takes
+  // its bound from its own allocation.)
+  size_t const paramStringLen = strlen(parameterName) + strlen(parameterValue) + 10;
+  char* paramString = new char[paramStringLen];
+  snprintf(paramString, paramStringLen, "%s: %s\r\n", parameterName, parameterValue);
   unsigned result = sendRequest(new RequestRecord(++fCSeq, "SET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
   delete[] paramString;
   return result;
+}
+
+unsigned RTSPClient::sendLivenessSetParameterCommand(MediaSession& session, responseHandler* responseHandler,
+                                                     Authenticator* authenticator) {
+  if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
+
+  // No body at all: sendRequest() omits "Content-Length:" when contentStr is NULL, so this goes out
+  // as a headers-only SET_PARAMETER carrying the "Session:" id -- exactly GStreamer's keep-alive
+  // ping. Do NOT route this through sendSetParameterCommand(), which would invent a "name: value"
+  // body that some cameras reject.
+  return sendRequest(new RequestRecord(++fCSeq, "SET_PARAMETER", responseHandler, &session));
 }
 
 unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHandler* responseHandler, char const* parameterName,
@@ -143,11 +162,12 @@ unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHand
   //    parameterName is NULL or "" means: Send no body in the request.
   //    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
   unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
-  char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
+  size_t const paramStringSize = parameterNameLen + 3; // the 3 is for \r\n + the '\0' byte
+  char* paramString = new char[paramStringSize];
   if (parameterName == NULL || parameterName[0] == '\0') {
     paramString[0] = '\0';
   } else {
-    sprintf(paramString, "%s\r\n", parameterName);
+    snprintf(paramString, paramStringSize, "%s\r\n", parameterName);
   }
   unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
   delete[] paramString;
@@ -384,7 +404,7 @@ void RTSPClient::setUserAgentString(char const* userAgentName) {
   unsigned const headerSize = strlen(formatStr) + strlen(userAgentName);
   delete[] fUserAgentHeaderStr;
   fUserAgentHeaderStr = new char[headerSize];
-  sprintf(fUserAgentHeaderStr, formatStr, userAgentName);
+  snprintf(fUserAgentHeaderStr, headerSize, formatStr, userAgentName);
   fUserAgentHeaderStrLen = strlen(fUserAgentHeaderStr);
 }
 
@@ -394,7 +414,10 @@ RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 		       int verbosityLevel, char const* applicationName,
 		       portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
   : Medium(env),
-    desiredMaxIncomingPacketSize(0), fVerbosityLevel(verbosityLevel), fCSeq(1),
+    desiredMaxIncomingPacketSize(0), fVerbosityLevel(verbosityLevel),
+    // UNKNOWN, not any real cause: before anything has failed there is nothing to report, and a
+    // default of (say) REQ_FAIL_TIMEOUT would let a handler read a fault that never happened.
+    fLastFailureCause(REQ_FAIL_UNKNOWN), fCSeq(1),
     fAllowBasicAuthentication(True), fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum),
     fUserAgentHeaderStr(NULL), fUserAgentHeaderStrLen(0),
     fInputSocketNum(-1), fOutputSocketNum(-1), fBaseURL(NULL), fTCPStreamIdCount(0),
@@ -429,7 +452,7 @@ RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
   unsigned userAgentNameSize
     = strlen(applicationName) + strlen(libPrefix) + strlen(libName) + strlen(liveMediaLibraryVersionStr) + strlen(libSuffix) + 1;
   char* userAgentName = new char[userAgentNameSize];
-  sprintf(userAgentName, "%s%s%s%s%s", applicationName, libPrefix, libName, liveMediaLibraryVersionStr, libSuffix);
+  snprintf(userAgentName, userAgentNameSize, "%s%s%s%s%s", applicationName, libPrefix, libName, liveMediaLibraryVersionStr, libSuffix);
   setUserAgentString(userAgentName);
   delete[] userAgentName;
 }
@@ -454,6 +477,15 @@ void RTSPClient::reset() {
   fCurrentAuthenticator.reset();
 
   delete[] fLastSessionId; fLastSessionId = NULL;
+
+  // Interleaved channel ids are scoped to ONE TCP connection (RFC 2326 sec 10.12) and are only one
+  // byte wide, so a new connection must restart the allocation at 0. Without this the counter is
+  // monotonic for the lifetime of the RTSPClient: a proxy that reconnects to a camera all day
+  // marches the ids upward (a 2-track camera reconnecting every ~2 min was observed at "channel 96"
+  // after 24 reconnects) and wraps past 255 after 64, where a reused id can collide with a channel
+  // still registered from an earlier session and corrupt the '$'-framing demux.
+  // Covered by test/test_rtsp_keepalive.cpp.
+  fTCPStreamIdCount = 0;
 }
 
 void RTSPClient::setBaseURL(char const* url) {
@@ -526,7 +558,7 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
       unsigned contentLengthHeaderSize = strlen(contentLengthHeaderFmt)
 	+ 20 /* max int len */;
       contentLengthHeader = new char[contentLengthHeaderSize];
-      sprintf(contentLengthHeader, contentLengthHeaderFmt, contentStrLen);
+      snprintf(contentLengthHeader, contentLengthHeaderSize, contentLengthHeaderFmt, contentStrLen);
       contentLengthHeaderWasAllocated = True;
     }
 
@@ -552,7 +584,7 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
       + strlen(contentLengthHeader)
       + contentStrLen;
     cmd = new char[cmdSize];
-    sprintf(cmd, cmdFmt,
+    snprintf(cmd, cmdSize, cmdFmt,
 	    request->commandName(), cmdURL, protocolStr,
 	    request->cseq(),
 	    authenticatorStr,
@@ -581,7 +613,7 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
       char const* errFmt = "%s write() failed: ";
       unsigned const errLength = strlen(errFmt) + strlen(request->commandName());
       char* err = new char[errLength];
-      sprintf(err, errFmt, request->commandName());
+      snprintf(err, errLength, errFmt, request->commandName());
       envir().setResultErrMsg(err);
       delete[] err;
       break;
@@ -601,9 +633,16 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
     return cseq;
   } while (0);
 
-  // An error occurred, so call the response handler immediately (indicating the error):
+  // An error occurred, so call the response handler immediately (indicating the error).
+  // Reaching here means the request never got onto the wire: write()/connect() just failed, so
+  // errno is FRESH -- this is the one failure site where classifying it is honest (the cause is
+  // recorded at the site that detected it, from state that syscall actually set). Classifying here
+  // is also what makes the local-resource taxonomy producible at all: ENOBUFS/ENOMEM on the send
+  // take the delayed-retry path instead of being flattened into "connection closed", and an
+  // unrecognised errno reports as unclassified rather than borrowing a verdict. errno 0 (a failure
+  // path that set nothing) classifies as REQ_FAIL_UNKNOWN -- "we don't know", never a guess.
   delete[] cmd;
-  handleRequestError(request);
+  handleRequestError(request, classifyRequestFailure(-envir().getErrno()));
   delete request;
   return 0;
 }
@@ -611,8 +650,9 @@ unsigned RTSPClient::sendRequest(RequestRecord* request) {
 static char* createSessionString(char const* sessionId) {
   char* sessionStr;
   if (sessionId != NULL) {
-    sessionStr = new char[20+strlen(sessionId)];
-    sprintf(sessionStr, "Session: %s\r\n", sessionId);
+    size_t const sessionStrSize = 20 + strlen(sessionId);
+    sessionStr = new char[sessionStrSize];
+    snprintf(sessionStr, sessionStrSize, "Session: %s\r\n", sessionId);
   } else {
     sessionStr = strDup("");
   }
@@ -626,7 +666,7 @@ static char* createSpeedString(float speed) {
     // This is the default value; we don't need a "Speed:" header:
     buf[0] = '\0';
   } else {
-    sprintf(buf, "Speed: %.3f\r\n",speed);
+    snprintf(buf, sizeof buf, "Speed: %.3f\r\n", speed);
   }
 
   return strDup(buf);
@@ -639,7 +679,7 @@ static char* createScaleString(float scale, float currentScale) {
     buf[0] = '\0';
   } else {
     Locale l("C", Numeric);
-    sprintf(buf, "Scale: %f\r\n", scale);
+    snprintf(buf, sizeof buf, "Scale: %f\r\n", scale);
   }
 
   return strDup(buf);
@@ -667,11 +707,11 @@ static char* createRangeString(double start, double end, char const* absStartTim
     } else if (end < 0) {
       // There's no end time:
       Locale l("C", Numeric);
-      sprintf(buf, "Range: npt=%.3f-\r\n", start);
+      snprintf(buf, sizeof buf, "Range: npt=%.3f-\r\n", start);
     } else {
       // There's both a start and an end time; include them both in the "Range:" hdr
       Locale l("C", Numeric);
-      sprintf(buf, "Range: npt=%.3f-%.3f\r\n", start, end);
+      snprintf(buf, sizeof buf, "Range: npt=%.3f-%.3f\r\n", start, end);
     }
   }
 
@@ -713,10 +753,11 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
       transportFmt = "Transport: RAW/RAW/UDP%s%s%s=%d-%d\r\n";
     }
     
-    cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
+    size_t const cmdURLSize = strlen(prefix) + strlen(separator) + strlen(suffix) + 1;
+    cmdURL = new char[cmdURLSize];
     cmdURLWasAllocated = True;
-    sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
-    
+    snprintf(cmdURL, cmdURLSize, "%s%s%s", prefix, separator, suffix);
+
     // Construct a "Transport:" header.
     char const* transportTypeStr;
     char const* modeStr = streamOutgoing ? ";mode=receive" : "";
@@ -726,6 +767,25 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
     if (streamUsingTCP) { // streaming over the RTSP connection
       transportTypeStr = "/TCP;unicast";
       portTypeStr = ";interleaved";
+      // RFC 2326 sec 10.12: the interleaved channel id is a SINGLE BYTE, so only 0..255 exist and
+      // fTCPStreamIdCount (an unsigned char) WRAPS silently past 255. A wrapped id collides with a
+      // channel still registered on this connection, and the '$'-framing demux then delivers one
+      // subsession's packets to another — corruption with no error anywhere.
+      //
+      // reset() clears the counter per connection, which is what keeps this unreachable in practice
+      // (channel ids are scoped to one TCP connection, so a reconnect restarts at 0). This is the
+      // backstop for exhaustion WITHIN one connection. It was written and unit-tested as
+      // rtspInterleavedChannelsExhausted() but never called from here — a guard that existed only in
+      // its own test, which is no guard at all.
+      if (rtspInterleavedChannelsExhausted(fTCPStreamIdCount, 2)) {
+	envir() << TX_CODE_UNEXPECTED << " RTSPClient: interleaved channel space exhausted on this"
+		   " connection (next id " << (int)fTCPStreamIdCount << ", need 2, max 255). Refusing"
+		   " the SETUP rather than wrapping to an id that is still registered, which would"
+		   " silently deliver this track's packets to another subsession.\n";
+	envir().setResultMsg("Interleaved channel ids exhausted (RFC 2326 sec 10.12: one byte)\n");
+	delete[] cmdURL;
+	return False;
+      }
       rtpNumber = fTCPStreamIdCount++;
       rtcpNumber = fTCPStreamIdCount++;
     } else { // normal RTP streaming
@@ -747,8 +807,8 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
     unsigned transportSize = strlen(transportFmt)
       + strlen(transportTypeStr) + strlen(modeStr) + strlen(portTypeStr) + 2*5 /* max port len */;
     char* transportStr = new char[transportSize];
-    sprintf(transportStr, transportFmt,
-	    transportTypeStr, modeStr, portTypeStr, rtpNumber, rtcpNumber);
+    snprintf(transportStr, transportSize, transportFmt,
+	     transportTypeStr, modeStr, portTypeStr, rtpNumber, rtcpNumber);
     
     // When sending more than one "SETUP" request, include a "Session:" header in the 2nd and later commands:
     char* sessionStr = createSessionString(fLastSessionId);
@@ -761,9 +821,11 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 
     // The "Transport:", "Session:" (if present), "Blocksize:" (if present), and "KeyMgmt:" (if present)
     // headers make up the 'extra headers':
-    extraHeaders = new char[transportSize + strlen(sessionStr) + strlen(blocksizeStr) + strlen(keyMgmtStr) + 1];
+    size_t const extraHeadersSize =
+      transportSize + strlen(sessionStr) + strlen(blocksizeStr) + strlen(keyMgmtStr) + 1;
+    extraHeaders = new char[extraHeadersSize];
     extraHeadersWereAllocated = True;
-    sprintf(extraHeaders, "%s%s%s%s", transportStr, sessionStr, blocksizeStr, keyMgmtStr);
+    snprintf(extraHeaders, extraHeadersSize, "%s%s%s%s", transportStr, sessionStr, blocksizeStr, keyMgmtStr);
     delete[] transportStr; delete[] sessionStr; delete[] blocksizeStr; delete[] keyMgmtStr;
   } else if (strcmp(request->commandName(), "GET") == 0 || strcmp(request->commandName(), "POST") == 0) {
     // We will be sending a HTTP (not a RTSP) request.
@@ -807,9 +869,9 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 	+ strlen(fSessionCookie);
       extraHeaders = new char[extraHeadersSize];
       extraHeadersWereAllocated = True;
-      sprintf(extraHeaders, extraHeadersFmt,
-	      serverAddressString.val(),
-	      fSessionCookie);
+      snprintf(extraHeaders, extraHeadersSize, extraHeadersFmt,
+	       serverAddressString.val(),
+	       fSessionCookie);
     } else { // "POST"
       char const* const extraHeadersFmt =
 	"Host: %s\r\n"
@@ -824,9 +886,9 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 	+ strlen(fSessionCookie);
       extraHeaders = new char[extraHeadersSize];
       extraHeadersWereAllocated = True;
-      sprintf(extraHeaders, extraHeadersFmt,
-	      serverAddressString.val(),
-	      fSessionCookie);
+      snprintf(extraHeaders, extraHeadersSize, extraHeadersFmt,
+	       serverAddressString.val(),
+	       fSessionCookie);
     }
   } else { // "PLAY", "PAUSE", "TEARDOWN", "RECORD", "SET_PARAMETER", "GET_PARAMETER"
     // First, make sure that we have a RTSP session in progress
@@ -847,10 +909,11 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
       // Media-level operation
       char const *prefix, *separator, *suffix;
       constructSubsessionURL(*request->subsession(), prefix, separator, suffix);
-      cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
+      size_t const cmdURLSize = strlen(prefix) + strlen(separator) + strlen(suffix) + 1;
+      cmdURL = new char[cmdURLSize];
       cmdURLWasAllocated = True;
-      sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
-      
+      snprintf(cmdURL, cmdURLSize, "%s%s%s", prefix, separator, suffix);
+
       sessionId = request->subsession()->sessionId();
       originalScale = request->subsession()->scale();
     }
@@ -863,9 +926,11 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
       float speed = request->session() != NULL ? request->session()->speed() : request->subsession()->speed();
       char* speedStr = createSpeedString(speed);
       char* rangeStr = createRangeString(request->start(), request->end(), request->absStartTime(), request->absEndTime());
-      extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(speedStr) + strlen(rangeStr) + 1];
+      size_t const extraHeadersSize =
+	strlen(sessionStr) + strlen(scaleStr) + strlen(speedStr) + strlen(rangeStr) + 1;
+      extraHeaders = new char[extraHeadersSize];
       extraHeadersWereAllocated = True;
-      sprintf(extraHeaders, "%s%s%s%s", sessionStr, scaleStr, speedStr, rangeStr);
+      snprintf(extraHeaders, extraHeadersSize, "%s%s%s%s", sessionStr, scaleStr, speedStr, rangeStr);
       delete[] sessionStr; delete[] scaleStr; delete[] speedStr; delete[] rangeStr;
     } else {
       // Create a "Session:" header; this makes up our 'extra headers':
@@ -987,21 +1052,21 @@ char* RTSPClient::createAuthenticatorString(char const* cmd, char const* url) {
 	+ strlen(auth.username()) + strlen(auth.realm())
 	+ strlen(auth.nonce()) + strlen(url) + strlen(response);
       authenticatorStr = new char[authBufSize];
-      sprintf(authenticatorStr, authFmt,
-	      auth.username(), auth.realm(),
-	      auth.nonce(), url, response);
+      snprintf(authenticatorStr, authBufSize, authFmt,
+	       auth.username(), auth.realm(),
+	       auth.nonce(), url, response);
       auth.reclaimDigestResponse(response);
     } else { // Basic authentication
       char const* const authFmt = "Authorization: Basic %s\r\n";
 
       unsigned usernamePasswordLength = strlen(auth.username()) + 1 + strlen(auth.password());
       char* usernamePassword = new char[usernamePasswordLength+1];
-      sprintf(usernamePassword, "%s:%s", auth.username(), auth.password());
+      snprintf(usernamePassword, usernamePasswordLength + 1, "%s:%s", auth.username(), auth.password());
 
       char* response = base64Encode(usernamePassword, usernamePasswordLength);
       unsigned const authBufSize = strlen(authFmt) + strlen(response) + 1;
       authenticatorStr = new char[authBufSize];
-      sprintf(authenticatorStr, authFmt, response);
+      snprintf(authenticatorStr, authBufSize, authFmt, response);
       delete[] response; delete[] usernamePassword;
     }
 
@@ -1026,8 +1091,9 @@ char* RTSPClient::createBlocksizeString(Boolean streamUsingTCP) {
   }
 
   if (maxPacketSize > 0) {
-    blocksizeStr = new char[25]; // more than enough space
-    sprintf(blocksizeStr, "Blocksize: %u\r\n", maxPacketSize);
+    size_t const blocksizeStrSize = 25; // more than enough space
+    blocksizeStr = new char[blocksizeStrSize];
+    snprintf(blocksizeStr, blocksizeStrSize, "Blocksize: %u\r\n", maxPacketSize);
   } else {
     blocksizeStr = strDup("");
   }
@@ -1050,15 +1116,20 @@ char* RTSPClient::createKeyMgmtString(char const* url, MediaSubsession const& su
     
     unsigned keyMgmtSize = strlen(keyMgmtFmt) + strlen(url) + strlen(base64EncodedData);
     keyMgmtStr = new char[keyMgmtSize];
-    sprintf(keyMgmtStr, keyMgmtFmt,
-	    url, base64EncodedData);
+    snprintf(keyMgmtStr, keyMgmtSize, keyMgmtFmt,
+	     url, base64EncodedData);
     delete[] base64EncodedData;
   }
 
   return keyMgmtStr;
 }
 
-void RTSPClient::handleRequestError(RequestRecord* request) {
+void RTSPClient::handleRequestError(RequestRecord* request, RequestFailureCause cause) {
+  // The cause comes from the CALLER, which is the only code that knows what actually happened.
+  // Recording it here is the whole point: `resultCode` below is retained purely for API
+  // compatibility with existing response handlers, and is NOT a reliable description of the fault.
+  fLastFailureCause = cause;
+
   int resultCode = -envir().getErrno();
   if (resultCode == 0) {
     // Choose some generic error code instead:
@@ -1087,7 +1158,14 @@ Boolean RTSPClient
 }
 
 void RTSPClient::handleIncomingRequest() {
-  // Parse the request string into command name and 'CSeq', then 'handle' the command (by responding that we don't support it):
+  // Parse the request string into command name and 'CSeq', then acknowledge the command.
+  //
+  // Acknowledge with 200 OK, never 405: ONVIF NVRs and Axis-style servers ping their CLIENTS with
+  // OPTIONS/SET_PARAMETER as the server's own liveness check, and a client that answers 405 Method
+  // Not Allowed can be read as broken -- inviting the SERVER to tear the session down, a disconnect
+  // nothing on our side can explain. GStreamer answers every unknown server request with 200 OK
+  // (gstrtspsrc.c:6232-6249). We execute nothing either way; the only question is whether the
+  // acknowledgement keeps the session alive or invites its teardown.
   char cmdName[RTSP_PARAM_STRING_MAX];
   char urlPreSuffix[RTSP_PARAM_STRING_MAX];
   char urlSuffix[RTSP_PARAM_STRING_MAX];
@@ -1109,7 +1187,7 @@ void RTSPClient::handleIncomingRequest() {
     }
     char tmpBuf[2*RTSP_PARAM_STRING_MAX];
     snprintf(tmpBuf, sizeof tmpBuf,
-             "RTSP/1.0 405 Method Not Allowed\r\nCSeq: %s\r\n\r\n", cseq);
+             "RTSP/1.0 200 OK\r\nCSeq: %s\r\n\r\n", cseq);
     write(tmpBuf, strlen(tmpBuf));
   }
 }
@@ -1380,7 +1458,7 @@ Boolean RTSPClient::handlePLAYResponse(MediaSession* session, MediaSubsession* s
   return False;
 }
 
-Boolean RTSPClient::handleTEARDOWNResponse(MediaSession& /*session*/, MediaSubsession& /*subsession*/) {
+Boolean RTSPClient::handleTEARDOWNResponse(MediaSession* /*session*/, MediaSubsession* /*subsession*/) {
   // Because we don't expect to always get a response to "TEARDOWN", we don't need to do anything if we do get one:
   return True;
 }
@@ -1428,27 +1506,38 @@ Boolean RTSPClient::handleGET_PARAMETERResponse(char const* parameterName, char*
 Boolean RTSPClient::handleAuthenticationFailure(char const* paramsStr) {
   if (paramsStr == NULL) return False; // There was no "WWW-Authenticate:" header; we can't proceed.
 
-  // Fill in "fCurrentAuthenticator" with the information from the "WWW-Authenticate:" header:
+  // Fill in "fCurrentAuthenticator" with the information from the "WWW-Authenticate:" header.
+  //
+  // Parsed TOLERANTLY (DigestAuthParams.hh), not with a fixed sscanf shape. The old parser required
+  // exactly `Digest realm="..", nonce="..", stale=TRUE` -- that order, that spacing, `stale`
+  // unquoted, nothing else present. Real cameras quote stale (`stale="TRUE"` -- Hikvision), reorder
+  // parameters, and interleave the other legal RFC 2617 parameters (qop=, algorithm=, opaque=), so
+  // `stale` was silently read as absent. A stale nonce on an unchanged realm then looked like a
+  // rejected credential ("same realm, not stale -> retrying cannot help") and a routine nonce
+  // rotation cost a long-lived session. GStreamer parses these generically and treats stale as
+  // "credentials fine, retry with the new nonce" (gstrtspsrc.c:7436-7443, :7495-7496).
   Boolean realmHasChanged = False; // by default
   Boolean isStale = False; // by default
-  char* realm = strDupSize(paramsStr);
+  // The two-arg strDupSize reports the size it allocated, so "how big is the buffer" has one
+  // source instead of a separate strlen re-deriving it.
+  size_t bufSize;
+  char* realm = strDupSize(paramsStr, bufSize);
   char* nonce = strDupSize(paramsStr);
-  char* stale = strDupSize(paramsStr);
   Boolean success = True;
-  if (sscanf(paramsStr, "Digest realm=\"%[^\"]\", nonce=\"%[^\"]\", stale=%[a-zA-Z]", realm, nonce, stale) == 3) {
+  if (_strncasecmp(paramsStr, "Digest", 6) == 0 &&
+      digestAuthParam(paramsStr, "realm", realm, (unsigned)bufSize) &&
+      digestAuthParam(paramsStr, "nonce", nonce, (unsigned)bufSize)) {
     realmHasChanged = fCurrentAuthenticator.realm() == NULL || strcmp(fCurrentAuthenticator.realm(), realm) != 0;
-    isStale = _strncasecmp(stale, "true", 4) == 0;
+    isStale = digestAuthIndicatesStaleNonce(paramsStr) ? True : False;
     fCurrentAuthenticator.setRealmAndNonce(realm, nonce);
-  } else if (sscanf(paramsStr, "Digest realm=\"%[^\"]\", nonce=\"%[^\"]\"", realm, nonce) == 2) {
-    realmHasChanged = fCurrentAuthenticator.realm() == NULL || strcmp(fCurrentAuthenticator.realm(), realm) != 0;
-    fCurrentAuthenticator.setRealmAndNonce(realm, nonce);
-  } else if (sscanf(paramsStr, "Basic realm=\"%[^\"]\"", realm) == 1 && fAllowBasicAuthentication) {
+  } else if (_strncasecmp(paramsStr, "Basic", 5) == 0 && fAllowBasicAuthentication &&
+             digestAuthParam(paramsStr, "realm", realm, (unsigned)bufSize)) {
     realmHasChanged = fCurrentAuthenticator.realm() == NULL || strcmp(fCurrentAuthenticator.realm(), realm) != 0;
     fCurrentAuthenticator.setRealmAndNonce(realm, NULL); // Basic authentication
   } else {
     success = False; // bad "WWW-Authenticate:" header
   }
-  delete[] realm; delete[] nonce; delete[] stale;
+  delete[] realm; delete[] nonce;
 
   if (success) {
     if ((!realmHasChanged && !isStale) || fCurrentAuthenticator.username() == NULL || fCurrentAuthenticator.password() == NULL) {
@@ -1488,7 +1577,10 @@ void RTSPClient::handleAlternativeRequestByte1(u_int8_t requestByte) {
     envir().taskScheduler().setBackgroundHandling(fInputSocketNum, SOCKET_READABLE|SOCKET_EXCEPTION,
 						  (TaskScheduler::BackgroundHandlerProc*)&incomingDataHandler, this);
   } else {
-    // Normal case:
+    // Normal case. Bounds-check before writing (defence-in-depth, mirroring the server's
+    // handleAlternativeRequestByte1 guard): fResponseBytesAlreadySeen is kept < responseBufferSize by
+    // handleResponseBytes' truncation reset, but never write past the buffer even if that invariant slips.
+    if (fResponseBytesAlreadySeen >= responseBufferSize) return;
     fResponseBuffer[fResponseBytesAlreadySeen] = requestByte;
     handleResponseBytes(1);
   }
@@ -1602,7 +1694,9 @@ void RTSPClient::responseHandlerForHTTP_GET1(int responseCode, char* responseStr
   resetTCPSockets(); // do this now, in case an error handler deletes "this"
   RequestQueue requestQueue(fRequestsAwaitingHTTPTunneling);
   while ((request = requestQueue.dequeue()) != NULL) {
-    handleRequestError(request);
+    // RTSP-over-HTTP tunnel setup failed, and resetTCPSockets() above has already dropped the
+    // sockets. Nothing can be sent until a connection exists again.
+    handleRequestError(request, REQ_FAIL_CONNECTION_CLOSED);
     delete request;
   }
 }
@@ -1669,10 +1763,12 @@ void RTSPClient::connectionHandler1() {
     return;
   } while (0);
 
-  // An error occurred.  Tell all pending requests about the error:
+  // An error occurred.  Tell all pending requests about the error.
+  // This is connectionHandler1: the outbound connect() itself did not complete, so there is no
+  // usable connection and every queued request needs one before it can be replayed.
   resetTCPSockets(); // do this now, in case an error handler deletes "this"
   while ((request = tmpRequestQueue.dequeue()) != NULL) {
-    handleRequestError(request);
+    handleRequestError(request, REQ_FAIL_CONNECTION_CLOSED);
     delete request;
   }
 }
@@ -1721,15 +1817,21 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
     RequestRecord* request;
     if (newBytesRead > 0) { // The "RTSP response was truncated" error
       if ((request = fRequestsAwaitingResponse.dequeue()) != NULL) {
-	handleRequestError(request);
+	// The server DID answer -- we simply could not hold the answer. The connection is fine and
+	// the peer is behaving; the defect is our response buffer being too small. Its own cause,
+	// because REQ_FAIL_ERROR_STATUS is peer-attributed and this is OUR limit -- that recording
+	// printed ", peer-attributed" for our own buffer size.
+	handleRequestError(request, REQ_FAIL_RESPONSE_TRUNCATED);
 	delete request;
       }
     } else {
       RequestQueue requestQueue(fRequestsAwaitingResponse);
       resetTCPSockets(); // do this now, in case an error handler deletes "this"
 
+      // newBytesRead <= 0 from the socket read: 0 is a clean EOF, negative is a read error. Either
+      // way the far end is gone -- this is the ONE site where a connection-loss verdict is earned.
       while ((request = requestQueue.dequeue()) != NULL) {
-	handleRequestError(request);
+	handleRequestError(request, REQ_FAIL_CONNECTION_CLOSED);
 	delete request;
       }
     }
@@ -1880,7 +1982,7 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	      = (oldBaseURLTail - fBaseURL) + 8/* for "/stream=" */ + strlen(headerParamsStr);
 	    char* newBaseURL = new char[newBaseURLLen + 1];
 	        // Note: We couldn't use "asprintf()", because some compilers don't support it
-	    sprintf(newBaseURL, "%.*s/stream=%s",
+	    snprintf(newBaseURL, newBaseURLLen + 1, "%.*s/stream=%s",
 		     (int)(oldBaseURLTail - fBaseURL), fBaseURL, headerParamsStr);
 	    setBaseURL(newBaseURL);
 	    delete[] newBaseURL;
@@ -1908,8 +2010,8 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	unsigned remainingBufferSize = responseBufferSize - fResponseBytesAlreadySeen;
 	if (numExtraBytesNeeded > remainingBufferSize) {
 	  char tmpBuf[200];
-	  sprintf(tmpBuf, "Response buffer size (%d) is too small for \"Content-Length:\" %d (need a buffer size of >= %d bytes\n",
-		  responseBufferSize, contentLength, fResponseBytesAlreadySeen + numExtraBytesNeeded);
+	  snprintf(tmpBuf, sizeof tmpBuf, "Response buffer size (%d) is too small for \"Content-Length:\" %d (need a buffer size of >= %d bytes\n",
+		   responseBufferSize, contentLength, fResponseBytesAlreadySeen + numExtraBytesNeeded);
 	  envir().setResultMsg(tmpBuf);
 	  break;
 	}
@@ -1938,7 +2040,12 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	*responseEnd = saved;
       }
       
-      if (foundRequest != NULL) {
+      // A DISOWNED request (handler NULLed by a deadline that already retried it) gets NO response
+      // processing: running handleSETUPResponse for it would rewrite the session id and channel
+      // registrations for an abandoned attempt, and a late 401 would resendCommand() a ZOMBIE --
+      // the disowned request re-sent with a fresh CSeq, competing with the live retry for server
+      // sessions and interleaved channel ids. Its response is dequeued and dropped.
+      if (foundRequest != NULL && foundRequest->handler() != NULL) {
 	Boolean needToResendCommand = False; // by default...
 	if (responseCode == 200) {
 	  // Do special-case response handling for some commands:
@@ -1947,7 +2054,10 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	  } else if (strcmp(foundRequest->commandName(), "PLAY") == 0) {
         if (!handlePLAYResponse(foundRequest->session(), foundRequest->subsession(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
 	  } else if (strcmp(foundRequest->commandName(), "TEARDOWN") == 0) {
-	    if (!handleTEARDOWNResponse(*foundRequest->session(), *foundRequest->subsession())) break;
+	    // Pass pointers, not references: for a session-level TEARDOWN subsession() is NULL, and for a
+	    // subsession-level one session() is NULL — dereferencing to form a reference was UB. The
+	    // handler ignores both args anyway.
+	    if (!handleTEARDOWNResponse(foundRequest->session(), foundRequest->subsession())) break;
 	  } else if (strcmp(foundRequest->commandName(), "GET_PARAMETER") == 0) {
 	    if (!handleGET_PARAMETERResponse(foundRequest->contentStr(), bodyStart, responseEnd)) break;
 	  }
@@ -2014,8 +2124,17 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 	}
 	(*foundRequest->handler())(this, resultCode, resultString);
       } else {
-	// An error occurred parsing the response, so call the handler, indicating an error:
-	handleRequestError(foundRequest);
+	// An error occurred parsing the response, so call the handler, indicating an error.
+	//
+	// 🚨 THE site that made `-errno` meaningless. Nothing here touched a socket: the bytes arrived
+	// fine and we failed to make sense of them. errno therefore holds whatever an unrelated
+	// earlier syscall left behind, and that stale value was handed to the response handler as if
+	// it described the fault. Production SETUP failures reporting `result -98` (EADDRINUSE) sent
+	// an investigation after local RTP-port contention that was never established.
+	//
+	// A malformed response is the SERVER's doing, and no amount of re-sending an identical
+	// request will change it -- so it is an error status, with a retry budget of zero.
+	handleRequestError(foundRequest, REQ_FAIL_ERROR_STATUS);
       }
     }
     delete foundRequest;

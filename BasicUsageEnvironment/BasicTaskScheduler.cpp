@@ -20,6 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "BasicUsageEnvironment.hh"
 #include "HandlerSet.hh"
+#include "StreamFaultCodes.hh" // stable TX_CODE_* tokens the log tally greps
 #include <stdio.h>
 #if defined(_QNX4)
 #include <sys/select.h>
@@ -129,6 +130,7 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
   // Call the handler function for one readable socket:
   HandlerIterator iter(*fHandlers);
   HandlerDescriptor* handler;
+  Boolean dispatched = False; // did we actually invoke a handler this step? (used by the orphan-fd backstop)
   // To ensure forward progress through the handlers, begin past the last
   // socket number that we handled:
   if (fLastHandledSocketNum >= 0) {
@@ -151,6 +153,7 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
           // Note: we set "fLastHandledSocketNum" before calling the handler,
           // in case the handler calls "doEventLoop()" reentrantly.
       (*handler->handlerProc)(handler->clientData, resultConditionSet);
+      dispatched = True;
       break;
     }
   }
@@ -169,10 +172,48 @@ void BasicTaskScheduler::SingleStep(unsigned maxDelayTime) {
 	    // Note: we set "fLastHandledSocketNum" before calling the handler,
             // in case the handler calls "doEventLoop()" reentrantly.
 	(*handler->handlerProc)(handler->clientData, resultConditionSet);
+	dispatched = True;
 	break;
       }
     }
     if (handler == NULL) fLastHandledSocketNum = -1;//because we didn't call a handler
+  }
+
+  // Orphaned-ready-socket backstop. If select() reported ready socket(s) but no registered handler
+  // consumed any of them (dispatched == False), a socket is sitting in our fd sets with no live
+  // handler -- e.g. a half-closed TCP socket left readable after an out-of-order teardown. select()
+  // then returns it ready on EVERY call and nothing ever reads it: a zero-I/O busy-loop that pins a
+  // CPU core (100% select/pselect returning the same fd, no recvfrom). Find the orphaned ready fd(s)
+  // -- ready in the result set but absent from the handler list -- and clear them from our fd sets so
+  // they stop waking select(). Safe: a socket with a live handler is never cleared (we only clear fds
+  // that have NO matching handler), and this whole block runs only in the pathology (dispatched ==
+  // False with ready fds), never on the normal path.
+  if (selectResult > 0 && !dispatched) {
+    for (int s = 0; s < fMaxNumSockets; ++s) {
+      Boolean ready =
+	(FD_ISSET(s, &readSet) && FD_ISSET(s, &fReadSet)) ||
+	(FD_ISSET(s, &writeSet) && FD_ISSET(s, &fWriteSet)) ||
+	(FD_ISSET(s, &exceptionSet) && FD_ISSET(s, &fExceptionSet));
+      if (!ready) continue;
+
+      Boolean hasHandler = False;
+      HandlerIterator hiter(*fHandlers);
+      HandlerDescriptor* h;
+      while ((h = hiter.next()) != NULL) {
+	if (h->socketNum == s && h->handlerProc != NULL) { hasHandler = True; break; }
+      }
+      if (!hasHandler) {
+	FD_CLR((unsigned)s, &fReadSet);
+	FD_CLR((unsigned)s, &fWriteSet);
+	FD_CLR((unsigned)s, &fExceptionSet);
+	// Tagged with the stable fault code so the log tally can count it; without the tag this whole
+	// category silently reported zero forever, which is the failure StreamFaultCodes.hh exists to
+	// prevent. fprintf (not the UsageEnvironment stream) because BasicTaskScheduler is below
+	// liveMedia and has no envir() here.
+	fprintf(stderr, "%s BasicTaskScheduler: cleared orphaned ready socket %d (in the select set with "
+		"no handler) to stop a zero-I/O select() CPU busy-loop.\n", TX_CODE_ORPHAN, s);
+      }
+    }
   }
 
   // Also handle any newly-triggered event (Note that we do this *after* calling a socket handler,
@@ -213,7 +254,27 @@ void BasicTaskScheduler
   ::setBackgroundHandling(int socketNum, int conditionSet, BackgroundHandlerProc* handlerProc, void* clientData) {
   if (socketNum < 0) return;
 #if !defined(__WIN32__) && !defined(_WIN32) && defined(FD_SETSIZE)
-  if (socketNum >= (int)(FD_SETSIZE)) return;
+  if (socketNum >= (int)(FD_SETSIZE)) {
+    // 🚨 An fd above FD_SETSIZE cannot be represented in an fd_set, so it can never be select()ed.
+    // This used to `return` silently, which is the worst possible failure: the caller believes it
+    // armed a handler, the socket is NEVER read, and the stream is dead with ZERO log output. Both
+    // stall guards are structurally blind to it — the time-based detector requires having seen a
+    // frame (none ever arrives) and the dispatch counter requires dispatches (there are none) — so
+    // nothing downstream can report it either. A process near the fd limit (many cameras x
+    // RTSP+RTP+RTCP+consumer sockets) is exactly where this bites, and it looks identical to a
+    // camera that simply went quiet.
+    //
+    // Still a no-op, because there is nothing this function can do about it — but a LOUD one.
+    // fprintf, not envir(): a TaskScheduler has no UsageEnvironment (the environment owns the
+    // scheduler, not the reverse). stderr is where every other proxy log line goes, so this lands
+    // in journald alongside them.
+    fprintf(stderr, "%s BasicTaskScheduler::setBackgroundHandling: socket %d is at or above"
+	    " FD_SETSIZE (%d), so it cannot be watched by select() and will NEVER be read. This"
+	    " stream is dead and no stall guard can see it. The process is out of usable fd space"
+	    " -- raise FD_SETSIZE or reduce the number of open sockets.\n",
+	    TX_CODE_UNEXPECTED, socketNum, (int)FD_SETSIZE);
+    return;
+  }
 #endif
   FD_CLR((unsigned)socketNum, &fReadSet);
   FD_CLR((unsigned)socketNum, &fWriteSet);

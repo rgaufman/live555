@@ -1,2 +1,35 @@
 .DS_Store
 tmp/
+
+# Deployment-specific build/self-test drivers. Kept OUT of this public fork because they carry
+# site-specific values (host serials, LAN camera URLs, credentials) that must never enter a public
+# git history — once committed, a password stays in the history forever even after deletion.
+# The fork's own sources and unit tests stay generic and committed; only these drivers are local.
+build_clean.sh
+check-syntax.sh
+test/scratch_*
+
+# Unit-test build artifacts: `make run` in test/ produces bare executables (no extension) and, on
+# macOS, .dSYM debug bundles. Commit the SOURCES only — the binaries are per-arch and multi-MB.
+test/test_*
+!test/test_*.cpp
+test/*.dSYM/
+
+# Library build artifacts. `genMakefiles` writes a Makefile into every subdirectory, and a `make`
+# then leaves ~200 .o files plus the static libs — all untracked, all per-arch, none of them source.
+# Without these rules `git status` is ~250 lines of noise and a single `git add -A` commits the lot
+# (the macOS .dSYM bundles were staged exactly that way once already). Sources are committed; build
+# output never is. test/Makefile IS source — it is hand-written, not generated.
+*.o
+*.a
+Makefile
+!test/Makefile
+
+# Built executables (per-arch, multi-MB): the proxy under proxyServer/, and the other program
+# directories' outputs when a full `make` succeeds.
+proxyServer/live555ProxyServer
+mediaServer/live555MediaServer
+hlsProxy/live555HLSProxy
+
+# Test media
+*.264

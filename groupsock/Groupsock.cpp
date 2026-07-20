@@ -248,14 +248,10 @@ void Groupsock::removeAllDestinations() {
 }
 
 void Groupsock::multicastSendOnly() {
-  // We disable this code for now, because - on some systems - leaving the multicast group seems to cause sent packets
-  // to not be received by other applications (at least, on the same host).
-#if 0
-  socketLeaveGroup(env(), socketNum(), groupAddress(r);
-  for (destRecord* dests = fDests; dests != NULL; dests = dests->fNext) {
-    socketLeaveGroup(env(), socketNum(), dests->fGroupEId.groupAddress(r);
-  }
-#endif
+  // Intentionally a no-op: leaving the multicast group here caused sent packets to not be received
+  // by other applications on the same host on some systems. (The former #if 0'd body was also
+  // syntactically broken — stray `r`, unbalanced parens — so it would not have compiled if enabled;
+  // removed to avoid a latent build break if someone flipped it on.)
 }
 
 Boolean Groupsock::output(UsageEnvironment& env, unsigned char* buffer, unsigned bufferSize) {

@@ -46,6 +46,11 @@ public:
 
   Groupsock* RTPgs() const { return fRTPInterface.gs(); }
 
+  // Did the teardown classifier PROVE the far end closed this stream (captured FIN/RST)?
+  // Exposed so the session layer can re-establish on PROOF instead of waiting for an inactivity
+  // timer to INFER the same fault seconds later. See SessionRecoveryPolicy.hh.
+  Boolean farEndCloseProven() const { return fRTPInterface.farEndCloseProven(); }
+
   virtual void setPacketReorderingThresholdTime(unsigned uSeconds) = 0;
 
   void setCrypto(SRTPCryptographicContext* crypto) { fCrypto = crypto; }

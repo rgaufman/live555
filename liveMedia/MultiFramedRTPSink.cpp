@@ -139,7 +139,9 @@ void MultiFramedRTPSink::setFrameSpecificHeaderBytes(unsigned char const* bytes,
 }
 
 void MultiFramedRTPSink::setFramePadding(unsigned numPaddingBytes) {
-  if (numPaddingBytes > 0) {
+  // RTP padding is a single trailing count byte, so it can never exceed 255. Guard the fixed
+  // stack buffer against a caller passing more (a subclass bug would otherwise smash the stack).
+  if (numPaddingBytes > 0 && numPaddingBytes <= 255) {
     // Add the padding bytes (with the last one being the padding size):
     unsigned char paddingBuffer[255]; //max padding
     memset(paddingBuffer, 0, numPaddingBytes);
@@ -377,17 +379,20 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
 	// the packet in place.  Instead, we have to make a copy (on the stack) of
 	// the packet, before encrypting/tagging/sending it:
 	if (fOutBuf->curPacketSize() + SRTP_MKI_LENGTH + SRTP_AUTH_TAG_LENGTH > MAX_UDP_PACKET_SIZE) {
-	  fprintf(stderr, "MultiFramedRTPSink::sendPacketIfNecessary(): Fatal error: packet size %d is too large for SRTP\n", fOutBuf->curPacketSize());
-	  exit(1);
-	}
-	u_int8_t packet[MAX_UDP_PACKET_SIZE];
-	memcpy(packet, fOutBuf->packet(), fOutBuf->curPacketSize());
-	unsigned newPacketSize;
-	
-	if (fCrypto->processOutgoingSRTPPacket(packet, fOutBuf->curPacketSize(), newPacketSize)) {
-	  if (!fRTPInterface.sendPacket(packet, newPacketSize)) {
-	    // if failure handler has been specified, call it
-	    if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+	  // A library must NEVER kill the host process. (Was exit(1).) Drop this oversized SRTP packet
+	  // and report it via the send-error handler; the session continues.
+	  fprintf(stderr, "MultiFramedRTPSink::sendPacketIfNecessary(): packet size %d too large for SRTP -- dropping this packet\n", fOutBuf->curPacketSize());
+	  if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+	} else {
+	  u_int8_t packet[MAX_UDP_PACKET_SIZE];
+	  memcpy(packet, fOutBuf->packet(), fOutBuf->curPacketSize());
+	  unsigned newPacketSize;
+
+	  if (fCrypto->processOutgoingSRTPPacket(packet, fOutBuf->curPacketSize(), newPacketSize)) {
+	    if (!fRTPInterface.sendPacket(packet, newPacketSize)) {
+	      // if failure handler has been specified, call it
+	      if (fOnSendErrorFunc != NULL) (*fOnSendErrorFunc)(fOnSendErrorData);
+	    }
 	  }
 	}
 #endif
@@ -431,7 +436,10 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
     struct timeval timeNow;
     gettimeofday(&timeNow, NULL);
     int secsDiff = fNextSendTime.tv_sec - timeNow.tv_sec;
-    int64_t uSecondsToGo = secsDiff*1000000 + (fNextSendTime.tv_usec - timeNow.tv_usec);
+    // Widen BEFORE multiplying: secsDiff*1000000 in 32-bit int overflows past ~2147s (a clock step
+    // or long stall) and yields a garbage delay; the positive-wrap case isn't caught by the sanity
+    // check below. Compute in int64_t.
+    int64_t uSecondsToGo = (int64_t)secsDiff*1000000 + (fNextSendTime.tv_usec - timeNow.tv_usec);
     if (uSecondsToGo < 0 || secsDiff < 0) { // sanity check: Make sure that the time-to-delay is non-negative:
       uSecondsToGo = 0;
     }
